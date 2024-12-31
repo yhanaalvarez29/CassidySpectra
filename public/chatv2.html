@@ -1,0 +1,20 @@
+<div style="margin-left: 5%; margin-right: 5%">
+  <span id="chatPad"></span>
+  <p style="text-align: center">You can type "prefix".<br /><br /></p>
+</div>
+<br /><br /><br /><br /><br />
+<div class="fixedBox">
+  <textarea
+    class="textinput"
+    placeholder="Type your message..."
+    id="userText"
+  ></textarea>
+  <button class="send-button" onclick="send()">Send</button>
+</div>
+<div id="reactBG" class="darkBG" style="display: none;"></div>
+<div class="fixedMiddle container" style="display: none;" id="reactOpt">
+  <strong>React with: </strong>
+  <p><span id="reactOptions"></span></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="chatScript.js"></script>

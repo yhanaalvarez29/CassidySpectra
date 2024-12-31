@@ -1,0 +1,37 @@
+<script>
+  window.onload = async() => {
+      const res = await fetch("/api/commands");
+      const commands = await res.json();
+      let names = [];
+      const cmds = document.getElementById("cmds");
+      for (const command in commands) {
+        const cmd = commands[command];
+        if (names.includes(cmd.meta.name)) {
+          continue;
+        }
+        names.push(cmd.meta.name);
+        const { meta } = cmd;
+        cmds.innerHTML += `<div class="container">
+            <h3>${meta.name}</h3>
+            <p>${meta.description || "No Description"}</p>
+            <br>
+            <details>
+      <summary><em>Click to see all properties.</em></summary>
+      ${mapKey(meta)}
+</details>
+   </div>`;
+      }
+    }
+    </script>
+    <div class="container">
+  <h3>Web Mode <span class="gradientFont">New!</span></h3>
+  <p>Try or test out Cassidy FB Chatbot in web mode. Please note that some features may be lacking.</p>
+  <p>Conversations are limited to a maximum of 20 messages. Older messages will not be saved.</p>
+  <a href="/f:chatv2" class="button">+ Create Conversation</a>
+  </div><br>
+  <h2 class="text">Cassidy<span class="gradientFont">BoT</span> Commands</h2>
+  
+  <div id="cmds">
+    
+  </div>
+  
