@@ -1,8 +1,8 @@
 {
-  "name": "cassidy-public",
+  "name": "cassidy-redux",
   "author": "Liane Cagara",
-  "version": "2.0.0",
-  "description": "Versatile Facebook Bot framework that provides many features.",
+  "version": "2.5.0",
+  "description": "Reworked Versatile Facebook Bot framework that provides many features.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
