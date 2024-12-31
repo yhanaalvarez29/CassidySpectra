@@ -10,7 +10,7 @@ const { retro } = gradient;
 
 const axios = require("axios");
 function runChildProcess() {
-  const child = spawn("node", ["--max-old-space-size=500", "spawner.js"], {
+  const child = spawn("node", ["spawner.js"], {
     shell: true,
     stdio: "pipe",
   });

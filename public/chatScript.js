@@ -35,7 +35,7 @@ const infos = new Proxy(
       localStorage.setItem("infos", JSON.stringify(storedInfos));
       return true;
     },
-  },
+  }
 );
 
 // Simple, load the convo as array.
@@ -53,14 +53,15 @@ window.onload = async () => {
   /*const {
     data: { url },
   } = await axios.get("/ws-url");*/
-  ws = new WebSocket(`wss://${window.location.host}/ws`);
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
   // You can freely customize this ws.onopen, just make sure it doesn't do stuffs that may break the page :)
   ws.onopen = () => {
     ws.send(
       JSON.stringify({
         type: "login",
         password,
-      }),
+      })
     );
   };
   ws.onmessage = (i) => {
@@ -138,7 +139,9 @@ function handleMessageEdit({ messageID, body }) {
 function appendRep({ body, messageID, chatPad }) {
   pushConvo({ body, messageID, chatPad });
   const elem = document.createElement("span");
-  elem.innerHTML += `<div class="response-message-container" id="${messageID}_box"><div class="response-message" ><div onclick="togOpt('${messageID}')" id="${messageID}_text" >${autoAnchor(sanitize(body))}</div><span id="${messageID}_options" style="display: none;"><br><br><div class="vanillaButton bnw" onclick="xCopy('${messageID}'); ">Copy</div><br><div class="vanillaButton bnw" onclick="chooseReaction('${messageID}'); ">React</div><br><div class="vanillaButton bnw" onclick="reply('${messageID}')">Reply</div></span></div></div>`;
+  elem.innerHTML += `<div class="response-message-container" id="${messageID}_box"><div class="response-message" ><div onclick="togOpt('${messageID}')" id="${messageID}_text" >${autoAnchor(
+    sanitize(body)
+  )}</div><span id="${messageID}_options" style="display: none;"><br><br><div class="vanillaButton bnw" onclick="xCopy('${messageID}'); ">Copy</div><br><div class="vanillaButton bnw" onclick="chooseReaction('${messageID}'); ">React</div><br><div class="vanillaButton bnw" onclick="reply('${messageID}')">Reply</div></span></div></div>`;
   chatPad.appendChild(elem);
 }
 // some stuffs don't need to be documented
@@ -157,7 +160,9 @@ function xCopy(id) {
 function appendSend({ message, chatPad }) {
   const elem = document.createElement("span");
   pushConvo({ message });
-  elem.innerHTML += `<div class="user-message-container"><div class="user-message gradientTab">${autoAnchor(sanitize(message))}</div></div>`;
+  elem.innerHTML += `<div class="user-message-container"><div class="user-message gradientTab">${autoAnchor(
+    sanitize(message)
+  )}</div></div>`;
   chatPad.appendChild(elem);
 }
 // this handles messages sent by user/bot
@@ -189,8 +194,8 @@ document.addEventListener("keydown", (event) => {
   messageDoc.focus();
 });
 
-document.addEventListener('keydown', function (event) {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+document.addEventListener("keydown", function (event) {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();
     send();
   }
@@ -203,7 +208,7 @@ async function send(isReply, mid, extra = {}) {
   const message = messageDoc.value.trim();
   if (!message) {
     return alert(
-      `You can't send an empty message, please type at the textarea first.`,
+      `You can't send an empty message, please type at the textarea first.`
     );
   }
   let payload = {
@@ -236,7 +241,6 @@ function sendReact(reaction, messageID) {
   const reactOpt = document.querySelector("#reactOpt");
   const reactBG = document.querySelector("#reactBG");
 
-
   const reactOptions = document.querySelector("#reactOptions");
   reactOptions.innerHTML = "";
   reactOpt.style.display = "none";
@@ -249,7 +253,7 @@ function sendReact(reaction, messageID) {
       type: "message_reaction",
       reaction,
       messageID,
-    }),
+    })
   );
 }
 // this one is the oldest cassidy send function, and it sucks but t faster
@@ -257,7 +261,7 @@ async function sendOld(isReply, mid, extra = {}) {
   const message = document.getElementById("userText").value?.trim();
   if (!message) {
     return alert(
-      `You can't send an empty message, please type at the textarea first.`,
+      `You can't send an empty message, please type at the textarea first.`
     );
   }
   const chatPad = document.getElementById("chatPad");
