@@ -1,3 +1,5 @@
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+
 export const meta = {
   name: "api",
   description: "Cassidy's Developer API!",
@@ -32,6 +34,39 @@ export async function entry(ctx) {
 }
 
 const handlers = {
+  async redux_demo(ctx) {
+    const home = new ReduxCMDHome(
+      {
+        isHypen: true,
+        argIndex: 0,
+      },
+      [
+        {
+          key: "option1",
+          async handler({ output }) {
+            output.reply("This is option 1!");
+          },
+        },
+        {
+          key: "option2",
+          description: "This is the second option.",
+          async handler({ output }) {
+            output.reply("This is option 2!");
+          },
+        },
+        {
+          key: "option3",
+          description: "This is the third option.",
+          args: ["<arg1>", "[arg2]"],
+          async handler({ output }) {
+            output.reply("This is option 3!");
+          },
+        },
+      ]
+    );
+
+    home.runInContext(ctx);
+  },
   async file(ctx) {
     const neax = new ctx.NeaxUI(ctx);
     neax.menuBarOpts.add("File", "Edit", "View", "Help");
@@ -47,10 +82,13 @@ const handlers = {
     neax.onMenuBar(":nohandler", ({ cassIO }) => {
       cassIO.out("Invalid option!");
     });
-    
-    neax.replyListen({
-      content: `Welcome to the **file** manager! This does not work for now.`,
-    }, () => true);
+
+    neax.replyListen(
+      {
+        content: `Welcome to the **file** manager! This does not work for now.`,
+      },
+      () => true
+    );
   },
   async invjson({ input, money, output, args, Inventory }) {
     const userData = await money.get(input.senderID);
@@ -58,12 +96,12 @@ const handlers = {
     const targetItem = inventory.getOne(args[0]);
     if (!targetItem) {
       return output.reply(
-        `⚠️ | Enter an **item key** to check. Make sure it exists in your inventory.`,
+        `⚠️ | Enter an **item key** to check. Make sure it exists in your inventory.`
       );
     }
     const jsonStr = JSON.stringify(targetItem, null, 2);
     return output.reply(
-      `📄 | Here is the **JSON** of the item you requested:\n\n${jsonStr}`,
+      `📄 | Here is the **JSON** of the item you requested:\n\n${jsonStr}`
     );
   },
   async style({ input, output, args }) {
@@ -81,16 +119,16 @@ const handlers = {
       .find(
         (i) =>
           String(i?.name).toLowerCase().trim() ===
-          String(args[0]).toLowerCase().trim(),
+          String(args[0]).toLowerCase().trim()
       );
     if (!targetPet) {
       return output.reply(
-        `⚠️ | Enter a **pet name** to check. Make sure it exists in your pet list.`,
+        `⚠️ | Enter a **pet name** to check. Make sure it exists in your pet list.`
       );
     }
     const jsonStr = JSON.stringify(targetPet, null, 2);
     return output.reply(
-      `📄 | Here is the **JSON** of the pet you requested:\n\n${jsonStr}`,
+      `📄 | Here is the **JSON** of the pet you requested:\n\n${jsonStr}`
     );
   },
   async cmdmetajson({ input, output, commands, args }) {
@@ -101,11 +139,13 @@ const handlers = {
     }
     const jsonStr = JSON.stringify(command.meta, null, 2);
     return output.reply(
-      `📄 | Here is the **JSON** of the command meta you requested:\n\n${jsonStr}`,
+      `📄 | Here is the **JSON** of the command meta you requested:\n\n${jsonStr}`
     );
   },
   async allpetsjson({ input, money, output, args, Inventory }) {
-    const userID = (args[0] === "self" ? input.senderID : args[0]) || input.replier?.senderID;
+    const userID =
+      (args[0] === "self" ? input.senderID : args[0]) ||
+      input.replier?.senderID;
     if (!args[0]) {
       return output.reply("⚠️ | Enter a **gameid** or **self** to start.");
     }
@@ -113,21 +153,21 @@ const handlers = {
     const petsData = new Inventory(userData.petsData);
     const jsonStr = JSON.stringify(petsData, null, 2);
     return output.reply(
-      `📄 | Here is the **JSON** of the pets you requested:\n\n${jsonStr}`,
+      `📄 | Here is the **JSON** of the pets you requested:\n\n${jsonStr}`
     );
   },
   async eventjson({ input: { ...input }, output }) {
     delete input.password;
     return output.reply(
       `📄 | The **JSON** below contains the **most important** data that the **cassidy system** processes:\n\n` +
-      JSON.stringify(input, null, 2),
+        JSON.stringify(input, null, 2)
     );
   },
   async reqitem({ input, output, args, money }) {
     const adminData = await money.get("wss:admin");
     if (args.length === 0) {
       return output.reply(
-        `📄 | Please **provide** a **JSON** string to request an item to the **developer**.`,
+        `📄 | Please **provide** a **JSON** string to request an item to the **developer**.`
       );
     }
 
@@ -136,7 +176,7 @@ const handlers = {
       itemData = JSON.parse(args.join(" "));
     } catch (e) {
       return output.reply(
-        `⚠️ | Invalid JSON format. Please provide a valid JSON string.`,
+        `⚠️ | Invalid JSON format. Please provide a valid JSON string.`
       );
     }
 
@@ -144,7 +184,7 @@ const handlers = {
 
     if (!key || !icon || !flavorText || !name || !type || !sellPrice) {
       return output.reply(
-        `⚠️ | Missing important required fields. Ensure your JSON includes "key", "icon", "flavorText", "type", "sellPrice" and "name".`,
+        `⚠️ | Missing important required fields. Ensure your JSON includes "key", "icon", "flavorText", "type", "sellPrice" and "name".`
       );
     }
     adminData.requestItems ??= [];
@@ -163,7 +203,7 @@ const handlers = {
       requestNum: adminData.requestNum,
     });
     return output.reply(
-      `📄✅ | Thank you for your **request**! The item you created has been successfully sent to the **developer** for review, it might be added to the bot soon if it is able to meet the requirements.\n\n**JSON Recap**:\n\n${jsonStr}`,
+      `📄✅ | Thank you for your **request**! The item you created has been successfully sent to the **developer** for review, it might be added to the bot soon if it is able to meet the requirements.\n\n**JSON Recap**:\n\n${jsonStr}`
     );
   },
 
@@ -183,12 +223,16 @@ const handlers = {
       const item = itemReq.itemData;
       const userData = allData[itemReq.author];
       if (args.includes("--json")) {
-        result += `${item.icon} **${item.name}** (${item.key}) #${itemReq.requestNum ?? "??"}
+        result += `${item.icon} **${item.name}** (${item.key}) #${
+          itemReq.requestNum ?? "??"
+        }
 By **${userData.name ?? "Chara"}**
 
 ${JSON.stringify(item, null, 2)}\n\n`;
       } else {
-        result += `${item.icon} **${item.name}** (${item.key}) #${itemReq.requestNum ?? "??"}
+        result += `${item.icon} **${item.name}** (${item.key}) #${
+          itemReq.requestNum ?? "??"
+        }
 By **${userData.name ?? "Chara"}**
 ***Info:***
 ${item.flavorText ?? "Not Configured"}
@@ -202,7 +246,7 @@ ${item.flavorText ?? "Not Configured"}
       }
     }
     return output.reply(
-      `📄 | **Requested Items:** (newest first.)\n\n${result.trim()}\n\nType **api reqitemlist <page>*** to navigate through the pages. You can also use tag **--json** to view json.`,
+      `📄 | **Requested Items:** (newest first.)\n\n${result.trim()}\n\nType **api reqitemlist <page>*** to navigate through the pages. You can also use tag **--json** to view json.`
     );
   },
   async pet_test({
@@ -238,17 +282,17 @@ ${item.flavorText ?? "Not Configured"}
     enemyHP = parseInt(enemyHP);
     if (!targetName || isNaN(enemyAtk) || isNaN(enemyDef) || isNaN(enemyHP)) {
       return output.reply(
-        `**Guide**: <your-pet-name> <enemy-atk> <enemy-def> <enemy-hp>`,
+        `**Guide**: <your-pet-name> <enemy-atk> <enemy-def> <enemy-hp>`
       );
     }
     const petKey = petsData.findKey(
-      (i) => String(i?.name).toLowerCase() === String(targetName).toLowerCase(),
+      (i) => String(i?.name).toLowerCase() === String(targetName).toLowerCase()
     );
     const player = playersMap.get(petKey);
     const gear = gearsManage.getGearData(petKey);
     if (!player) {
       return output.reply(
-        `⚠️ | Please enter a pet name that **exists** in your pet list.`,
+        `⚠️ | Please enter a pet name that **exists** in your pet list.`
       );
     }
     const opponent = new WildPlayer({
@@ -260,7 +304,11 @@ ${item.flavorText ?? "Not Configured"}
       DF: enemyDef,
     });
     function makeUI() {
-      return `${opponent.getPlayerUI()}\nATK ${opponent.ATK} DEF ${opponent.DF} \n\n${player.getPlayerUI()}\nATK ${player.ATK} DEF ${player.DF} MAGIC ${player.MAGIC}\n\nOptions:\n**attack**\n**take single**\n**take thirds**\n**take half**`;
+      return `${opponent.getPlayerUI()}\nATK ${opponent.ATK} DEF ${
+        opponent.DF
+      } \n\n${player.getPlayerUI()}\nATK ${player.ATK} DEF ${player.DF} MAGIC ${
+        player.MAGIC
+      }\n\nOptions:\n**attack**\n**take single**\n**take thirds**\n**take half**`;
     }
     const author = input.senderID;
     async function handleInput({ output, input }) {
@@ -282,8 +330,10 @@ ${item.flavorText ?? "Not Configured"}
         const damage = player.calculateAttack(opponent.DF);
         opponent.HP -= damage;
         const i = await output.replyStyled(
-          `${player.petIcon} **${player.petName}** dealth **${damage}** damage.\n\n${makeUI()}`,
-          style,
+          `${player.petIcon} **${
+            player.petName
+          }** dealth **${damage}** damage.\n\n${makeUI()}`,
+          style
         );
         handleEnd(i.messageID);
       } else if (option === "take") {
@@ -298,14 +348,16 @@ ${item.flavorText ?? "Not Configured"}
 
         player.HP -= damage;
         const i = await output.replyStyled(
-          `${player.petIcon} **${player.petName}** has taken **${damage}** damage.\n\n${makeUI()}`,
-          style,
+          `${player.petIcon} **${
+            player.petName
+          }** has taken **${damage}** damage.\n\n${makeUI()}`,
+          style
         );
         handleEnd(i.messageID);
       } else {
         return output.replyStyled(
           `⚠️ | Please go back and reply a valid option.`,
-          style,
+          style
         );
       }
     }

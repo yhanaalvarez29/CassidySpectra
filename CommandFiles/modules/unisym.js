@@ -58,5 +58,5 @@ export class UNIRedux {
   static charm = "✦";
   static disc = "⦿";
 
-  static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck]`;
+  static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] ${this.charm}`;
 }

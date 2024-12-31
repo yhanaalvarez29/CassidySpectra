@@ -5,7 +5,7 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
-import { UNIRedux } from "./unisym";
+import { UNIRedux } from "./unisym.js";
 
 /**
  * @typedef {{ key: string; handler: Function , description: string | null, args: string[] | null }} Config
@@ -32,7 +32,9 @@ export class ReduxCMDHome {
       ? input.propertyArray[this.options.argIndex]
       : input.arguments[this.options.argIndex];
 
-    const handler = this.configs.filter((i) => i.key === key);
+    const handler = this.configs.filter(
+      (i) => i.key === key || i.key.toLowerCase === String(key).toLowerCase()
+    );
 
     const extraCTX = {};
 
@@ -63,7 +65,7 @@ export class ReduxCMDHome {
         }
       } else {
         await output.reply(
-          `${UNIRedux.burger} ***Available Commands**\n\n${itemList}\n${UNIRedux.standardLine}`
+          `${UNIRedux.burger} ***Available Commands**\n\n${itemList}\n${UNIRedux.standardLine}\n${UNIRedux.reduxMark}`
         );
       }
     }
