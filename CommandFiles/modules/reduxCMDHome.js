@@ -24,8 +24,6 @@ export class ReduxCMDHome {
     this.configs = configs;
 
     this.options = { home, isHypen, argIndex, setup };
-
-    console.log("ReduxCMDHome initialized with options:", this.options);
   }
 
   async runInContext(ctx) {
@@ -40,31 +38,23 @@ export class ReduxCMDHome {
       this.options.argIndex
     );
 
-    console.log("Running in context with key:", key);
-
     const targets = this.configs.filter(
       (i) => i.key === key || i.key.toLowerCase() === String(key).toLowerCase()
     );
 
-    console.log("Targets filtered:", targets);
-
     const extraCTX = {};
 
     try {
-      console.log("Calling setup function...");
       await this.options.setup(ctx, extraCTX);
-      console.log("Setup completed successfully.");
     } catch (error) {
       console.error("Error during setup:", error);
       return output.error(error);
     }
 
     if (targets.length > 0) {
-      console.log("Executing handlers for targets...");
       for (const { handler } of targets) {
         try {
           await handler(ctx, extraCTX);
-          console.log("Handler executed successfully.");
         } catch (error) {
           console.error("Error during handler execution:", error);
           return output.error(error);
@@ -73,9 +63,9 @@ export class ReduxCMDHome {
     } else {
       const { home } = this.options;
       const newArgs = [ctx.commandName, ...input.arguments.original];
-      console.log(JSON.stringify(input, null, 2));
+
       const slicedArgs = newArgs.slice(0, this.options.argIndex + 1);
-      console.log("NewArgs:", newArgs, "Sliced Args", slicedArgs);
+
       const itemList = this.createItemLists(this.configs, slicedArgs.join(" "));
 
       console.log(
@@ -86,15 +76,13 @@ export class ReduxCMDHome {
       if (typeof home === "function") {
         try {
           await home(ctx, { ...extraCTX, itemList });
-          console.log("Home function executed successfully.");
         } catch (error) {
           console.error("Error during home function execution:", error);
           return output.error(error);
         }
       } else {
-        console.log("Home is not a function, sending available commands...");
         await output.reply(
-          `${UNIRedux.burger} **Options**\n\n${itemList}\n${UNIRedux.standardLine}\n${UNIRedux.reduxMark}`
+          `${UNIRedux.burger} **Options**\n\n${itemList}\n\n${UNIRedux.standardLine}\n${UNIRedux.reduxMark}`
         );
       }
     }
@@ -126,7 +114,6 @@ export class ReduxCMDHome {
    * @param {Config[]} configs
    */
   createItemLists(configs, commandName, prefix = global.Cassidy.config.PREFIX) {
-    console.log("Creating item lists for all commands...");
     return configs
       .map((i) => this.createItemList(i, commandName, prefix))
       .join("\n\n");
