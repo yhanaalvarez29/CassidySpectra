@@ -1,4 +1,5 @@
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
   name: "vault",
@@ -57,16 +58,16 @@ export async function entry(ctx) {
         }
         const amount = vaultInventory.getAmount(item.key);
         pushedKeys.push(item.key);
-        return `${item.icon} ${amount > 1 ? `**x${amount}** ` : ""}${
-          item.name
-        } (${item.key})`;
+        return `${item.icon} | ${
+          amount > 1 ? `**x${amount}** ${UNIRedux.charm} ` : ""
+        }${item.name} (${item.key})`;
       })
       .filter(Boolean)
       .join("\n");
     vaultItemList ||= "[ Empty ]";
     const invItemsList = userInventory.getAll();
     let invItemList = invItemsList
-      .map((item) => `${item.icon} ${item.name} (${item.key})`)
+      .map((item) => `${item.icon} | ${item.name} (${item.key})`)
       .join("\n");
     invItemList ||= "[ Empty ]";
     const arrayInv = invItemList.split("\n");
@@ -104,7 +105,15 @@ export async function entry(ctx) {
       100 - vaultInventory.getAll().length
     } Free Slots ]`;
 
-    return `**Inventory**\n${invItemList}\n\n**vault**\n${vaultItemList}`;
+    return `**🎒 Inventory ${
+      UNIRedux.charm
+    } ${userInventory.size()}/8** (${Math.floor(
+      (userInventory.size() / 8) * 100
+    )}%)\n\n${invItemList}\n${UNIRedux.standardLine}\n**🔒 Vault ${
+      UNIRedux.charm
+    } ${vaultInventory.size()}/100** (${Math.floor(
+      (vaultInventory.size() / 100) * 100
+    )}%)\n\n${vaultItemList}`;
   }
 
   const home = new ReduxCMDHome(
