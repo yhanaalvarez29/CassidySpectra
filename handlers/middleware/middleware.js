@@ -6,6 +6,8 @@
 */
 import fs from "fs";
 import axios from "axios";
+const recentCMD = {};
+const popularCMD = {};
 let queue = [];
 const { CassidyResponseStylerControl } = global.utils.StylerGlobal;
 
@@ -22,7 +24,7 @@ const awaitStack = new Proxy(
       target[prop] = value;
       return true;
     },
-  },
+  }
 );
 function setAwaitStack(id, key) {
   awaitStack[id] = [...awaitStack[id], key];
@@ -195,7 +197,9 @@ async function handleMiddleWare({
           return (...args) => {
             global.logger(
               `Warn: 
-api.${key}(${args.map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`).join(",")}) has no effect!`,
+api.${key}(${args
+                .map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`)
+                .join(",")}) has no effect!`
             );
           };
         },
@@ -231,13 +235,15 @@ api.${key}(${args.map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`).jo
         if (!meta) return;
         delAwaitStack(event.senderID, meta.name);
       },
+      popularCMD,
+      recentCMD,
     };
     runObjects.allObj = runObjects;
     /*console.log({ ...event, participantIDs: "Hidden" });*/
     async function next() {
       pluginCount++;
       const currentOrder = queue.findIndex(
-        (order) => order && order.length > 0,
+        (order) => order && order.length > 0
       );
       if (currentOrder !== -1) {
         const currentPlugin = queue[currentOrder].shift();
@@ -256,7 +262,11 @@ api.${key}(${args.map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`).jo
               get(_, key) {
                 return (...args) => {
                   global.logger(
-                    `Warn: the ${key}(${args.map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`).join(",")}) has no effect!`,
+                    `Warn: the ${key}(${args
+                      .map(
+                        (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
+                      )
+                      .join(",")}) has no effect!`
                   );
                 };
               },

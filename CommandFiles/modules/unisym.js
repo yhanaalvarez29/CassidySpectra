@@ -103,3 +103,38 @@ export function abbreviateNumber(value, places = 2, isFull = false) {
 
   return `${formattedValue}${isFull ? ` ${suffix}` : suffix}`;
 }
+
+const fsp = require("fs").promises;
+const path = require("path");
+
+export async function getLatestCommands(directoryPath) {
+  try {
+    const fileNames = await fsp.readdir(directoryPath);
+    const fileModTimes = {};
+
+    for (const file of fileNames) {
+      const filePath = path.join(directoryPath, file);
+      const stats = await fsp.stat(filePath);
+      fileModTimes[file] = stats.mtime;
+    }
+
+    const sortedFiles = Object.entries(fileModTimes)
+      .sort(([file1, time1], [file2, time2]) => time2 - time1)
+      .map(([file]) => file);
+
+    return sortedFiles;
+  } catch (err) {
+    console.error("Error reading files:", err);
+  }
+}
+
+export function getCommandByFileName(fileName, commands) {
+  const normalizedFileName = fileName.toLowerCase().replace(".js", "");
+
+  const command = Object.entries(commands).find(([key, value]) => {
+    const commandFileName = value.fileName.toLowerCase().replace(".js", "");
+    return commandFileName === normalizedFileName;
+  });
+
+  return command ? command[1] : null;
+}

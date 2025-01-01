@@ -20,6 +20,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 0,
+  requirement: "2.5.0",
 };
 
 export const style = {
@@ -128,11 +129,11 @@ const configs = [
           : `🌱 | **${playerMoney.name}**\n• Climbing UP!`
       }\n\n✓ | Check the Top 10 leaderboard with **money lboard**.
     
-    🏆 | You rank behind **${
-      otherPlayers.ahead.length
-    }** players and ahead of **${otherPlayers.behind.length}** players.
+🏆 | You rank behind **${otherPlayers.ahead.length}** players and ahead of **${
+        otherPlayers.behind.length
+      }** players.
     
-    ⚠️ | **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
+⚠️ | **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
 
       const targetName = input.hasMentions
         ? playerMoney.name

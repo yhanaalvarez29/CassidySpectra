@@ -1,34 +1,88 @@
+import {
+  getCommandByFileName,
+  getLatestCommands,
+  UNIRedux,
+} from "../modules/unisym.js";
+
 export const meta = {
   name: "prefix",
   author: "Liane Cagara",
-  version: "1.0.0",
+  version: "2.5.0",
   description: "Nothing special.",
-  supported: "^1.0.0",
+  supported: "^2.5.0",
   order: 4,
-  type: "plugin"
+  type: "plugin",
 };
 
-export function use(obj) {
-  const { input, output, icon, prefix } = obj;
-  if (input.text?.toLowerCase() === "prefix") {
-    output.reply(`${icon}
+export async function use(obj) {
+  const {
+    input,
+    output,
+    icon,
+    prefix,
+    popularCMD,
+    recentCMD,
+    prefixes,
+    commands,
+  } = obj;
+  if (
+    input.text?.toLowerCase() === "prefix" ||
+    input.text?.toLowerCase() === "cassidy"
+  ) {
+    const latestCommands = await getLatestCommands(
+      process.cwd() + "/CommandFiles/commands"
+    );
+    const populars = Object.entries(popularCMD)
+      .sort((a, b) => b[1] > a[1])
+      .map((i) => i[0]);
 
-Hello! Thanks for adding me to this thread
+    const cutLatest = latestCommands
+      .slice(0, 10)
+      .map((i) => getCommandByFileName(i, commands)?.meta?.name)
+      .filter(Boolean);
 
-Chat box prefix: ( ${prefix} )
-System prefix: ( ${prefix} )
+    console.log(cutLatest);
 
-Type "${prefix}help" without quotation to view all commands.`);
+    const myRecent = recentCMD[input.senderID] ?? [];
+    output.reply(`${UNIRedux.redux}
+${UNIRedux.standardLine}
+✨ | **System Prefix:** [ ${prefix} ]
+🌠 | **Other Prefixes:** [ ${prefixes.slice(1).join(", ")} ]
+${UNIRedux.standardLine}
+📅 | **Latest Commands**:
+
+${
+  cutLatest.length > 0
+    ? cutLatest.map((i) => `${UNIRedux.disc} ${prefix}${i}`).join("\n")
+    : `No latest commands.`
+}
+${UNIRedux.standardLine}
+🔥 | **Popular Commands**:
+
+${
+  populars.length > 0
+    ? populars
+        .toReversed()
+        .slice(0, 10)
+        .map((i) => `${UNIRedux.disc} ${prefix}${i}`)
+        .join("\n")
+    : `No popular commands.`
+}
+${UNIRedux.standardLine}
+🕒 | **Recent Commands**:
+
+${
+  myRecent.length > 0
+    ? myRecent
+        .toReversed()
+        .slice(0, 10)
+        .map((i) => `${UNIRedux.disc} ${prefix}${i}`)
+        .join("\n")
+    : `No recent commands.`
+}
+${UNIRedux.standardLine}
+Type "${prefix}help" without quotation to view more commands!`);
+  } else {
+    obj.next();
   }
-  if (input.text?.toLowerCase() === "cassidy") {
-    output.reply(`${icon}
-
-Hello baby I'm here! < 3
-
-Chat box prefix: ( ${prefix} )
-System prefix: ( ${prefix} )
-
-Type "${prefix}help" without quotation to view all commands.`)
-  }
-  obj.next();
 }

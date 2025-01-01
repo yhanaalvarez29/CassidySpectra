@@ -62,6 +62,8 @@ export async function use(obj) {
       GenericInfo,
       moreAlias,
       Shop,
+      popularCMD,
+      recentCMD,
     } = obj;
     global.runner = obj;
     const {
@@ -103,6 +105,7 @@ export async function use(obj) {
     } catch (err) {
       console.log(err);
     }
+
     const { send, reply, react } = output;
     let eventTypes = ["message", "message_reply"];
     global.currData = command;
@@ -113,7 +116,9 @@ export async function use(obj) {
     }
     if (hasPrefix && String(commandName).includes(".")) {
       return reply(
-        `⚠️ | Commands with dot notation are **no longer supported** and even discouraged, instead use "${prefix}${String(commandName).replaceAll(".", "-")} ${args.join(" ")}"`,
+        `⚠️ | Commands with dot notation are **no longer supported** and even discouraged, instead use "${prefix}${String(
+          commandName
+        ).replaceAll(".", "-")} ${args.join(" ")}"`
       );
     }
 
@@ -127,26 +132,6 @@ export async function use(obj) {
       }
       const [id, username = "unregistered"] = `${commandName}`.split("@");
       const key = `${id}@${username}`;
-      try {
-        const { data: aiInfos } = await axios.get(
-          `${global.lia}/api/myai?type=mapped&c=only`,
-        );
-        if (key in aiInfos) {
-          const ai = new LianeAPI(id, username);
-          await output.reaction("⏳");
-          const answer = await ai.ask(args.join(" "));
-          output.reaction("✅");
-          return reply(`${answer}
-
-Note: The command "${commandName}" does not exist as a command.
-
-Installation: ${global.lia}/raw/${username}@${id}?type=cassidy`);
-        } else {
-          console.log(`Ai not found for ${key}`);
-        }
-      } catch (error) {
-        console.log(error);
-      }
 
       return reply(
         `⚠️ | The command ${
@@ -155,7 +140,7 @@ Installation: ${global.lia}/raw/${username}@${id}?type=cassidy`);
           commands.help
             ? `, please check the command list by typing ${prefix}help`
             : ". The help command is missing anyway, so you're screwed."
-        }`,
+        }`
       );
     }
     async function isThreadAdmin(uid) {
@@ -229,8 +214,8 @@ Installation: ${global.lia}/raw/${username}@${id}?type=cassidy`);
           search instanceof RegExp
             ? args[degree].match(search)
             : Array.isArray(search)
-              ? search.includes(args[degree])
-              : args[degree] === search
+            ? search.includes(args[degree])
+            : args[degree] === search
         ) {
           if (response === null || response) {
             response ? output.reply(response) : output.syntaxError(command);
@@ -266,12 +251,14 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       if (isFn(needPrefix)) {
         return await needPrefix(obj);
       }
-      return reply(`⚠️ | Please type ${prefix}${meta.name} to use this command.`);
+      return reply(
+        `⚠️ | Please type ${prefix}${meta.name} to use this command.`
+      );
     }
     if (meta.noPrefix === "both") {
       if (input.strictPrefix && !hasPrefix) {
         return reply(
-          `⚠️ | Noprefix commands are not available, please type ${prefix}${meta.name} to use this command.`,
+          `⚠️ | Noprefix commands are not available, please type ${prefix}${meta.name} to use this command.`
         );
       }
     } else if (hasPrefix && meta.noPrefix === true && !input.strictPrefix) {
@@ -279,7 +266,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return await noPrefix(obj);
       }
       return reply(
-        `⚠️ | The command ${commandName} has noPrefix configured as true.`,
+        `⚠️ | The command ${commandName} has noPrefix configured as true.`
       );
     } else if (
       meta.noPrefix !== false &&
@@ -287,21 +274,23 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       meta.noPrefix !== "both"
     ) {
       return reply(
-        `⚠️ | The noPrefix of the command ${commandName} isn't properly configured to true, false or "both"`,
+        `⚠️ | The noPrefix of the command ${commandName} isn't properly configured to true, false or "both"`
       );
     }
     if (meta.noWeb && input.isWeb) {
       if (isFn(command.noWeb)) {
         return await command.noWeb(obj);
       }
-      return reply(`⚠️ | The command "${commandName}" is not available in web.`);
+      return reply(
+        `⚠️ | The command "${commandName}" is not available in web.`
+      );
     }
     if (Array.isArray(meta.whiteList) && !meta.whiteList.includes(senderID)) {
       if (isFn(noPermission)) {
         return await noPermission(obj);
       }
       return reply(
-        `❌ | You are not allowed to use this command, contact the admin to add you to the whitelist.`,
+        `❌ | You are not allowed to use this command, contact the admin to add you to the whitelist.`
       );
     }
 
@@ -334,7 +323,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
             return await noPermission(obj);
           }
           return reply(
-            `❌ | Moderators cannot use this command as it requires a higher permission.`,
+            `❌ | Moderators cannot use this command as it requires a higher permission.`
           );
         }
       } else {
@@ -356,7 +345,9 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return await cooldown(obj);
       }
       return reply(
-        `⏱️ | Please wait for ${handleCD.remainingTime(cooldownKey)} seconds before using this command again.`,
+        `⏱️ | Please wait for ${handleCD.remainingTime(
+          cooldownKey
+        )} seconds before using this command again.`
       );
     }
     obj.recall = recall;
@@ -392,13 +383,15 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
             return reply(
               `❌ | The parameter ${paramNum} doesn't expect a value.
 
-${prefix}${commandName} ${args.slice(0, paramNum).join(" ")} <= HERE`,
+${prefix}${commandName} ${args.slice(0, paramNum).join(" ")} <= HERE`
             );
           } else {
             return reply(
-              `❌ | The parameter ${paramNum} expects a value${Array.isArray(paramValue) ? ` (${paramValue.join(", ")})` : ""}, received ${currentValue ? `"${currentValue}"` : "nothing."}
+              `❌ | The parameter ${paramNum} expects a value${
+                Array.isArray(paramValue) ? ` (${paramValue.join(", ")})` : ""
+              }, received ${currentValue ? `"${currentValue}"` : "nothing."}
 
-${prefix}${commandName} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`,
+${prefix}${commandName} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`
             );
           }
         }
@@ -424,10 +417,14 @@ ${prefix}${commandName} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`,
       const list = Object.keys(entry)
         .map((key) => {
           const { description } = indivMeta?.[key] || {};
-          return `${prefix}${commandName}-${key}${description ? ` - ${description}` : ""}`;
+          return `${prefix}${commandName}-${key}${
+            description ? ` - ${description}` : ""
+          }`;
         })
         .join("\n");
-      const listText = `🔎 Found ${Object.keys(entry).length} command${Object.keys(entry).length > 1 ? "s" : ""}.
+      const listText = `🔎 Found ${Object.keys(entry).length} command${
+        Object.keys(entry).length > 1 ? "s" : ""
+      }.
 
 ${list}`;
       for (const prop in entry) {
@@ -459,13 +456,17 @@ ${list}`;
               return reply(
                 `❌ | The parameter ${paramNum} doesn't expect a value.
 
-${prefix}${commandName}.${prop} ${args.slice(0, paramNum).join(" ")} <= HERE`,
+${prefix}${commandName}.${prop} ${args.slice(0, paramNum).join(" ")} <= HERE`
               );
             } else {
               return reply(
-                `❌ | The parameter ${paramNum} expects a value${Array.isArray(paramValue) ? ` (${paramValue.join(", ")})` : ""}, received ${currentValue ? `"${currentValue}"` : "nothing."}
+                `❌ | The parameter ${paramNum} expects a value${
+                  Array.isArray(paramValue) ? ` (${paramValue.join(", ")})` : ""
+                }, received ${currentValue ? `"${currentValue}"` : "nothing."}
 
-${prefix}${commandName}.${prop} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`,
+${prefix}${commandName}.${prop} ${args
+                  .slice(0, paramNum - 1)
+                  .join(" ")} <= HERE`
               );
             }
           }
@@ -490,7 +491,7 @@ ${prefix}${commandName}.${prop} ${args.slice(0, paramNum - 1).join(" ")} <= HERE
             return await reply(propEntry);
           } else {
             return await reply(
-              `❌ | The entry function/string is corrupted in the key ${prop}.`,
+              `❌ | The entry function/string is corrupted in the key ${prop}.`
             );
           }
         }
@@ -504,6 +505,13 @@ ${prefix}${commandName}.${prop} ${args.slice(0, paramNum - 1).join(" ")} <= HERE
         },
       });
     }
+    recentCMD[senderID] ??= [];
+    popularCMD[meta.name] ??= 0;
+    popularCMD[meta.name]++;
+
+    recentCMD[senderID] = recentCMD[senderID].filter((i) => i !== meta.name);
+
+    recentCMD[senderID].push(meta.name);
     await handleEntry(obj);
   } catch (error) {
     console.log(error);
@@ -518,7 +526,9 @@ ${prefix}${commandName}.${prop} ${args.slice(0, paramNum - 1).join(" ")} <= HERE
 function parseError(err) {
   const date = new Date();
   const { getHours, getSeconds, getMinutes, getDate } = date;
-  return `❌ | ${date.getDate()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} - ${err.message}\n\n${err.stack}`;
+  return `❌ | ${date.getDate()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} - ${
+    err.message
+  }\n\n${err.stack}`;
 }
 
 let _structure = {

@@ -66,7 +66,11 @@ export class ReduxCMDHome {
 
       const slicedArgs = newArgs.slice(0, this.options.argIndex + 1);
 
-      const itemList = this.createItemLists(this.configs, slicedArgs.join(" "));
+      const itemList = this.createItemLists(
+        this.configs,
+        slicedArgs.join(" "),
+        ctx.prefix
+      );
 
       console.log(
         "No matching targets found, calling home function with itemList:",
