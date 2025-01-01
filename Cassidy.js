@@ -4,7 +4,7 @@
   can result in severe consequences, including a global ban from my server.
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
-require('dotenv').config();
+require("dotenv").config();
 
 const MEMORY_THRESHOLD = 500;
 const WARNING_THRESHOLD = MEMORY_THRESHOLD * 0.75;
@@ -16,11 +16,13 @@ const checkMemoryUsage = (normal) => {
     console.warn(`High memory usage detected: ${usedMemoryMB.toFixed(2)} MB`);
   } else if (usedMemoryMB > WARNING_THRESHOLD) {
     console.warn(
-      `Warning: Memory usage is at 75% of the threshold: ${usedMemoryMB.toFixed(2)} MB`,
+      `Warning: Memory usage is at 75% of the threshold: ${usedMemoryMB.toFixed(
+        2
+      )} MB`
     );
   } else if (normal) {
     console.log(
-      `Memory usage is within the threshold: ${usedMemoryMB.toFixed(2)} MB`,
+      `Memory usage is within the threshold: ${usedMemoryMB.toFixed(2)} MB`
     );
   }
 };
@@ -43,7 +45,7 @@ global.utils = new Proxy(utils, {
   get(target, prop) {
     if (!(prop in target)) {
       throw new Error(
-        `The "global.utils.${prop}" property does not exist in Cassidy!`,
+        `The "global.utils.${prop}" property does not exist in Cassidy!`
       );
     }
     return target[prop];
@@ -72,7 +74,7 @@ global.webQuery = new Proxy(
       }, 30 * 1000);
       return true;
     },
-  },
+  }
 );
 const upt = Date.now();
 // Even __dirname needs a freaking fix
@@ -119,7 +121,7 @@ global.Cassidy = {
           saveSettings(data);
           return true;
         },
-      },
+      }
     );
   },
   set config(data) {
@@ -162,7 +164,7 @@ function logger(text, title = "log", valueOnly = false, log = console.log) {
   const options = { timeZone: "Asia/Manila", hour12: false };
   const time = now.toLocaleTimeString("en-PH", options);
   const message = `${time} [ ${title.toUpperCase()} ] - ${text}`.toFonted(
-    "auto",
+    "auto"
   );
   if (valueOnly) {
     return message;
@@ -239,8 +241,37 @@ function loadCookie() {
     return null;
   }
 }
-
 async function loadAllCommands(callback = async () => {}) {
+  commands = {};
+  global.Cassidy.commands = {};
+  let errs = {};
+  const fileNames = fs
+    .readdirSync("CommandFiles/commands")
+    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+
+  Object.keys(require.cache).forEach((i) => {
+    delete require.cache[i];
+  });
+
+  const commandPromises = fileNames.map(async (fileName) => {
+    try {
+      const e = await loadCommand(fileName, commands);
+      await callback(e, fileName);
+      checkMemoryUsage(true);
+      if (e) {
+        errs["command:" + fileName] = e;
+      }
+    } catch (error) {
+      errs["command:" + fileName] = error;
+    }
+  });
+
+  await Promise.allSettled(commandPromises);
+
+  return Object.keys(errs).length === 0 ? false : errs;
+}
+
+async function loadAllCommandsOld(callback = async () => {}) {
   //clearObj(commands);
   commands = {};
   global.Cassidy.commands = {};
@@ -274,7 +305,6 @@ async function main() {
 
   setInterval(cleanRequireCache, interval);*/
   logger(`Cassidy ${__pkg.version}`, "Info");
-  await delay();
   const loadLog = logger("Loading settings...", "Info");
   const settings = new Proxy(
     {},
@@ -282,27 +312,23 @@ async function main() {
       get(target, prop) {
         return loadSettings()[prop];
       },
-    },
+    }
   );
-  await delay();
   if (!settings) {
     loadLog(
       "No settings found, please check if the settings are properly configured.",
-      "Info",
+      "Info"
     );
     process.exit(1);
   }
-  await delay();
   loadLog("Loading cookie...", "Cookie");
   const cookie = loadCookie();
-  await delay();
   if (!cookie) {
     loadLog("No cookie found.", "Cookie");
     loadLog("Please check if cookie.json exists or a valid json.", "Cookie");
     process.exit(1);
   }
   loadLog("Found cookie.", "Cookie");
-  await delay();
   logger("Logging in...", "FCA");
   let api;
   try {
@@ -322,7 +348,7 @@ async function main() {
     } else {
       logger(
         "Skipping facebook login, no cookie or valid credentials found or FB Login was disabled.",
-        "FCA",
+        "FCA"
       );
     }
   } catch (error) {
@@ -389,11 +415,8 @@ async function main() {
   web(api, funcListen, settings);
   loadLog("Loading plugins");
   await loadPlugins(allPlugins);
-  await delay();
   logger("Loading commands");
-  await delay();
   await loadAllCommands();
-  await delay();
   willAccept = true;
   logger("Listener Started!", "LISTEN");
 }
@@ -462,7 +485,7 @@ function web(api, funcListen, settings) {
       const imageData = await takeScreenshot(
         req.query?.id,
         req.hostname,
-        req.query?.facebook,
+        req.query?.facebook
       );
       res.set("Content-Type", "image/png");
       res.send(imageData);
@@ -499,7 +522,7 @@ function web(api, funcListen, settings) {
     if (req.query.fileName) {
       const fileData = fs.readFileSync(
         `CommandFiles/commands/${req.query.fileName}`,
-        "utf8",
+        "utf8"
       );
       const stat = fs.statSync(`CommandFiles/commands/${req.query.fileName}`);
       return res.json({
@@ -596,7 +619,11 @@ function web(api, funcListen, settings) {
       const loaded = data.length;
       res.json({
         result: {
-          body: `📥 ${global.Cassidy.logo} is currently loading ${loaded}/${total} (${Math.floor((loaded / total) * 100)}%) commands.`,
+          body: `📥 ${
+            global.Cassidy.logo
+          } is currently loading ${loaded}/${total} (${Math.floor(
+            (loaded / total) * 100
+          )}%) commands.`,
         },
         status: "success",
       });
@@ -622,7 +649,7 @@ function web(api, funcListen, settings) {
           senderID: "custom_" + req.query.senderID,
           webQ: key,
         },
-        true,
+        true
       );
     });
     res.json(info);
@@ -646,7 +673,11 @@ function web(api, funcListen, settings) {
       const loaded = data.length;
       res.json({
         result: {
-          body: `📥 ${global.Cassidy.logo} is currently loading ${loaded}/${total} (${Math.floor((loaded / total) * 100)}%) commands.`,
+          body: `📥 ${
+            global.Cassidy.logo
+          } is currently loading ${loaded}/${total} (${Math.floor(
+            (loaded / total) * 100
+          )}%) commands.`,
         },
         status: "success",
       });
@@ -672,7 +703,7 @@ function web(api, funcListen, settings) {
           senderID: "custom_" + req.body.senderID,
           webQ: key,
         },
-        true,
+        true
       );
     });
     res.json(info);
@@ -684,7 +715,7 @@ function web(api, funcListen, settings) {
         ...req.query,
         senderID: req.trueIP,
       },
-      true,
+      true
     );
     res.json({ okay: true, req: req.query });
   });

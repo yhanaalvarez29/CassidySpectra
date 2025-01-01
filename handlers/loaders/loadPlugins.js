@@ -7,7 +7,7 @@
 
 import fs from "fs";
 
-export async function loadPlugins(
+export async function loadPluginsEach(
   allPlugins,
   force = false,
   callback = async () => {}
@@ -35,6 +35,38 @@ ${error.stack}'`,
   return Object.keys(errs).length === 0 ? false : errs;
   //console.log(allPlugins);
 }
+
+export async function loadPlugins(
+  allPlugins,
+  force = false,
+  callback = async () => {}
+) {
+  const errs = {};
+  require.cache = {};
+  const plugins = fs
+    .readdirSync("CommandFiles/plugins")
+    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+
+  const pluginPromises = plugins.map((plugin) =>
+    loadPlugin(plugin, allPlugins, force)
+      .then((data) => {
+        callback(null, plugin, data);
+      })
+      .catch((error) => {
+        errs["plugin:" + plugin] = error;
+        callback(error, plugin, null);
+        global.logger(
+          `Cannot load '${plugin}' because:\n${error.stack}`,
+          "Plugin"
+        );
+      })
+  );
+
+  return Promise.allSettled(pluginPromises).then(() => {
+    return Object.keys(errs).length === 0 ? false : errs;
+  });
+}
+
 import { checkCompatibility } from "./util.js";
 
 export async function loadPlugin(name, allPlugins, force) {
@@ -90,5 +122,7 @@ export async function loadPlugin(name, allPlugins, force) {
   }
   allPlugins[meta.name] = plugin;
   global.logger(`Loaded plugin '${meta.name}!'`, "Plugin");
+  global.checkMemoryUsage(true);
+
   return plugin;
 }
