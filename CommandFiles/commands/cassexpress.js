@@ -202,7 +202,7 @@ export async function entry({
       for (const userID of sortedKeys) {
         i++;
         const userData = allUsers[userID];
-        const { name = "Chara", bankData } = userData;
+        const { name = "Unregistered", bankData } = userData;
         result += `${
           i === 1
             ? `👑 [font=double_struck]${charm} ${name

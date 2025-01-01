@@ -59,7 +59,7 @@ export async function entry({
   let {
     money: userMoney = 0,
     tileConfig,
-    name = "Chara",
+    name = "Unregistered",
     tilesStamp = Date.now() - 10 * 60 * 1000,
     tilesRunStamp,
     inventory,

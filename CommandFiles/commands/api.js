@@ -226,14 +226,14 @@ const handlers = {
         result += `${item.icon} **${item.name}** (${item.key}) #${
           itemReq.requestNum ?? "??"
         }
-By **${userData.name ?? "Chara"}**
+By **${userData.name ?? "Unregistered"}**
 
 ${JSON.stringify(item, null, 2)}\n\n`;
       } else {
         result += `${item.icon} **${item.name}** (${item.key}) #${
           itemReq.requestNum ?? "??"
         }
-By **${userData.name ?? "Chara"}**
+By **${userData.name ?? "Unregistered"}**
 ***Info:***
 ${item.flavorText ?? "Not Configured"}
 ***Type:*** ${item.type ?? "Not Configured"}

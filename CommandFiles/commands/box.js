@@ -101,7 +101,7 @@ export async function entry({ input, output, money, args, Inventory, prefix }) {
     const {
       inventory = [],
       boxItems = [],
-      name = "Chara",
+      name = "Unregistered",
     } = await money.get(actionArgs[0]);
     boxInventory = new Inventory(boxItems, 100);
     userInventory = new Inventory(inventory, 100);

@@ -24,7 +24,7 @@ export async function entry({
     lastDailyClaim,
     collectibles,
     cassExpress = {},
-    name = "Chara",
+    name = "Unregistered",
   } = await money.get(input.senderID);
   cassExpress = new CassExpress(cassExpress);
   collectibles = new Collectibles(collectibles);

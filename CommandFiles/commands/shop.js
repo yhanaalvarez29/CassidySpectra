@@ -115,7 +115,7 @@ export const entry = {
         }
       }
 
-      result += `👑 **${name ?? "Chara"}**\n✦ Total Storage: ${accu}\n`;
+      result += `👑 **${name ?? "Unregistered"}**\n✦ Total Storage: ${accu}\n`;
       topStorages.forEach(({ category, storages, lv }) => {
         result += `✓ LV${lv} ***${category}*** - ${storages.join(", ")}\n`;
       });

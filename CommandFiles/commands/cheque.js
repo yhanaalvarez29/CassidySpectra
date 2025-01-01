@@ -59,7 +59,7 @@ export async function entry({ input, output, money, args, Inventory, prefix }) {
         icon: "💵",
         name: `Cheque of $${amount}`,
 
-        flavorText: `A cheque worth $${amount} created by ${userData.name ?? "Chara"}. Cash it to add the amount to your balance.`,
+        flavorText: `A cheque worth $${amount} created by ${userData.name ?? "Unregistered"}. Cash it to add the amount to your balance.`,
         chequeAmount: Math.floor(amount * 1),
         sellPrice: Math.floor(amount * 0.75),
         type: "cheque",

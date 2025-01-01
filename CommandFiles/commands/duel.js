@@ -282,8 +282,8 @@ async function handleChallengeResponse(ctx) {
     await money.set(loser.ownerID, {
       money: (loserData.money ?? 0) - bet,
     });
-    result += `🎉 **${winnerData.name ?? "Chara"}** has received $**${bet}**💵!\n`;
-    result += `💔 **${loserData.name ?? "Chara"}** lost $**${bet}**💵!\n`;
+    result += `🎉 **${winnerData.name ?? "Unregistered"}** has received $**${bet}**💵!\n`;
+    result += `💔 **${loserData.name ?? "Unregistered"}** lost $**${bet}**💵!\n`;
   } else {
     result += `**${winnerData.name}** has won nothing, has lost nothing, the bet $**${bet}**💵 does not make sense here.`;
   }

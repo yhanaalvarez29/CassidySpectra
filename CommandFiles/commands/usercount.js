@@ -30,7 +30,7 @@ export async function entry({ output, input, money }) {
       if (typeof value === 'number') {
         if (!(key in maxStats) || value > maxStats[key]) {
           maxStats[key] = value;
-          maxUsers[key] = userData.name || "Chara";
+          maxUsers[key] = userData.name || "Unregistered";
         }
       }
     }

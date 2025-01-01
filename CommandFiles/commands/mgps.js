@@ -102,7 +102,7 @@ async function handleSend({
   const recipientMoney = allData[recipientID] || { money: 0, exp: 0 };
   await money.set(recipientID, { money: recipientMoney.money + amount });
   return output.reply(
-    `💥 Successfully used 1 🌑 to send ${amount}$ to ${recipientMoney.name ?? "Chara"}.
+    `💥 Successfully used 1 🌑 to send ${amount}$ to ${recipientMoney.name ?? "Unregistered"}.
 
 Remaining **Shadow Coins**: ${inventory.getAmount("shadowCoin")} 🌑`,
   );

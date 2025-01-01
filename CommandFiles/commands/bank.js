@@ -65,7 +65,7 @@ export async function entry({
   const p = prefix;
   let {
     money: userMoney,
-    name = "Chara",
+    name = "Unregistered",
     inventory = [],
     totalCrops = {},
   } = await usersData.get(event.senderID);
@@ -104,7 +104,7 @@ export async function entry({
   const getUserInfo = async (api, userID) => {
     try {
       if (String(userID) !== user) {
-        const { name = "Chara" } = await usersData.get(String(userID));
+        const { name = "Unregistered" } = await usersData.get(String(userID));
         return name;
       }
       return name;
@@ -148,7 +148,7 @@ export async function entry({
       await Promise.all(
         topTen.map(async ([userID, data], index) => {
           const userData = await usersData.get(userID);
-          return `${index + start + 1}. ${userData.name ?? "Chara"}`;
+          return `${index + start + 1}. ${userData.name ?? "Unregistered"}`;
         }),
       )
     ).join("\n")}`;

@@ -27,7 +27,7 @@ export async function entry({ input, output, money, icon }) {
 
     for (const userId in allUsers) {
       const userData = allUsers[userId];
-      userData.name ??= "Chara";
+      userData.name ??= "Unregistered";
       userData.userID = userId;
 
       if (userData.name.toLowerCase().includes(query)) {

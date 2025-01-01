@@ -1,18 +1,20 @@
+import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
+
 export const meta = {
-  name: "battlepoints",
-  description: "Check in-game battle points",
-  otherNames: ["bp", "pts", "points"],
-  version: "1.1.7",
+  name: "money",
+  description: "Check your virtual money",
+  otherNames: ["coins", "funds", "moneydashboard", "mdashboard", "mdash"],
+  version: "2.5.0",
   usage: "{prefix}{name}",
-  category: "Fun",
+  category: "Financial",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: "both",
-  waitingTime: 6,
+  waitingTime: 0,
 };
 
 export const style = {
-  title: "💷 Battle Points",
+  title: "💳 Money Dashboard",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -29,7 +31,7 @@ function isBrokenMoney(playerMoney) {
 function sortUsers(users, top) {
   let result = {};
   let sortedKeys = Object.keys(users).sort(
-    (a, b) => Number(users[b].battlePoints) - Number(users[a].battlePoints),
+    (a, b) => Number(users[b].money) - Number(users[a].money)
   );
   if (top) {
     sortedKeys = sortedKeys.slice(0, top);
@@ -39,10 +41,12 @@ function sortUsers(users, top) {
   }
   return result;
 }
+
 function getTop(id, users) {
   const sorted = sortUsers(users);
   return Object.keys(sorted).findIndex((key) => key === id) + 1;
 }
+
 function totalReducer(totalObj) {
   return Object.values(totalObj).reduce((a, b) => {
     const numA = Number(a);
@@ -55,7 +59,9 @@ function totalReducer(totalObj) {
     }
   }, 0);
 }
+
 const { parseCurrency: pCy } = global.utils;
+
 export async function entry({
   money,
   input,
@@ -65,43 +71,43 @@ export async function entry({
   clearCurrStack,
 }) {
   if (input.arguments[0] === "reset_force_confirmed") {
-    await money.set(input.senderID, { battlePoints: 0 });
-    output.reply(`Your balance has been reset to 0$`);
+    await money.set(input.senderID, { money: 0 });
+    output.reply(`Your money has been reset to 0$`);
     return;
   }
   if (input.arguments[0] === "fix") {
-    const { battlePoints: playerMoney } = await money.get(input.senderID);
+    const { money: playerMoney } = await money.get(input.senderID);
     if (isBrokenMoney(playerMoney)) {
-      await money.set(input.senderID, { battlePoints: 0 });
+      await money.set(input.senderID, { money: 0 });
       return output.reply(
-        `Your broken balance has been reset from ${pCy(playerMoney)} to 0$`,
+        `Your broken money of ${pCy(playerMoney)} has been reset to 0$.`
       );
     } else {
       return output.reply(
-        `Your balance is ${pCy(playerMoney)}$ and not broken at all.`,
+        `Your money is ${pCy(playerMoney)}$ and is functioning correctly.`
       );
     }
   }
-  if (input.arguments[0] === "top") {
+  if (input.arguments[0] === "lboard") {
     let { participantIDs = [] } = input;
     if (!Array.isArray(participantIDs)) {
       participantIDs = [];
     }
     const users = await money.getAll();
-    for (const userID in users) {
-      const maxBalance = money.calcMaxBalance(users, userID);
-      /*users[userID].money = Math.min(maxBalance, users[userID].money);*/
-      users[userID].maxBalance = maxBalance;
-    }
+
     const topUsers = sortUsers(users, 10);
 
-    let result = `🏆 **Top 10 Users** 🏆\n\n`;
+    let result = `🏅 **Leaderboards (Top 10)** 🏅\n\n`;
     let index = 1;
-    let lastBalance;
+    let lastMoney;
     for (const key in topUsers) {
       const isGroup = participantIDs.includes(key);
 
-      const { name = "Unregistered", battlePoints: playerMoney, x: maxBalance = 100000000000 } = topUsers[key];
+      const {
+        name = "Unregistered",
+        money: playerMoney,
+        maxMoney,
+      } = topUsers[key];
       const userData = topUsers[key];
       result += `${index === 1 ? "👑" : index < 10 ? `0${index}` : index}${
         index === 1
@@ -110,9 +116,9 @@ export async function entry({
               .map((name) => name.toUpperCase())
               .join(" ")}[:font=double_struck] ✦`
           : `. **${name}**`
-      }\n💰 Battle Points(s): **${pCy(playerMoney)}**💷\n`;
-      if (lastBalance) {
-        result += `💸 Gap(s): ${pCy(lastBalance - playerMoney)}💷\n`;
+      }\n💰 Money: $**${abbreviateNumber(playerMoney)}**💵\n`;
+      if (lastMoney) {
+        result += `💸 Gap: $${abbreviateNumber(lastMoney - playerMoney)}💵\n`;
       }
       if (isGroup) {
         result += `✅ In Group\n`;
@@ -133,15 +139,16 @@ export async function entry({
         const exKeyCap =
           exKey.charAt(0).toUpperCase() + exKey.slice(1).toLowerCase();
         const sum = totalReducer(totalObj);
-        result += `✓ ${exKeyCap}(s): ${pCy(sum)}\n`;
+        result += `✓ ${exKeyCap}(s): ${abbreviateNumber(sum)}\n`;
       }
       result += `\n`;
       index++;
-      lastBalance = playerMoney;
+      lastMoney = playerMoney;
     }
     output.reply(result);
     return;
   }
+
   let { senderID } = input;
   if (input.replier) {
     ({ senderID } = input.replier);
@@ -149,50 +156,55 @@ export async function entry({
   if (input.hasMentions) {
     ({ senderID } = input.firstMention);
   }
-  if (input.arguments[0]) {
-    senderID = input.arguments[0];
+  if (input.arguments[0] === "check" && input.arguments[1]) {
+    senderID = input.arguments[1];
   }
+
   let i;
   if (!input.isWeb) {
-    i = await output.reply(`⚙️ Loading...`);
+    i = await output.reply(`🔧 Loading...`);
   }
+
   const allUsers = await money.getAll();
-  const maxBalance = money.calcMaxBalance(allUsers, senderID);
   let warn = "";
   const playerMoney = (await allUsers[senderID]) ?? {};
-  playerMoney.battlePoints ??= 0;
-  playerMoney.name ??= "Unregistered";
-  if (isBrokenMoney(playerMoney.battlePoints)) {
-    warn = `\n\n⚠️ This amount of balance might be broken! Please fix it using "${prefix}balance fix" to ensure that your balance will behave as expected.`;
+  playerMoney.money ??= 0;
+  playerMoney.name ??= "No name";
+  if (isBrokenMoney(playerMoney.money)) {
+    warn = `\n\n⚠️ Warning: This money might be corrupted! Use "${prefix}money fix" to reset it.`;
   }
-  //await global.utils.delay(1000);
+
   const topIndex = getTop(senderID, allUsers);
-  let topText = `🏆 **${playerMoney.name}** Top #${topIndex}!\n✓ You can **check** by typing **pts top**.
+  let topText = `${
+    topIndex <= 10
+      ? `🏅 **${playerMoney.name}** • Top #${topIndex}!`
+      : `🌱 **${playerMoney.name}** • Climbing.`
+  }\n✓ Check the Top 10 leaderboard with **money lboard**.
 
-**Disclaimer**: This is not a real balance, it is all virtual, this cannot be converted into real money.
+**Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
 
-**Notice**: This is an alternate database, your **original** progress is **SAFE** yet you cannot access it for now.`;
   const targetName = input.hasMentions
-    ? /*input.firstMention.name*/ playerMoney.name
+    ? playerMoney.name
     : input.replier
-      ? /*input.replier.senderID*/ playerMoney.name
-      : input.arguments[0]
-        ? playerMoney.name
-        : "You";
+    ? playerMoney.name
+    : input.arguments[0]
+    ? playerMoney.name
+    : "You";
+  const has = targetName === "You" ? "have" : "has";
+
   if (i) {
     output.edit(
-      `${targetName} have ${pCy(playerMoney.battlePoints)}💷 in the cassidy chatbot system.${warn}\n\n${topText}`,
-      i.messageID,
+      `${targetName} ${has} $${pCy(playerMoney.money)}💵 in the ${
+        UNIRedux.redux
+      }.${warn}\n\n${topText}`,
+      i.messageID
     );
     clearCurrStack();
-    await global.utils.delay(10000);
-    output.edit(
-      /*`⛔ This message is hidden for safety purposes.`*/ `🏆#${topIndex} **${playerMoney.name}**: ${pCy(playerMoney.battlePoints)}💷`,
-      i.messageID,
-    );
   } else {
     output.reply(
-      `${targetName} have ${pCy(playerMoney.battlePoints)}💷 in the cassidy chatbot system.${warn}\n\n${topText}`,
+      `${targetName} ${has} $${pCy(playerMoney.money)}💵 in the ${
+        UNIRedux.redux
+      }.${warn}\n\n${topText}`
     );
   }
 }

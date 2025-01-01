@@ -176,7 +176,7 @@ export async function entry({
         )
         .join("\n");*/
       return output.reply(
-        (otherTarget ? `✅ Checking ${otherTarget.name ?? "Chara"}\n\n` : "") +
+        (otherTarget ? `✅ Checking ${otherTarget.name ?? "Unregistered"}\n\n` : "") +
           `✪ ✦ **Classic Items**: (**${inventory.getAll().length}/8**)\n\n${itemList.trim() || "No items available."}\n\n✪ ✦ **Collectibles**:\n\n${cllList.trim()}`,
       );
       break;
@@ -308,7 +308,7 @@ export async function entry({
       });
 
       await output.reply(
-        `${sentItems.length !== 0 ? `✅ Sent ${sentItems.length} items to ${recipientData.name ?? "Chara"}` : `❌ No items were sent to ${recipientData.name ?? "Chara"}`}\n\n${[...sentItems, ...failItems].map((i) => `${i.icon} ${i.name}${i.error ? `\n❌ ${i.error}\n` : ""}`).join("\n")}`,
+        `${sentItems.length !== 0 ? `✅ Sent ${sentItems.length} items to ${recipientData.name ?? "Unregistered"}` : `❌ No items were sent to ${recipientData.name ?? "Unregistered"}`}\n\n${[...sentItems, ...failItems].map((i) => `${i.icon} ${i.name}${i.error ? `\n❌ ${i.error}\n` : ""}`).join("\n")}`,
       );
       break;
     case "use":

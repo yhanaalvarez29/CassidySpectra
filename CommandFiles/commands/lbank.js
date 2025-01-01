@@ -51,7 +51,7 @@ export async function entry({
   prefix,
 }) {
   const p = prefix;
-  const { money: userMoney, name = "Chara" } = await usersData.get(
+  const { money: userMoney, name = "Unregistered" } = await usersData.get(
     event.senderID,
   );
   async function loadAllBankData() {
@@ -70,7 +70,7 @@ export async function entry({
   const getUserInfo = async (api, userID) => {
     try {
       if (String(userID) !== user) {
-        const { name = "Chara" } = await usersData.get(String(userID));
+        const { name = "Unregistered" } = await usersData.get(String(userID));
         return name;
       }
       return name;
@@ -114,7 +114,7 @@ export async function entry({
       await Promise.all(
         topTen.map(async ([userID, data], index) => {
           const userData = await usersData.get(userID);
-          return `${index + start + 1}. ${userData.name ?? "Chara"}:\n Bal: $${data.bank}`;
+          return `${index + start + 1}. ${userData.name ?? "Unregistered"}:\n Bal: $${data.bank}`;
         }),
       )
     ).join("\n\n")}`;

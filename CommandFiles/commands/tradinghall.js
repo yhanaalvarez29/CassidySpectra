@@ -138,7 +138,7 @@ export const entry = {
       const num = Object.keys(preservedIndex).find(
         (key) => preservedIndex[key] === trade.userID,
       );
-      const { name = "Chara" } = allUsers[trade.userID];
+      const { name = "Unregistered" } = allUsers[trade.userID];
       result += `${num}. ***${name}***\n\n`;
       const tradeX = new Inventory(trade);
       let existedKeys = [];
@@ -255,7 +255,7 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
           uid: userID,
         });*/
         /*traderCass.setMailReceived({
-          name: userData.name ?? "Chara",
+          name: userData.name ?? "Unregistered",
           amount: total,
           author: input.senderID,
           uid: input.senderID,
@@ -266,13 +266,13 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
           title: `${firstItem.icon} Purchased for $${pCy(total)}💵`,
           author: input.senderID,
           timeStamp: Date.now(),
-          body: `**${userData.name ?? "Chara"}** has purchased **${success.length}** of your trading hall item(s) for a total of $${pCy(total)}💵\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID: ${input.senderID}`,
+          body: `**${userData.name ?? "Unregistered"}** has purchased **${success.length}** of your trading hall item(s) for a total of $${pCy(total)}💵\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID: ${input.senderID}`,
         });
         userCass.createMail({
           title: `You purchased ${firstItem.icon}`,
           author: input.senderID,
           timeStamp: Date.now(),
-          body: `Thank you **${userData.name ?? "Chara"}** for purchasing **${success.length}** item(s) from **${trader}**!\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID of trader: ${userID}`,
+          body: `Thank you **${userData.name ?? "Unregistered"}** for purchasing **${success.length}** item(s) from **${trader}**!\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID of trader: ${userID}`,
         });
       }
       await money.set(input.senderID, {
@@ -293,7 +293,7 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
   async list({ input, output, args, money, Inventory }) {
     const userData = await money.get(args[0] || input.senderID);
     const tradeVentory = new Inventory(userData.tradeVentory ?? []);
-    const { name = "Chara" } = userData;
+    const { name = "Unregistered" } = userData;
     let result = `**${name}'s** Trading Hall\n\n`;
     for (const item of tradeVentory) {
       result += `${item.icon} **${item.name}** (${item.key}) - $**${item.price}**\n✦ ${item.flavorText}\n\n`;

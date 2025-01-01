@@ -59,6 +59,7 @@ export class UNIRedux {
   static disc = "⦿";
 
   static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] **2.5** ${this.charm}\n[font=fancy_italic]Not React, Just Smart Chat![:font=fancy_italic]`;
+  static redux = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] ${this.charm}`;
 }
 
 export const fontMarkups = new Proxy(
@@ -69,3 +70,36 @@ export const fontMarkups = new Proxy(
     },
   }
 );
+
+export function abbreviateNumber(value, places = 2, isFull = false) {
+  let num = Number(value);
+  if (isNaN(num)) return "Invalid input";
+
+  const suffixes = ["", "K", "M", "B", "T", "P", "E"];
+  const fullSuffixes = [
+    "",
+    "Thousand",
+    "Million",
+    "Billion",
+    "Trillion",
+    "Quadrillion",
+    "Quintillion",
+  ];
+
+  const magnitude = Math.floor(Math.log10(num) / 3);
+
+  if (magnitude === 0) {
+    return num % 1 === 0 ? num.toString() : num.toFixed(places);
+  }
+
+  const abbreviatedValue = num / Math.pow(1000, magnitude);
+  const suffix = isFull ? fullSuffixes[magnitude] : suffixes[magnitude];
+
+  if (abbreviatedValue % 1 === 0) {
+    return `${Math.round(abbreviatedValue)}${isFull ? ` ${suffix}` : suffix}`;
+  }
+
+  const formattedValue = abbreviatedValue.toFixed(places).replace(/\.?0+$/, "");
+
+  return `${formattedValue}${isFull ? ` ${suffix}` : suffix}`;
+}

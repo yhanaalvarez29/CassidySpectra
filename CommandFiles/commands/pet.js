@@ -879,7 +879,7 @@ export const entry = {
     elementalPets,
   }) {
     let {
-      name = "Chara",
+      name = "Unregistered",
       petsData = [],
       gearsData,
     } = await money.get(input.senderID);
@@ -1075,7 +1075,7 @@ You are going to sell ${petToSell.icon} **${petToSell.name}** for $${price}💵`
   },
   async feed({ input, output, money, Inventory, GearsManage, PetPlayer }) {
     let {
-      name = "Chara",
+      name = "Unregistered",
       petsData = [],
       inventory,
       gearsData,
@@ -1313,7 +1313,7 @@ Thank you **${name}** for taking care of this pet!`);
     let num = sliceA + 1;
     final += `💪 Top 20 **strongest** pets:\n\n`;
     for (const userID of sortedKeys) {
-      let { name = "Chara", gearsData = [], petsData = [] } = allData[userID];
+      let { name = "Unregistered", gearsData = [], petsData = [] } = allData[userID];
       let pet = highestPets[userID];
       pet = autoUpdatePetData(pet);
       const gearsManage = new GearsManage(gearsData);
@@ -1333,7 +1333,7 @@ Thank you **${name}** for taking care of this pet!`);
     return output.reply(final);
   },
   async list({ input, output, money, Inventory }) {
-    let { name = "Chara", petsData = [] } = await money.get(input.senderID);
+    let { name = "Unregistered", petsData = [] } = await money.get(input.senderID);
     petsData = new Inventory(petsData);
     const pets = petsData.getAll();
     let result = `**${name}'s** Pets:\n\n`;
