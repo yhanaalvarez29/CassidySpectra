@@ -37,8 +37,8 @@ const handlers = {
   async redux_demo(ctx) {
     const home = new ReduxCMDHome(
       {
-        isHypen: true,
-        argIndex: 0,
+        isHypen: false,
+        argIndex: 1,
       },
       [
         {
