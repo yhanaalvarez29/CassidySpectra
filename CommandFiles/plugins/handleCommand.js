@@ -137,9 +137,9 @@ export async function use(obj) {
         `⚠️ | The command ${
           commandName ? `"${commandName}"` : "you are using"
         } does not exist${
-          commands.help
-            ? `, please check the command list by typing ${prefix}help`
-            : ". The help command is missing anyway, so you're screwed."
+          commands.start
+            ? `, please check the command list by typing ${prefix}start`
+            : ". The start command is missing anyway, so you're screwed."
         }`
       );
     }

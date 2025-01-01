@@ -81,7 +81,7 @@ ${
     : `No recent commands.`
 }
 ${UNIRedux.standardLine}
-Type "${prefix}help" without quotation to view more commands!`);
+Type "${prefix}start" without quotation to view more commands!`);
   } else {
     obj.next();
   }
