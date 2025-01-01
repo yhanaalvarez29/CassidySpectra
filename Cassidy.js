@@ -245,9 +245,9 @@ async function loadAllCommands(callback = async () => {}) {
   commands = {};
   global.Cassidy.commands = {};
   let errs = {};
-  const fileNames = fs
-    .readdirSync("CommandFiles/commands")
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+  const fileNames = (await fs.promises.readdir("CommandFiles/commands")).filter(
+    (file) => file.endsWith(".js") || file.endsWith(".ts")
+  );
 
   Object.keys(require.cache).forEach((i) => {
     delete require.cache[i];
@@ -414,9 +414,15 @@ async function main() {
   };
   web(api, funcListen, settings);
   loadLog("Loading plugins");
-  await loadPlugins(allPlugins);
+  const pPro = loadPlugins(allPlugins);
+
+  await pPro;
   logger("Loading commands");
-  await loadAllCommands();
+  const cPro = loadAllCommands();
+  await cPro;
+
+  // await Promise.allSettled([pPro, cPro]);
+
   willAccept = true;
   logger("Listener Started!", "LISTEN");
 }

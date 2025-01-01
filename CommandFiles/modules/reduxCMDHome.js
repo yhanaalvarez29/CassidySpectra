@@ -72,6 +72,7 @@ export class ReduxCMDHome {
         "No matching targets found, calling home function with itemList:",
         itemList
       );
+      ctx.cancelCooldown();
 
       if (typeof home === "function") {
         try {
