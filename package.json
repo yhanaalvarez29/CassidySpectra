@@ -18,6 +18,7 @@
     "@vitalets/google-translate-api": "^9.2.0",
     "axios": "^1.7.2",
     "bad-words": "^3.0.4",
+    "baybayin-transliterator": "^0.0.2",
     "betabotz-tools": "^0.0.7",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",

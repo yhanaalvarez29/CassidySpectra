@@ -92,7 +92,7 @@ const { parseCurrency: pCy } = global.utils;
  */
 const configs = [
   {
-    key: "status",
+    key: "view",
     description: "View your money status or check someone else's",
     args: ["<optional uid>"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
@@ -124,16 +124,12 @@ const configs = [
       const topIndex = getTop(senderID, allUsers);
       const otherPlayers = getBehindAhead(senderID, allUsers);
       let topText = `${
-        topIndex <= 10
-          ? `🏅 | **${playerMoney.name}**\n• Top #${topIndex}!`
-          : `🌱 | **${playerMoney.name}**\n• Climbing UP!`
-      }\n\n✓ | Check the Top 10 leaderboard with **money lboard**.
-    
-🏆 | You rank behind **${otherPlayers.ahead.length}** players and ahead of **${
+        topIndex <= 10 ? `🏅 **Top #${topIndex}**!` : `🌱 **Climbing UP!**`
+      }\n${UNIRedux.standardLine}\n🏆 You rank behind **${
+        otherPlayers.ahead.length
+      }** players and ahead of **${
         otherPlayers.behind.length
-      }** players.
-    
-⚠️ | **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
+      }** players.\n\n⚠️ **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
 
       const targetName = input.hasMentions
         ? playerMoney.name
@@ -143,21 +139,15 @@ const configs = [
         ? playerMoney.name
         : "You";
       const has = targetName === "You" ? "have" : "has";
+      let resu = `📛 **${playerMoney.name}**\n💳 $${pCy(
+        playerMoney.money
+      )}💵${warn}\n${topText}`;
 
       if (i) {
-        output.edit(
-          `${targetName} ${has} $${pCy(playerMoney.money)}💵 in the ${
-            UNIRedux.redux
-          }.${warn}\n\n${topText}`,
-          i.messageID
-        );
+        output.edit(resu, i.messageID);
         clearCurrStack();
       } else {
-        output.reply(
-          `${targetName} ${has} $${pCy(playerMoney.money)}💵 in the ${
-            UNIRedux.redux
-          }.${warn}\n\n${topText}`
-        );
+        output.reply(resu);
       }
     },
   },

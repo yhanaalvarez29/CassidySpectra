@@ -14,7 +14,7 @@ export const meta = {
 };
 
 export const style = {
-  title: "💻 CassAPI",
+  title: "💻 | CassAPI",
   titleFont: "bold",
   contentFont: "none",
 };

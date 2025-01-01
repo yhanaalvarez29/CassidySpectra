@@ -14,13 +14,29 @@ import { UNIRedux } from "./unisym.js";
 export class ReduxCMDHome {
   /**
    *
-   * @param {{ home: Function, isHypen: boolean, argIndex: number, setup: Function }} options
+   * @param {{ home: Function, isHypen: boolean, argIndex: number, setup: Function, entryConfig: {}; entryInfo: { [key: string] : null | Config } }} options
    * @param {Config[]} configs
    */
   constructor(
-    { home, isHypen = false, argIndex = 0, setup = () => {} },
+    {
+      home,
+      isHypen = false,
+      argIndex = 0,
+      setup = () => {},
+      entryConfig,
+      entryInfo,
+    },
     configs
   ) {
+    if (entryConfig) {
+      configs = Object.entries(entryConfig).map(([key, handler]) => ({
+        key,
+        handler,
+        ...(entryInfo[key] ?? {}),
+      }));
+      isHypen = true;
+      argIndex = 0;
+    }
     this.configs = configs;
 
     this.options = { home, isHypen, argIndex, setup };
@@ -31,12 +47,6 @@ export class ReduxCMDHome {
     const key = this.options.isHypen
       ? input.propertyArray[this.options.argIndex]
       : input.arguments[this.options.argIndex];
-    console.log(
-      input.arguments[this.options.argIndex],
-      "=>",
-      input.arguments,
-      this.options.argIndex
-    );
 
     const targets = this.configs.filter(
       (i) => i.key === key || i.key.toLowerCase() === String(key).toLowerCase()
@@ -68,7 +78,7 @@ export class ReduxCMDHome {
 
       const itemList = this.createItemLists(
         this.configs,
-        slicedArgs.join(" "),
+        this.options.isHypen ? ctx.commandName : slicedArgs.join(" "),
         ctx.prefix
       );
 

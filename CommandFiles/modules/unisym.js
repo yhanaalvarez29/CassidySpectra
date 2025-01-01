@@ -115,7 +115,7 @@ export async function getLatestCommands(directoryPath) {
     for (const file of fileNames) {
       const filePath = path.join(directoryPath, file);
       const stats = await fsp.stat(filePath);
-      fileModTimes[file] = stats.mtime;
+      fileModTimes[file] = stats.ctimeMs;
     }
 
     const sortedFiles = Object.entries(fileModTimes)

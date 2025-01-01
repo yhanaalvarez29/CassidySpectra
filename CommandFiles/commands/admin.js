@@ -1,3 +1,5 @@
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+
 export const meta = {
   name: "admin",
   author: "Liane Cagara 🎀",
@@ -6,15 +8,16 @@ export const meta = {
   description: "Manage admins.",
   usage: "admin[prop] [command]",
   permissions: [0, 1, 2],
+  requirement: "2.5.0",
 };
 const { Cassidy } = global;
 export const style = {
-  title: "👑 Admins",
+  title: "👑 | Admins",
   titleFont: "bold",
   contentFont: "fancy",
 };
 
-export const entry = {
+export const entryConfig = {
   async addmod({ input, output, args, userInfos }) {
     const { MODERATORBOT, ADMINBOT } = Cassidy.config;
     if (!input.isAdmin) {
@@ -23,7 +26,7 @@ export const entry = {
     const ID = input.detectID || args[0];
     if (!ID) {
       return output.reply(
-        "❌ | Please specify the ID to add. Either reply/mention or add the ID to args[0].",
+        "❌ | Please specify the ID to add. Either reply/mention or add the ID to args[0]."
       );
     }
     const { name } = await userInfos.get(ID);
@@ -46,7 +49,7 @@ export const entry = {
     const ID = input.detectID || args[0];
     if (!ID) {
       return output.reply(
-        "❌ | Please specify the ID to remove. Either reply/mention or add the ID to args[0].",
+        "❌ | Please specify the ID to remove. Either reply/mention or add the ID to args[0]."
       );
     }
     if (ID.startsWith("web:") || ID.startsWith("wss:main")) {
@@ -69,7 +72,7 @@ export const entry = {
     const ID = input.detectID || args[0];
     if (!ID) {
       return output.reply(
-        "❌ | Please specify the ID to add. Either reply/mention or add the ID to args[0].",
+        "❌ | Please specify the ID to add. Either reply/mention or add the ID to args[0]."
       );
     }
     if (ID.startsWith("web:") || ID.startsWith("wss:main")) {
@@ -91,7 +94,7 @@ export const entry = {
     const ID = input.detectID || args[0];
     if (!ID) {
       return output.reply(
-        "❌ | Please specify the ID to remove. Either reply/mention or add the ID to args[0].",
+        "❌ | Please specify the ID to remove. Either reply/mention or add the ID to args[0]."
       );
     }
     const { name } = await userInfos.get(ID);
@@ -140,7 +143,7 @@ export const entry = {
         }
         output.react("✅");
         resolve(input.censor(input.words.join(" ")));
-      },
+      }
     );
     const preview = `💌 𝗠𝗲𝘀𝘀𝗮𝗴𝗲
 
@@ -155,7 +158,7 @@ ${preview}`,
       {
         authorOnly: true,
         edit: `✅ | Sending...`,
-      },
+      }
     );
     const { messageID } = await outputOld(preview, {
       threadID: admin,
@@ -175,8 +178,37 @@ ${body}
       },
     });
     await output.reply(
-      `✅ | Message sent to ${adminName} (${admin}), it will not reply.`,
+      `✅ | Message sent to ${adminName} (${admin}), it will not reply.`
     );
     output.react("✅");
   },
 };
+
+const home = new ReduxCMDHome({
+  entryConfig,
+  entryInfo: {
+    list: {
+      description: "Display the list of admins",
+    },
+    addmod: {
+      description: "Grant moderator privileges",
+      args: ["<uid>"],
+    },
+    removemod: {
+      description: "Revoke moderator privileges",
+      args: ["<uid>"],
+    },
+    add: {
+      description: "Add a new admin",
+      args: ["<uid>"],
+    },
+    remove: {
+      description: "Remove an existing admin",
+      args: ["<uid>"],
+    },
+  },
+});
+
+export async function entry(ctx) {
+  return home.runInContext(ctx);
+}

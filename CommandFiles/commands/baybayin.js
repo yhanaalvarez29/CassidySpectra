@@ -1,40 +1,33 @@
 import axios from "axios";
+import baybayin from "baybayin-transliterator";
 
 export const meta = {
   name: "baybayin",
   description: "Convert text into baybayin",
-  version: "1.0.1",
+  version: "2.5.0",
   usage: "<prefix>baybayin <query>",
-  author: "Deku",
+  author: "Liane Cagara",
   category: "translator",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 2,
   shopPrice: 100,
 };
+
+export const style = {
+  title: "✏️ Baybayin",
+  titleFont: "bold",
+  contentFont: "fancy",
+};
+
 export async function entry({ input, output }) {
   const trans = input.arguments.join(" ");
   if (!trans) {
     return output.reply(
-      `Please provide a word or a sentence to translate into baybayin`,
+      `✏️ | Please provide a word or a sentence to translate into baybayin`
     );
   }
-  try {
-    if (!input.isWeb) {
-      output.reply(`Translating the word ${trans} into baybayin`);
-    }
-    const response = await axios.get(
-      `https://deku-rest-api-3ijr.onrender.com/api/baybay?q=${trans}`,
-    );
-    const reply = response.data.result;
-
-    output.reply(`Translation Complete!!
-    Original: ${trans}
-    Translated: ${reply}`);
-  } catch (error) {
-    console.log(error);
-    output.error(error);
-  }
+  return output.reply(`**Result:**\n\n${baybayin(trans)}`);
 }
 
 /*@Liane ikaw na bahala irefix to ulit*/
