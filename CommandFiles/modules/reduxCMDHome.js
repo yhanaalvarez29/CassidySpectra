@@ -30,9 +30,9 @@ export class ReduxCMDHome {
     const { args, input, output } = ctx;
     const key = this.options.isHypen
       ? input.propertyArray[this.options.argIndex]
-      : input.arguments[this.options.argIndex - 1];
+      : input.arguments[this.options.argIndex];
     console.log(
-      input.arguments[this.options.argIndex - 1],
+      input.arguments[this.options.argIndex],
       "=>",
       input.arguments,
       this.options.argIndex
