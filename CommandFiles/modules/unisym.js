@@ -58,5 +58,14 @@ export class UNIRedux {
   static charm = "✦";
   static disc = "⦿";
 
-  static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] **2.5** ${this.charm}`;
+  static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] **2.5** ${this.charm}\n[font=fancy_italic]Not React, Just Smart Chat![:font=fancy_italic]`;
 }
+
+export const fontMarkups = new Proxy(
+  {},
+  {
+    get(_, fontName) {
+      return (value) => `[font=${fontName}]${value}[:font=${fontName}]`;
+    },
+  }
+);
