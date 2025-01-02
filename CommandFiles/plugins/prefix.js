@@ -1,6 +1,9 @@
 import {
   getCommandByFileName,
   getLatestCommands,
+  isAdminCommand,
+  ObjectX,
+  removeCommandAliases,
   UNIRedux,
 } from "../modules/unisym.js";
 
@@ -23,25 +26,39 @@ export async function use(obj) {
     popularCMD,
     recentCMD,
     prefixes,
-    commands,
+    commands: origCommands,
   } = obj;
   if (
     input.text?.toLowerCase() === "prefix" ||
     input.text?.toLowerCase() === "cassidy"
   ) {
-    const latestCommands = await getLatestCommands(
-      process.cwd() + "/CommandFiles/commands"
+    const commands = ObjectX.filter(
+      removeCommandAliases(origCommands),
+      (command) => {
+        return Boolean(input.isAdmin) ? true : !isAdminCommand(command);
+      }
+    );
+
+    // const latestCommands = await getLatestCommands(
+    //   process.cwd() + "/CommandFiles/commands"
+    // );
+    const randomCommands = Object.keys(
+      ObjectX.slice(
+        ObjectX.toSorted(commands, (a, b) => Math.random() - 0.5),
+        0,
+        10
+      )
     );
     const populars = Object.entries(popularCMD)
       .sort((a, b) => b[1] > a[1])
       .map((i) => i[0]);
 
-    const cutLatest = latestCommands
-      .slice(0, 10)
-      .map((i) => getCommandByFileName(i, commands)?.meta?.name)
-      .filter(Boolean);
+    // const cutLatest = latestCommands
+    //   .slice(0, 10)
+    //   .map((i) => getCommandByFileName(i, commands)?.meta?.name)
+    //   .filter(Boolean);
 
-    console.log(cutLatest);
+    // console.log(cutLatest);
 
     const myRecent = recentCMD[input.senderID] ?? [];
     output.reply(`${UNIRedux.redux}
@@ -49,12 +66,12 @@ ${UNIRedux.standardLine}
 ✨ | **System Prefix:** [ ${prefix} ]
 🌠 | **Other Prefixes:** [ ${prefixes.slice(1).join(", ")} ]
 ${UNIRedux.standardLine}
-📅 | **Latest Commands**:
+📅 | **Random Commands**:
 
 ${
-  cutLatest.length > 0
-    ? cutLatest.map((i) => `${UNIRedux.disc} ${prefix}${i}`).join("\n")
-    : `No latest commands.`
+  randomCommands.length > 0
+    ? randomCommands.map((i) => `${UNIRedux.disc} ${prefix}${i}`).join("\n")
+    : `No random commands.`
 }
 ${UNIRedux.standardLine}
 🔥 | **Popular Commands**:

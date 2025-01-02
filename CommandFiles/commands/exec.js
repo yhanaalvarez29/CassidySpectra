@@ -53,7 +53,7 @@ export async function entry({ output, input, AutoEdit }) {
     if (foo) {
       output.edit(
         `✅ Command executed successfully:\n\n${result}`,
-        foo.messageID,
+        foo.messageID
       );
     } else {
       output.reply(`✅ Command executed successfully:\n\n${result}`);
