@@ -40,9 +40,15 @@ function isBrokenMoney(playerMoney) {
 
 function sortUsers(users, top) {
   let result = {};
-  let sortedKeys = Object.keys(users).sort(
-    (a, b) => Number(users[b].money) - Number(users[a].money)
-  );
+  let sortedKeys = Object.keys(users).sort((a, b) => {
+    const aValue =
+      Number(users[a].money) + Number(users[a].battlePoints ?? 0) * 1.5;
+    const bValue =
+      Number(users[b].money) + Number(users[b].battlePoints ?? 0) * 1.5;
+
+    return bValue - aValue;
+  });
+
   if (top) {
     sortedKeys = sortedKeys.slice(0, top);
   }
@@ -95,6 +101,7 @@ const configs = [
     key: "view",
     description: "View your money status or check someone else's",
     args: ["<optional uid>"],
+    aliases: ["-v", "show"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
       let { senderID } = input;
       if (input.replier) {
@@ -123,14 +130,6 @@ const configs = [
 
       const topIndex = getTop(senderID, allUsers);
       const otherPlayers = getBehindAhead(senderID, allUsers);
-      let topText = `${
-        topIndex <= 10 ? `🏅 **Top #${topIndex}**!` : `🌱 **Climbing UP!**`
-      }\n${UNIRedux.standardLine}\n🏆 You rank behind **${
-        otherPlayers.ahead.length
-      }** players and ahead of **${
-        otherPlayers.behind.length
-      }** players.\n\n⚠️ **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
-
       const targetName = input.hasMentions
         ? playerMoney.name
         : input.replier
@@ -138,10 +137,18 @@ const configs = [
         : input.arguments[0]
         ? playerMoney.name
         : "You";
+      let topText = `${
+        topIndex <= 10 ? `🏅 **Top #${topIndex}**!` : `🌱 **Climbing UP!**`
+      }\n${UNIRedux.standardLine}\n🏆 ${targetName} rank${
+        targetName === "you" ? "" : "s"
+      } behind **${otherPlayers.ahead.length}** players and ahead of **${
+        otherPlayers.behind.length
+      }** players.\n\n⚠️ **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
+
       const has = targetName === "You" ? "have" : "has";
       let resu = `📛 **${playerMoney.name}**\n💳 $${pCy(
-        playerMoney.money
-      )}💵${warn}\n${topText}`;
+        playerMoney.money ?? 0
+      )}💵\n⚔️ $${pCy(playerMoney.battlePoints ?? 0)}💷${warn}\n${topText}`;
 
       if (i) {
         output.edit(resu, i.messageID);
@@ -154,6 +161,7 @@ const configs = [
   {
     key: "lboard",
     description: "View the current Top 10 leaderboard",
+    aliases: ["top", "leaderboard", "richest", "-l"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
       let { participantIDs = [] } = input;
       if (!Array.isArray(participantIDs)) {
@@ -173,6 +181,7 @@ const configs = [
           name = "Unregistered",
           money: playerMoney,
           maxMoney,
+          battlePoints = 0,
         } = topUsers[key];
         const userData = topUsers[key];
         result += `${index === 1 ? "👑" : index < 10 ? `0${index}` : index}${
@@ -182,7 +191,11 @@ const configs = [
                 .map((name) => name.toUpperCase())
                 .join(" ")}[:font=double_struck] ✦`
             : `. **${name}**`
-        }\n💰 | Money: $**${abbreviateNumber(playerMoney)}**💵\n`;
+        }\n💰 | Money: $**${abbreviateNumber(
+          playerMoney
+        )}**💵\n⚔️ | Battle Points: $**${abbreviateNumber(
+          battlePoints ?? 0
+        )}**💷\n`;
         if (lastMoney) {
           result += `💸 | Gap: $${abbreviateNumber(
             lastMoney - playerMoney
@@ -220,6 +233,7 @@ const configs = [
   {
     key: "fix",
     description: "Fix and recover corrupted money data",
+    aliases: ["-f"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
       const { money: playerMoney } = await money.get(input.senderID);
       if (isBrokenMoney(playerMoney)) {
@@ -239,6 +253,7 @@ const configs = [
   {
     key: "reset",
     description: "Reset your money balance to the default value",
+    aliases: ["-r"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
       if (input.arguments[1] === "reset_force_confirmed") {
         await money.set(input.senderID, { money: 0 });
@@ -256,6 +271,7 @@ const configs = [
 const home = new ReduxCMDHome(
   {
     argIndex: 0,
+    isHypen: true,
   },
   configs
 );

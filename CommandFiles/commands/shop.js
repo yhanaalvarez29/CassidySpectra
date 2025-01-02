@@ -138,7 +138,7 @@ export const entry = {
       } = await money.get(input.senderID);
       if (!name) {
         return output.reply(
-          "❌ Please register first using the changename command.",
+          "❌ Please register first using the identity-setname command.",
         );
       }
       async function buyReply(item, price) {
@@ -192,7 +192,7 @@ export const entry = {
       const userData = await money.get(input.senderID);
       if (!userData.name) {
         return output.reply(
-          "❌ Please register first using the changename command.",
+          "❌ Please register first using the identity-setname command.",
         );
       }
       const inventory = new Inventory(userData.inventory);
@@ -242,7 +242,7 @@ Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`,
     }
     if (!name) {
       return output.reply(
-        "❌ Please register first using the changename command.",
+        "❌ Please register first using the identity-setname command.",
       );
     }
 

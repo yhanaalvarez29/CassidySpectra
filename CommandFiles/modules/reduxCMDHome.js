@@ -8,7 +8,7 @@
 import { UNIRedux } from "./unisym.js";
 
 /**
- * @typedef {{ key: string; handler: Function , description: string | null, args: string[] | null, }} Config
+ * @typedef {{ key: string; handler: Function , description: string | null, args: string[] | null, aliases: string[] | null }} Config
  */
 
 export class ReduxCMDHome {
@@ -48,9 +48,23 @@ export class ReduxCMDHome {
       ? input.propertyArray[this.options.argIndex]
       : input.arguments[this.options.argIndex];
 
-    const targets = this.configs.filter(
-      (i) => i.key === key || i.key.toLowerCase() === String(key).toLowerCase()
-    );
+    const targets = this.configs.filter((i) => {
+      if (i.key === key || i.key.toLowerCase() === String(key).toLowerCase()) {
+        return true;
+      }
+
+      if (Array.isArray(i.aliases)) {
+        return (
+          i.aliases.includes(key) ||
+          i.aliases.some(
+            (j) =>
+              String(j).toLowerCase() === String(key).toLowerCase() ||
+              String(j).replace("-", "").toLowerCase() ===
+                String(key).replace("-", "").toLowerCase()
+          )
+        );
+      }
+    });
 
     const extraCTX = {};
 
@@ -113,15 +127,22 @@ export class ReduxCMDHome {
     console.log(
       `Creating item list for command: ${commandName} with prefix: ${prefix}`
     );
-    return `${UNIRedux.disc} **${prefix}${commandName}${
-      this.options.isHypen ? "-" : " "
-    }${config.key}** [font=fancy_italic]${
-      Array.isArray(config.args) ? config.args.join(" ") : ""
-    }[:font=fancy_italic]${
-      typeof config.description === "string"
-        ? `\n${UNIRedux.charm} ${config.description}`
-        : ""
-    }`;
+    return (
+      `${UNIRedux.disc} **${prefix}${commandName}${
+        this.options.isHypen ? "-" : " "
+      }${config.key}** [font=fancy_italic]${
+        Array.isArray(config.args) ? config.args.join(" ") : ""
+      }[:font=fancy_italic]${
+        typeof config.description === "string"
+          ? `\n${UNIRedux.charm} ${config.description}`
+          : ""
+      }` +
+      (!Array.isArray(config.aliases)
+        ? ""
+        : `\n[font=fancy_italic]Aliases: ${config.aliases.join(
+            ", "
+          )}[:font=fancy_italic]`)
+    );
   }
 
   /**

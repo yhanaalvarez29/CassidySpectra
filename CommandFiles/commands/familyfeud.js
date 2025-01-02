@@ -249,7 +249,7 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
   let { lastFeudGame, name } = await moneyH.get(input.senderID);
   if (!name) {
     return output.reply(
-      `❌ | Please use the command ${prefix}changename first.`,
+      `❌ | Please use the command ${prefix}identity-setname first.`,
     );
   }
   if (!lastFeudGame || input.property["refresh"]) {

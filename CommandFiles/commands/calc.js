@@ -12,7 +12,7 @@ export const meta = {
   params: [true],
 };
 export const style = {
-  title: "💻 Calculator",
+  title: "💻 | Calculator",
   titleFont: "bold",
   contentFont: "none",
 }

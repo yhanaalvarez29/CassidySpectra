@@ -106,7 +106,7 @@ export async function entry({
   const gift = generateGift();
   if (!name) {
     return output.reply(
-      "❌ Please register first using the changename command.",
+      "❌ Please register first using the identity-setname command.",
     );
   }
 

@@ -189,7 +189,7 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
   } = await money.get(input.senderID);
   if (!name) {
     return output.reply(
-      "❌ Please register first using the changename command.",
+      "❌ Please register first using the identity-setname command.",
     );
   }
 

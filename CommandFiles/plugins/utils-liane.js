@@ -666,7 +666,7 @@ export async function use(obj) {
             await money.get(input.senderID);
           if (!name) {
             return output.reply(
-              "❌ Please register first using the changename command.",
+              "❌ Please register first using the identity-setname command.",
             );
           }
 
@@ -697,7 +697,7 @@ export async function use(obj) {
         } = await money.get(input.senderID);
         if (!name) {
           return output.reply(
-            "❌ Please register first using the changename command.",
+            "❌ Please register first using the identity-setname command.",
           );
         }
 

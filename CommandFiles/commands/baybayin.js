@@ -27,7 +27,7 @@ export async function entry({ input, output }) {
       `✏️ | Please provide a word or a sentence to translate into baybayin`
     );
   }
-  return output.reply(`**Result:**\n\n${baybayin(trans)}`);
+  return output.reply(`**Result:**\n\n${baybayin(trans).baybayin}`);
 }
 
 /*@Liane ikaw na bahala irefix to ulit*/

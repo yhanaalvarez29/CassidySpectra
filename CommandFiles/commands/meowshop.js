@@ -23,7 +23,8 @@ const meowShop = {
       flavorText:
         "A ticket that lets you change your name, but we don't know who accepts it.",
       key: "nameChanger",
-      price: 10000,
+      price: 2,
+      isDiamond: true,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Name Changer",
@@ -294,7 +295,9 @@ export async function entry({ UTShop, isTimeAvailable, output }) {
   const b = (5 + 12) * 60 * 60 * 1000;
   let isAvailable = isTimeAvailable(a, b);
   if (!isAvailable) {
-    return output.reply(`✦ ${closeTexts[Math.floor(Math.random() * closeTexts.length)]}
+    return output.reply(`✦ ${
+      closeTexts[Math.floor(Math.random() * closeTexts.length)]
+    }
 
 **Go back next time**`);
   }

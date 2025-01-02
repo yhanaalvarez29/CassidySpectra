@@ -18,7 +18,7 @@ export default class UserStatsManager {
       this.mongo = new LiaMongo({
         uri: this.#uri,
         //collection: "cassidyuserstats",
-        collection: "resetcassidyuserstats"
+        collection: "resetcassidyuserstats",
       });
     }
   }
@@ -30,7 +30,8 @@ export default class UserStatsManager {
       data.money = Number.MAX_SAFE_INTEGER;
     }
     data.battlePoints ??= 0;
-    data.battlePoints = data.battlePoints <= 0 ? 0 : parseInt(data.battlePoints);
+    data.battlePoints =
+      data.battlePoints <= 0 ? 0 : parseInt(data.battlePoints);
     data.exp ??= 0;
     data.inventory ??= [];
     if (isNaN(data.exp)) {
@@ -38,16 +39,22 @@ export default class UserStatsManager {
     }
     if (data.name) {
       data.name = data.name.trim();
+    }
 
+    if (isNaN(data.battlePoints)) {
+      data.battlePoints = 0;
     }
     return data;
   }
   calcMaxBalance(users, specificID) {
     const balances = Object.keys(users)
-      .filter(id => id !== specificID)
-      .map(id => users[id].money);
+      .filter((id) => id !== specificID)
+      .map((id) => users[id].money);
 
-    const totalBalance = balances.reduce((sum, balance) => parseInt(sum) + balance, 0);
+    const totalBalance = balances.reduce(
+      (sum, balance) => parseInt(sum) + balance,
+      0
+    );
     const averageBalance = totalBalance / balances.length;
 
     const maxBalance = Math.floor(10 * averageBalance);
@@ -55,12 +62,11 @@ export default class UserStatsManager {
     return maxBalance;
   }
 
-
   async connect() {
     if (this.isMongo) {
       if (!this.#uri) {
         throw new Error(
-          "Missing MongoDB URI while the status is true, please check your settings.json",
+          "Missing MongoDB URI while the status is true, please check your settings.json"
         );
       }
       await this.mongo.start();
@@ -70,10 +76,17 @@ export default class UserStatsManager {
 
   async get(key) {
     if (this.isMongo) {
-      return this.process(await this.mongo.get(key) || { ...this.defaults, lastModified: Date.now() });
+      return this.process(
+        (await this.mongo.get(key)) || {
+          ...this.defaults,
+          lastModified: Date.now(),
+        }
+      );
     } else {
       const data = this.readMoneyFile();
-      return this.process(data[key] || { ...this.defaults, lastModified: Date.now() });
+      return this.process(
+        data[key] || { ...this.defaults, lastModified: Date.now() }
+      );
     }
   }
 
@@ -115,7 +128,11 @@ export default class UserStatsManager {
   async set(key, updatedProperties = {}) {
     if (this.isMongo) {
       const user = await this.get(key);
-      const updatedUser = { ...user, ...updatedProperties, lastModified: Date.now() };
+      const updatedUser = {
+        ...user,
+        ...updatedProperties,
+        lastModified: Date.now(),
+      };
       //await this.mongo.put(key, updatedUser);
       await this.mongo.bulkPut({
         [key]: updatedUser,
@@ -123,9 +140,17 @@ export default class UserStatsManager {
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
-        data[key] = { ...data[key], ...updatedProperties, lastModified: Date.now() };
+        data[key] = {
+          ...data[key],
+          ...updatedProperties,
+          lastModified: Date.now(),
+        };
       } else {
-        data[key] = { ...this.defaults, ...updatedProperties, lastModified: Date.now() };
+        data[key] = {
+          ...this.defaults,
+          ...updatedProperties,
+          lastModified: Date.now(),
+        };
       }
       this.writeMoneyFile(data);
     }
@@ -171,7 +196,7 @@ export default class UserStatsManager {
       const results = await this.mongo.KeyValue.find({}, "key value").lean();
 
       const resultObj = {};
-      results.forEach(doc => {
+      results.forEach((doc) => {
         resultObj[doc.key] = doc.value;
       });
 

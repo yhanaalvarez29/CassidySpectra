@@ -45,7 +45,7 @@ export async function entry({
   } = userData;
   if (!name) {
     return output.reply(
-      `💌 | Sorry, we do not accept unregistered users, please use the ${prefix}changename command first!`,
+      `💌 | Sorry, we do not accept unregistered users, please use the ${prefix}identity-setname command first!`,
     );
   }
   if (!args[0]) {
