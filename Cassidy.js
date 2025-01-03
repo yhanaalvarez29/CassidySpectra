@@ -105,6 +105,7 @@ const allPlugins = {};
 
 import extend from "./extends.js";
 extend();
+import { UNIRedux } from "./CommandFiles/modules/unisym.js";
 
 global.Cassidy = {
   get config() {
@@ -141,7 +142,8 @@ global.Cassidy = {
   loadCommand,
   loadPlugins,
   loadAllCommands,
-  logo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
+  logo: UNIRedux.redux,
+  oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
   accessToken: null,
 };
 const login = require(global.Cassidy.config.FCA.path);

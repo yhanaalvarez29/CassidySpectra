@@ -12,7 +12,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,
-  otherNames: ["box", "bx"],
+  // otherNames: ["box", "bx"],
   shopPrice: 10000,
 };
 
