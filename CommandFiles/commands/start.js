@@ -1,4 +1,5 @@
 import {
+  isAdminCommand,
   listIcons,
   removeCommandAliases,
   toTitleCase,
@@ -17,7 +18,6 @@ export const meta = {
   permissions: [0],
   requirement: "2.5.0",
 };
-
 export async function entry({
   input,
   output,
@@ -32,9 +32,17 @@ export async function entry({
   const userData = await money.get(input.senderID);
   const shop = new ShopClass(userData.shopInv);
 
-  if (args.length > 0) {
+  const fakeSystemMsg = "🖥️ System Update: New commands available! ⚙️";
+  const randomQuote = [
+    "🍃 Always remember: work hard, play hard! 💪",
+    "🦄 Life is too short to not enjoy the little things. 💖",
+    "💻 Keep coding, keep dreaming. 🌠",
+  ];
+  const quoteOfTheDay =
+    randomQuote[Math.floor(Math.random() * randomQuote.length)];
+  if (args.length > 0 && isNaN(parseInt(args[0]))) {
     const commandName = args[0];
-    const command = commands[commandName];
+    const command = ogc[commandName];
 
     if (command) {
       let {
@@ -49,84 +57,76 @@ export async function entry({
       } = command.meta;
       output.reply(
         `╭─────────────❍
-│  **Command**: ${name}
-│  **Description**: ${description}
-│  **Aliases**: ${otherNames?.join ? otherNames.join(", ") : "None"}
-│  **Usage**: ${usage?.replace(/{prefix}/g, prefix)?.replace(/{name}/g, name)}
-│  **Category**: ${category?.toUpperCase() || "NO CATEGORY"}
-│  **Permissions**: ${
-          permissions.join ? permissions.join(", ") : "No permissions required"
-        }
-│  **Cooldown**: ${waitingTime || 5} seconds
-│  **Author**: ${author || "No author"}
-├────────⬤
-│  ${UNIRedux.redux} v${global.package.version}
-╰─────────────❍`
+  │  𝗖𝗼𝗺𝗺𝗮𝗻𝗱: ${name}
+  │  𝗗𝗲𝘀𝗰𝗿𝗶𝗽𝘁𝗶𝗼𝗻: ${description}
+  │  𝗔𝗹𝗶𝗮𝘀𝗲𝘀: ${otherNames?.join ? otherNames.join(", ") : "None"}
+  │  𝗨𝘀𝗮𝗴𝗲: ${usage?.replace(/{prefix}/g, prefix)?.replace(/{name}/g, name)}
+  │  𝗖𝗮𝘁𝗲𝗴𝗼𝗿𝘆: ${category || "No category"}
+  │  𝗣𝗲𝗿𝗺𝗶𝘀𝘀𝗶𝗼𝗻𝘀: ${
+    permissions.join ? permissions.join(", ") : "No permissions required"
+  }
+  │  𝗖𝗼𝗼𝗹𝗱𝗼𝘄𝗻: ${waitingTime || 5} seconds
+  │  𝗔𝘂𝘁𝗵𝗼𝗿: ${author || "No author"}
+  ├────────⬤
+  │  𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾  v${global.package.version}
+  ╰─────────────❍`
       );
     } else {
       output.reply(
         `${icon}\n\n❌ The command "${commandName}" does not exist in the help list.`
       );
     }
-  } else if (args[1] === "categorized") {
-    const categories = {};
-    const names = [];
-
-    for (const commandName in commands) {
-      const { meta } = commands[commandName];
-      if (names.includes(meta.name)) {
-        continue;
-      }
-      names.push(meta.name);
-      const category = meta.category?.toUpperCase() || "NO CATEGORY";
-      if (!categories[category]) {
-        categories[category] = [];
-      }
-      categories[category].push(meta);
-    }
-
-    const sortedCategories = Object.keys(categories).sort();
-    const helpList = sortedCategories.map((category) => {
-      const commands = categories[category]
-        .map((command) => {
-          const { name, description } = command;
-          return `├──⬤ 📄 ${prefix}**${name}** - ${
-            description || "No description available."
-          }`;
-        })
-        .join("\n");
-      return `├⬤ 📁 **${category}**\n${commands}`;
-    });
-
-    output.reply(`${icon}
-╭─────────────❍
-${helpList.join("\n│ \n")}
-├────────⬤
-│  ${UNIRedux.redux} v${global.package.version}
-╰─────────────❍
- » CassidyRedux currently has ${names.length} commands.
- » Developed by @**Liane Cagara** 🎀`);
-  } else {
-    const map = Object.values(commands).map((i) => ({
-      icon: String(i.meta.icon ?? "📄"),
-      name: String(i.meta.name),
-      info: i,
-    }));
-    console.log(JSON.stringify(map, null, 2));
-    const result = map
-      .map(
-        (i) =>
-          `${
-            shop.isUnlocked(i.name)
-              ? i.icon
-              : shop.canPurchase(i.name, userData.money)
-              ? "🔐"
-              : "🔒"
-          } ${prefix}${i.name}`
-      )
-      .join("\n");
-    return output.reply(
-      `${icon}\n\n${result}\n\n» Developed by @**Liane Cagara** 🎀`
-    );
+    return;
   }
+
+  const categorizedCommands = Object.values(commands).reduce(
+    (categories, command) => {
+      const category = command.meta.category || "Miscellaneous";
+      if (!categories[category]) categories[category] = [];
+      categories[category].push(command);
+      return categories;
+    },
+    {}
+  );
+
+  const sortedCategories = Object.keys(categorizedCommands).sort();
+  const itemsPerPage = 3;
+  const totalPages = Math.ceil(sortedCategories.length / itemsPerPage);
+  let currentPage = parseInt(args[0]) || 1;
+
+  if (currentPage < 1) currentPage = 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = currentPage * itemsPerPage;
+
+  const pageCategories = sortedCategories.slice(startIndex, endIndex);
+
+  let result = `**Page ${currentPage} of ${totalPages}** 📄\n`;
+
+  pageCategories.forEach((category, index) => {
+    result += `\n**${category}** 📁\n`;
+    categorizedCommands[category].forEach((command) => {
+      const { name, description, icon, otherNames } = command.meta;
+      const statusIcon = isAdminCommand(command)
+        ? "👑"
+        : shop.isUnlocked(name)
+        ? icon || "📄"
+        : shop.canPurchase(name, userData.money)
+        ? "🔐"
+        : "🔒";
+      result += `  ${statusIcon} ${prefix}${name} ${
+        UNIRedux.charm
+      }\n    **Description**: ${description} 💬\n    **Aliases**: ${
+        otherNames?.join(", ") || "None 📝"
+      }\n`;
+    });
+  });
+
+  result += `\n\n» To navigate pages, type **${prefix}start <page_number>**.\n`;
+  result += `\n» To get an information about a certain command, type **${prefix}start <command_name>**.\n`;
+
+  return output.reply(
+    `${icon}\n  ${UNIRedux.standardLine}\n🔍 | **Available Commands** 🧰\n\n${result}\n\n» Developed by @**Liane Cagara** 🎀`
+  );
 }
