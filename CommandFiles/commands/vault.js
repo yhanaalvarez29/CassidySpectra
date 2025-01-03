@@ -58,7 +58,7 @@ export async function entry(ctx) {
         }
         const amount = vaultInventory.getAmount(item.key);
         pushedKeys.push(item.key);
-        return `${item.icon} | ${
+        return `${item.icon} ${
           amount > 1 ? `**x${amount}** ${UNIRedux.charm} ` : ""
         }${item.name} (${item.key})`;
       })
@@ -67,7 +67,7 @@ export async function entry(ctx) {
     vaultItemList ||= "[ Empty ]";
     const invItemsList = userInventory.getAll();
     let invItemList = invItemsList
-      .map((item) => `${item.icon} | ${item.name} (${item.key})`)
+      .map((item) => `${item.icon} ${item.name} (${item.key})`)
       .join("\n");
     invItemList ||= "[ Empty ]";
     const arrayInv = invItemList.split("\n");

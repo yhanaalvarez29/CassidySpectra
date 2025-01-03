@@ -191,18 +191,16 @@ const configs = [
                 .map((name) => name.toUpperCase())
                 .join(" ")}[:font=double_struck] ✦`
             : `. **${name}**`
-        }\n💰 | Money: $**${abbreviateNumber(
+        }\n💰 Money: $**${abbreviateNumber(
           playerMoney
-        )}**💵\n⚔️ | Battle Points: $**${abbreviateNumber(
+        )}**💵\n⚔️ Battle Points: $**${abbreviateNumber(
           battlePoints ?? 0
         )}**💷\n`;
         if (lastMoney) {
-          result += `💸 | Gap: $${abbreviateNumber(
-            lastMoney - playerMoney
-          )}💵\n`;
+          result += `💸 Gap: $${abbreviateNumber(lastMoney - playerMoney)}💵\n`;
         }
         if (isGroup) {
-          result += `✅ | In Group\n`;
+          result += `✅ In Group\n`;
         }
         for (const key in userData) {
           if (
@@ -220,7 +218,7 @@ const configs = [
           const exKeyCap =
             exKey.charAt(0).toUpperCase() + exKey.slice(1).toLowerCase();
           const sum = totalReducer(totalObj);
-          result += `✓ | ${exKeyCap}(s): ${abbreviateNumber(sum)}\n`;
+          result += `✓ ${exKeyCap}(s): ${abbreviateNumber(sum)}\n`;
         }
         result += `\n`;
         index++;

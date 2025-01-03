@@ -1,4 +1,10 @@
-import { UNIRedux } from "../modules/unisym.js";
+import {
+  listIcons,
+  removeCommandAliases,
+  toTitleCase,
+  UNIRedux,
+} from "../modules/unisym.js";
+import { ShopClass } from "../plugins/shopV2.js";
 
 export const meta = {
   name: "start",
@@ -12,9 +18,19 @@ export const meta = {
   requirement: "2.5.0",
 };
 
-export async function entry({ input, output, commands, prefix, threadConfig }) {
+export async function entry({
+  input,
+  output,
+  commands: ogc,
+  prefix,
+  threadConfig,
+  money,
+}) {
+  const commands = removeCommandAliases(ogc);
   const args = input.arguments;
   const { logo: icon } = global.Cassidy;
+  const userData = await money.get(input.senderID);
+  const shop = new ShopClass(userData.shopInv);
 
   if (args.length > 0) {
     const commandName = args[0];
@@ -52,7 +68,7 @@ export async function entry({ input, output, commands, prefix, threadConfig }) {
         `${icon}\n\n❌ The command "${commandName}" does not exist in the help list.`
       );
     }
-  } else {
+  } else if (args[1] === "categorized") {
     const categories = {};
     const names = [];
 
@@ -90,5 +106,27 @@ ${helpList.join("\n│ \n")}
 ╰─────────────❍
  » CassidyRedux currently has ${names.length} commands.
  » Developed by @**Liane Cagara** 🎀`);
+  } else {
+    const map = Object.values(commands).map((i) => ({
+      icon: String(i.meta.icon ?? "📄"),
+      name: String(i.meta.name),
+      info: i,
+    }));
+    console.log(JSON.stringify(map, null, 2));
+    const result = map
+      .map(
+        (i) =>
+          `${
+            shop.isUnlocked(i.name)
+              ? i.icon
+              : shop.canPurchase(i.name, userData.money)
+              ? "🔐"
+              : "🔒"
+          } ${prefix}${i.name}`
+      )
+      .join("\n");
+    return output.reply(
+      `${icon}\n\n${result}\n\n» Developed by @**Liane Cagara** 🎀`
+    );
   }
 }

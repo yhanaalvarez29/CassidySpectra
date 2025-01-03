@@ -10,11 +10,14 @@ export const meta = {
 
 export async function use(obj) {
   const { commands } = obj;
-  const money = new Proxy({}, {
-    get(target, prop) {
-      return obj.money[prop];
-    },
-  });
+  const money = new Proxy(
+    {},
+    {
+      get(target, prop) {
+        return obj.money[prop];
+      },
+    }
+  );
   async function loadInv(userID) {
     const { shopInv = {} } = await money.get(userID);
     return shopInv;
@@ -46,20 +49,7 @@ export async function use(obj) {
       return Object.keys(inv);
     },
     getPrice(commandName) {
-      const target = Object.keys(commands).find((key) => {
-        if (!commands[key]) {
-          return;
-        }
-        const { meta } = commands[key];
-        if (!meta) {
-          return;
-        }
-        return meta.name === commandName;
-      });
-      if (!target) {
-        return null;
-      }
-      const { meta } = commands[target];
+      const { meta = {} } = commands[commandName] ?? {};
       return meta.shopPrice || 0;
     },
     async canPurchase(commandName, userID) {

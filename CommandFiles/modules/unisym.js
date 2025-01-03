@@ -456,3 +456,36 @@ export class ObjectX {
     return [key, value];
   }
 }
+
+export function toTitleCase(str) {
+  return str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+export function listIcons(array) {
+  let result = "";
+  const maxColumns = 2;
+  const columnWidth = 20;
+  const emojiWidth = 5;
+
+  array.forEach((item, index) => {
+    const iconPadding = 4 + Math.floor(item.name.length / 2) - 2;
+    const centeredIcon =
+      " ".repeat(iconPadding) +
+      item.icon +
+      " ".repeat(columnWidth - emojiWidth - iconPadding);
+
+    const centeredName = " ".repeat(4) + `**${toTitleCase(item.name)}**`;
+
+    result += centeredIcon + "\n";
+    result += centeredName + "\n";
+
+    if (index % maxColumns === 1) {
+      result += "\n";
+    }
+  });
+
+  return result;
+}

@@ -13,14 +13,14 @@ export async function loadAllPresets() {
   isPresetLoaded = true;
   const fs = require("fs").promises;
   const files = (await fs.readdir("CommandFiles/stylePresets")).filter((i) =>
-    i.endsWith(".json"),
+    i.endsWith(".json")
   );
   global.logger(`Loading presets`);
   for (const file of files) {
     try {
       const data = await fs.readFile(
         `CommandFiles/stylePresets/${file}`,
-        "utf8",
+        "utf8"
       );
       const json = JSON.parse(data);
       global.Cassidy.presets.set(file, json);
@@ -62,7 +62,7 @@ export async function loadCommand(
   commands,
   isObj = false,
   force = false,
-  transpileOnly = false,
+  transpileOnly = false
 ) {
   const { import: importModule } = global;
   try {
@@ -103,13 +103,13 @@ export async function loadCommand(
       }
       return;
     }
-    command = { ...defaultMeta, ...command };
+    command.meta = { ...defaultMeta, ...(command.meta ?? {}) };
     const { meta, entry, duringLoad, noPrefix, reply, onError, onCooldown } =
       command;
     const verRegex = /,?\s*version:\s*"([^"]*)"\s*,/;
     const fileCOntent = await fs.readFile(
       `CommandFiles/commands/${fileName}`,
-      "utf-8",
+      "utf-8"
     );
     const version = fileCOntent.match(verRegex)?.[1];
     if (!version || !isValidVersion(version)) {
@@ -117,17 +117,17 @@ export async function loadCommand(
     }
     if (typeof entry !== "function" && typeof entry !== "object") {
       throw new Error(
-        `'{root}.entry' function should be a function or an object, recieved ${entry?.toString()}`,
+        `'{root}.entry' function should be a function or an object, recieved ${entry?.toString()}`
       );
     }
     if (noPrefix && typeof noPrefix !== "function") {
       throw new Error(
-        `'{root}.noPrefix' should be undefined, null, or function, recieved ${noPrefix?.toString()}`,
+        `'{root}.noPrefix' should be undefined, null, or function, recieved ${noPrefix?.toString()}`
       );
     }
     if (reply && typeof reply !== "function") {
       throw new Error(
-        `'{root}.reply' should be undefined, null, or function, recieved ${noPrefix?.toString()}`,
+        `'{root}.reply' should be undefined, null, or function, recieved ${noPrefix?.toString()}`
       );
     }
     if (!meta || !meta.name) {
@@ -139,7 +139,7 @@ export async function loadCommand(
       !checkCompatibility(meta.requirement || "^1.0.0", global.package.version)
     ) {
       throw new Error(
-        `Plugin ${fileName} requires a newer version of Cassidy. Your current Cassidy is ${global.package.version}, please update to ${meta.requirement}`,
+        `Plugin ${fileName} requires a newer version of Cassidy. Your current Cassidy is ${global.package.version}, please update to ${meta.requirement}`
       );
     }
     if (typeof meta.ext_plugins === "object" && meta.ext_plugins) {
@@ -151,17 +151,17 @@ export async function loadCommand(
           } catch (error) {}
 
           throw new Error(
-            `Command '${fileName}' requires plugin '${plugin}' (${meta.ext_plugins[plugin]}), but it is not installed!`,
+            `Command '${fileName}' requires plugin '${plugin}' (${meta.ext_plugins[plugin]}), but it is not installed!`
           );
         }
         if (
           !checkCompatibility(
             meta.ext_plugins[plugin],
-            allPlugins[plugin]?.meta?.supported,
+            allPlugins[plugin]?.meta?.supported
           )
         ) {
           throw new Error(
-            `Command '${fileName}' requires plugin '${plugin}' to be updated, but your current version is ${allPlugins[plugin]?.meta?.supported}, please update to ${meta.ext_plugins[plugin]}`,
+            `Command '${fileName}' requires plugin '${plugin}' to be updated, but your current version is ${allPlugins[plugin]?.meta?.supported}, please update to ${meta.ext_plugins[plugin]}`
           );
         }
       }
@@ -180,18 +180,20 @@ export async function loadCommand(
     }
     if (typeof meta.name !== "string") {
       throw new Error(
-        `'{root}.meta.name' should be a string, recieved ${typeof meta.name}`,
+        `'{root}.meta.name' should be a string, recieved ${typeof meta.name}`
       );
     }
     if (meta.name.includes(" ")) {
       throw new Error(
-        `'{root}.meta.name' shouldn't have spaces, recieved '${meta.name}'`,
+        `'{root}.meta.name' shouldn't have spaces, recieved '${meta.name}'`
       );
     }
     meta.name = meta.name.toLowerCase();
     if (commands[meta.name] && !force) {
       throw new Error(
-        `Command '${meta.name}' already exists: '${commands[meta.name]?.meta.name}', '${commands[meta.name]?.otherNames?.join("")}`,
+        `Command '${meta.name}' already exists: '${
+          commands[meta.name]?.meta.name
+        }', '${commands[meta.name]?.otherNames?.join("")}`
       );
     }
     if (typeof command.load === "function") {
@@ -210,20 +212,26 @@ export async function loadCommand(
       meta.otherNames.forEach((name) => {
         if (commands[name] && !force) {
           throw new Error(
-            `Command '${name}' already exists: '${commands[name]?.meta.name}', '${commands[name]?.otherNames?.join("")}'`,
+            `Command '${name}' already exists: '${
+              commands[name]?.meta.name
+            }', '${commands[name]?.otherNames?.join("")}'`
           );
         }
         assignCommand(name, command, commands);
       });
     }
     global.logger(
-      `Loaded command ${meta.name}@${version} ${Array.isArray(meta.otherNames) ? `and aliases ${meta.otherNames.join(", ")}!` : "!"}`,
-      fileName,
+      `Loaded command ${meta.name}@${version} ${
+        Array.isArray(meta.otherNames)
+          ? `and aliases ${meta.otherNames.join(", ")}!`
+          : "!"
+      }`,
+      fileName
     );
   } catch (error) {
     global.logger(
       `Failed to load command '${fileName}'! Error: ${error.message}`,
-      fileName,
+      fileName
     );
     console.log(error);
     return error;
