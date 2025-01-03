@@ -327,3 +327,14 @@ function sanitize(input) {
 
   return sanitizedWithLineBreaks;
 }
+
+const textarea = document.getElementById("userText");
+const MAX_ROWS = 7;
+function adjustRows() {
+  const lines = textarea.value.split("\n");
+  const rowCount = Math.min(lines.length, MAX_ROWS);
+
+  textarea.setAttribute("rows", rowCount + 1);
+}
+
+textarea.addEventListener("input", adjustRows);
