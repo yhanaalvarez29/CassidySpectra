@@ -124,6 +124,7 @@ export async function entry(ctx) {
       {
         key: "list",
         description: "Lists all items in your vault inventory",
+        aliases: ["-l"],
         async handler() {
           return output.reply(`${await createList()}`);
         },
@@ -132,6 +133,8 @@ export async function entry(ctx) {
         key: "check",
         description: "Check someone's items.",
         args: ["<uid>"],
+        aliases: ["-c"],
+
         async handler() {
           const {
             inventory = [],
@@ -148,6 +151,8 @@ export async function entry(ctx) {
       },
       {
         key: "store",
+        aliases: ["-s"],
+
         description: "Store an item from your inventory into the vault.",
         args: ["<key1> <key2> <...etc>"],
         async handler() {
@@ -193,6 +198,8 @@ ${await createList()}`
       },
       {
         key: "retrieve",
+        aliases: ["-r"],
+
         description: "Retrieve an item from the vault into your inventory.",
         args: ["<key1> <key2> <...etc>"],
         async handler() {

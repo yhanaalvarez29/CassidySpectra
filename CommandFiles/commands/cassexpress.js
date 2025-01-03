@@ -18,7 +18,7 @@ function formatTime(time) {
   return global.utils.convertTimeSentence(global.utils.formatTimeDiff(time));
 }
 export const style = {
-  title: "✦ CassExpress",
+  title: "✦ | CassExpress",
   titleFont: "bold",
   contentFont: "fancy",
 };
