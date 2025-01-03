@@ -7,6 +7,19 @@
 global.listener = {};
 import { LianeAPI } from "fca-liane-utils";
 import axios from "axios";
+import stringSimilarity from "string-similarity";
+
+function getSuggestedCommand(input, commands) {
+  const commandNames = Object.keys(commands);
+
+  const bestMatch = stringSimilarity.findBestMatch(input, commandNames);
+
+  if (bestMatch.bestMatch.rating > 0.3) {
+    return bestMatch.bestMatch.target;
+  }
+
+  return null;
+}
 
 export const meta = {
   name: "handleCommand",
@@ -133,14 +146,27 @@ export async function use(obj) {
       const [id, username = "unregistered"] = `${commandName}`.split("@");
       const key = `${id}@${username}`;
 
-      return reply(
-        `⚠️ | The command ${
-          commandName ? `"${commandName}"` : "you are using"
-        } does not exist${
-          commands.start
-            ? `, please check the command list by typing ${prefix}start`
-            : ". The start command is missing anyway, so you're screwed."
-        }`
+      // return reply(
+      //   `⚠️ | The command ${
+      //     commandName ? `"${commandName}"` : "you are using"
+      //   } does not exist${
+      //     commands.start
+      //       ? `, please check the command list by typing ${prefix}start`
+      //       : ". The start command is missing anyway, so you're screwed."
+      //   }`
+      // );
+      if (!commandName) {
+        return commands.start?.entry({ ...obj, body: "start", args: [] });
+      }
+
+      const suggestedCommand = getSuggestedCommand(commandName, commands);
+      return output.replyStyled(
+        `🔍 cassidy: ${commandName}: command not found\n\n` +
+          (suggestedCommand
+            ? `Did you mean '**${prefix}${suggestedCommand}**'?\n\n`
+            : "") +
+          `Use '**${prefix}start**' to list available commands and some concept guides.`,
+        { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
     }
     async function isThreadAdmin(uid) {

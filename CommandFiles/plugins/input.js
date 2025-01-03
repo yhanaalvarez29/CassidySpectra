@@ -1,3 +1,5 @@
+import { formatIP } from "../../webSystem.js";
+
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -9,7 +11,7 @@ const { stringArrayProxy } = global.utils;
 export const meta = {
   name: "input",
   author: "Liane Cagara",
-  version: "1.2.0",
+  version: "1.3.0",
   description: "All inputs are here, very easier to use, has more usages too!",
   supported: "^1.0.0",
   order: 1,
@@ -17,12 +19,31 @@ export const meta = {
   type: "plugin",
 };
 export function use(obj) {
-  const { ADMINBOT, MODERATORBOT } = global.Cassidy.config;
+  const { ADMINBOT, MODERATORBOT, forceWebUID = false } = global.Cassidy.config;
 
   try {
     obj.censor = censor;
     const { event, api } = obj;
     event.originalBody = `${event.body}`;
+    if (forceWebUID && event) {
+      if (!event.senderID?.startsWith("web:")) {
+        event.senderID = formatIP("custom_" + String(event.senderID));
+      }
+      if (
+        event.messageReply &&
+        !event?.messageReply.senderID?.startsWith("web:")
+      ) {
+        event.messageReply.senderID = formatIP(
+          String("custom_" + event.messageReply.senderID)
+        );
+      }
+
+      if (Array.isArray(event.participantIDs)) {
+        event.participantIDs = event.participantIDs.map((id) =>
+          id.startsWith("web:") ? id : formatIP("custom_" + id)
+        );
+      }
+    }
     event.body ||= "";
     if (obj.command?.meta?.autoCensor) {
       event.body = censor(event.body);
@@ -31,7 +52,7 @@ export function use(obj) {
     body = body.replace(/\[uid\]/gi, event.senderID);
     body = body.replace(
       /\[thisid\]/gi,
-      event.messageReply?.senderID || event.senderID,
+      event.messageReply?.senderID || event.senderID
     );
     let [, ...args6] = body.split(" ").filter((i) => !!i);
     const args = stringArrayProxy(args6);
@@ -39,20 +60,20 @@ export function use(obj) {
       event.originalBody
         .split(" ")
         .filter((i) => !!i)
-        .slice(1),
+        .slice(1)
     );
     obj.args = args;
     const argPipe = stringArrayProxy(
       args
         .join(" ")
         .split("|")
-        .map((i) => i.trim()),
+        .map((i) => i.trim())
     );
     const argArrow = stringArrayProxy(
       args
         .join(" ")
         .split("=>")
-        .map((i) => i.trim()),
+        .map((i) => i.trim())
     );
     const wordCount = body.split(" ").filter((i) => !!i).length;
     const charCount = body.split("").filter((i) => !!i).length;
@@ -67,10 +88,10 @@ export function use(obj) {
       arguments: args,
       argPipe,
       argPipeArgs: argPipe?.map(
-        (item) => item.split(" ").filter((i) => !!i) || [],
+        (item) => item.split(" ").filter((i) => !!i) || []
       ),
       argArrowArgs: argArrow?.map(
-        (item) => item.split(" ").filter((i) => !!i) || [],
+        (item) => item.split(" ").filter((i) => !!i) || []
       ),
       argArrow,
       wordCount,

@@ -27,10 +27,13 @@ export async function use(obj) {
     recentCMD,
     prefixes,
     commands: origCommands,
+    commandName,
   } = obj;
   if (
     input.text?.toLowerCase() === "prefix" ||
-    input.text?.toLowerCase() === "cassidy"
+    input.text?.toLowerCase() === "cassidy" ||
+    input.text.trim() === prefix ||
+    prefixes.some((prefix) => input.text.trim() === prefix)
   ) {
     const commands = ObjectX.filter(
       removeCommandAliases(origCommands),
@@ -98,7 +101,7 @@ ${
     : `No recent commands.`
 }
 ${UNIRedux.standardLine}
-Type "${prefix}start" without quotation to view more commands!`);
+Use '**${prefix}start**' to list available commands and some concept guides.`);
   } else {
     obj.next();
   }
