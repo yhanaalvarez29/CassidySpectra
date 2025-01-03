@@ -110,8 +110,8 @@ const configs = [
       if (input.hasMentions) {
         ({ senderID } = input.firstMention);
       }
-      if (input.arguments[1]) {
-        senderID = input.arguments[1];
+      if (input.arguments[0]) {
+        senderID = input.arguments[0];
       }
 
       let i;
@@ -140,7 +140,7 @@ const configs = [
       let topText = `${
         topIndex <= 10 ? `🏅 **Top #${topIndex}**!` : `🌱 **Climbing UP!**`
       }\n${UNIRedux.standardLine}\n🏆 ${targetName} rank${
-        targetName === "you" ? "" : "s"
+        targetName === "You" ? "" : "s"
       } behind **${otherPlayers.ahead.length}** players and ahead of **${
         otherPlayers.behind.length
       }** players.\n\n⚠️ **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
@@ -253,7 +253,7 @@ const configs = [
     description: "Reset your money balance to the default value",
     aliases: ["-r"],
     async handler({ money, input, output, icon, prefix, clearCurrStack }) {
-      if (input.arguments[1] === "reset_force_confirmed") {
+      if (input.arguments[0] === "reset_force_confirmed") {
         await money.set(input.senderID, { money: 0 });
         output.reply(`✅ | Your money has been reset to 0$`);
         return;

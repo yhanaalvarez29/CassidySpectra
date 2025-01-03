@@ -106,7 +106,7 @@ export async function entry({ input, output, money }) {
         return "Error: File content exceeds the 100KB size limit.";
       }
 
-      vf.writeFile(path, content);
+      await vf.writeFile(path, content);
       await money.set(input.senderID, {
         virtualFiles: vf.raw(),
       });

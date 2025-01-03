@@ -312,8 +312,7 @@ export class VirtualFiles {
   static FileNotFoundError = FileNotFoundError;
 
   constructor(data = {}) {
-    this.data = data;
-    this.data.mainDir ??= [];
+    this.data = { mainDir: [], ...data };
   }
 
   raw() {
@@ -330,12 +329,56 @@ export class VirtualFiles {
       if (!dir) {
         dir = { name: part, content: [], lastModified: Date.now() };
         currentDir.push(dir);
+      } else if (!Array.isArray(dir.content)) {
+        console.error(`Invalid structure for directory: ${part}`);
+        dir.content = [];
+      }
+      currentDir = dir.content;
+    }
+  }
+
+  mkdirOld(path) {
+    const parts = path.split("/");
+    let currentDir = this.data.mainDir;
+
+    for (let part of parts) {
+      if (!part) continue;
+      let dir = currentDir.find((item) => item.name === part);
+      if (!dir) {
+        dir = { name: part, content: [], lastModified: Date.now() };
+        currentDir.push(dir);
       }
       currentDir = dir.content;
     }
   }
 
   writeFile(path, content) {
+    const parts = path.split("/");
+    let currentDir = this.data.mainDir;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (!part) continue;
+      let dir = currentDir.find((item) => item.name === part);
+      if (!dir) {
+        console.warn(`Parent directory missing, creating: ${part}`);
+        this.mkdir(parts.slice(0, i + 1).join("/"));
+        dir = currentDir.find((item) => item.name === part);
+      }
+      currentDir = dir.content;
+    }
+
+    const fileName = parts[parts.length - 1];
+    const existingFile = currentDir.find((item) => item.name === fileName);
+    if (existingFile) {
+      existingFile.content = content;
+      existingFile.lastModified = Date.now();
+    } else {
+      currentDir.push({ name: fileName, content, lastModified: Date.now() });
+    }
+  }
+
+  writeFileOld(path, content) {
     const parts = path.split("/");
     let currentDir = this.data.mainDir;
 
