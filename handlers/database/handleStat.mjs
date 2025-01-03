@@ -18,7 +18,7 @@ export default class UserStatsManager {
       this.mongo = new LiaMongo({
         uri: this.#uri,
         //collection: "cassidyuserstats",
-        collection: "resetcassidyuserstats",
+        collection: "reduxcassstats",
       });
     }
   }
