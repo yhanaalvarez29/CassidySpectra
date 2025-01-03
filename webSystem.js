@@ -63,7 +63,7 @@ export class Listener {
   _call = this.#callListener;
 }
 import axios from "axios";
-export const pref = "web:";
+export const pref = "w@";
 export async function postEvent(event) {
   try {
     const response = await axios.post("http://localhost:8000/listenMsg", event);
@@ -75,9 +75,28 @@ export async function postEvent(event) {
 
 export function formatIP(ip) {
   try {
+    ip = ip.replaceAll("custom_", "");
+
+    const formattedIP = ip
+      .split("")
+      .map((char) => {
+        const ascii = char.charCodeAt(0);
+        return `${ascii % 10}${ascii % 5 === 0 ? "&" : "$"}`;
+      })
+      .join("");
+
+    return `${pref}${formattedIP}`;
+  } catch (error) {
+    console.error("Error in formatting IP:", error);
+    return ip;
+  }
+}
+
+export function formatIPLegacy(ip) {
+  try {
     const encodedIP = Buffer.from(ip)
       .toString("base64")
-      .replace(/[+/=]/g, (match) => ({ "+": "0", "/": "1", "=": "" })[match]);
+      .replace(/[+/=]/g, (match) => ({ "+": "0", "/": "1", "=": "" }[match]));
     return `${pref}${encodedIP}`;
   } catch (error) {
     return ip;
@@ -96,10 +115,10 @@ export function formatWssEvent(event) {
     ...event,
     body: String(event.body || ""),
     senderID: event.senderID
-      ? formatIP(`custom_${event.senderID}`)
+      ? formatIP(`${event.senderID}`)
       : event.password === WEB_PASSWORD
-        ? "wss:admin"
-        : "wss:main",
+      ? "wss:admin"
+      : "wss:main",
     threadID: "wss:main",
     type: event.type,
     timestamp: event.timestamp || Date.now().toString(),
@@ -138,14 +157,10 @@ export class Event {
     this.senderID = formatIP(this.senderID);
     this.threadID = formatIP(this.threadID);
     if (this.messageReply) {
-      this.messageReply.senderID = formatIP(
-        "custom_" + this.messageReply.senderID,
-      );
+      this.messageReply.senderID = formatIP(this.messageReply.senderID);
     }
     if (Array.isArray(this.participantIDs)) {
-      this.participantIDs = this.participantIDs.map((id) =>
-        formatIP("custom_" + id),
-      );
+      this.participantIDs = this.participantIDs.map((id) => formatIP(id));
     }
   }
 }
@@ -169,7 +184,7 @@ export function pageParse(filepath, ...replacer) {
       if (data?.startsWith("fs:")) {
         try {
           content = content.replace(regex, () =>
-            fs.readFileSync(data.slice(3), "utf-8"),
+            fs.readFileSync(data.slice(3), "utf-8")
           );
         } catch (error) {
           content = content.replace(regex, "Error loading file");
@@ -199,7 +214,7 @@ export async function aiPage(prompt) {
       data: { message },
     } = await axios.get(
       "https://lianeapi.onrender.com/ask/gpt?query=" +
-        encodeURIComponent(whatToDo),
+        encodeURIComponent(whatToDo)
     );
     fs.writeFileSync(`public/aiResults/ai${Date.now()}.html`, message);
     return message;
@@ -264,8 +279,8 @@ export class WssAPI {
       typeof args[0] === "string"
         ? args[0]
         : typeof args[1] === "string"
-          ? args[1]
-          : null;
+        ? args[1]
+        : null;
     if (typeof argg === "string") {
       messageReply = {
         messageID: argg,
@@ -280,8 +295,8 @@ export class WssAPI {
             typeof args[0] === "function"
               ? args[0]
               : typeof args[1] === "function"
-                ? args[1]
-                : () => {};
+              ? args[1]
+              : () => {};
           callback(null, data);
           resolve(data);
         },
@@ -294,7 +309,7 @@ export class WssAPI {
           messageReply,
         },
         null,
-        self,
+        self
       );
     });
   }
@@ -332,7 +347,7 @@ export function handleWebSocket(ws, funcListen) {
             socket.send(
               JSON.stringify({
                 type: "login_failure",
-              }),
+              })
             );
           } else {
             socket._xPassword = data.password;
@@ -365,7 +380,7 @@ export function handleEditMessage(socket, { body, messageID }) {
         type: "message_edit",
         body: String(body),
         messageID,
-      }),
+      })
     );
   }
 }
@@ -389,7 +404,7 @@ export function handleMessage(socket, data, listenCall, api) {
             }
           : {}),
         botSend: !!botSend,
-      }),
+      })
     );
   }
   if (botSend && api._queue.length > 0) {

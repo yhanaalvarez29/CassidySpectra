@@ -9,6 +9,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["customitem"],
+  shopPrice: 20000000,
 };
 
 export const style = {

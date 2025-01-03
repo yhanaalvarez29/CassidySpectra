@@ -29,6 +29,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 15,
   otherNames: ["cas", "cs"],
+  shopPrice: 10000000
 };
 
 const { randArrValue } = global.utils;

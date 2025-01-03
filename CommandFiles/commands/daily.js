@@ -65,7 +65,7 @@ export async function entry({
     1,
     Math.floor(elapsedTime / oneDayInMilliseconds),
   );
-  const dailyReward = 10000 * claimTimes;
+  const dailyReward = 100 * claimTimes;
   collectibles.raise("gems", claimTimes);
 
   if (canClaim) {

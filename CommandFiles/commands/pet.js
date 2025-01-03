@@ -9,7 +9,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 1,
-  shopPrice: 200,
+  shopPrice: 200000,
 };
 const { parseCurrency: pCy } = global.utils;
 

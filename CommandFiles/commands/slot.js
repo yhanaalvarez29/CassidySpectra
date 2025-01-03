@@ -10,6 +10,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 30,
+  shopPrice: 1000000,
 };
 const { randArrValue } = global.utils;
 
@@ -56,7 +57,7 @@ export async function entry({
     output.reply(
       `${icon}\n\nInvalid bet amount. Your current balance is ${playerMoney}$.
 
-**Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$`,
+**Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$`
     );
     cancelCooldown();
     return;
@@ -64,12 +65,12 @@ export async function entry({
   let hasPass = inventory.has(highRollPass.key);
   if (!hasPass && bet > 100000) {
     return output.reply(
-      `${icon}\n\nYou need a **HighRoll Pass** 🃏 to place bets over 100000$`,
+      `${icon}\n\nYou need a **HighRoll Pass** 🃏 to place bets over 100000$`
     );
   }
   if (bet > playerMoney * 0.75) {
     return output.reply(
-      `${icon}\n\nYou cannot bet more than 75% of your balance.`,
+      `${icon}\n\nYou cannot bet more than 75% of your balance.`
     );
   }
   let result;
@@ -123,7 +124,9 @@ ${top}
 ${bottom.replace(/x/, won).replace(/y/, lost)}
 
 **Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$
-**Win Streak:** ${winStreak}${winStreak > 7 ? "" : "/7"}${isWinPass ? "\n🃏 You won a **HighRoll** pass!" : ""}`);
+**Win Streak:** ${winStreak}${winStreak > 7 ? "" : "/7"}${
+    isWinPass ? "\n🃏 You won a **HighRoll** pass!" : ""
+  }`);
   await money.set(senderID, {
     money: playerMoney + won - lost,
     slotWins,

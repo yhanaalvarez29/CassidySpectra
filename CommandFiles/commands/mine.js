@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   otherNames: [],
-  shopPrice: 10000,
+  shopPrice: 1000000,
 };
 
 export const style = {

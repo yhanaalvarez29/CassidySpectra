@@ -8,6 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 15,
+  shopPrice: 5000000,
 };
 export const style = {
   title: "✨ Lotto",

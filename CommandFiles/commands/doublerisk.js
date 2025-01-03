@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["doubleorlose", "riskitall", "doubleornothing", "don"],
   waitingTime: 60,
-  shopPrice: 5,
+  shopPrice: 5000000,
 };
 
 export class style {
