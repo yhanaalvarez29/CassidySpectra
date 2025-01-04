@@ -8,6 +8,8 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 60,
+  requirement: "2.5.0",
+  icon: "",
 };
 const reward = 50;
 const X = "❌";

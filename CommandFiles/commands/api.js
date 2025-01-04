@@ -11,10 +11,12 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["devapi", "cassapi"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💻 | CassAPI",
+  title: "CassAPI 💻",
   titleFont: "bold",
   contentFont: "none",
 };

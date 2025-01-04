@@ -10,9 +10,11 @@ export const meta = {
   category: "tools",
   usage: "{p}calc 20*20",
   params: [true],
+  requirement: "2.5.0",
+  icon: "",
 };
 export const style = {
-  title: "💻 | Calculator",
+  title: "Calculator 💻",
   titleFont: "bold",
   contentFont: "none",
 }

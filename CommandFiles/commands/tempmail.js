@@ -8,6 +8,8 @@ export const meta = {
   version: "1.0.1",
   params: [["gen", "inbox"]],
   shopPrice: 100,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export async function entry({ api, event }) {

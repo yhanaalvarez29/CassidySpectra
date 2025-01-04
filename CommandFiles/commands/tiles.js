@@ -16,6 +16,8 @@ export const meta = {
   waitingTime: 1,
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 // Created by Liane Cagara, do not own.

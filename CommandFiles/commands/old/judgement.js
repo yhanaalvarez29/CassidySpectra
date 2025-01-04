@@ -7,6 +7,8 @@ export const meta = {
     "Provides judgement based on kills, spares, and execution points.",
   category: "Fun",
   usage: "{prefix}{name}",
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const dialogues = {

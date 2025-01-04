@@ -15,6 +15,8 @@ export const meta: { [key: string]: any } = {
   botAdmin: true,
   allowModerators: true,
   waitingTime: 1,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 interface Errors {
@@ -24,7 +26,7 @@ interface Errors {
 export class style {
   title = {
     text_font: "bold",
-    content: "💽 | System",
+    content: "System Control 💽",
     line_bottom: "default",
   };
   content = {

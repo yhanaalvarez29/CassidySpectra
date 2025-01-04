@@ -10,11 +10,14 @@ module.exports = {
     otherNames: ["toss", "tosscoin", "headtails", "ht", "flip"],
     waitingTime: 55,
     noPrefix: "both",
+    shopPrice: 2500,
+    requirement: "2.5.0",
+    icon: "",
   },
   style: class {
     title = {
       text_font: "double_struck",
-      content: "🪙 Flip Coin V4",
+      content: "Flip Coin V4 🪙",
       line_bottom: "default",
     };
     content = {
@@ -119,9 +122,13 @@ Luck: ${luckStat || "100"}🍀
       bet <= 0 ||
       cooldown ||
       bet < 10 ||
-      bet > 1000
+      bet > 1000000000
     ) {
-      let resultMsg = `${cooldown ? `Please wait for ${cooldown} seconds before playing again.` : `Please enter either head or tails and enter a valid positive bet amount that is higher than 10 but not higher than 1000!!`}`;
+      let resultMsg = `${
+        cooldown
+          ? `Please wait for ${cooldown} seconds before playing again.`
+          : `Please enter either head or tails and enter a valid positive bet amount that is higher than 10 but not higher than 1000000000!!`
+      }`;
       if (typeof cancelCooldown === "function") {
         cancelCooldown();
       }
@@ -168,13 +175,17 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
 
     if (bet > data.money || !data.money) {
       return output.reply(
-        `Looks like kulang yung pera mo, ${bet} yung nilagay mo tapos ${data.money} lang yung pera mo, niloloko mo ba ako? apaka echosera mo san ko kukunin yung ${bet - data.money} na ipang aabono ko dito, my god cassie`,
+        `Looks like kulang yung pera mo, ${bet} yung nilagay mo tapos ${
+          data.money
+        } lang yung pera mo, niloloko mo ba ako? apaka echosera mo san ko kukunin yung ${
+          bet - data.money
+        } na ipang aabono ko dito, my god cassie`
       );
     }
 
     if (false) {
       return output.reply(
-        `❌ | We are currently limiting the number of flips to avoid spamming, please try again later! Or try using slot command instead.`,
+        `❌ | We are currently limiting the number of flips to avoid spamming, please try again later! Or try using slot command instead.`
       );
     }
 
@@ -187,8 +198,8 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
         luckToss < luckStat
           ? side
           : Math.random() < 0.5
-            ? (result = side == "head" ? "tails" : "head")
-            : result;
+          ? (result = side == "head" ? "tails" : "head")
+          : result;
     }
 
     if (data.name?.includes("NicaBoT")) {
@@ -208,15 +219,19 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
       const winnings = bet * 1 + bonus;
       const updatedData = updateUserData(
         winnings,
-        wamMultiplier + bonus / wamMultiplier,
+        wamMultiplier + bonus / wamMultiplier
       );
       await botData.set(input.senderID, updatedData);
 
       luck.addLuckStat(input.senderID, "random", 10, luckStat / 100);
       output.reply(
-        `Congratulations! The result is ${result}, You won ${parseInt(winnings)} coins!!
-🏆 You are rank ${await getRank(input.senderID)} with ${updatedData[flipcoinID]} points! (+${parseInt(updatedData[flipcoinID] - data[flipcoinID])})
-Bad Luck: ${luckToss}/${luckStat}`,
+        `Congratulations! The result is ${result}, You won ${parseInt(
+          winnings
+        )} coins!!
+🏆 You are rank ${await getRank(input.senderID)} with ${
+          updatedData[flipcoinID]
+        } points! (+${parseInt(updatedData[flipcoinID] - data[flipcoinID])})
+Bad Luck: ${luckToss}/${luckStat}`
       );
     } else {
       const wamMultiplier = 14.5;
@@ -225,7 +240,7 @@ Bad Luck: ${luckToss}/${luckStat}`,
       const bonus = (data[flipcoinID] / wamMultiplier) * 10;
       const updatedData = updateUserData(
         -losses,
-        -((wamMultiplier + bonus / wamMultiplier) * 0.3),
+        -((wamMultiplier + bonus / wamMultiplier) * 0.3)
       );
       await botData.set(input.senderID, updatedData);
 
@@ -233,8 +248,10 @@ Bad Luck: ${luckToss}/${luckStat}`,
 
       output.reply(
         `The result is ${result}, You lost ${bet} coins.. better luck next time!
-🏆 You are rank ${await getRank(input.senderID)} with ${updatedData[flipcoinID]} points! (${parseInt(updatedData[flipcoinID] - data[flipcoinID])})
-Bad Luck: ${luckToss}/${luckStat}`,
+🏆 You are rank ${await getRank(input.senderID)} with ${
+          updatedData[flipcoinID]
+        } points! (${parseInt(updatedData[flipcoinID] - data[flipcoinID])})
+Bad Luck: ${luckToss}/${luckStat}`
       );
     }
   },

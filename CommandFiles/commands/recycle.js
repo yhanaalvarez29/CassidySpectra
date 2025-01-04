@@ -8,10 +8,12 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: [],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "♻️ Recycling",
+  title: "Recycling ♻️",
   contentFont: "fancy",
   titleFont: "bold",
 };

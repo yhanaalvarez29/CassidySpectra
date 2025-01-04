@@ -6,10 +6,12 @@ export const meta = {
   noPrefix: "both",
   permissions: [0, 1, 2],
   waitingTime: 3,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export class style {
-  title = "🤣 | Top Loosers";
+  title = "Top Loosers 🤣";
   titleFont = "bold";
   contentFont = "fancy";
 }

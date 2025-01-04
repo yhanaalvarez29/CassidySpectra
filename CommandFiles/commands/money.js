@@ -2,7 +2,7 @@ import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
 import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
-  name: "money",
+  name: "cash",
   description: "Check your virtual money",
   otherNames: [
     "bal",
@@ -12,6 +12,7 @@ export const meta = {
     "moneydashboard",
     "mdashboard",
     "mdash",
+    "money",
   ],
   version: "2.5.0",
   usage: "{prefix}{name}",
@@ -21,10 +22,12 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 0,
   requirement: "2.5.0",
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💵 | Money • Dashboard",
+  title: "Cash • Dashboard 💵",
   titleFont: "bold",
   contentFont: "fancy",
 };

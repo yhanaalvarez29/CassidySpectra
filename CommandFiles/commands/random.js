@@ -8,10 +8,12 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 1,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "⭐ Random Tools",
+  title: "Random Tools ⭐",
   titleFont: "bold",
   contentFont: "none",
   lineEnd: "",

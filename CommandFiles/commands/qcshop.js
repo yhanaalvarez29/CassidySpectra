@@ -8,6 +8,8 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["snowdinshop", "bunnyshop"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const qcShop = {

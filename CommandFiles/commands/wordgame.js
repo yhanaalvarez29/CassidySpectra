@@ -6,6 +6,8 @@ export const meta = {
   description: "Word guessing game!",
   category: "Fun",
   usage: "{prefix}{name}",
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const initialReward = 400;
@@ -15,7 +17,7 @@ const penaltyPerSecond = 5;
 import axios from "axios";
 
 export const style = {
-  title: "🧩 Word Game",
+  title: "Word Game 🧩",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -36,7 +38,7 @@ export async function reply({
   const elapsedSeconds = Math.floor((curr - receive.timestamp) / 1000);
   const currentReward = Math.max(
     initialReward - elapsedSeconds * penaltyPerSecond,
-    minReward,
+    minReward
   );
 
   if (input?.words[0]?.toLowerCase().trim() === receive.word) {
@@ -62,12 +64,14 @@ export async function reply({
     }
 
     return output.reply(
-      `✅ | Correct ${name?.split(" ")[0]}! You have been rewarded ${currentReward} coins!`,
+      `✅ | Correct ${
+        name?.split(" ")[0]
+      }! You have been rewarded ${currentReward} coins!`
     );
   } else {
     const userInfo = await moneyH.get(input.senderID);
     return output.reply(
-      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`,
+      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`
     );
   }
 }
@@ -125,7 +129,7 @@ Test your vocabulary skills with our engaging word game! Unscramble the shuffled
   let shuffledWord = lastWordGame?.word;
   if (!shuffledWord || input.property["refresh"]) {
     const { data: response } = await axios.get(
-      "https://liaspark.chatbotcommunity.ltd/api/random-word",
+      "https://liaspark.chatbotcommunity.ltd/api/random-word"
     );
 
     shuffledWord = shuffleWord(response.message);

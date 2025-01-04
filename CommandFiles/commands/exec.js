@@ -16,10 +16,12 @@ export const meta = {
   noPrefix: false,
   whiteList: null,
   ext_plugins: {},
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💻 Terminal",
+  title: "Terminal >_",
   titleFont: "bold",
   contentFont: "fancy",
 };

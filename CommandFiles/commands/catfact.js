@@ -7,10 +7,12 @@ export const meta = {
   version: "1.0.1",
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🐱 Cat Fact",
+  title: "Cat Fact 🐱",
   titleFont: "bold_italic",
   contentFont: "fancy",
 };

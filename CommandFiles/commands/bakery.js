@@ -8,6 +8,8 @@ export const meta = {
   category: "Bakery",
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const bakery = {

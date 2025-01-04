@@ -9,10 +9,12 @@ export const meta = {
   noPrefix: false,
   otherNames: ["plant", "halaman", "plantito"],
   shopPrice: 40,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🌱 Plantita Simulation",
+  title: "Plantita Simulation 🌱",
   contentFont: /* "elegant" */ "fancy",
   titleFont: "bold",
 };

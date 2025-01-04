@@ -9,10 +9,12 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: [],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "⚔️ Pet Duel",
+  title: "Pet Duel ⚔️",
   titleFont: "bold",
   contentFont: "fancy",
 };

@@ -9,10 +9,12 @@ export const meta = {
   permissions: [0],
   cooldown: 10,
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 const prize = 70;
 export const style = {
-  title: "📝 Number Guessing Game",
+  title: "Number Guessing Game 📝",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -33,7 +35,7 @@ export async function entry({ input, output, commandName }) {
   const i = await output.reply(
     `I've picked a number between ${MIN_RANGE} and ${MAX_RANGE}. You have ${MAX_ATTEMPTS} attempts to guess it.
 
-Reply with your answer.`,
+Reply with your answer.`
   );
   input.setReply(i.messageID, gameState);
 }
@@ -49,7 +51,7 @@ export async function reply({ input, output, repObj, detectID, money }) {
   input.delReply(detectID);
   if (gameState.attempts >= MAX_ATTEMPTS) {
     await output.reply(
-      `Sorry, you've used all ${MAX_ATTEMPTS} attempts. The correct number was ${gameState.secretNumber}.`,
+      `Sorry, you've used all ${MAX_ATTEMPTS} attempts. The correct number was ${gameState.secretNumber}.`
     );
     return;
   }
@@ -71,7 +73,7 @@ export async function reply({ input, output, repObj, detectID, money }) {
       `Congratulations! You guessed the number ${gameState.secretNumber} in ${gameState.attempts} attempts!
 
 You 𝘄𝗼𝗻!
-Earned 0 𝗘𝗫𝗣 and ${prize} 𝗚𝗢𝗟𝗗`,
+Earned 0 𝗘𝗫𝗣 and ${prize} 𝗚𝗢𝗟𝗗`
     );
     return;
   }

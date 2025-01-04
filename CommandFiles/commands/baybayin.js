@@ -12,10 +12,12 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 2,
   shopPrice: 100,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "✏️ Baybayin",
+  title: "Baybayin ✏️",
   titleFont: "bold",
   contentFont: "fancy",
 };

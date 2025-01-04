@@ -6,6 +6,8 @@ export const meta = {
   description: "Number guessing game!",
   category: "Fun",
   usage: "{prefix}{name}",
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const initialReward = 400;
@@ -15,7 +17,7 @@ const penaltyPerSecond = 5;
 import axios from "axios";
 
 export const style = {
-  title: "🔢 Number Game",
+  title: "Number Game 🔢",
   titleFont: "bold",
   contentFont: "fancy",
 };

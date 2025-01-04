@@ -14,10 +14,12 @@ export const meta = {
   noPrefix: false,
   whiteList: null,
   ext_plugins: {},
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🔧 NPM Command",
+  title: "NPM Command 🔧",
   titleFont: "bold",
   contentFont: "fancy",
 };

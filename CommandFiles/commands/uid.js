@@ -8,8 +8,10 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 10,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export async function entry({ input, output }) {
-  output.reply(`🎲 **Game ID**:\n\n${input.detectID ?? input.senderID}`);
+  output.reply(`${input.detectID ?? input.senderID}`);
 }

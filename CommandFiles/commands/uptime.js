@@ -9,11 +9,13 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 5,
+  requirement: "2.5.0",
+  icon: "",
 };
 import os from "os";
 
 export const style = {
-  title: "🌏 Uptime",
+  title: "Uptime 🌏",
   titleFont: "bold",
   contentFont: "fancy",
 };

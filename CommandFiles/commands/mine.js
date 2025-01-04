@@ -9,10 +9,12 @@ export const meta = {
   noPrefix: "both",
   otherNames: [],
   shopPrice: 1000000,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "⛏️ Mine",
+  title: "Mine ⛏️",
   contentFont: "fancy",
   titleFont: "bold",
 };

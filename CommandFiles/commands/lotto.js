@@ -3,15 +3,17 @@ export const meta = {
   description: "Test your luck with the lotto game!",
   version: "1.0.0",
   author: "Liane Cagara",
-  usage: "{prefix}lotto <number1> <number2> <number3> <number4>",
+  usage: "{prefix}lotto <...numbers>",
   category: "Fun",
   permissions: [0],
   noPrefix: false,
   waitingTime: 15,
   shopPrice: 5000000,
+  requirement: "2.5.0",
+  icon: "",
 };
 export const style = {
-  title: "✨ Lotto",
+  title: "Lotto 🎟️",
   contentFont: "fancy",
   titleFont: "bold",
 };
@@ -28,6 +30,8 @@ function hasDuplicate(args) {
 }
 
 export async function entry({ input, output, money, icon, cancelCooldown }) {
+  const lottoLen = 6;
+  const rangeB = 35;
   const {
     money: userMoney,
     lastLottoWin,
@@ -42,17 +46,21 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
     if (timeElapsed < 60) {
       cancelCooldown();
       return output.reply(
-        `⏳ You have already won the lottery in the last hour. Please wait for ${Math.ceil(60 - timeElapsed)} seconds before trying again.`,
+        `⏳ You have already won the lottery in the last hour. Please wait for ${Math.ceil(
+          60 - timeElapsed
+        )} seconds before trying again.`
       );
     }
   }
 
   const args = input.arguments
     .map(Number)
-    .filter((num) => !isNaN(num) && num > 0 && num < 76);
+    .filter((num) => !isNaN(num) && num > 0 && num < rangeB + 1);
 
-  if (args.length !== 4) {
-    output.reply(`Please provide exactly 4 valid numbers between 1 and 75.`);
+  if (args.length !== lottoLen) {
+    output.reply(
+      `Please provide exactly ${lottoLen} valid numbers between 1 and ${rangeB}.`
+    );
     cancelCooldown();
     return;
   }
@@ -66,8 +74,8 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
   }
 
   const lottoNumbers = Array.from(
-    { length: 4 },
-    () => Math.floor(Math.random() * 75) + 1,
+    { length: lottoLen },
+    () => Math.floor(Math.random() * rangeB) + 1
   );
   const matchedNumbers = args.filter((num) => lottoNumbers.includes(num));
   let winnings;
@@ -76,7 +84,8 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
   if (matchedNumbers.length === 0) {
     resultText = `🥲 Sorry, no matched numbers. Better luck next time! (You lost your ${fee}$ as fee)`;
   } else {
-    winnings = 12500 << matchedNumbers.length;
+    winnings = 12500 * 2 ** matchedNumbers.length;
+
     // each prize
     // = winnings >> matchedNumbers.length;
     resultText = `🎉 Congratulations! You won ${winnings}$.`;

@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { packageInstallerErr } from "../../handlers/loaders/util.js";
+import util from "util";
 
 export const meta = {
   name: "eval",
@@ -10,6 +11,8 @@ export const meta = {
   permissions: [2],
   botAdmin: true,
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export async function entry(context) {
@@ -56,8 +59,9 @@ export async function entry(context) {
       try {
         const code = args.original.join(" ");
         const func = new Function(
-          "out", ...Object.keys(context),
-          `return (async() => { ${code} })()`,
+          "out",
+          ...Object.keys(context),
+          `return (async() => { ${code} })()`
         );
         result = await func(out, ...Object.values(context));
         break;
@@ -70,7 +74,7 @@ Are you use you want to install this package? Please send a reaction to proceed.
             {
               authorOnly: true,
               edit: "✅ Installing....",
-            },
+            }
           );
           await packageInstallerErr(error);
           continue;
@@ -97,8 +101,8 @@ Are you use you want to install this package? Please send a reaction to proceed.
         const className = value?.constructor?.name || "(Primitive)";
         return `${key} => [${type} ${className}]\nJSON Value: ${JSONValue === "{}" ? "Non Serializable" : JSONValue}\n`;
       });*/
-      const resultInfo = global.utils.representObject(result);
-      await output.reply(`Result Info:\n${resultInfo}`);
+      const resultInfo = util.inspect(result);
+      await output.reply(`Console:\n${resultInfo}`);
     }
   } catch (error) {
     //await output.reply(`Error: ${error.message}`);

@@ -9,10 +9,12 @@ export const meta = {
   noPrefix: "both",
   otherNames: [],
   shopPrice: 100,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🌾 Harvest",
+  title: "Harvest 🌾",
   contentFont: "fancy",
   titleFont: "bold",
 };
@@ -106,7 +108,7 @@ export async function entry({
   const gift = generateGift();
   if (!name) {
     return output.reply(
-      "❌ Please register first using the identity-setname command.",
+      "❌ Please register first using the identity-setname command."
     );
   }
 
@@ -118,7 +120,9 @@ export async function entry({
       return totalB - totalA;
     });
     for (const crop of sortedCrops) {
-      result += `✓ ${crop.icon} **${crop.name}**: ${totalCrops[crop.name] || 0}\n`;
+      result += `✓ ${crop.icon} **${crop.name}**: ${
+        totalCrops[crop.name] || 0
+      }\n`;
     }
     let totalHarvest = 0;
     for (const key in totalCrops) {
@@ -145,7 +149,7 @@ export async function entry({
       const yieldArray = Array(yieldAmount).fill();
       yieldAmount = yieldArray.reduce(
         (acc) => acc + (Math.random() < crop.chance ? 1 : 0),
-        0,
+        0
       );
       if (totalYield + yieldAmount > plantMax) {
         failYield += totalYield + yieldAmount - plantMax;
@@ -156,7 +160,7 @@ export async function entry({
         return null;
       }
       let price = Math.floor(
-        Math.random() * (crop.priceB - crop.priceA + 1) + crop.priceA,
+        Math.random() * (crop.priceB - crop.priceA + 1) + crop.priceA
       );
       price = CassExpress.farmUP(price, totalCrops);
 
@@ -177,7 +181,7 @@ export async function entry({
 
     const totalEarnings = harvestedCrops.reduce(
       (sum, crop) => sum + crop.total,
-      0,
+      0
     );
     newMoney += totalEarnings;
 
@@ -204,7 +208,9 @@ export async function entry({
       text += `\n🎁 You received a **gift** from your harvest!\n`;
       userInventory.addOne(gift);
     }
-    text += `\n✨ **Total earnings**: ${totalEarnings}$\n💰 **Your Balance**: ${newMoney}$\n\n🌱 Replanting seeds now, come back in ${Math.floor((currentTimestamp - plantStamp) / 1000 / 60)} minutes if you want to harvest the same amount of crops.\n\nYou can also type **${prefix}harvest total**.`;
+    text += `\n✨ **Total earnings**: ${totalEarnings}$\n💰 **Your Balance**: ${newMoney}$\n\n🌱 Replanting seeds now, come back in ${Math.floor(
+      (currentTimestamp - plantStamp) / 1000 / 60
+    )} minutes if you want to harvest the same amount of crops.\n\nYou can also type **${prefix}harvest total**.`;
   }
 
   await money.set(input.senderID, {

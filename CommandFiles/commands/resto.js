@@ -9,6 +9,8 @@ export const meta = {
   noPrefix: false,
   otherNames: [],
   shopPrice: 40,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 /*export const style = {

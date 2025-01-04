@@ -9,6 +9,8 @@ export const meta = {
   category: "Fun",
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export async function entry({ output }) {

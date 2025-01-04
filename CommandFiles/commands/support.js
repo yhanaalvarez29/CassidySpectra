@@ -11,23 +11,25 @@ export const meta = {
   noPrefix: "both",
   whiteList: null,
   noWeb: true,
-  ext_plugins: {
-    
-  }
+  ext_plugins: {},
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💗 Support GC",
+  title: "Support GC 💗",
   titleFont: "bold",
-  contentFont: "fancy"
-}
+  contentFont: "fancy",
+};
 
-import fs from 'fs';
+import fs from "fs";
 export async function entry({ output, input, api }) {
   const tid = `7200585553382526`;
   api.addUserToGroup(input.senderID, tid, (err) => {
     if (err) {
-      output.reply(`❌ Failed to add you to the support group. Possibly you are already in the support group or you cannot be messaged by strangers.`);
+      output.reply(
+        `❌ Failed to add you to the support group. Possibly you are already in the support group or you cannot be messaged by strangers.`
+      );
     } else {
       output.reply(`✅ Successfully added you to the support group!`);
     }

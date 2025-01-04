@@ -6,13 +6,15 @@ export const meta = {
   description: "Quiz game!",
   category: "Fun",
   usage: "{prefix}{name}",
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const reward = 200;
 import axios from "axios";
 
 export const style = {
-  title: "🎉 Quiz",
+  title: "Quiz 🎉",
   titleFont: "bold",
   contentFont: "fancy",
 };

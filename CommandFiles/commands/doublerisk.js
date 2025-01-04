@@ -9,13 +9,15 @@ export const meta = {
   noPrefix: false,
   otherNames: ["doubleorlose", "riskitall", "doubleornothing", "don"],
   waitingTime: 60,
-  shopPrice: 5000000,
+  shopPrice: 50000,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export class style {
   title = {
     text_font: "double_struck",
-    content: "💥 Double Risk",
+    content: "Double Risk 💥",
     line_bottom_inside_text_elegant: "Results",
   };
   content = {
@@ -45,7 +47,7 @@ export async function entry({ input, output, money, icon, styler, Inventory }) {
   }
   if (!hasPass && betAmount > 100000) {
     return output.reply(
-      `You need a **HighRoll Pass** 🃏 to place bets over 100000$`,
+      `You need a **HighRoll Pass** 🃏 to place bets over 100000$`
     );
   }
 
@@ -76,5 +78,9 @@ export async function entry({ input, output, money, icon, styler, Inventory }) {
   output.reply(`**Double Risk**:
 You bet: ${betAmount}$
 Outcome: ${outcome === "win" ? "Win" : "Lose"}
-\n${resultText}\n\n**Total Wins**: ${drWin - drLost}${i < 0 ? `\n[font=typewriter]Are you playing this because you lost in slot?[:font=typewriter]` : ``}`);
+\n${resultText}\n\n**Total Wins**: ${drWin - drLost}${
+    i < 0
+      ? `\n[font=typewriter]Are you playing this because you lost in slot?[:font=typewriter]`
+      : ``
+  }`);
 }

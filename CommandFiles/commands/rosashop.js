@@ -9,6 +9,8 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["cuteshop", "adorablestore"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const rosaShop = {

@@ -14,10 +14,12 @@ export const meta = {
   waitingTime: 1,
   // otherNames: ["box", "bx"],
   shopPrice: 10000,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🗃️ | Vault",
+  title: "Vault 🗃️",
   titleFont: "bold",
   contentFont: "fancy",
 };

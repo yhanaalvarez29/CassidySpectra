@@ -65,19 +65,13 @@ export default class UserStatsManager {
 
   async connect() {
     if (this.isMongo) {
-      try {
-        if (!this.#uri) {
-          throw new Error(
-            "Missing MongoDB URI while the status is true, please check your settings.json"
-          );
-        }
-        await this.mongo.start();
-        await this.mongo.put("test", this.defaults);
-      } catch (error) {
-        console.error("MONGODB Error, Activating OFFLINE JSON!", error);
-        this.isMongo = false;
-        this.set("test", this.defaults);
+      if (!this.#uri) {
+        throw new Error(
+          "Missing MongoDB URI while the status is true, please check your settings.json"
+        );
       }
+      await this.mongo.start();
+      await this.mongo.put("test", this.defaults);
     }
   }
 
@@ -199,9 +193,6 @@ export default class UserStatsManager {
     }
   }
   async toLeanObject() {
-    if (!this.mongo) {
-      return this.getAll();
-    }
     try {
       const results = await this.mongo.KeyValue.find({}, "key value").lean();
 

@@ -9,10 +9,12 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["inv", "items"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🎒 Inventory",
+  title: "Inventory 🎒",
   titleFont: "bold",
   contentFont: "fancy",
 };

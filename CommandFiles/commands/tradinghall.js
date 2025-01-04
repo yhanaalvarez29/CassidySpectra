@@ -9,11 +9,13 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["tradehall", "trade"],
+  requirement: "2.5.0",
+  icon: "",
 };
 const { parseCurrency: pCy } = global.utils;
 
 export const style = {
-  title: "🛒 Trading Hall",
+  title: "Trading Hall 🛒",
   titleFont: "bold",
   contentFont: "fancy",
 };

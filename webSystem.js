@@ -81,7 +81,7 @@ export function formatIP(ip) {
       .split("")
       .map((char) => {
         const ascii = char.charCodeAt(0);
-        return `${ascii % 10}${ascii % 5 === 0 ? "&" : "$"}`;
+        return `${ascii % 10}${ascii % 5 === 0 ? ":" : "-"}`;
       })
       .join("");
 

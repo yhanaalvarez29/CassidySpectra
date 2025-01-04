@@ -7,10 +7,12 @@ export const meta = {
   category: "Simulation",
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🏗️ Little John",
+  title: "Little John 🏗️",
   contentFont: /* "elegant" */ "fancy",
   titleFont: "bold",
 };

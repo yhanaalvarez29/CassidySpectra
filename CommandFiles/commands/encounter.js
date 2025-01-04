@@ -1,3 +1,5 @@
+import { UNIRedux } from "../modules/unisym.js";
+
 export const meta = {
   name: "encounter",
   description: "Pets Encounter",
@@ -10,6 +12,8 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 1,
   // botAdmin: true,
+  requirement: "2.5.0",
+  icon: "",
 };
 const meow = {
   wildName: "Meow",
@@ -226,7 +230,9 @@ const encounters = {
     flavor: {
       check:
         "Stardust 𝕏 is a mystical dragon with a deceptive aura. Are you sure you're seeing its real stats?",
-      encounter: ["Stardust 𝕏 descends from the cosmos with a shadowy presence!"],
+      encounter: [
+        "Stardust 𝕏 descends from the cosmos with a shadowy presence!",
+      ],
       neutral: [
         "Stardust 𝕏 seems to be plotting something quietly.",
         "𝕏 marks the spot where destruction begins.",
@@ -241,7 +247,9 @@ const encounters = {
         "The dragon's celestial glow is dimming.",
         "This creature was never meant to be defeated easily.",
       ],
-      run: ["Stardust 𝕏 vanishes into thin air, leaving only a trail of stardust."],
+      run: [
+        "Stardust 𝕏 vanishes into thin air, leaving only a trail of stardust.",
+      ],
       satisfied: [
         "Stardust 𝕏 seems to acknowledge your strength and retreats into the cosmos peacefully.",
       ],
@@ -295,7 +303,9 @@ const encounters = {
       StardustOffer: {
         flavor: `You told your dragon {name} to offer Stardust 𝕏 some cosmic energy.`,
         pet: ["dragon"],
-        petLine: ["Here, take some of my energy. It will help you shine even brighter."],
+        petLine: [
+          "Here, take some of my energy. It will help you shine even brighter.",
+        ],
         mercyPts: 50,
         response: [
           "Cosmic energy, huh? Intriguing...",
@@ -308,7 +318,11 @@ const encounters = {
         pet: ["phoenix"],
         petLine: ["Let my song ease your restless soul."],
         mercyPts: 40,
-        response: ["That melody... it's calming.", "A lullaby for the end of days?", "Hmm..."],
+        response: [
+          "That melody... it's calming.",
+          "A lullaby for the end of days?",
+          "Hmm...",
+        ],
       },
     },
     attacks: {
@@ -551,7 +565,8 @@ export async function entry({
     };
   }
   const encounter =
-    encounters[args[0]] ?? Object.values(encounters)[
+    encounters[args[0]] ??
+    Object.values(encounters)[
       Math.floor(Math.random() * Object.values(encounters).length)
     ];
   const i = await output.reply(`🔎 **Random Encounter**:
@@ -579,7 +594,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     }
     const { input, output, repObj, money, detectID } = ctx;
     /*output.prepend = `⚠️ **Warn:** This is for testing only, this game might behave weird!\n\n`;*/
-    output.prepend = `***🔱 Pet Encounter***\n`;
+    output.prepend = `***Pet Encounter 🔱***\n${UNIRedux.standardLine}\n`;
     function handleEnd(id, { ...extra } = {}) {
       input.delReply(detectID);
       input.setReply(id, {
@@ -607,20 +622,22 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     const { type, author } = repObj;
     if (author !== input.senderID) {
       return output.reply(
-        `❌|  You are **not** the one who started this **game**.`,
+        `❌|  You are **not** the one who started this **game**.`
       );
     }
     let pets = [];
     if (type === "start") {
       if (petsData.getAll().length < 3) {
         return output.reply(
-          `❌ | Oops, you need at least 3 pets to start the game. Try **uncaging** ${3 - petsData.getAll().length} more pet(s).`,
+          `❌ | Oops, you need at least 3 pets to start the game. Try **uncaging** ${
+            3 - petsData.getAll().length
+          } more pet(s).`
         );
       }
       const petsName = input.splitBody("|");
       if (petsName.length < 3) {
         return output.reply(
-          `❌ | Please go back and specify **exactly 3** pet **names** split by |`,
+          `❌ | Please go back and specify **exactly 3** pet **names** split by |`
         );
       }
       if (petsName.length > 3) {
@@ -632,11 +649,11 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
           .find(
             (i) =>
               String(i?.name).toLowerCase().trim() ===
-              String(petName).toLowerCase().trim(),
+              String(petName).toLowerCase().trim()
           );
         if (!original) {
           return output.reply(
-            `❌ | Pet "${petName}" doesn't exists in your pet list.`,
+            `❌ | Pet "${petName}" doesn't exists in your pet list.`
           );
         }
         const pet = playersMap.get(original.key);
@@ -647,7 +664,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       pets = repObj.pets;
     } else {
       return output.error(
-        new Error("Pets data are missing while the state is not 'start'"),
+        new Error("Pets data are missing while the state is not 'start'")
       );
     }
     const opponent =
@@ -668,7 +685,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
             encounter.goldSpared +
             Math.floor(pets.reduce((acc, pet) => acc + pet.ATK * 50, 0)),
         },
-        [...pets],
+        [...pets]
       );
     repObj.index ??= 0;
     if (pets[repObj.index]?.isDown()) {
@@ -711,7 +728,11 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       for (let i = 0; i < pets.length; i++) {
         const pet = pets[i];
         const schema = i === 0 ? leaderSchema : petSchema;
-        result += `${pet.getPlayerUI({ selectionOptions: schema, turn: repObj.index === i, icon: getCacheIcon(repObj.turnCache[i]) })}\n\n`;
+        result += `${pet.getPlayerUI({
+          selectionOptions: schema,
+          turn: repObj.index === i,
+          icon: getCacheIcon(repObj.turnCache[i]),
+        })}\n\n`;
       }
       result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options.`;
       return result;
@@ -720,7 +741,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       input.delReply(detectID);
       let dialogue;
       let multiplier = 1;
-      const alivePets = pets.filter(i => !i.isDown());
+      const alivePets = pets.filter((i) => !i.isDown());
       multiplier = alivePets.length / 3;
       let mercyMode = opponent.HP >= opponent.maxHP && isGood;
       let pts = Math.round((opponent.goldFled / 15) * multiplier);
@@ -728,14 +749,18 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
         pts = Math.round(pts * 1.7);
       }
       if (isGood) {
-        dialogue = `${opponent.wildIcon} **${opponent.wildName}** has been${mercyMode ? " kindly" : ""} spared by your party.`;
+        dialogue = `${opponent.wildIcon} **${opponent.wildName}** has been${
+          mercyMode ? " kindly" : ""
+        } spared by your party.`;
       } else {
         dialogue =
           opponent.flavor.run?.[0] ??
           `${opponent.wildIcon} **${opponent.wildName}** ran away.`;
       }
-      
-      let newMoney = Number(Math.round(opponent.goldFled ?? 0) * multiplier) + (userData.money ?? 0);
+
+      let newMoney =
+        Number(Math.round(opponent.goldFled ?? 0) * multiplier) +
+        (userData.money ?? 0);
       const collectibles = new ctx.Collectibles(userData.collectibles ?? []);
       if (collectibles.has("gems")) {
         collectibles.raise("gems", opponent.winDias ?? 0);
@@ -748,7 +773,13 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       await output.reply(
         (flavor ?? "").trim() +
           `\n\n` +
-          `* ${dialogue}\n\n${isGood ? opponent.spareText() : opponent.fledText()}\nObtained **${pts} 💷 Battle Points!**\n${opponent.winDias && collectibles.has("gems") ? `You also won **${opponent.winDias}** 💎!` : ""}`,
+          `* ${dialogue}\n\n${
+            isGood ? opponent.spareText() : opponent.fledText()
+          }\nObtained **${pts} 💷 Battle Points!**\n${
+            opponent.winDias && collectibles.has("gems")
+              ? `You also won **${opponent.winDias}** 💎!`
+              : ""
+          }`
       );
     }
     async function enemyAttack({ flavorText, damage = null, newResponse }) {
@@ -757,16 +788,28 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       }
       let i = {};
       const { text, answer, attackName } = opponent.getAttackMenu();
-      if ((opponent.HP < (opponent.maxHP * 0.5) && Math.random() < 0.3) || Math.random() < 0.1) {
-        let healing = Math.min(pets.reduce((acc, pet) => pet.calculateAttack(opponent.DF - 2), 0), opponent.maxHP - opponent.HP);
+      if (
+        (opponent.HP < opponent.maxHP * 0.5 && Math.random() < 0.3) ||
+        Math.random() < 0.1
+      ) {
+        let healing = Math.min(
+          pets.reduce((acc, pet) => pet.calculateAttack(opponent.DF - 2), 0),
+          opponent.maxHP - opponent.HP
+        );
         healing = Math.round(healing * 2.5);
         opponent.HP += Math.min(opponent.maxHP, healing);
         repObj.attack = {
           text: ``,
           healing,
           turnType: "heal",
-        }
-        i = await output.reply(`${flavorText}\n* ${opponent.wildIcon} **${opponent.wildName}** cast ✨ **Lifeup** α! Recovered **${healing}** HP!\n\n${opponent.getPlayerUI({ upperPop: `+${healing}HP` })}\n\n***Reply anything to proceed.***`);
+        };
+        i = await output.reply(
+          `${flavorText}\n* ${opponent.wildIcon} **${
+            opponent.wildName
+          }** cast ✨ **Lifeup** α! Recovered **${healing}** HP!\n\n${opponent.getPlayerUI(
+            { upperPop: `+${healing}HP` }
+          )}\n\n***Reply anything to proceed.***`
+        );
       } else {
         repObj.attack = {
           text,
@@ -775,7 +818,13 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
           turnType: "attack",
         };
         i = await output.reply(
-          `${flavorText}\n${opponent.getPlayerUI({ upperPop: damage ? `-${Math.round((damage / opponent.maxHP) * 100)}% HP` : null })}\n\n${opponent.wildIcon} **${opponent.wildName}**: \n${newResponse ?? opponent.getNeutralDialogue()}\n\n${text}\n\n***Reply with the option. (word only)***`,
+          `${flavorText}\n${opponent.getPlayerUI({
+            upperPop: damage
+              ? `-${Math.round((damage / opponent.maxHP) * 100)}% HP`
+              : null,
+          })}\n\n${opponent.wildIcon} **${opponent.wildName}**: \n${
+            newResponse ?? opponent.getNeutralDialogue()
+          }\n\n${text}\n\n***Reply with the option. (word only)***`
         );
       }
       repObj.index = 0;
@@ -819,10 +868,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       isDefeat = true;
       input.delReply(detectID);
       return output.reply(
-        `❌ **Game Over**\n\n* All your pet members have been fainted. But that's not the end! Stay determined. You can always **try** again.`,
+        `❌ **Game Over**\n\n* All your pet members have been fainted. But that's not the end! Stay determined. You can always **try** again.`
       );
     }
-    if (pets.every(i => i.isDown())) {
+    if (pets.every((i) => i.isDown())) {
       return handleDefeat();
     }
 
@@ -853,15 +902,20 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
             }
             for (const randomMember of members) {
               const damage = Math.round(
-                randomMember.calculateTakenDamage(opponent.ATK) /
-                  members.length,
+                randomMember.calculateTakenDamage(opponent.ATK) / members.length
               );
-              
+
               randomMember.HP -= Math.max(damage, 1);
               if (randomMember.HP < 1) {
                 randomMember.HP = Math.round(randomMember.maxHP * 0.5) * -1;
               }
-              extraText += `* ${randomMember.petIcon} **${randomMember.petName}** ${randomMember.isDown() ? `is down.` : `has taken **${damage}** damage.`}\n`;
+              extraText += `* ${randomMember.petIcon} **${
+                randomMember.petName
+              }** ${
+                randomMember.isDown()
+                  ? `is down.`
+                  : `has taken **${damage}** damage.`
+              }\n`;
             }
             if (pets[0].isDown() && pets[1].isDown() && pets[2].isDown()) {
               return handleDefeat();
@@ -870,7 +924,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
             idk: {
               const availablePets = pets.filter((i) => !i.isDown());
               const lowestPet = availablePets.toSorted(
-                (a, b) => a.HP - b.HP,
+                (a, b) => a.HP - b.HP
               )[0];
               let randomMember =
                 availablePets[Math.floor(Math.random() * availablePets.length)];
@@ -898,7 +952,13 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
                 return handleDefeat();
               }
 
-              extraText += `* ${randomMember.petIcon} **${randomMember.petName}** ${randomMember.isDown() ? `is down.` : `has taken **${damage}** damage.`}\n`;
+              extraText += `* ${randomMember.petIcon} **${
+                randomMember.petName
+              }** ${
+                randomMember.isDown()
+                  ? `is down.`
+                  : `has taken **${damage}** damage.`
+              }\n`;
             }
           }
           extraText += `\n`;
@@ -926,7 +986,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
         extraText +
           listPetsNormal({
             encounter: type === "start",
-          }),
+          })
       );
 
       handleEnd(i.messageID, {
@@ -935,7 +995,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
         index: repObj.index + 1,
       });
     } else {
-      const turns = repObj.turnCache.map(i => String(i).toLowerCase());
+      const turns = repObj.turnCache.map((i) => String(i).toLowerCase());
       repObj.prevTurns ??= [];
       const prev = repObj.prevTurns;
       let flavorText = ``;
@@ -958,43 +1018,49 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
             if (input.isAdmin) {
               const allAtk = pets.reduce(
                 (acc, pet) => acc + pet.calculateAttack(opponent.DF),
-                0,
+                0
               );
               damage += opponent.maxHP - allAtk;
             }
             break;
           }
-          case "hexsmash": {
-            flavorText += `* ${pet.petIcon} **${pet.petName}** used 💥 **HexMash**!\n`;
-            if ((prev[i] === "hexsmash" && dodgeChance < 0.7) || Math.random() < 0.1) {
-              flavorText += `* ${opponent.wildIcon} **${opponent.wildName}** successfully dodges!\n`;
-            } else {
-              const meanStat = (pet.ATK + pet.MAGIC) / 2;
-              const init = pet.calculateAttack(opponent.DF, meanStat);
-              const damageEach = Math.round(init * 1.5);
-              opponent.HP -= damageEach;
-              flavorText += `* Inflicted **${damageEach}** magical damage.\n${opponent.getPlayerUI()}\n`;
-              damage += damageEach;
-              opponent.HP += damageEach;
+          case "hexsmash":
+            {
+              flavorText += `* ${pet.petIcon} **${pet.petName}** used 💥 **HexMash**!\n`;
+              if (
+                (prev[i] === "hexsmash" && dodgeChance < 0.7) ||
+                Math.random() < 0.1
+              ) {
+                flavorText += `* ${opponent.wildIcon} **${opponent.wildName}** successfully dodges!\n`;
+              } else {
+                const meanStat = (pet.ATK + pet.MAGIC) / 2;
+                const init = pet.calculateAttack(opponent.DF, meanStat);
+                const damageEach = Math.round(init * 1.5);
+                opponent.HP -= damageEach;
+                flavorText += `* Inflicted **${damageEach}** magical damage.\n${opponent.getPlayerUI()}\n`;
+                damage += damageEach;
+                opponent.HP += damageEach;
+              }
+              flavorText += `\n`;
             }
-            flavorText += `\n`;
-            
-          }
-          break;
-          case "bash": {
-            flavorText += `* ${pet.petIcon} **${pet.petName}** attacks!\n`;
-            if ((prev[i] === "bash" && dodgeChance < 0.7) || Math.random() < 0.1) {
-              flavorText += `* ${opponent.wildIcon} **${opponent.wildName}** successfully dodges!\n`;
-            } else {
-              const damageEach = pet.calculateAttack(opponent.DF);
-              opponent.HP -= damageEach;
-              flavorText += `* Inflicted **${damageEach}** damage.\n${opponent.getPlayerUI()}\n`;
-              damage += damageEach;
-              opponent.HP += damageEach;
+            break;
+          case "bash":
+            {
+              flavorText += `* ${pet.petIcon} **${pet.petName}** attacks!\n`;
+              if (
+                (prev[i] === "bash" && dodgeChance < 0.7) ||
+                Math.random() < 0.1
+              ) {
+                flavorText += `* ${opponent.wildIcon} **${opponent.wildName}** successfully dodges!\n`;
+              } else {
+                const damageEach = pet.calculateAttack(opponent.DF);
+                opponent.HP -= damageEach;
+                flavorText += `* Inflicted **${damageEach}** damage.\n${opponent.getPlayerUI()}\n`;
+                damage += damageEach;
+                opponent.HP += damageEach;
+              }
+              flavorText += `\n`;
             }
-            flavorText += `\n`;
-            
-          }
             break;
           case "defend":
             {
@@ -1010,7 +1076,13 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
               const calc =
                 (pet.calculateAttack(opponent.DF) / opponent.maxHP) * 100 * 0.2;
               opponent.addMercyInternal(calc * 25);
-              flavorText += `* ${pet.petIcon} **${pet.petName}** spared ${opponent.wildIcon} **${opponent.wildName}**, but the name isn't **YELLOW**! gained ${Math.round(calc)}% Mercy Points.\n`;
+              flavorText += `* ${pet.petIcon} **${pet.petName}** spared ${
+                opponent.wildIcon
+              } **${
+                opponent.wildName
+              }**, but the name isn't **YELLOW**! gained ${Math.round(
+                calc
+              )}% Mercy Points.\n`;
             }
 
             break;
@@ -1024,13 +1096,17 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
               const calc =
                 (pet.calculateAttack(opponent.DF) / opponent.maxHP) * 100 * 0.4;
               opponent.addMercyInternal(calc * 25);
-              flavorText += `* ${pet.petIcon} **${pet.petName}** used 🔊 **Pet Action**\n* Gained ${Math.floor(calc)}% Mercy Points.\n`;
+              flavorText += `* ${pet.petIcon} **${
+                pet.petName
+              }** used 🔊 **Pet Action**\n* Gained ${Math.floor(
+                calc
+              )}% Mercy Points.\n`;
             } else {
               const calc =
                 (pet.calculateAttack(opponent.DF) / opponent.maxHP) * 100 * 0.6;
               opponent.addMercyInternal(calc * 25);
               const randomActs = Object.keys(opponent.acts).filter((i) =>
-                opponent.isActAvailable(i),
+                opponent.isActAvailable(i)
               );
               const randomAct =
                 randomActs[Math.floor(Math.random() * randomActs.length)];
@@ -1042,7 +1118,11 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
                 petLine = "...",
               } = actData ?? {};
               opponent.MERCY += mercyPts;
-              flavorText += `* 🔊 **${randomAct}**\n* ${flavor}\n\n${pet.petIcon} **${pet.petName}**: ${petLine}\n\n* Gained ${mercyPts + Math.floor(calc)}% Mercy Points.\n`;
+              flavorText += `* 🔊 **${randomAct}**\n* ${flavor}\n\n${
+                pet.petIcon
+              } **${pet.petName}**: ${petLine}\n\n* Gained ${
+                mercyPts + Math.floor(calc)
+              }% Mercy Points.\n`;
               newResponse = response;
             }
           }
@@ -1051,26 +1131,46 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
             {
             }
             break;
-          case "lifeup": {
-            const magic = pet.MAGIC;
-            const lowests = pets.toSorted(
-              (a, b) => a.HP / a.maxHP - b.HP / b.maxHP,
-            );
-            const firstLowest = lowests[0];
-            const target =
-              Math.random() < 0.3 && pet.HP < pet.maxHP ? pet : firstLowest;
-            const healing = Math.max(
-              Math.round((target.maxHP / 9) * (magic * 0.09)),
-              Math.round(target.maxHP / 9),
-            );
-            const prevDown = target.isDown();
-            const finalHealing = Math.min(healing, target.maxHP - target.HP);
-            target.HP += finalHealing;
-            if (prevDown && target.HP > 0 && target.HP < target.maxHP * 0.17) {
-              target.HP = Math.round(target.maxHP * 0.17);
+          case "lifeup":
+            {
+              const magic = pet.MAGIC;
+              const lowests = pets.toSorted(
+                (a, b) => a.HP / a.maxHP - b.HP / b.maxHP
+              );
+              const firstLowest = lowests[0];
+              const target =
+                Math.random() < 0.3 && pet.HP < pet.maxHP ? pet : firstLowest;
+              const healing = Math.max(
+                Math.round((target.maxHP / 9) * (magic * 0.09)),
+                Math.round(target.maxHP / 9)
+              );
+              const prevDown = target.isDown();
+              const finalHealing = Math.min(healing, target.maxHP - target.HP);
+              target.HP += finalHealing;
+              if (
+                prevDown &&
+                target.HP > 0 &&
+                target.HP < target.maxHP * 0.17
+              ) {
+                target.HP = Math.round(target.maxHP * 0.17);
+              }
+              flavorText += `* ${pet.petIcon} **${
+                pet.petName
+              }** cast ✨ **Lifeup** to ${
+                target === pet ? `itself!` : `**${target.petName}**!`
+              } ${
+                target.HP >= target.maxHP
+                  ? `HP has been maxed out.`
+                  : `Recovered **${finalHealing}** HP.`
+              }\n${target.getPlayerUI({
+                upperPop:
+                  prevDown && !target.isDown()
+                    ? `UP`
+                    : target.HP >= target.maxHP
+                    ? `MAX`
+                    : `+${finalHealing} HP`,
+              })}\n\n`;
             }
-            flavorText += `* ${pet.petIcon} **${pet.petName}** cast ✨ **Lifeup** to ${target === pet ? `itself!` : `**${target.petName}**!`} ${target.HP >= target.maxHP ? `HP has been maxed out.` : `Recovered **${finalHealing}** HP.`}\n${target.getPlayerUI({ upperPop: prevDown && !target.isDown() ? `UP` : (target.HP >= target.maxHP ? `MAX` : `+${finalHealing} HP`) })}\n\n`;
-          }
             break;
           default: {
             flavorText += `* ${pet.petIcon} **${pet.petName}** did not learn **${turn}**.\n`;

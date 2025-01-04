@@ -9,6 +9,8 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["temshop", "temstore", "temmie"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export async function entry({ UTShop, money, input }) {

@@ -14,6 +14,8 @@ export const meta = {
   requirement: "2.5.0",
   otherNames: ["ccli", "cbox", "cassbox"],
   waitingTime: 0.01,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 import util from "util";
@@ -21,7 +23,7 @@ import { VirtualFiles } from "../plugins/neax-ui.js";
 const { TextEncoder } = util;
 
 export const style = {
-  title: "💻 CassCLI",
+  title: ">_ CassCLI",
   titleFont: "bold",
   contentFont: "none",
 };
@@ -55,13 +57,14 @@ export async function entry({ input, output, money }) {
 
       const key = args[2] === "all" || !args[1] ? "all" : args[2];
 
-      if (key !== "all" && !data[key]) {
-        return `error: invalid key '${key}'. Available keys: ${Object.keys(
-          data
-        ).join(", ")}`;
-      }
+      const keys = args.slice(2);
 
-      const target = key === "all" ? data : data[key];
+      let target = data;
+      if (key !== "all") {
+        for (const aKey of keys) {
+          target = target[key];
+        }
+      }
 
       return `${util.inspect(target, { showHidden: false, depth: 1 })}`;
     },

@@ -6,10 +6,12 @@ export const meta = {
   noPrefix: "both",
   permissions: [0, 1, 2],
   waitingTime: 3,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export class style {
-  title = "👥 | User Statistics";
+  title = "User Statistics 👥";
   titleFont = "bold";
   contentFont = "fancy";
 }

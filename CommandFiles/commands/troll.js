@@ -8,6 +8,8 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 20,
+  requirement: "2.5.0",
+  icon: "",
 };
 const { randArrValue } = global.utils;
 const winTexts = [

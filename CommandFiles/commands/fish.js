@@ -83,12 +83,14 @@ export const meta = {
   waitingTime: 1,
   noPrefix: false,
   otherNames: ["fishing", "catch"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 const fishingDelay = 300000;
 
 export const style = {
-  title: "🎣 Fishing",
+  title: "Fishing 🎣",
   titleFont: "bold",
   contentFont: "fancy",
 };

@@ -1,6 +1,7 @@
 import fs from "fs";
 import stringSimilarity from "string-similarity";
 import { translate } from "@vitalets/google-translate-api";
+import { UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
   name: "familyfeud",
@@ -11,13 +12,15 @@ export const meta = {
   category: "Fun",
   usage: "{prefix}{name}",
   otherNames: ["ff", "feud"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
-const logo = "🔎 [ **FAMILY FEUD** ] 🔍\n";
+const logo = `🔎 [ **FAMILY FEUD** ] 🔍\n${UNIRedux.standardLine}\n`;
 
 function getRandomQuestion() {
   const data = JSON.parse(
-    fs.readFileSync(__dirname + "/json/familyfeud.json", "utf8"),
+    fs.readFileSync(__dirname + "/json/familyfeud.json", "utf8")
   );
   const index = Math.floor(Math.random() * data.length);
   return data[index];
@@ -87,7 +90,7 @@ export async function reply({
       ...answer,
       similarity: stringSimilarity.compareTwoStrings(
         answer.answer.toLowerCase(),
-        userAnswer,
+        userAnswer
       ),
       index: index,
     }));
@@ -104,8 +107,8 @@ export async function reply({
           (answer) =>
             stringSimilarity.compareTwoStrings(
               answer.answer.toLowerCase(),
-              userAnswer,
-            ) > 0.7,
+              userAnswer
+            ) > 0.7
         );
       } catch (error) {
         console.error("Translation error:", error);
@@ -130,14 +133,24 @@ export async function reply({
         input.delReply(detectID);
         const allPoints = answers.reduce(
           (total, answer) => total + answer.points,
-          0,
+          0
         );
 
         return output.reply(
-          `🏆 | Well done ${name?.split(" ")[0]}! You've guessed all answers and earned **${allPoints} points** that's added to your balance!\nYou also won $5000! And 🎫 **${answers.length}**.\n\n${generateTable(answers)}`,
+          `🏆 | Well done ${
+            name?.split(" ")[0]
+          }! You've guessed all answers and earned **${allPoints} points** that's added to your balance!\nYou also won $5000! And 🎫 **${
+            answers.length
+          }**.\n\n${generateTable(answers)}`
         );
       } else {
-        const replyMessage = `✅ | Correct ${name?.split(" ")[0]}! "${correctAnswer.answer}" was worth **${correctAnswer.points} points** that was added to your balance!\n\nKeep guessing! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(answers)}`;
+        const replyMessage = `✅ | Correct ${name?.split(" ")[0]}! "${
+          correctAnswer.answer
+        }" was worth **${
+          correctAnswer.points
+        } points** that was added to your balance!\n\nKeep guessing! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(
+          answers
+        )}`;
         await moneyH.set(input.senderID, {
           ...userData,
           money,
@@ -170,7 +183,11 @@ export async function reply({
         input.delReply(detectID);
 
         return output.reply(
-          `[ ${"❌ ".repeat(strikes).trim()} ]\n\nSorry ${name?.split(" ")[0]}, you've received three strikes! Better luck next time.\n\nQuestion: ${question}\n\n${generateTable(answers)}`,
+          `[ ${"❌ ".repeat(strikes).trim()} ]\n\nSorry ${
+            name?.split(" ")[0]
+          }, you've received three strikes! Better luck next time.\n\nQuestion: ${question}\n\n${generateTable(
+            answers
+          )}`
         );
       } else {
         await moneyH.set(input.senderID, {
@@ -181,7 +198,11 @@ export async function reply({
           },
           strikes,
         });
-        const replyMessage = `[ ${"❌ ".repeat(strikes).trim()} ]\n\nSorry, but the survey says "${userAnswer}" is not the correct answer. Please try again! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(answers)}`;
+        const replyMessage = `[ ${"❌ "
+          .repeat(strikes)
+          .trim()} ]\n\nSorry, but the survey says "${userAnswer}" is not the correct answer. Please try again! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(
+          answers
+        )}`;
 
         const newReply = await output.reply(replyMessage);
         input.delReply(detectID);
@@ -249,7 +270,7 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
   let { lastFeudGame, name } = await moneyH.get(input.senderID);
   if (!name) {
     return output.reply(
-      `❌ | Please use the command ${prefix}identity-setname first.`,
+      `❌ | Please use the command ${prefix}identity-setname first.`
     );
   }
   if (!lastFeudGame || input.property["refresh"]) {
@@ -264,7 +285,11 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
     });
   }
 
-  const str = `👪 Question: **${lastFeudGame.question}**\n\nType your answer below (reply). You can type '${prefix}familyfeud guide' if you need help.\n${generateTable(lastFeudGame.answers)}`;
+  const str = `👪 Question: **${
+    lastFeudGame.question
+  }**\n\nType your answer below (reply). You can type '${prefix}familyfeud guide' if you need help.\n${generateTable(
+    lastFeudGame.answers
+  )}`;
 
   const info = await output.reply(str);
   input.setReply(info.messageID, {

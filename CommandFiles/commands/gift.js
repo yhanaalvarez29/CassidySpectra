@@ -7,9 +7,11 @@ export const meta = {
   permissions: [0],
   waitingTime: 1,
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 export const style = {
-  title: "💗 Free Gift",
+  title: "Free Gift 💗",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -60,7 +62,11 @@ async function handlePaid({
     collectibles: Array.from(collectibles),
   });
   return output.reply(
-    `✅ You bought a **${giftItem.icon} ${giftItem.name}**! Check your inventory to see it.\n\n💎 **${pCy(collectibles.getAmount("gems"))}** (-${diaCost})`,
+    `✅ You bought a **${giftItem.icon} ${
+      giftItem.name
+    }**! Check your inventory to see it.\n\n💎 **${pCy(
+      collectibles.getAmount("gems")
+    )}** (-${diaCost})`
   );
 }
 
@@ -84,7 +90,8 @@ export async function entry({
 
   collectibles = new Collectibles(collectibles);
   const currentTime = Date.now();
-  const oneHourInMilliseconds = 60 * 60 * 1000;
+  // const msWait = 60 * 60 * 1000;
+  const msWait = 20 * 60 * 1000;
 
   let canClaim = false;
 
@@ -92,20 +99,22 @@ export async function entry({
     canClaim = true;
   } else {
     const timeElapsed = currentTime - lastGiftClaim;
-    if (timeElapsed >= oneHourInMilliseconds) {
+    if (timeElapsed >= msWait) {
       canClaim = true;
     } else if (input.isAdmin && input.arguments[0] === "cheat") {
       canClaim = true;
     } else {
-      const timeRemaining = oneHourInMilliseconds - timeElapsed;
+      const timeRemaining = msWait - timeElapsed;
       const hoursRemaining = Math.floor(
-        (timeRemaining / (1000 * 60 * 60)) % 24,
+        (timeRemaining / (1000 * 60 * 60)) % 24
       );
       const minutesRemaining = Math.floor((timeRemaining / 1000 / 60) % 60);
       const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
 
       const info = await output.reply(
-        `⏳ You've already claimed your free gift. Please wait for ${hoursRemaining} hours, ${minutesRemaining} minutes, and ${secondsRemaining} seconds before claiming again.\nReply **buy** to purchase a fortune **envelope** for ${diaCost}💎\n\n**💎 ${pCy(collectibles.getAmount("gems"))}**`,
+        `⏳ You've already claimed your free gift. Please wait for ${hoursRemaining} hours, ${minutesRemaining} minutes, and ${secondsRemaining} seconds before claiming again.\nReply **buy** to purchase a fortune **envelope** for ${diaCost}💎\n\n**💎 ${pCy(
+          collectibles.getAmount("gems")
+        )}**`
       );
       input.setReply(info.messageID, {
         callback: handlePaid,
@@ -126,7 +135,7 @@ export async function entry({
     });
 
     output.reply(
-      `🎁 You've claimed your free gift! Check your inventory and come back later for more.`,
+      `🎁 You've claimed your free gift! Check your inventory and come back later for more.`
     );
   }
 }

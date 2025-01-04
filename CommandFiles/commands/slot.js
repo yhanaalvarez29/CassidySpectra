@@ -10,7 +10,9 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 30,
-  shopPrice: 1000000,
+  shopPrice: 1000,
+  requirement: "2.5.0",
+  icon: "",
 };
 const { randArrValue } = global.utils;
 

@@ -187,8 +187,55 @@
     "quizWins": 1
   },
   "wss:admin": {
-    "money": 100000,
+    "money": 100100,
     "exp": 0,
-    "name": "Admin"
+    "name": "Admin",
+    "virtualFiles": {
+      "mainDir": [
+        {
+          "name": "hello.txt",
+          "content": "hello+ccli write hello.txt hello+ccli write hello.txt hello+ccli write hello.txt hello",
+          "lastModified": 1735977807178
+        },
+        {
+          "name": "hello2.txt",
+          "content": "hello",
+          "lastModified": 1735977794852
+        },
+        {
+          "name": "hello3.txt",
+          "content": "hello",
+          "lastModified": 1735977798866
+        }
+      ]
+    },
+    "lastModified": 1735977807179,
+    "inventory": [
+      {
+        "name": "***DOG*** Canned Food ",
+        "icon": "🥫",
+        "flavorText": "This is a canned food item, it's not very edible but it's a good product.",
+        "sellPrice": 100,
+        "type": "dog_food",
+        "saturation": 1740000,
+        "key": "dogCan",
+        "prob": 0.68,
+        "group": [
+          "generic",
+          "unlucky",
+          "curse"
+        ],
+        "isTrash": true,
+        "isGift": true
+      }
+    ],
+    "lastGiftClaim": 1735977424556,
+    "fishStamp": 1735977461906,
+    "collectibles": []
+  },
+  "test": {
+    "money": 0,
+    "exp": 0,
+    "lastModified": 1735977314048
   }
 }

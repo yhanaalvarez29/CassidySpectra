@@ -9,10 +9,11 @@ export const meta = {
   usage: "admin[prop] [command]",
   permissions: [0, 1, 2],
   requirement: "2.5.0",
+  icon: "",
 };
 const { Cassidy } = global;
 export const style = {
-  title: "👑 | Admins",
+  title: "Admins 👑",
   titleFont: "bold",
   contentFont: "fancy",
 };

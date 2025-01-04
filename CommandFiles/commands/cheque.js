@@ -10,10 +10,12 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💰 Cheque",
+  title: "Cheque 💰",
   titleFont: "bold",
   contentFont: "fancy",
 };

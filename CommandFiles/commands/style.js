@@ -9,10 +9,12 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   shopPrice: 500000,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🎨 Design",
+  title: "Design 🎨",
   contentFont: "fancy",
   titleFont: "bold",
 };

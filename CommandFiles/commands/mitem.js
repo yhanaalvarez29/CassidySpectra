@@ -9,10 +9,12 @@ export const meta = {
   waitingTime: 1,
   otherNames: ["makeitem"],
   botAdmin: true,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🛠️ Make Item",
+  title: "Make Item 🛠️",
   titleFont: "bold",
   contentFont: "fancy",
 };

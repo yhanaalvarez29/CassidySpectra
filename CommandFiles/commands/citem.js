@@ -9,11 +9,13 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["customitem"],
-  shopPrice: 20000000,
+  shopPrice: 200000,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🛠️ Custom Item",
+  title: "Custom Item 🛠️",
   titleFont: "bold",
   contentFont: "fancy",
 };

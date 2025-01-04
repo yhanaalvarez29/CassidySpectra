@@ -17,6 +17,8 @@ export const meta = {
   category: "System",
   permissions: [0],
   requirement: "2.5.0",
+  requirement: "2.5.0",
+  icon: "",
 };
 export async function entry({
   input,

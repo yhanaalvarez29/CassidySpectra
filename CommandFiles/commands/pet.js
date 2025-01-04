@@ -9,12 +9,14 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 1,
-  shopPrice: 200000,
+  shopPrice: 200,
+  requirement: "2.5.0",
+  icon: "",
 };
 const { parseCurrency: pCy } = global.utils;
 
 export const style = {
-  title: "🐕 Pet",
+  title: "Pet 🐕",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -597,7 +599,7 @@ const petFoods = [
 function calculateWorth(pet) {
   pet = autoUpdatePetData(pet);
   const { sellPrice, level, lastExp = 0 } = pet;
-  return Math.floor(sellPrice * 2 + ((lastExp * 9) << (level - 1)));
+  return Math.floor(sellPrice * 2 + lastExp * 9 * 2 ** (level - 1));
 }
 
 function isPetHungry(pet) {
@@ -862,7 +864,7 @@ async function confirmSell({ input, output, repObj, money }) {
   };
   await money.set(input.senderID, newData);
   return output.reply(
-    `😥${petToSell.icon} You successfully sold **${petToSell.name}** for $${price}💵`,
+    `😥${petToSell.icon} You successfully sold **${petToSell.name}** for $${price}💵`
   );
 }
 
@@ -894,7 +896,7 @@ export const entry = {
         .find(
           (pet) =>
             String(pet.name).toLowerCase().trim() ===
-            String(args[0]).toLowerCase().trim(),
+            String(args[0]).toLowerCase().trim()
         );
       if (!pet) {
         return output.reply(`🐾 You don't have a pet named "${args[0]}"`);
@@ -907,10 +909,16 @@ export const entry = {
       result += `✦ ***Total Stats***\n\n`;
       result += `**ATK**: **${petPlayer.ATK}** (+${petPlayer.gearATK})\n**DEF**: **${petPlayer.DF}** (+${petPlayer.gearDF})\n**Magic**: **${petPlayer.MAGIC}**\n\n`;
       result += `✦ ***Gears***\n\n`;
-      result += `⚔️ ${gearData.getWeaponUI()}\n🔰 ${gearData.getArmorUI(0)}\n🔰 ${gearData.getArmorUI(1)}\n\n`;
+      result += `⚔️ ${gearData.getWeaponUI()}\n🔰 ${gearData.getArmorUI(
+        0
+      )}\n🔰 ${gearData.getArmorUI(1)}\n\n`;
       result += `✦ ***Elemental Info***\n\n`;
       const elementals = petPlayer.getElementals();
-      result += `${petPlayer.petIcon} **${petPlayer.petName}** belongs to **${elementals.elements.map((i) => `${i.name} (${i.class})`).join(", ")}**\n\n`;
+      result += `${petPlayer.petIcon} **${
+        petPlayer.petName
+      }** belongs to **${elementals.elements
+        .map((i) => `${i.name} (${i.class})`)
+        .join(", ")}**\n\n`;
       const gaps = elementals
         .getGapPets()
         .map(({ ...i }) => {
@@ -922,16 +930,28 @@ export const entry = {
         .toSorted((a, b) => {
           return b.acc - a.acc;
         });
-      result += `***Weak Against***: ${elementals.getAllWeaks().join(", ")}\n\n`;
-      result += `***Strong Against***: ${elementals.getAllStrongs().join(", ")}\n\n`;
+      result += `***Weak Against***: ${elementals
+        .getAllWeaks()
+        .join(", ")}\n\n`;
+      result += `***Strong Against***: ${elementals
+        .getAllStrongs()
+        .join(", ")}\n\n`;
       for (const gap of gaps) {
-        result += `${gap.status === "stronger" ? "⚠️" : "⚡"} ${Math.round(Math.abs(gap.acc * 100))}% **${gap.status === "weaker" ? "stronger" : "weaker"}** against **${gap.type}** typed pets.\n`;
+        result += `${gap.status === "stronger" ? "⚠️" : "⚡"} ${Math.round(
+          Math.abs(gap.acc * 100)
+        )}% **${gap.status === "weaker" ? "stronger" : "weaker"}** against **${
+          gap.type
+        }** typed pets.\n`;
       }
       result += `\n`;
       result += `✦ ***Spells (Coming Soon)***\n\n`;
       for (const spell of targetMap) {
         const spellData = PetPlayer.spells[spell] ?? {};
-        result += `${spellData.icon ?? "⚡"} **${spellData.name ?? "Unknown"}** [ ${spellData.tp ?? 0}% ***TP*** ]\n✦ ${spellData.flavorText ?? "We don't know what this does..?"}\n\n`;
+        result += `${spellData.icon ?? "⚡"} **${
+          spellData.name ?? "Unknown"
+        }** [ ${spellData.tp ?? 0}% ***TP*** ]\n✦ ${
+          spellData.flavorText ?? "We don't know what this does..?"
+        }\n\n`;
       }
       return output.reply(result);
     }
@@ -962,8 +982,7 @@ export const entry = {
       .getAll()
       .find(
         (pet) =>
-          pet?.name?.toLowerCase?.()?.trim() ===
-          nameToSell.toLowerCase().trim(),
+          pet?.name?.toLowerCase?.()?.trim() === nameToSell.toLowerCase().trim()
       );
     const planB = petsData.getOne(nameToSell);
     let petToSell = planA || planB;
@@ -974,12 +993,12 @@ export const entry = {
     const gearData = gearsData.getGearData(petToSell.key);
     if (gearData.hasGear()) {
       return output.reply(
-        `🐾 You cannot sell this pet, it has armors and weapons equipped.`,
+        `🐾 You cannot sell this pet, it has armors and weapons equipped.`
       );
     }
     if (petToSell.level < 5) {
       return output.reply(
-        `🐾 Your pet is currently at level ${petToSell.level}, it must be at least level 5 to be sold.`,
+        `🐾 Your pet is currently at level ${petToSell.level}, it must be at least level 5 to be sold.`
       );
     }
     const price = calculateWorth(petToSell);
@@ -1094,13 +1113,13 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
       .find(
         (pet) =>
           pet.name === targetPet ||
-          pet.name?.toLowerCase() === targetPet?.toLowerCase(),
+          pet.name?.toLowerCase() === targetPet?.toLowerCase()
       );
     if (!targetPetData) {
       return output.reply(`❌ You don't have a pet named "${targetPet}"!`);
     }
     const originalPet = autoUpdatePetData(
-      JSON.parse(JSON.stringify(targetPetData)),
+      JSON.parse(JSON.stringify(targetPetData))
     );
     if (!isPetHungry(targetPetData)) {
       return output.reply(`❌ **${targetPetData.name}** is not hungry!`);
@@ -1129,7 +1148,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     }
     if (!targetFood) {
       return output.reply(
-        `❌ You don't have an inventory item that has key "${foodKey}" or "${altKey}" or even "${lastKey}"!`,
+        `❌ You don't have an inventory item that has key "${foodKey}" or "${altKey}" or even "${lastKey}"!`
       );
     }
     if (targetFood.type !== `${targetPetData.petType}_food`) {
@@ -1139,7 +1158,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
           .find(
             (item) =>
               item.type === `${targetPetData.petType}_food` &&
-              item.key === targetFood.key,
+              item.key === targetFood.key
           ) ?? targetFood;
     }
     if (
@@ -1148,7 +1167,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
       targetFood.type !== "food"
     ) {
       return output.reply(
-        `❌ You can only feed a ${targetPetData.petType} with a food that has type: "${targetPetData.petType}_food", **${targetPetData.name}** will obviously not eat "${targetFood.type}" typed food.`,
+        `❌ You can only feed a ${targetPetData.petType} with a food that has type: "${targetPetData.petType}_food", **${targetPetData.name}** will obviously not eat "${targetFood.type}" typed food.`
       );
     }
     if (
@@ -1159,14 +1178,14 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
       (targetFood.saturation < 0 && targetPetData.lastExp < 0)
     ) {
       return output.reply(
-        `✦ ${targetPetData.icon} **${targetPetData.name}** no longer likes ${targetFood.icon} **${targetFood.name}**!\nPlease feed them **something else** before feeding it this **same food** again.\n\n(Did I bold too many words?)`,
+        `✦ ${targetPetData.icon} **${targetPetData.name}** no longer likes ${targetFood.icon} **${targetFood.name}**!\nPlease feed them **something else** before feeding it this **same food** again.\n\n(Did I bold too many words?)`
       );
     }
 
     if (targetFood.type === "food") {
       const sat1 = (targetFood.heal ?? 0) * 1.2 * 60 * 1000;
       targetFood.saturation = Math.floor(
-        sat1 * 0.25 + Math.floor(Math.random() * (sat1 * 0.75)) + 1,
+        sat1 * 0.25 + Math.floor(Math.random() * (sat1 * 0.75)) + 1
       );
     }
     if (isNaN(targetFood.saturation)) {
@@ -1180,7 +1199,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     //targetPetData.lastFeed = Date.now();
     targetPetData.lastFeed = Math.min(
       (targetPetData.lastFeed ?? Date.now()) + targetFood.saturation * 360,
-      Date.now(),
+      Date.now()
     );
     targetPetData.lastFoodEaten = targetFood.key;
     targetPetData.lastExp ??= 0;
@@ -1194,7 +1213,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     const gearData = gearsData.getGearData(targetPetData.key);
     const player = new PetPlayer(targetPetData, gearData.toJSON());
     const oldHP = player.HP;
-    
+
     function getDiff(key) {
       const og = originalPet;
       const newPet = targetPetData;
@@ -1214,16 +1233,32 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     let pet = targetPetData;
     pet = autoUpdatePetData(pet);
     const hungryAfter = petHungryAfter(pet);
-    let petText = `✦ ${player.getPlayerUI({ upperPop: isPetHungry(pet) ? "(Hungry)" : null })}
+    let petText = `✦ ${player.getPlayerUI({
+      upperPop: isPetHungry(pet) ? "(Hungry)" : null,
+    })}
 🗃️ ***Type***: ${pet.petType}
 🧭 ***Level***: ${pet.level} ${getDiff("level")}
 ✨ ***Exp***: ${pet.lastExp ?? 0}/${calculateNextExp(pet)} ${getDiff("lastExp")}
 💵 **Worth**: ${calculateWorth(pet)}$ ${getDiff("worth")}
-🍽️ ***Hungry ${hungryAfter >= 0 ? `After` : `Since`}***: ${global.utils.convertTimeSentence(global.utils.formatTimeDiff(Math.abs(hungryAfter)))}${isPetHungry(pet) ? `\n⚠️ **WARN**: Please feed ${pet.name} immediately.` : ""}
+🍽️ ***Hungry ${
+      hungryAfter >= 0 ? `After` : `Since`
+    }***: ${global.utils.convertTimeSentence(
+      global.utils.formatTimeDiff(Math.abs(hungryAfter))
+    )}${
+      isPetHungry(pet)
+        ? `\n⚠️ **WARN**: Please feed ${pet.name} immediately.`
+        : ""
+    }
 🔎 ***ID***: ${pet.key}`;
-    return output.reply(`✅ **${targetPetData.name}** has been fed with ${targetFood.icon === pet.icon ? "" : `${targetFood.icon} `}**${targetFood.name}**!
+    return output.reply(`✅ **${targetPetData.name}** has been fed with ${
+      targetFood.icon === pet.icon ? "" : `${targetFood.icon} `
+    }**${targetFood.name}**!
 
-This food effect will last for approximately ${Math.floor(targetFood.type === "food" ? (targetFood.saturation / 60 / 1000) * 2 : targetFood.saturation / 60 / 1000)} minutes.
+This food effect will last for approximately ${Math.floor(
+      targetFood.type === "food"
+        ? (targetFood.saturation / 60 / 1000) * 2
+        : targetFood.saturation / 60 / 1000
+    )} minutes.
 
 ${petText}
 
@@ -1253,10 +1288,10 @@ Thank you **${name}** for taking care of this pet!`);
         let { petsData: dataB = [], gearsData: gearsB } = allData[b];
         let { petsData: dataA = [], gearsData: gearsA } = allData[a];
         dataB = dataB.map((i) =>
-          autoUpdatePetData(typeof i === "object" && i ? i : {}),
+          autoUpdatePetData(typeof i === "object" && i ? i : {})
         );
         dataA = dataA.map((i) =>
-          autoUpdatePetData(typeof i === "object" && i ? i : {}),
+          autoUpdatePetData(typeof i === "object" && i ? i : {})
         );
         dataB.sort((a, b) => {
           a ??= {};
@@ -1299,7 +1334,7 @@ Thank you **${name}** for taking care of this pet!`);
             player.DF * 10 +
             player.ATK * 10 +
             player.MAGIC * 2 -
-            ((player.maxHP - player.HP) * 80)
+            (player.maxHP - player.HP) * 80
           );
         }
         const statA = helper(highestA, petGearA) + worthA / 1000;
@@ -1313,13 +1348,24 @@ Thank you **${name}** for taking care of this pet!`);
     let num = sliceA + 1;
     final += `💪 Top 20 **strongest** pets:\n\n`;
     for (const userID of sortedKeys) {
-      let { name = "Unregistered", gearsData = [], petsData = [] } = allData[userID];
+      let {
+        name = "Unregistered",
+        gearsData = [],
+        petsData = [],
+      } = allData[userID];
       let pet = highestPets[userID];
       pet = autoUpdatePetData(pet);
       const gearsManage = new GearsManage(gearsData);
       const gearData = gearsManage.getGearData(pet.key);
       const player = new PetPlayer(pet, gearData.toJSON());
-      final += `${num === 1 ? `👑` : num > 10 ? num : `0${num}`} ${num === 1 ? `[font=double_struck]${name.toUpperCase().split("").join(" ")}[:font=double_struck]` : `- ***${name}***`}\n✦ ${player.getPlayerUI(isPetHungry(pet) ? { upperPop: "Hungry" } : {})}
+      final += `${num === 1 ? `👑` : num > 10 ? num : `0${num}`} ${
+        num === 1
+          ? `[font=double_struck]${name
+              .toUpperCase()
+              .split("")
+              .join(" ")}[:font=double_struck]`
+          : `- ***${name}***`
+      }\n✦ ${player.getPlayerUI(isPetHungry(pet) ? { upperPop: "Hungry" } : {})}
 ⚔️ ***ATK***: ${player.ATK} (+${player.gearATK})
 🔰 ***DEF***: ${player.DF} (+${player.gearDF})
 🔥 ***MAGIC***: ${player.MAGIC}
@@ -1333,19 +1379,31 @@ Thank you **${name}** for taking care of this pet!`);
     return output.reply(final);
   },
   async list({ input, output, money, Inventory }) {
-    let { name = "Unregistered", petsData = [] } = await money.get(input.senderID);
+    let { name = "Unregistered", petsData = [] } = await money.get(
+      input.senderID
+    );
     petsData = new Inventory(petsData);
     const pets = petsData.getAll();
     let result = `**${name}'s** Pets:\n\n`;
     for (let pet of pets) {
       pet = autoUpdatePetData(pet);
       const hungryAfter = petHungryAfter(pet);
-      result += `✦ ${pet.icon} **${pet.name}**${isPetHungry(pet) ? " (Hungry)" : ""}
+      result += `✦ ${pet.icon} **${pet.name}**${
+        isPetHungry(pet) ? " (Hungry)" : ""
+      }
 🗃️ ***Type***: ${pet.petType}
 🧭 ***Level***: ${pet.level}
 ✨ ***Exp***: ${pet.lastExp ?? 0}/${calculateNextExp(pet)}
 💵 **Worth**: ${calculateWorth(pet)}$
-🍽️ ***Hungry ${hungryAfter >= 0 ? `After` : `Since`}***: ${global.utils.convertTimeSentence(global.utils.formatTimeDiff(Math.abs(hungryAfter)))}${isPetHungry(pet) ? `\n⚠️ **WARN**: Please feed ${pet.name} immediately.` : ""}
+🍽️ ***Hungry ${
+        hungryAfter >= 0 ? `After` : `Since`
+      }***: ${global.utils.convertTimeSentence(
+        global.utils.formatTimeDiff(Math.abs(hungryAfter))
+      )}${
+        isPetHungry(pet)
+          ? `\n⚠️ **WARN**: Please feed ${pet.name} immediately.`
+          : ""
+      }
 🔎 ***ID***: ${pet.key}\n\n`;
     }
     if (pets.length === 0) {
@@ -1357,19 +1415,21 @@ Thank you **${name}** for taking care of this pet!`);
     let { inventory = [] } = await money.get(input.senderID);
     inventory = new Inventory(inventory);
     const petVentory = new Inventory(
-      Array.from(inventory).filter((item) => item.type === "pet"),
+      Array.from(inventory).filter((item) => item.type === "pet")
     );
     let petList = "";
     for (const pet of petVentory) {
-      petList += `${pet.index + 1}. ${pet.icon} **${pet.name}**\n✦ ${pet.flavorText}\n`;
+      petList += `${pet.index + 1}. ${pet.icon} **${pet.name}**\n✦ ${
+        pet.flavorText
+      }\n`;
     }
     if (!petList) {
       return output.reply(
-        `🐾 You don't have any pets to uncage, try using a bundle if you have purchased one.`,
+        `🐾 You don't have any pets to uncage, try using a bundle if you have purchased one.`
       );
     }
     const i = await output.reply(
-      `🐾 Here are your caged pets:\n\n${petList}\n\n🐾 Which pet would you like to uncage? Reply with a number!`,
+      `🐾 Here are your caged pets:\n\n${petList}\n\n🐾 Which pet would you like to uncage? Reply with a number!`
     );
     input.setReply(i.messageID, {
       author: input.senderID,
@@ -1386,19 +1446,21 @@ Thank you **${name}** for taking care of this pet!`);
     inventory = new Inventory(inventory);
     if (!inventory.has("dogTag")) {
       return output.reply(
-        `A 🏷️ **Dog Tag** is required to perform this action.`,
+        `A 🏷️ **Dog Tag** is required to perform this action.`
       );
     }
     const petVentory = new Inventory(Array.from(petsData));
     let petList = "";
     for (const pet of petVentory) {
-      petList += `${pet.index + 1}. ${pet.icon} **${pet.name}**\n✦ ${pet.flavorText}\n`;
+      petList += `${pet.index + 1}. ${pet.icon} **${pet.name}**\n✦ ${
+        pet.flavorText
+      }\n`;
     }
     if (!petList) {
       return output.reply(`🐾 You don't have any pets to rename`);
     }
     const i = await output.reply(
-      `🐾 Here are your pets:\n\n${petList}\n\n🐾 Which pet would you like to rename? Reply with a number!`,
+      `🐾 Here are your pets:\n\n${petList}\n\n🐾 Which pet would you like to rename? Reply with a number!`
     );
     input.setReply(i.messageID, {
       author: input.senderID,
@@ -1437,11 +1499,11 @@ async function renameReply({ input, output, Inventory, money, repObj }) {
       const item = petsData.getAll()[index];
       if (!item) {
         return output.reply(
-          `🐾 Please go back and reply a correct number, thank you!`,
+          `🐾 Please go back and reply a correct number, thank you!`
         );
       }
       const i = await output.reply(
-        `📄${item.icon} What would you like to rename your **pet**? (no spaces pls)`,
+        `📄${item.icon} What would you like to rename your **pet**? (no spaces pls)`
       );
       input.delReply(detectID);
       input.setReply(i.messageID, {
@@ -1462,13 +1524,13 @@ async function renameReply({ input, output, Inventory, money, repObj }) {
       const existingPet = petsData.getAll().find((pet) => pet.name === newName);
       if (existingPet) {
         return output.reply(
-          `🐾 Sorry, but that name was already **taken** for your existing ${existingPet.petType} ${existingPet.icon}, please go back and send a different one.`,
+          `🐾 Sorry, but that name was already **taken** for your existing ${existingPet.petType} ${existingPet.icon}, please go back and send a different one.`
         );
       }
       const pet = petsData.getOne(item.key);
       if (!inventory.has("dogTag")) {
         return output.reply(
-          `A 🏷️ **Dog Tag** is required to perform this action.`,
+          `A 🏷️ **Dog Tag** is required to perform this action.`
         );
       }
       pet.name = newName;
@@ -1511,11 +1573,11 @@ async function uncageReply({ input, output, Inventory, money, repObj }) {
       const item = petVentory.getAll()[index];
       if (!item) {
         return output.reply(
-          `🐾 Please go back and reply a correct number, thank you!`,
+          `🐾 Please go back and reply a correct number, thank you!`
         );
       }
       const i = await output.reply(
-        `📄${item.icon} What would you like to name your **pet**? (no spaces pls)`,
+        `📄${item.icon} What would you like to name your **pet**? (no spaces pls)`
       );
       input.delReply(detectID);
       input.setReply(i.messageID, {
@@ -1536,7 +1598,7 @@ async function uncageReply({ input, output, Inventory, money, repObj }) {
       const existingPet = petsData.getAll().find((pet) => pet.name === newName);
       if (existingPet) {
         return output.reply(
-          `🐾 Sorry, but that name was already **taken** for your existing ${existingPet.petType} ${existingPet.icon}, please go back and send a different one.`,
+          `🐾 Sorry, but that name was already **taken** for your existing ${existingPet.petType} ${existingPet.icon}, please go back and send a different one.`
         );
       }
       petsData.addOne({

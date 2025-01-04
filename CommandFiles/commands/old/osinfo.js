@@ -10,6 +10,8 @@ export const meta = {
   version: "1.0.1",
   permissions: [0], // No special permissions required
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 
 // Define the entry function for the command

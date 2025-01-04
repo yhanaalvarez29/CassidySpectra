@@ -6,9 +6,11 @@ export const meta = {
   category: "Utility",
   permissions: [0],
   noPrefix: false,
+  requirement: "2.5.0",
+  icon: "",
 };
 export const style = {
-  title: "💗 Daily Reward",
+  title: "Daily Reward 💗",
   titleFont: "bold",
   contentFont: "fancy",
 };

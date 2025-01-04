@@ -11,11 +11,13 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 5,
-  otherNames: ["id", "view"],
+  otherNames: ["id", "users"],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "💬 | Identity Dashboard",
+  title: "Identity Dashboard 💬",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -30,6 +32,53 @@ const home = new ReduxCMDHome(
       description:
         "View your profile details, such as name, bio, exp, and level",
       aliases: ["-p", "show", "view"],
+    },
+    {
+      key: "find",
+      description: "Search for users by name.",
+      aliases: ["-s", "search"],
+      async handler({ input, output, money, icon }) {
+        const query = input.arguments.join(" ").trim().toLowerCase();
+
+        if (!query) {
+          output.reply(`Please provide a query to search for users.`);
+          return;
+        }
+
+        try {
+          const allUsers = await money.getAll();
+
+          let matchedUsers = [];
+
+          for (const userId in allUsers) {
+            const userData = allUsers[userId];
+            userData.name ??= "Unregistered";
+            userData.userID = userId;
+
+            if (userData.name.toLowerCase().includes(query)) {
+              matchedUsers.push(userData);
+            }
+          }
+
+          let response = `🔍 Search results for "${query}":\n\n`;
+
+          if (matchedUsers.length > 0) {
+            matchedUsers.forEach((userData, index) => {
+              response += `${index < 10 ? `0` + (index + 1) : index + 1}. **${
+                userData.name
+              }**\n💌 ${userData.userID}\n`;
+              response += `💰 $${userData.money}💵\n\n`;
+            });
+          } else {
+            response += `No users found matching "${query}".`;
+          }
+
+          output.reply(response);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          output.error(error);
+        }
+      },
     },
     {
       key: "setname",

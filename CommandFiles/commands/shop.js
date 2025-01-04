@@ -8,10 +8,12 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   otherNames: [],
+  requirement: "2.5.0",
+  icon: "",
 };
 
 export const style = {
-  title: "🛒 Shop",
+  title: "Shop 🛒",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -128,7 +130,7 @@ export const entry = {
     if (args[0] === "buy") {
       if (!args[1]) {
         return output.reply(
-          "❌ Please enter the command name you want to buy.",
+          "❌ Please enter the command name you want to buy."
         );
       }
       const {
@@ -138,16 +140,20 @@ export const entry = {
       } = await money.get(input.senderID);
       if (!name) {
         return output.reply(
-          "❌ Please register first using the identity-setname command.",
+          "❌ Please register first using the identity-setname command."
         );
       }
       async function buyReply(item, price) {
         await output.quickWaitReact(
-          `⚠️ Buy "${args[1]}" for ${price}$?\n\n**Balance**\nBefore - ${userMoney}$\nAfter - ${userMoney - price}$`,
+          `⚠️ Buy "${
+            args[1]
+          }" for ${price}$?\n\n**Balance**\nBefore - ${userMoney}$\nAfter - ${
+            userMoney - price
+          }$`,
           {
             authorOnly: true,
             edit: "✅ Proceeding...",
-          },
+          }
         );
         return output.reply(`✅ Successfully purchased ${item} for ${price}$!`);
       }
@@ -165,7 +171,7 @@ export const entry = {
       const canPurchase = await Shop.canPurchase(args[1], input.senderID);
       if (!canPurchase) {
         return output.reply(
-          `❌ You don't have enough money to buy "${args[1]}" for ${price}$.`,
+          `❌ You don't have enough money to buy "${args[1]}" for ${price}$.`
         );
       }
 
@@ -173,12 +179,18 @@ export const entry = {
       return buyReply(`"${args[1]}"`, price);
     } else {
       const { shopInv = {}, money: userMoney } = await money.get(
-        input.senderID,
+        input.senderID
       );
       const allItems = Shop.getItems();
       let result = "";
       for (const { meta } of allItems) {
-        result += `**${meta.name}** ${meta.shopPrice}$${shopInv[meta.name] ? " ✅" : userMoney >= meta.shopPrice ? " 💰" : " ❌"}\n- ${meta.description}\n\n`;
+        result += `**${meta.name}** ${meta.shopPrice}$${
+          shopInv[meta.name]
+            ? " ✅"
+            : userMoney >= meta.shopPrice
+            ? " 💰"
+            : " ❌"
+        }\n- ${meta.description}\n\n`;
       }
       result += `\nType ${prefix}**shop.cmd buy <item name>** fo buy an item.`;
 
@@ -192,7 +204,7 @@ export const entry = {
       const userData = await money.get(input.senderID);
       if (!userData.name) {
         return output.reply(
-          "❌ Please register first using the identity-setname command.",
+          "❌ Please register first using the identity-setname command."
         );
       }
       const inventory = new Inventory(userData.inventory);
@@ -205,22 +217,26 @@ export const entry = {
       for (const name in stoData) {
         const val = stoData[name];
         const originalPrice =
-          val.price << (userData[`${val.key}_upgrades`] ?? 0);
+          val.price * 2 ** (userData[`${val.key}_upgrades`] ?? 0);
         const LV = (userData[`${val.key}_upgrades`] ?? 0) + 1;
         const price = Math.floor(originalPrice * multiplier);
         const storage = userData[val.key]
           ? userData[val.key] * 2
           : "Unknown..?";
-        text += `**${name}** - ${price}💷 ${hasDiscount ? `(${originalPrice}$) \n25% OFF! 🎀` : ""}${userData.battlePoints < price ? "❌" : "💰"}\n🗃️ LV${LV} Storage: ${isNaN(storage) ? storage : storage / 2}\n🗃️ LV${LV + 1} Storage: ${storage}\n\n`;
+        text += `**${name}** - ${price}💷 ${
+          hasDiscount ? `(${originalPrice}$) \n25% OFF! 🎀` : ""
+        }${userData.battlePoints < price ? "❌" : "💰"}\n🗃️ LV${LV} Storage: ${
+          isNaN(storage) ? storage : storage / 2
+        }\n🗃️ LV${LV + 1} Storage: ${storage}\n\n`;
       }
       return output.reply(
         `${text}
-Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`,
+Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`
       );
     }
     if (!args[1]) {
       return output.reply(
-        `❌ Please enter the command name that you want to upgrade in storage.`,
+        `❌ Please enter the command name that you want to upgrade in storage.`
       );
     }
     if (!stoData[args[1]]) {
@@ -242,27 +258,33 @@ Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`,
     }
     if (!name) {
       return output.reply(
-        "❌ Please register first using the identity-setname command.",
+        "❌ Please register first using the identity-setname command."
       );
     }
 
     if (isNaN(storage)) {
       return output.reply(
-        `❌ You don't have any "${data.key}" in the database.`,
+        `❌ You don't have any "${data.key}" in the database.`
       );
     }
-    let price = Math.floor((data.price << upgrades) * multiplier);
+    let price = Math.floor(data.price * 2 ** upgrades * multiplier);
     if (userMoney < price) {
       return output.reply(
-        `❌ The price of "${args[1]}" **storage** upgrade is ${price}💷 but you only have ${userMoney}💷.`,
+        `❌ The price of "${args[1]}" **storage** upgrade is ${price}💷 but you only have ${userMoney}💷.`
       );
     }
     await output.quickWaitReact(
-      `⚠️ Buy "${args[1]}" storage upgrade for ${price}💷?\n**Old Storage**: ${storage} 🗃️\n**New Storage**: ${storage * 2} 🗃️\n\n**Battle Points**\nBefore - ${userMoney}💷\nAfter - ${userMoney - price}💷`,
+      `⚠️ Buy "${
+        args[1]
+      }" storage upgrade for ${price}💷?\n**Old Storage**: ${storage} 🗃️\n**New Storage**: ${
+        storage * 2
+      } 🗃️\n\n**Battle Points**\nBefore - ${userMoney}💷\nAfter - ${
+        userMoney - price
+      }💷`,
       {
         authorOnly: true,
         edit: "✅ Proceeding...",
-      },
+      }
     );
     await money.set(input.senderID, {
       [`${data.key}_upgrades`]: upgrades + 1,
@@ -270,7 +292,11 @@ Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`,
       [data.key]: storage * 2,
     });
     await output.reply(
-      `✅ Successfully purchased "${args[1]}"${hasDiscount ? "25% OFF! 🎀" : ""} storage upgrade for ${price}💷!\n\n**Old Storage**: ${storage} 🗃️\n**New Storage**: ${storage * 2} 🗃️\n**New Battle Points**: ${userMoney - price}💷 (-${price})`,
+      `✅ Successfully purchased "${args[1]}"${
+        hasDiscount ? "25% OFF! 🎀" : ""
+      } storage upgrade for ${price}💷!\n\n**Old Storage**: ${storage} 🗃️\n**New Storage**: ${
+        storage * 2
+      } 🗃️\n**New Battle Points**: ${userMoney - price}💷 (-${price})`
     );
   },
 };

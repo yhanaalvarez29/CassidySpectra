@@ -356,7 +356,7 @@ function ClassExtra(Class) {
   for (const method in constants) {
     if (!Class.prototype[method]) {
       throw new TypeError(
-        `Class ${Class.name} added ${method} to constants but its falsy!`,
+        `Class ${Class.name} added ${method} to constants but its falsy!`
       );
     }
     Object.defineProperty(Class.prototype[method], method, {
@@ -465,7 +465,7 @@ function getUTY(player) {
   let result = {};
   const files = fs.readdirSync("handlers/database/uty");
   const special = JSON.parse(
-    fs.readFileSync("handlers/database/uty.json", "utf8"),
+    fs.readFileSync("handlers/database/uty.json", "utf8")
   );
   result = {
     ...special,
@@ -473,7 +473,7 @@ function getUTY(player) {
   files.forEach((file) => {
     try {
       let data = JSON.parse(
-        fs.readFileSync(`handlers/database/uty/${file}`, "utf8"),
+        fs.readFileSync(`handlers/database/uty/${file}`, "utf8")
       );
       if (file.includes(".geno") && player.lv > 1 && player.getFun() < 0) {
         result = {
@@ -547,7 +547,7 @@ function convertWeapons(item) {
     dmg: atk,
     name,
     info: flavorText,
-  }
+  };
 }
 const defaultMagic = {
   heal_prayer: {
@@ -1089,7 +1089,7 @@ HP ${this.getHP()} ATK ${
         afterAct: this.getIndex(
           this.monster.flavorText?.afterAct?.[action] ||
             this.monster.flavorText?.neutral,
-          action,
+          action
         ),
         effect: actEffect[action] || {},
         isWin,
@@ -1353,7 +1353,7 @@ function ExtendClass(
   key,
   func,
   Target = Object,
-  options = { writable: true, configurable: false, enumerable: false },
+  options = { writable: true, configurable: false, enumerable: false }
 ) {
   Object.defineProperty(Target.prototype, key, {
     value: func,
@@ -2366,7 +2366,7 @@ const ObjectX = new Proxy(
         throw new Error(`Method ${prop} is not supported.`);
       }
     },
-  },
+  }
 );
 function pearsonsR(arrayA, arrayB) {
   if (arrayA.length !== arrayB.length) {
@@ -2478,7 +2478,7 @@ function deformatBits(sizeStr) {
   const units = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   const unitRegex = new RegExp(
     `^\\s*([0-9]+(?:\\.[0-9]+)?)\\s*(${units.join("|")})\\s*$`,
-    "i",
+    "i"
   );
   const match = sizeStr.match(unitRegex);
 
@@ -2551,7 +2551,7 @@ function minimizeErrStack(stack) {
     stackLines.splice(
       1,
       numHiddenStacks,
-      `(and ${numHiddenStacks} hidden stacks...)`,
+      `(and ${numHiddenStacks} hidden stacks...)`
     );
   }
   for (let i = 1; i < stackLines.length - numHiddenStacks; i++) {
@@ -2563,8 +2563,9 @@ function minimizeErrStack(stack) {
     const fileName = line.substring(fileNameIndex + 1, lineColumnIndex);
     const functionIndex = line.lastIndexOf("at ") + 3;
     const functionName = line.substring(functionIndex, lineColumnIndex);
-    stackLines[i] =
-      `${folder}/${fileName} (${functionName})${line.substring(lineColumnIndex)}`;
+    stackLines[i] = `${folder}/${fileName} (${functionName})${line.substring(
+      lineColumnIndex
+    )}`;
   }
   return stackLines.join("\n");
 }
@@ -2581,7 +2582,7 @@ class UserSorter {
     let sortedKeys = Object.keys(this.users).sort(
       (a, b) =>
         Number(this.users[b][this.sortBy] ?? this.defaultValue) -
-        Number(this.users[a][this.sortBy] ?? this.defaultValue),
+        Number(this.users[a][this.sortBy] ?? this.defaultValue)
     );
 
     if (this.limit) {
@@ -2625,12 +2626,12 @@ function isNumberUnsafe(num) {
   );
 }
 function representObject(obj, depth = 0) {
-  const indent = '=> '.repeat(depth); 
-  let result = '';
+  const indent = "=> ".repeat(depth);
+  let result = "";
 
   Object.keys(obj).forEach((key, index, keys) => {
     const value = obj[key];
-    
+
     // Top level representation
     if (depth === 0) {
       result += `${indent}key: "${key}"\n`;
@@ -2643,26 +2644,26 @@ function representObject(obj, depth = 0) {
         result += `${indent}key: ${key}: `;
       }
     }
-    
+
     if (Array.isArray(value)) {
       result += `Array(${value.length})\n`;
       value.forEach((item, idx) => {
-        if (typeof item === 'object' && item !== null) {
+        if (typeof item === "object" && item !== null) {
           result += representObject(item, depth + 1); // Recursive representation
         } else {
           result += `${indent}==> index(${idx}): `;
-          result += typeof item === 'string' ? `'${item}'\n` : `${item}\n`; // Single quotes around strings
+          result += typeof item === "string" ? `'${item}'\n` : `${item}\n`; // Single quotes around strings
         }
       });
-    } else if (typeof value === 'object' && value !== null) {
-      result += 'Object\n';
+    } else if (typeof value === "object" && value !== null) {
+      result += "Object\n";
       result += representObject(value, depth + 1); // Recursive representation
     } else {
-      result += typeof value === 'string' ? `'${value}'\n` : `${value}\n`; // Single quotes around strings
+      result += typeof value === "string" ? `'${value}'\n` : `${value}\n`; // Single quotes around strings
     }
 
     if (depth === 0 && index < keys.length - 1) {
-      result += '\n'; // Extra line between top-level key-value pairs
+      result += "\n"; // Extra line between top-level key-value pairs
     }
   });
 
@@ -2672,36 +2673,37 @@ function convertTimeSentence({ years, months, days, hours, minutes, seconds }) {
   const parts = [];
 
   if (years !== 0) {
-    parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+    parts.push(`${years} year${years !== 1 ? "s" : ""}`);
   }
   if (months !== 0) {
-    parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+    parts.push(`${months} month${months !== 1 ? "s" : ""}`);
   }
   if (days !== 0) {
-    parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+    parts.push(`${days} day${days !== 1 ? "s" : ""}`);
   }
   if (hours !== 0) {
-    parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    parts.push(`${hours} hour${hours !== 1 ? "s" : ""}`);
   }
   if (minutes !== 0) {
-    parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    parts.push(`${minutes} minute${minutes !== 1 ? "s" : ""}`);
   }
   if (seconds !== 0) {
-    parts.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+    parts.push(`${seconds} second${seconds !== 1 ? "s" : ""}`);
   }
 
-  return parts.join(', ');
+  return parts.join(", ");
 }
 function generateCaptchaCode(length = 6) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let captcha = '';
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let captcha = "";
 
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        captcha += characters[randomIndex];
-    }
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    captcha += characters[randomIndex];
+  }
 
-    return captcha;
+  return captcha;
 }
 
 const StylerGlobal = require("./handlers/styler.js/main.js");
