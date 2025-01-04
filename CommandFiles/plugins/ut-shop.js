@@ -1193,7 +1193,7 @@ ${this.optionText()}
         }
         async function handleSellItem(isBox) {
           const magicKey = isBox ? "boxItems" : "inventory";
-          const magicSize = isBox ? 100 : 8;
+          const magicSize = isBox ? 100 : global.Cassidy.invLimit;
           let { money: cash, [magicKey]: inventory = [] } = await money.get(
             input.senderID
           );
