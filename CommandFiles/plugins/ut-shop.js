@@ -973,7 +973,7 @@ ${this.optionText()}
         }
         async function handleRealSell(isBox) {
           const magicKey = isBox ? "boxItems" : "inventory";
-          const magicSize = isBox ? 100 : 8;
+          const magicSize = isBox ? 100 : global.Cassidy.invLimit;
 
           try {
             let { [magicKey]: inventory = [], money: cash = 0 } =
