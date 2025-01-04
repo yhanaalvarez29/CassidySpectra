@@ -159,6 +159,7 @@ export async function entry(ctx) {
         args: ["<key1> <key2> <...etc>"],
         async handler() {
           const keysToStore = actionArgs;
+
           if (keysToStore.length < 1) {
             return output.reply(
               `❌ Please specify an item key to store in the vault.

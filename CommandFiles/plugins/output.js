@@ -51,9 +51,16 @@ class CassidyIO {
     this.lastMessageID = info.messageID;
     return info;
   }
-  async in({ messageID: optionalID = this.lastMessageID, full, dontUpdate, callback: c = (ctx) => ctx.repObj.resolve(ctx), test, testFail } = {}) {
+  async in({
+    messageID: optionalID = this.lastMessageID,
+    full,
+    dontUpdate,
+    callback: c = (ctx) => ctx.repObj.resolve(ctx),
+    test,
+    testFail,
+  } = {}) {
     let callback = c;
-    
+
     if (test) {
       callback = async (ctx) => {
         let { repObj, input } = ctx;
@@ -62,9 +69,12 @@ class CassidyIO {
         } else if (testFail) {
           await testFail(ctx);
         }
-      }
+      };
     }
-    const ctx = await this.output.addReplyListener(optionalID ?? this.lastMessageID, callback);
+    const ctx = await this.output.addReplyListener(
+      optionalID ?? this.lastMessageID,
+      callback
+    );
     if (!dontUpdate) {
       this.output = ctx.output;
       this.input = ctx.input;
@@ -97,6 +107,7 @@ export function use(obj) {
           body: text,
         });
       }
+
       const { UserStatsLocal, money, CassEncoder } = obj;
       const { replies = {} } = global.Cassidy;
       const { currData } = global;
@@ -112,7 +123,7 @@ export function use(obj) {
       //options.body = fonts.auto(options.body);
       const stylerShallow = styler.shallowMake(
         Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
-        Object.assign({}, options.style ?? {}, input.style ?? {}),
+        Object.assign({}, options.style ?? {}, input.style ?? {})
       );
       /*if (
         (command &&
@@ -187,7 +198,7 @@ export function use(obj) {
             //console.log(resu);
             res(resu);
           },
-          options.messageID || (options.isReply ? event.messageID : null),
+          options.messageID || (options.isReply ? event.messageID : null)
         );
       });
     }
@@ -206,7 +217,7 @@ export function use(obj) {
                 return rej(err);
               }
               res(true);
-            },
+            }
           );
         });
       },
@@ -214,7 +225,7 @@ export function use(obj) {
         let error = err;
         if (typeof error !== "object" && typeof error !== "string") {
           throw new Error(
-            `The first argument must be an Error instance or a string.`,
+            `The first argument must be an Error instance or a string.`
           );
         }
         if (typeof error === "string") {
@@ -285,7 +296,7 @@ export function use(obj) {
           body,
           this.lastID ?? messageID,
           delay,
-          this.style,
+          this.style
         );
       }
     };
@@ -296,7 +307,9 @@ export function use(obj) {
         cmdName = metadata.name;
       }
       return await outputProps.reply(
-        `❌ The command syntax you are using is invalid, please use ${cmdName ? `${obj.prefix}help ${cmdName}` : `the help command`} to see how it works.`,
+        `❌ The command syntax you are using is invalid, please use ${
+          cmdName ? `${obj.prefix}help ${cmdName}` : `the help command`
+        } to see how it works.`
       );
     };
     //Only works to Fca of NicaBoT:
@@ -389,7 +402,7 @@ export function use(obj) {
     console.log(err);
   }
   const cassIO = new CassidyIO(obj.input, obj.output, obj.command?.style);
-    obj.cassIO = cassIO;
+  obj.cassIO = cassIO;
   obj.next();
 }
 

@@ -107,6 +107,9 @@ import extend from "./extends.js";
 extend();
 import { UNIRedux } from "./CommandFiles/modules/unisym.js";
 
+/**
+ * @global
+ */
 global.Cassidy = {
   get config() {
     return new Proxy(
@@ -138,6 +141,7 @@ global.Cassidy = {
   set commands(data) {
     commands = data;
   },
+  invLimit: 36,
   presets: new Map(),
   loadCommand,
   loadPlugins,

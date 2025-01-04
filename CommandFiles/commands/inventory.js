@@ -1,3 +1,8 @@
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { UNIRedux } from "../modules/unisym.js";
+import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
+import { Collectibles, Inventory } from "../plugins/ut-shop.js";
+
 export const meta = {
   name: "inventory",
   description: "Manage your inventory.",
@@ -20,21 +25,28 @@ export const style = {
 };
 const { parseCurrency: pCy } = global.utils;
 
-export async function entry({
-  input,
-  output,
-  money,
-  args,
-  Inventory,
-  prefix,
-  generateTreasure,
-  GearsManage,
-  commandName,
-  PetPlayer,
-  Collectibles,
-}) {
+export async function entry({ ...ctx }) {
+  /**
+   *
+   *
+   * @type {{ output: import("output-cassidy").default, input: import("input-cassidy").default }}
+   */
+  const {
+    input,
+    output,
+    money,
+    args,
+    // Inventory,
+    prefix,
+    generateTreasure,
+    // GearsManage,
+    commandName,
+    // PetPlayer,
+    // Collectibles,
+  } = ctx;
   let userData = await money.get(input.senderID);
   const { inventory, petsData, gearsData, collectibles } = getDatas(userData);
+
   const userDataCopy = userData;
   function getDatas({ ...data }) {
     const inventory = new Inventory(data.inventory);
@@ -44,13 +56,13 @@ export async function entry({
     const collectibles = new Collectibles(data.collectibles ?? []);
     return { inventory, petsData, gearsData, collectibles };
   }
-  const a = "━━━━━━━━━━━━━━━";
+  const a = UNIRedux.standardLine;
 
   function getPetList(
     newData = petsData,
     newGear = gearsData,
     targetItem = {},
-    index = 0,
+    index = 0
   ) {
     return newData
       .getAll()
@@ -67,14 +79,205 @@ export async function entry({
         const atkDiff = playerAfter.ATK - player.ATK;
         const defDiff = playerAfter.DF - player.DF;
         const magicDiff = playerAfter.MAGIC - player.MAGIC;
-        return `${player.getPlayerUI()}\nATK **${player.ATK} -> ${player.ATK + atkDiff}** (${atkDiff < 0 ? atkDiff : `+${atkDiff}`})\nDEF **${player.DF} -> ${player.DF + defDiff}** (${defDiff < 0 ? defDiff : `+${defDiff}`})\nMAGIC **${player.MAGIC} -> ${player.MAGIC + magicDiff}** (${magicDiff < 0 ? magicDiff : `+${magicDiff}`}) \n${a}\n⚔️ ${gearData.getWeaponUI()}\n🔰 ${gearData.getArmorUI(0)}\n🔰 ${gearData.getArmorUI(1)}`;
+        return `${player.getPlayerUI()}\nATK **${player.ATK} -> ${
+          player.ATK + atkDiff
+        }** (${atkDiff < 0 ? atkDiff : `+${atkDiff}`})\nDEF **${player.DF} -> ${
+          player.DF + defDiff
+        }** (${defDiff < 0 ? defDiff : `+${defDiff}`})\nMAGIC **${
+          player.MAGIC
+        } -> ${player.MAGIC + magicDiff}** (${
+          magicDiff < 0 ? magicDiff : `+${magicDiff}`
+        }) \n${a}\n⚔️ ${gearData.getWeaponUI()}\n🔰 ${gearData.getArmorUI(
+          0
+        )}\n🔰 ${gearData.getArmorUI(1)}`;
       })
       .join("\n" + a + "\n\n");
   }
 
-  const [action = "", ...actionArgs] = args;
+  const [...actionArgs] = input.arguments;
 
-  switch (action.toLowerCase()) {
+  const home = new ReduxCMDHome(
+    {
+      isHypen: true,
+    },
+    [
+      {
+        key: "list",
+        description: "Displays all items in the user's inventory.",
+        aliases: ["-l"],
+        args: ["<optional uid>"],
+        async handler() {
+          let userData = userDataCopy;
+          let { inventory, petsData, gearsData, collectibles } =
+            getDatas(userData);
+          let otherTarget = null;
+          if (actionArgs[0]) {
+            const allUsers = await money.getAll();
+            const target = allUsers[actionArgs[0]];
+            if (!target) {
+              return output.reply(`User not found.`);
+            }
+            ({ inventory, petsData, gearsData, collectibles } =
+              getDatas(target));
+            otherTarget = target;
+            userData = target;
+          }
+          const items = inventory.getAll();
+          collectibles.register("money", {
+            key: "money",
+            name: "Money",
+            flavorText: "This is what you have, anytime, anywhere.",
+            icon: "💵",
+            type: "currencyInv",
+          });
+          collectibles.register("puzzlePiece", {
+            key: "puzzlePiece",
+            name: "Puzzle Piece",
+            flavorText: "Basically, Idk.",
+            icon: "🧩",
+            type: "currencyInv",
+          });
+
+          collectibles.set("money", userData.money);
+          collectibles.set("puzzlePiece", userData.wordGameWins ?? 0);
+          collectibles.removeEmpty();
+
+          const categoryMap = new Map();
+          for (const item of items) {
+            const category = item.type;
+            if (!categoryMap.has(category)) {
+              categoryMap.set(category, []);
+            }
+            const map = categoryMap.get(category);
+            map.push(item);
+          }
+
+          let itemList = ``;
+          const sorted = Array.from(categoryMap).sort((a, b) =>
+            a[0].localeCompare(b[0])
+          );
+          for (const [category, items] of sorted) {
+            itemList += `☆ [font=fancy_italic]${String(category)
+              .toUpperCase()
+              .replaceAll("_", " ")}[:font=fancy_italic]\n\n`;
+            itemList += items
+              .map((item) => `${item.icon} ${item.name} (${item.key})`)
+              .join("\n");
+            itemList += `\n\n`;
+          }
+          const cllMap = new Map();
+          for (const item of collectibles) {
+            const category = item.metadata.type ?? "Uncategorized";
+            if (!cllMap.has(category)) {
+              cllMap.set(category, []);
+            }
+            const map = cllMap.get(category);
+            map.push(item);
+          }
+          let cllList = ``;
+          const sorted2 = Array.from(cllMap).sort((a, b) =>
+            a[0].localeCompare(b[0])
+          );
+          for (const [category, items] of sorted2) {
+            cllList += `☆ [font=fancy_italic]${String(category)
+              .toUpperCase()
+              .replaceAll("_", " ")}[:font=fancy_italic]\n\n`;
+            cllList += items
+              .map(
+                ({ metadata, amount }) =>
+                  `${metadata.icon} ${
+                    amount > 1 ? `**x${pCy(amount)}**` : ""
+                  } ${metadata.name} (${metadata.key})`
+              )
+              .join("\n");
+            cllList += "\n\n";
+          }
+
+          return output.reply(
+            (otherTarget
+              ? `✅ Checking ${otherTarget.name ?? "Unregistered"}\n\n`
+              : "") +
+              `💼 **Classic Items** ✦ **${
+                inventory.getAll().length
+              }/8** (${Math.floor((inventory.size() / 8) * 100)}%)\n\n${
+                itemList.trim() || "No items available."
+              }\n\n${
+                UNIRedux.standardLine
+              }\n🗝️ **Collectibles** ✦ Unlimited (UNLI%)\n\n${cllList.trim()}`
+          );
+        },
+      },
+      {
+        key: "inspect",
+        description: "Shows detailed information about a specific item.",
+        aliases: ["examine", "check", "look", "-i"],
+        args: ["<item_id | index>"],
+        async handler() {
+          const keyToCheck = actionArgs[0];
+          if (!keyToCheck) {
+            return output.reply("❌ Please specify an item key to inspect.");
+          }
+          const altKey = actionArgs
+            .map((key, index) => {
+              if (index !== 0) {
+                return `${key.charAt(0)?.toUpperCase()}${key
+                  .slice(1)
+                  .toLowerCase()}`;
+              } else {
+                return key.toLowerCase();
+              }
+            })
+            .join("");
+          const lastKey = inventory
+            .getAll()
+            .find((item) => item.name === actionArgs.join(" "));
+          const item =
+            inventory.getOne(keyToCheck) ||
+            inventory.getOne(altKey) ||
+            inventory.getOne(lastKey);
+          if (!item) {
+            return output.reply(
+              `Item with key "${keyToCheck}" not found in your inventory.`
+            );
+          }
+          const { icon, name, flavorText } = item;
+          return output.reply(
+            `${icon} **${name}** (${inventory.getAmount(
+              keyToCheck
+            )})\n✦ ${flavorText}\n\n***Type:*** ${item.type}\nHeals ${
+              item.heal ?? 0
+            }HP\n+ ${item.def ?? 0} DEF\n+ ${
+              item.atk ?? 0
+            } ATK\n🐾 Saturation: ${
+              (item.saturation ?? 0) / 60 / 1000
+            } minutes.\n\n***Sell Price***: $${item.sellPrice ?? 0}💵`
+          );
+        },
+      },
+      {
+        key: "use",
+        description:
+          "Uses or activates a specific item for its intended effect.",
+        aliases: ["activate", "consume", "equip", "-u"],
+        args: ["<item_id | index>"],
+      },
+      {
+        key: "transfer",
+        description: "Sends an item to another user or entity.",
+        aliases: ["give", "send", "-t"],
+        args: ["<item_id | index>*<num|'all'>", "<uid>"],
+      },
+      {
+        key: "toss",
+        description: "Discards an item from the user's inventory.",
+        aliases: ["discard", "drop", "throw"],
+        args: ["<item_id | index>*<num|'all'>"],
+      },
+    ]
+  );
+  return home.runInContext(ctx);
+
+  switch (false) {
     case "list": {
       let userData = userDataCopy;
       let { inventory, petsData, gearsData, collectibles } = getDatas(userData);
@@ -137,10 +340,12 @@ export async function entry({
 
       let itemList = ``;
       const sorted = Array.from(categoryMap).sort((a, b) =>
-        a[0].localeCompare(b[0]),
+        a[0].localeCompare(b[0])
       );
       for (const [category, items] of sorted) {
-        itemList += `☆ [font=double_struck]${String(category).toUpperCase().replaceAll("_", " ")}[:font=double_struck]\n\n`;
+        itemList += `☆ [font=double_struck]${String(category)
+          .toUpperCase()
+          .replaceAll("_", " ")}[:font=double_struck]\n\n`;
         itemList += items
           .map((item) => `${item.icon} ${item.name} (${item.key})`)
           .join("\n");
@@ -157,14 +362,18 @@ export async function entry({
       }
       let cllList = ``;
       const sorted2 = Array.from(cllMap).sort((a, b) =>
-        a[0].localeCompare(b[0]),
+        a[0].localeCompare(b[0])
       );
       for (const [category, items] of sorted2) {
-        cllList += `☆ [font=double_struck]${String(category).toUpperCase().replaceAll("_", " ")}[:font=double_struck]\n\n`;
+        cllList += `☆ [font=double_struck]${String(category)
+          .toUpperCase()
+          .replaceAll("_", " ")}[:font=double_struck]\n\n`;
         cllList += items
           .map(
             ({ metadata, amount }) =>
-              `${metadata.icon} ${amount > 1 ? `**x${pCy(amount)}**` : ""} ${metadata.name} (${metadata.key})`,
+              `${metadata.icon} ${amount > 1 ? `**x${pCy(amount)}**` : ""} ${
+                metadata.name
+              } (${metadata.key})`
           )
           .join("\n");
         cllList += "\n\n";
@@ -178,8 +387,12 @@ export async function entry({
         )
         .join("\n");*/
       return output.reply(
-        (otherTarget ? `✅ Checking ${otherTarget.name ?? "Unregistered"}\n\n` : "") +
-          `✪ ✦ **Classic Items**: (**${inventory.getAll().length}/8**)\n\n${itemList.trim() || "No items available."}\n\n✪ ✦ **Collectibles**:\n\n${cllList.trim()}`,
+        (otherTarget
+          ? `✅ Checking ${otherTarget.name ?? "Unregistered"}\n\n`
+          : "") +
+          `✪ ✦ **Classic Items**: (**${inventory.getAll().length}/8**)\n\n${
+            itemList.trim() || "No items available."
+          }\n\n✪ ✦ **Collectibles**:\n\n${cllList.trim()}`
       );
       break;
     }
@@ -192,7 +405,9 @@ export async function entry({
       const altKey = actionArgs
         .map((key, index) => {
           if (index !== 0) {
-            return `${key.charAt(0)?.toUpperCase()}${key.slice(1).toLowerCase()}`;
+            return `${key.charAt(0)?.toUpperCase()}${key
+              .slice(1)
+              .toLowerCase()}`;
           } else {
             return key.toLowerCase();
           }
@@ -207,12 +422,18 @@ export async function entry({
         inventory.getOne(lastKey);
       if (!item) {
         return output.reply(
-          `Item with key "${keyToCheck}" not found in your inventory.`,
+          `Item with key "${keyToCheck}" not found in your inventory.`
         );
       }
       const { icon, name, flavorText } = item;
       return output.reply(
-        `${icon} **${name}** (${inventory.getAmount(keyToCheck)})\n✦ ${flavorText}\n\n***Type:*** ${item.type}\nHeals ${item.heal ?? 0}HP\n+ ${item.def ?? 0} DEF\n+ ${item.atk ?? 0} ATK\n🐾 Saturation: ${(item.saturation ?? 0) / 60 / 1000} minutes.\n\n***Sell Price***: $${item.sellPrice ?? 0}💵`,
+        `${icon} **${name}** (${inventory.getAmount(
+          keyToCheck
+        )})\n✦ ${flavorText}\n\n***Type:*** ${item.type}\nHeals ${
+          item.heal ?? 0
+        }HP\n+ ${item.def ?? 0} DEF\n+ ${item.atk ?? 0} ATK\n🐾 Saturation: ${
+          (item.saturation ?? 0) / 60 / 1000
+        } minutes.\n\n***Sell Price***: $${item.sellPrice ?? 0}💵`
       );
 
     case "toss":
@@ -231,7 +452,7 @@ export async function entry({
         const cannot = inventory.get(key).filter((i) => i?.cannotToss === true);
         const deletedCount = inventory.toss(
           key,
-          Math.max(amount - cannot.length, 0),
+          Math.max(amount - cannot.length, 0)
         );
         await money.set(input.senderID, {
           inventory: Array.from(inventory),
@@ -245,33 +466,35 @@ export async function entry({
           return output.reply("No items were tossed." + failedToss);
         }
         return output.reply(
-          `${deletedCount} item(s) tossed from your inventory.` + failedToss,
+          `${deletedCount} item(s) tossed from your inventory.` + failedToss
         );
       } else {
         return output.reply(
-          "❌ Invalid amount. Please specify a number or 'all'.",
+          "❌ Invalid amount. Please specify a number or 'all'."
         );
       }
     case "send_new":
       return output.reply(
-        `❌ You need a **Shadow Bag** to perform this action.`,
+        `❌ You need a **Shadow Bag** to perform this action.`
       );
     case "send":
       let [keyT, recipientID, amountItem = 1] = actionArgs;
       amountItem = parseInt(amountItem);
       if (recipientID === input.senderID) {
         return output.reply(
-          `❌ You cannot send items to yourself, I already tried.`,
+          `❌ You cannot send items to yourself, I already tried.`
         );
       }
       if (!inventory.has(keyT)) {
         return output.reply(
-          `❌ You don't have any "${keyT}" in your inventory.`,
+          `❌ You don't have any "${keyT}" in your inventory.`
         );
       }
       if (!inventory.hasAmount(keyT, amountItem) || amountItem < 1) {
         return output.reply(
-          `❌ Please enter a valid amount of "${keyT}", you currently have ${inventory.getAmount(keyT)} of it.`,
+          `❌ Please enter a valid amount of "${keyT}", you currently have ${inventory.getAmount(
+            keyT
+          )} of it.`
         );
       }
       const allUsers = await money.getAll();
@@ -285,7 +508,9 @@ export async function entry({
       }
       if (rInventory.getAll().length + amountItem > 8) {
         return output.reply(
-          `❌ The recipient's inventory currently have ${rInventory.getAll().length}/8 items and you're trying to send ${amountItem} items.`,
+          `❌ The recipient's inventory currently have ${
+            rInventory.getAll().length
+          }/8 items and you're trying to send ${amountItem} items.`
         );
       }
       let sentItems = [];
@@ -310,7 +535,17 @@ export async function entry({
       });
 
       await output.reply(
-        `${sentItems.length !== 0 ? `✅ Sent ${sentItems.length} items to ${recipientData.name ?? "Unregistered"}` : `❌ No items were sent to ${recipientData.name ?? "Unregistered"}`}\n\n${[...sentItems, ...failItems].map((i) => `${i.icon} ${i.name}${i.error ? `\n❌ ${i.error}\n` : ""}`).join("\n")}`,
+        `${
+          sentItems.length !== 0
+            ? `✅ Sent ${sentItems.length} items to ${
+                recipientData.name ?? "Unregistered"
+              }`
+            : `❌ No items were sent to ${recipientData.name ?? "Unregistered"}`
+        }\n\n${[...sentItems, ...failItems]
+          .map(
+            (i) => `${i.icon} ${i.name}${i.error ? `\n❌ ${i.error}\n` : ""}`
+          )
+          .join("\n")}`
       );
       break;
     case "use":
@@ -323,7 +558,7 @@ export async function entry({
         let item = inventory.getOne(key);
         if (!item && !String(key).startsWith(eKey)) {
           return output.reply(
-            `❌ Item with key "${key}" not found in your inventory.`,
+            `❌ Item with key "${key}" not found in your inventory.`
           );
         }
         item ??= {};
@@ -339,7 +574,12 @@ export async function entry({
             return output.reply(`❌ You don't have any pets to use this item.`);
           }
           const i = await output.reply(
-            `**Choose a pet name to equip this item:** (Also try <pet name> <armor slot number> for armors)\n\n${getPetList(petsData, gearsData, item, 0)}`,
+            `**Choose a pet name to equip this item:** (Also try <pet name> <armor slot number> for armors)\n\n${getPetList(
+              petsData,
+              gearsData,
+              item,
+              0
+            )}`
           );
           input.setReply(i.messageID, {
             key: commandName,
@@ -354,7 +594,7 @@ export async function entry({
             item ??= {};
             if (!key.startsWith(eKey) && !inventory.has(item.key)) {
               return ctx.output.reply(
-                `❓ Where did the item go? I can't find it from your inventory.`,
+                `❓ Where did the item go? I can't find it from your inventory.`
               );
             }
 
@@ -368,11 +608,11 @@ export async function entry({
               .find(
                 (i) =>
                   String(i.name).toLowerCase().trim() ===
-                  petName.toLowerCase().trim(),
+                  petName.toLowerCase().trim()
               );
             if (!pet) {
               return ctx.output.reply(
-                `❌ You don't have a pet named "${petName}"`,
+                `❌ You don't have a pet named "${petName}"`
               );
             }
             const gearData = gearsData.getGearData(pet.key);
@@ -412,7 +652,7 @@ export async function entry({
               }
             } else {
               return ctx.output.reply(
-                `❌ This item is no longer an armor or weapon, what bug are you trying to discover? Or maybe wrong syntax for ${eKey}_armor or ${eKey}_weapon`,
+                `❌ This item is no longer an armor or weapon, what bug are you trying to discover? Or maybe wrong syntax for ${eKey}_armor or ${eKey}_weapon`
               );
             }
             gearsData.setGearData(pet.key, gearData);
@@ -421,7 +661,14 @@ export async function entry({
               gearsData: gearsData.toJSON(),
             });
             await ctx.output.reply(
-              `✅ Equipped **${item.icon}** **${item.name}** to **${pet.name}**. (use inv use --unequip_armor or --unequip_weapon to unequip.)\n\n${getPetList(petsData, gearsData, {}, 0)}`,
+              `✅ Equipped **${item.icon}** **${item.name}** to **${
+                pet.name
+              }**. (use inv use --unequip_armor or --unequip_weapon to unequip.)\n\n${getPetList(
+                petsData,
+                gearsData,
+                {},
+                0
+              )}`
             );
           }
           return;
@@ -440,7 +687,7 @@ export async function entry({
             itemToCash?.type !== "cheque"
           ) {
             return output.reply(
-              `❌ No valid cheque found with the specified key.`,
+              `❌ No valid cheque found with the specified key.`
             );
           }
 
@@ -459,7 +706,7 @@ export async function entry({
           });
 
           return output.reply(
-            `✅ Cashed a cheque worth $${chequeAmount}. Your new balance is $${userData.money}.`,
+            `✅ Cashed a cheque worth $${chequeAmount}. Your new balance is $${userData.money}.`
           );
         }
         if (item.type === "potion") {
@@ -469,7 +716,7 @@ export async function entry({
 
 ${item.icon} **${item.name}**: "Shut up ${item.name} is taking a NAP!"
 
-✦ Since when did items learned how to **talk**?`,
+✦ Since when did items learned how to **talk**?`
           );
         }
         if (item.type !== "treasure") {
@@ -509,7 +756,7 @@ ${item.icon} **${item.name}**: "Shut up ${item.name} is taking a NAP!"
 
           if (!inventory.has(item.key) && !paidMode) {
             return output.reply(
-              `❌ | Where did the item go? I can't find it from your inventory.`,
+              `❌ | Where did the item go? I can't find it from your inventory.`
             );
           }
           let number = parseInt(input.words[0]);
@@ -521,7 +768,7 @@ ${item.icon} **${item.name}**: "Shut up ${item.name} is taking a NAP!"
           }
           if (isNaN(number) || number < 1 || number > tresCount) {
             return output.reply(
-              `❌ | Please go back to the previous message and reply a number **between 1 to ${tresCount}.**`,
+              `❌ | Please go back to the previous message and reply a number **between 1 to ${tresCount}.**`
             );
           }
           const treasure = treasures[number - 1];
@@ -551,7 +798,11 @@ ${item.icon} **${item.name}**: "Shut up ${item.name} is taking a NAP!"
             `${item.icon} You opened ${item.name}!
 
 ${treasures.map((i) => i.icon).join(" | ")}
-${collectibles.hasAmount("gems", diaCost) ? `\n[font=typewriter]Retry for 💎 ${diaCost}[:font=typewriter]\n[font=typewriter](retry <number>)[:font=typewriter]` : ""}
+${
+  collectibles.hasAmount("gems", diaCost)
+    ? `\n[font=typewriter]Retry for 💎 ${diaCost}[:font=typewriter]\n[font=typewriter](retry <number>)[:font=typewriter]`
+    : ""
+}
 
 **Reward Details:**
 Name: **${treasureItem.icon}** **${treasureItem.name}**
@@ -559,8 +810,10 @@ Info: ${treasureItem.flavorText}
 
 Type **inv check ${treasureItem.key}** for more details!
 
-💎 **${pCy(collectibles.getAmount("gems"))}** ${paidMode ? `(-${diaCost})` : ""}`,
-            style,
+💎 **${pCy(collectibles.getAmount("gems"))}** ${
+              paidMode ? `(-${diaCost})` : ""
+            }`,
+            style
           );
           treasures[number - 1] = {
             icon: "✅",
@@ -602,7 +855,11 @@ Type **inv check ${treasureItem.key}** for more details!`);*/
         }
         treasures = treasures.sort(() => Math.random() - 0.5);
         const info = await output.reply(
-          `✦ Choose a treasure to open:\n\n${Array(tresCount).fill(item.icon).join(" | ")}\n\nReply with a **number** from **1** to **${tresCount}**.`,
+          `✦ Choose a treasure to open:\n\n${Array(tresCount)
+            .fill(item.icon)
+            .join(
+              " | "
+            )}\n\nReply with a **number** from **1** to **${tresCount}**.`
         );
         input.setReply(info.messageID, {
           key: "inventory",
@@ -615,11 +872,26 @@ Type **inv check ${treasureItem.key}** for more details!`);*/
     default:
       return output.reply(
         `❌ Invalid action. Usage:\n\n` +
-          `\`${meta.usage.replace("{prefix}", prefix)} list <optional id>\`: Lists all items in the inventory.\n` +
-          `\`${meta.usage.replace("{prefix}", prefix)} check <key>\`: Checks details of a specific item.\n` +
-          `\`${meta.usage.replace("{prefix}", prefix)} toss <key> <amount | 'all'>\`: Deletes one or more items from the inventory.\n` +
-          `\`${meta.usage.replace("{prefix}", prefix)} send <key> <id>\`: Transfers one or more items from the inventory into one another.\n` +
-          `\`${meta.usage.replace("{prefix}", prefix)} use <key> Uses an item from your inventory.`,
+          `\`${meta.usage.replace(
+            "{prefix}",
+            prefix
+          )} list <optional id>\`: Lists all items in the inventory.\n` +
+          `\`${meta.usage.replace(
+            "{prefix}",
+            prefix
+          )} check <key>\`: Checks details of a specific item.\n` +
+          `\`${meta.usage.replace(
+            "{prefix}",
+            prefix
+          )} toss <key> <amount | 'all'>\`: Deletes one or more items from the inventory.\n` +
+          `\`${meta.usage.replace(
+            "{prefix}",
+            prefix
+          )} send <key> <id>\`: Transfers one or more items from the inventory into one another.\n` +
+          `\`${meta.usage.replace(
+            "{prefix}",
+            prefix
+          )} use <key> Uses an item from your inventory.`
       );
   }
 }

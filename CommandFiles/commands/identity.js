@@ -16,10 +16,12 @@ export const meta = {
   icon: "",
 };
 
+const { parseCurrency: pCy } = global.utils;
+
 export const style = {
   title: "Identity Dashboard 💬",
   titleFont: "bold",
-  contentFont: "fancy",
+  contentFont: "none",
 };
 
 const home = new ReduxCMDHome(
@@ -169,6 +171,42 @@ const home = new ReduxCMDHome(
       key: "unregister",
       description: "Unregister your account or remove personal information.",
       aliases: ["-u"],
+    },
+    {
+      key: "count",
+      description:
+        "Lists the total number of users and visualizes user statistics",
+      aliases: ["-c"],
+      async handler({ output, input, money }) {
+        const allUsers = await money.getAll();
+        const userCount = Object.keys(allUsers).length;
+        const formattedUserCount = pCy(userCount);
+
+        let maxStats = {};
+        let maxUsers = {};
+
+        for (const userID in allUsers) {
+          const userData = allUsers[userID];
+          for (const [key, value] of Object.entries(userData)) {
+            if (typeof value === "number") {
+              if (!(key in maxStats) || value > maxStats[key]) {
+                maxStats[key] = value;
+                maxUsers[key] = userData.name || "Unregistered";
+              }
+            }
+          }
+        }
+
+        let statsResult = "User with the highest stats in each category:\n\n";
+        for (const [key, value] of Object.entries(maxStats)) {
+          const formattedValue = pCy(value);
+          statsResult += `✓ **${maxUsers[key]}** has the highest **${key}** with a value of **${formattedValue}**.\n\n`;
+        }
+
+        const result = `There are **${formattedUserCount}** users in the **Cassidy Chatbot System.**\n\n${statsResult}`;
+
+        output.reply(result);
+      },
     },
   ]
 );

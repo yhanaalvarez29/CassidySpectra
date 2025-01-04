@@ -1,7 +1,7 @@
 export const meta = {
   name: "ut-shop",
   author: "Liane Cagara",
-  version: "1.0.0",
+  version: "1.2.0",
   description: "I'm lazy so I made these",
   supported: "^1.0.0",
   order: 1,
@@ -394,18 +394,18 @@ export async function use(obj) {
       (i) =>
         typeof i?.bankData === "object" &&
         typeof i.bankData.bank === "number" &&
-        !isNaN(i.bankData.bank),
+        !isNaN(i.bankData.bank)
     );
     const bankSum = bankDatas.reduce(
       (acc, { bankData }) => acc + bankData.bank,
-      0,
+      0
     );
     const lendUsers = Object.values(usersData).filter(
-      (i) => typeof i?.lendAmount === "number" && !isNaN(i.lendAmount),
+      (i) => typeof i?.lendAmount === "number" && !isNaN(i.lendAmount)
     );
     const lendAmounts = lendUsers.reduce(
       (acc, { lendAmount }) => acc + lendAmount,
-      0,
+      0
     );
     const bankMean = bankSum / bankDatas.length;
     let mean = sum / Object.keys(usersData).length;
@@ -609,7 +609,9 @@ export async function use(obj) {
       const result = inventory
         .map(
           (item) =>
-            `${item.index + 1}. **${item.icon} ${item.name}** - **${item.shopDisallowed ? `🚫` : `${pCy(item.sellPrice || 0)}$`}**\n✦ ${item.flavorText}`,
+            `${item.index + 1}. **${item.icon} ${item.name}** - **${
+              item.shopDisallowed ? `🚫` : `${pCy(item.sellPrice || 0)}$`
+            }**\n✦ ${item.flavorText}`
         )
         .join("\n\n");
       return result;
@@ -639,14 +641,18 @@ export async function use(obj) {
             let hasInv = invAmount && boxAmount;
             let result = ``;
             result += `${item.num}. **${item.icon} ${item.name}**\n`;
-            result += `- **${pCy(this.isGenoR() ? 0 : item.price ?? 0)}$** ${isSellable ? (isAffordable ? (hasInv ? "✅" : "💰") : "❌") : "🚫"} ${invAmount ? `🎒 **x${invAmount}**` : ""} ${boxAmount ? `📦 **x${boxAmount}**` : ""} ${item.inflation ? `[ 📈 **+${item.inflation ?? 0}$** ]` : ""}\n`;
+            result += `- **${pCy(this.isGenoR() ? 0 : item.price ?? 0)}$** ${
+              isSellable ? (isAffordable ? (hasInv ? "✅" : "💰") : "❌") : "🚫"
+            } ${invAmount ? `🎒 **x${invAmount}**` : ""} ${
+              boxAmount ? `📦 **x${boxAmount}**` : ""
+            } ${item.inflation ? `[ 📈 **+${item.inflation ?? 0}$** ]` : ""}\n`;
             if (!(playersMap instanceof Map)) {
               throw new Error(
                 `playersMap must be a Map, received ${
                   typeof playersMap === "object"
                     ? playersMap.constructor.name
                     : typeof playersMap
-                }`,
+                }`
               );
             }
             if (
@@ -679,7 +685,9 @@ export async function use(obj) {
                     let i = defDiff > 0;
                     let b = i ? "**" : "";
                     applyHead();
-                    result += `**${defDiff > 0 ? "+" : ""}${defDiff}** ${b}DEF${b}, `;
+                    result += `**${
+                      defDiff > 0 ? "+" : ""
+                    }${defDiff}** ${b}DEF${b}, `;
                   }
                 } else if (item.type === "armor") {
                   if (clone.armors[0] && clone.armors[0].def > item.def) {
@@ -700,7 +708,9 @@ export async function use(obj) {
                     let i = atkDiff > 0;
                     let b = i ? "**" : "";
                     applyHead();
-                    result += `**${atkDiff > 0 ? "+" : ""}${atkDiff}** ${b}ATK${b}, `;
+                    result += `**${
+                      atkDiff > 0 ? "+" : ""
+                    }${atkDiff}** ${b}ATK${b}, `;
                   }
                 }
                 if (isHead) {
@@ -712,7 +722,11 @@ export async function use(obj) {
               }
             }
 
-            result += `✦ ${isSellable ? item.flavorText : item.cannotBuyFlavor ?? item.flavorText}`;
+            result += `✦ ${
+              isSellable
+                ? item.flavorText
+                : item.cannotBuyFlavor ?? item.flavorText
+            }`;
             return result;
           })
           .join("\n\n");
@@ -720,7 +734,9 @@ export async function use(obj) {
         result = data
           .map(
             (item) =>
-              `${item.num}. **${item.icon} ${item.name}** - **${this.isGenoR() ? 0 : item.price}$**\n✦ ${item.flavorText}`,
+              `${item.num}. **${item.icon} ${item.name}** - **${
+                this.isGenoR() ? 0 : item.price
+              }$**\n✦ ${item.flavorText}`
           )
           .join("\n\n");
       }
@@ -794,8 +810,9 @@ export async function use(obj) {
           inv: new Inventory(inventory),
         });
         this.playerRoute = player.getRoute();
-        const i =
-          await output.reply(`✦ ${this.isGenoR() ? `But nobody came.` : this.rand(this.welcomeTexts)}
+        const i = await output.reply(`✦ ${
+          this.isGenoR() ? `But nobody came.` : this.rand(this.welcomeTexts)
+        }
 
 ${this.optionText()}
 
@@ -891,12 +908,12 @@ ${this.optionText()}
         }
         async function handleSteal() {
           const { money: cash, inventory = [] } = await money.get(
-            input.senderID,
+            input.senderID
           );
           const items = self.stringItemData();
           const dialogue = `You can take whatever you want. (you cannot take multiple.)`;
           const i = await output.reply(
-            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${cash}**$ **${inventory.length}/${inventoryLimit}**`,
+            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${cash}**$ **${inventory.length}/${inventoryLimit}**`
           );
           handleEnd(i.messageID, {
             isItemChoose: true,
@@ -914,7 +931,7 @@ ${this.optionText()}
           });
           const dialogue = self.rand(self.buyTexts);
           const i = await output.reply(
-            `✦ ${dialogue}\n\n${items}\n\n\n(Reply with <num> <amount>)\n**Back**\n**${cash}**$ **${inventory.length}/${inventoryLimit}**`,
+            `✦ ${dialogue}\n\n${items}\n\n\n(Reply with <num> <amount>)\n**Back**\n**${cash}**$ **${inventory.length}/${inventoryLimit}**`
           );
           handleEnd(i.messageID, {
             isItemChoose: true,
@@ -944,7 +961,7 @@ ${this.optionText()}
           boxItems = new Inventory(boxItems, 100);
           const dialogue = self.rand(self.askSellTexts);
           const i = await output.reply(
-            `✦ ${dialogue}\n\n**A.** Sell **Items** **(${inventory.size()}/8)**\n**B**. Sell **Box** Items **(${boxItems.size()}/100)**\n\n**Back**\n**${cash}**$`,
+            `✦ ${dialogue}\n\n**A.** Sell **Items** **(${inventory.size()}/8)**\n**B**. Sell **Box** Items **(${boxItems.size()}/100)**\n\n**Back**\n**${cash}**$`
           );
           handleEnd(i.messageID, {
             sellChoose: true,
@@ -961,7 +978,9 @@ ${this.optionText()}
             let items = self.stringSellData([...inventory]);
             const dialogue = self.rand(self.askSellTexts);
             const i = await output.reply(
-              `✦ ${dialogue}\n\n${items}\n\n\n(Reply with <num> <amount>)\n**Back**\n**${cash}**$ **${inventory.getAll().length}/${isBox ? 100 : inventoryLimit}**`,
+              `✦ ${dialogue}\n\n${items}\n\n\n(Reply with <num> <amount>)\n**Back**\n**${cash}**$ **${
+                inventory.getAll().length
+              }/${isBox ? 100 : inventoryLimit}**`
             );
             handleEnd(i.messageID, {
               isTrueSell: true,
@@ -1005,13 +1024,13 @@ ${this.optionText()}
             money: playerMoney + cash,
           });
           const i = await output.reply(
-            `✦ You took ${cash}$ from the cash registry.\n\n**Back**`,
+            `✦ You took ${cash}$ from the cash registry.\n\n**Back**`
           );
           handleEnd(i.messageID);
         }
         async function handleNote() {
           const i = await output.reply(
-            `✦ The note says "${self.genoNote}"\n\n**Back**`,
+            `✦ The note says "${self.genoNote}"\n\n**Back**`
           );
           handleEnd(i.messageID);
         }
@@ -1021,7 +1040,7 @@ ${this.optionText()}
 
           const talks = self.stringTalkTexts();
           const i = await output.reply(
-            `✦ ${self.rand(self.askTalkTexts)}\n\n${talks}\n**Back**`,
+            `✦ ${self.rand(self.askTalkTexts)}\n\n${talks}\n**Back**`
           );
           handleEnd(i.messageID, {
             isTalkChoose: true,
@@ -1038,21 +1057,21 @@ ${this.optionText()}
           }
 
           const targetItem = self.itemData.find(
-            (item) => String(item.num) === String(num),
+            (item) => String(item.num) === String(num)
           );
           if (isNaN(num) || !targetItem) {
             return output.reply(
-              `(Go back and reply with a valid number that you can see at the left side of the item name.)`,
+              `(Go back and reply with a valid number that you can see at the left side of the item name.)`
             );
           }
           const { onPurchase } = targetItem;
           const price = 0;
           const { money: cash, inventory = [] } = await money.get(
-            input.senderID,
+            input.senderID
           );
           if (inventory.length >= inventoryLimit) {
             return output.reply(
-              `(You cannot steal anything right now.. Your inventory is full (${inventory.length}/${inventoryLimit})`,
+              `(You cannot steal anything right now.. Your inventory is full (${inventory.length}/${inventoryLimit})`
             );
           }
           try {
@@ -1069,7 +1088,9 @@ ${this.optionText()}
           }
           const dialogue = `Done, just take more, nobody stops you.`;
           const i = await output.reply(
-            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${cash - price} (-${price})**$ **${inventory.length}/${inventoryLimit}**`,
+            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${
+              cash - price
+            } (-${price})**$ **${inventory.length}/${inventoryLimit}**`
           );
           handleEnd(i.messageID, {
             isItemChoose: true,
@@ -1104,11 +1125,11 @@ ${this.optionText()}
           }
 
           const targetItem = self.itemData.find(
-            (item) => String(item.num) === String(num),
+            (item) => String(item.num) === String(num)
           );
           if (isNaN(num) || !targetItem) {
             return output.reply(
-              `(Go back and reply with a valid number that you can see at the left side of the item name.)`,
+              `(Go back and reply with a valid number that you can see at the left side of the item name.)`
             );
           }
           let { price = 0, onPurchase } = targetItem;
@@ -1119,17 +1140,17 @@ ${this.optionText()}
           price = amount * price;
           if (cash < price) {
             return output.reply(
-              `(You don't have enough money to buy this item (${cash}$ < ${price}$), please go back and choose a valid option, or just choose "back")`,
+              `(You don't have enough money to buy this item (${cash}$ < ${price}$), please go back and choose a valid option, or just choose "back")`
             );
           }
           if (targetItem.cannotBuy) {
             return output.reply(
-              `(No matter what you do, you won't be able to buy this item.)`,
+              `(No matter what you do, you won't be able to buy this item.)`
             );
           }
           if (inventory.length >= inventoryLimit) {
             return output.reply(
-              `(You cannot buy anything right now.. Your inventory is full (${inventory.length}/${inventoryLimit})`,
+              `(You cannot buy anything right now.. Your inventory is full (${inventory.length}/${inventoryLimit})`
             );
           }
           const argu = {
@@ -1156,7 +1177,11 @@ ${this.optionText()}
 
           const dialogue = self.rand(self.thankTexts);
           const i = await output.reply(
-            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${cash - price} (-${price})**$ **${inventory.length}/${inventoryLimit}** (+${amount} item(s))`,
+            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${
+              cash - price
+            } (-${price})**$ **${
+              inventory.length
+            }/${inventoryLimit}** (+${amount} item(s))`
           );
           handleEnd(i.messageID, {
             isItemChoose: true,
@@ -1166,7 +1191,7 @@ ${this.optionText()}
           const magicKey = isBox ? "boxItems" : "inventory";
           const magicSize = isBox ? 100 : 8;
           let { money: cash, [magicKey]: inventory = [] } = await money.get(
-            input.senderID,
+            input.senderID
           );
           inventory = new Inventory(sanitizeSellInv(inventory), magicSize);
 
@@ -1179,11 +1204,11 @@ ${this.optionText()}
             return handleGoBack();
           }
           const targetKey = inventory.findKey(
-            (i) => String(i.index + 1) === String(num),
+            (i) => String(i.index + 1) === String(num)
           );
           if (!targetKey) {
             return output.reply(
-              `(Go back and reply with a valid number of item that exists.`,
+              `(Go back and reply with a valid number of item that exists.`
             );
           }
           const targetItems = inventory
@@ -1215,7 +1240,7 @@ ${this.optionText()}
           }
           if (disallowed.length === targetItems.length) {
             return output.reply(
-              `(Go back and reply with a valid number that you can see at the left side of the item name.)`,
+              `(Go back and reply with a valid number that you can see at the left side of the item name.)`
             );
           }
 
@@ -1231,7 +1256,11 @@ ${this.optionText()}
           ]);
 
           const i = await output.reply(
-            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${cash + price} (+${price})**$ **${inventory.getAll().length}/${isBox ? 100 : inventoryLimit}** (-${amount} item(s))`,
+            `✦ ${dialogue}\n\n${items}\n\n\n**Back**\n**${
+              cash + price
+            } (+${price})**$ **${inventory.getAll().length}/${
+              isBox ? 100 : inventoryLimit
+            }** (-${amount} item(s))`
           );
           handleEnd(i.messageID, {
             isTrueSell: true,
@@ -1251,7 +1280,7 @@ ${this.optionText()}
             self.talkTexts.find((talk) => String(talk.num) === String(num));
           if ((!repObj.isTalkNext && isNaN(num)) || !targetTalk) {
             return output.reply(
-              `(Go back and reply with a valid number that you can see at the left side of the choice name.)`,
+              `(Go back and reply with a valid number that you can see at the left side of the choice name.)`
             );
           }
           const { responses } = targetTalk;
@@ -1278,11 +1307,12 @@ ${this.optionText()}
         }
         async function handleGoBack() {
           const { money: cash, inventory = [] } = await money.get(
-            input.senderID,
+            input.senderID
           );
 
-          const i =
-            await output.reply(`✦ ${self.isGenoR() ? `Nobody is here.` : self.rand(self.goBackTexts)}
+          const i = await output.reply(`✦ ${
+            self.isGenoR() ? `Nobody is here.` : self.rand(self.goBackTexts)
+          }
 
 ${self.optionText()}
 
@@ -1295,341 +1325,6 @@ ${self.optionText()}
       }
     }
   }
-  class Inventory {
-    constructor(inventory = [], limit = 8) {
-      inventory ??= [];
-      this.limit = limit;
-      this.inv = this.sanitize(JSON.parse(JSON.stringify(inventory)));
-      this.inv = new Proxy(this.inv, {
-        get(target, prop) {
-          return target[prop];
-        },
-        set(target, prop, value) {
-          if (target.length >= target.limit && !isNaN(parseInt(prop))) {
-            const err = new Error(
-              `Inventory is full (${target.length}/${target.limit})`,
-            );
-            err.name = "InventoryFullError";
-            err.code = "ERR_INVENTORY_FULL";
-            throw err;
-          } else {
-            target[prop] = value;
-          }
-          return true;
-        },
-      });
-    }
-    sanitize(inv = this.inv) {
-      if (!Array.isArray(inv)) {
-        throw new Error("Inventory must be an array.");
-      }
-      let result = inv.slice(0, this.limit).map((item, index) => {
-        const {
-          name = "Unknown Item",
-          key = "",
-          flavorText = "Mysteriously not known to anyone.",
-          icon = "❓",
-          type = "generic",
-          cannotToss = false,
-          sellPrice = 0,
-        } = item;
-        if (!key) {
-          return;
-        }
-        let result = {
-          ...item,
-          name: String(name),
-          key: String(key).replaceAll(" ", ""),
-          flavorText: String(flavorText),
-          icon: String(icon),
-          type: String(type),
-          index: Number(index),
-          sellPrice: parseInt(sellPrice),
-          cannotToss: !!cannotToss,
-        };
-        if (type === "food") {
-          result.heal ??= 0;
-          result.heal = parseInt(result.heal);
-        }
-        if (type === "weapon" || type === "armor") {
-          result.atk ??= 0;
-          result.def ??= 0;
-          result.atk = parseFloat(result.atk);
-          result.def = parseFloat(result.def);
-        }
-        return result;
-      });
-      return result.filter(Boolean);
-    }
-    getOne(key) {
-      return this.inv.find((item) => item.key === key);
-    }
-    get(key) {
-      return this.inv.filter((item) => item.key === key);
-    }
-    getAll() {
-      return this.inv;
-    }
-    deleteRef(item) {
-      const index = this.inv.indexOf(item);
-      if (index !== -1) {
-        this.inv = this.inv.filter((_, ind) => ind !== index);
-      }
-    }
-    deleteRefs(items) {
-      for (const item of items) {
-        this.deleteRef(item);
-      }
-    }
-    findKey(callback) {
-      const result = this.inv.find((item) => callback(item));
-      if (result) {
-        return result.key;
-      } else {
-        return null;
-      }
-    }
-    size() {
-      return this.inv.length;
-    }
-    clone() {
-      return new Inventory(this.inv);
-    }
-    toJSON() {
-      return this.inv;
-    }
-    deleteOne(key) {
-      const index = this.inv.findIndex((item) => item.key === key);
-      if (index === -1) {
-        return false;
-      }
-      this.inv = this.inv.filter((_, i) => i !== index);
-    }
-    delete(key) {
-      this.inv = this.inv.filter((item) => item.key !== key);
-    }
-    has(key) {
-      return this.inv.some((item) => item.key === key);
-    }
-    hasAmount(key, amount) {
-      const length = this.getAmount(key);
-      return length >= amount;
-    }
-    getAmount(key) {
-      return this.get(key).length;
-    }
-    addOne(item) {
-      return this.inv.push(item);
-    }
-    add(item) {
-      return this.inv.push(...item);
-    }
-    toss(key, amount) {
-      if (amount === "all") {
-        const i = this.getAmount(key);
-        this.delete(key);
-        return i;
-      }
-      let r = 0;
-      for (let i = 0; i < amount; i++) {
-        if (!this.has(key)) {
-          break;
-        }
-        this.deleteOne(key);
-        r++;
-      }
-      return r;
-    }
-    setAmount(key, amount) {
-      const data = this.get(key);
-      for (let i = 0; i < amount; i++) {
-        this.addOne(data[i]);
-      }
-    }
-    *[Symbol.iterator]() {
-      yield* this.inv;
-    }
-    *keys() {
-      yield* this.inv.map((item) => item.key);
-    }
-  }
-  class Collectibles {
-    #collectibles;
-    constructor(collectibles = []) {
-      this.#collectibles = this.sanitize(collectibles);
-    }
-
-    get collectibles() {
-      return this.#collectibles;
-    }
-
-    sanitize(c = this.#collectibles) {
-      const collectibleMap = new Map();
-
-      for (let i = c.length - 1; i >= 0; i--) {
-        const collectible = c[i];
-        if (!collectible.metadata) continue;
-
-        let {
-          key,
-          name = "Unknown Collectible",
-          icon = "❓",
-          type = "generic",
-          limit = undefined,
-        } = collectible.metadata;
-
-        if (!key) continue;
-
-        if (collectibleMap.has(key)) {
-          collectibleMap.get(key).amount += collectible.amount;
-        } else {
-          collectibleMap.set(key, {
-            metadata: { key, name, icon, type, limit },
-            amount: collectible.amount,
-          });
-        }
-      }
-
-      return Array.from(collectibleMap.values());
-    }
-    register(key, metadata) {
-      let index = this.#collectibles.findIndex((c) => c?.metadata.key === key);
-      if (index === -1) {
-        this.#collectibles.push({ metadata, amount: 0 });
-        index = this.#collectibles.length - 1;
-      } else {
-        this.#collectibles[index].metadata = metadata;
-      }
-      this.#collectibles = this.sanitize(this.#collectibles);
-      this.combineDuplicates();
-      return index;
-    }
-
-    combineDuplicates() {
-      const collectibleMap = new Map();
-      for (const collectible of this.#collectibles) {
-        const key = collectible.metadata.key;
-        const amount = collectible.amount;
-        if (collectibleMap.has(key)) {
-          collectibleMap.get(key).amount += amount;
-        } else {
-          collectibleMap.set(key, { ...collectible });
-        }
-      }
-      this.#collectibles = Array.from(collectibleMap.values());
-    }
-
-    raiseOne(key) {
-      return this.raise(key, 1);
-    }
-
-    getAll() {
-      return this.collectibles;
-    }
-
-    toJSON() {
-      return this.getAll();
-    }
-
-    *[Symbol.iterator]() {
-      yield* this.collectibles;
-    }
-
-    *keys() {
-      yield* this.collectibles.map((c) => c.metadata.key);
-    }
-
-    raise(key, amount = 0) {
-      this.validate(key);
-      if (isNaN(amount)) {
-        throw new Error("Amount must be a number.");
-      }
-      const data = this.get(key);
-      data.amount = (data.amount ?? 0) + amount;
-      if (data.metadata.limit) {
-        data.amount = Math.min(data.amount, data.metadata.limit);
-      }
-      return data.amount;
-    }
-
-    get(key) {
-      return this.collectibles.find((c) => c?.metadata.key === key);
-    }
-
-    set(key, amount) {
-      this.validate(key);
-      const index = this.#collectibles.findIndex(
-        (c) => c?.metadata.key === key,
-      );
-      if (index !== -1) {
-        this.#collectibles[index].amount = amount;
-        if (this.#collectibles[index].metadata.limit) {
-          this.#collectibles[index].amount = Math.min(
-            this.#collectibles[index].amount,
-            this.#collectibles[index].metadata.limit,
-          );
-        }
-      }
-      return index;
-    }
-
-    getAmount(key) {
-      return this.get(key)?.amount ?? 0;
-    }
-
-    hasAmount(key, amount) {
-      return this.getAmount(key) >= (amount ?? 1);
-    }
-
-    has(key) {
-      return this.get(key) !== undefined;
-    }
-
-    atLimit(key) {
-      const data = this.get(key);
-      return (
-        data?.metadata.limit !== undefined && data.amount >= data.metadata.limit
-      );
-    }
-
-    validate(key) {
-      if (!this.get(key)) {
-        throw new Error(`Collectible "${key}" is not yet registered.`);
-      }
-    }
-
-    getMeta(key) {
-      return this.get(key)?.metadata;
-    }
-
-    remove(key) {
-      this.validate(key);
-      this.#collectibles = this.#collectibles.filter(
-        (c) => c?.metadata.key !== key,
-      );
-    }
-
-    removeEmpty() {
-      for (const key of this.keys()) {
-        const amount = this.getAmount(key);
-        if (amount === 0) {
-          this.remove(key);
-        }
-      }
-      return this.collectibles;
-    }
-
-    resetAmount(key) {
-      this.validate(key);
-      const data = this.get(key);
-      if (data) {
-        data.amount = 0;
-      }
-      return data.amount;
-    }
-  }
-  obj.Collectibles = Collectibles;
-  obj.treasures = new Inventory(treasures, 10000000);
   function petPlayerMaps(data) {
     const { GearsManage, Inventory, PetPlayer } = obj;
     const gearsManage = new GearsManage(data.gearsData);
@@ -1646,9 +1341,370 @@ ${self.optionText()}
       playersMap,
     };
   }
+  obj.Collectibles = Collectibles;
+  obj.treasures = new Inventory(treasures, 10000000);
+
   obj.petPlayerMaps = petPlayerMaps;
 
   obj.UTShop = UTShop;
   obj.Inventory = Inventory;
   obj.next();
+}
+
+export class Inventory {
+  constructor(inventory = [], limit = global.Cassidy.invLimit) {
+    inventory ??= [];
+    this.limit = limit;
+    this.inv = this.sanitize(JSON.parse(JSON.stringify(inventory)));
+
+    // this.inv = new Proxy(this.inv, {
+    //   get(target, prop) {
+    //     return target[prop];
+    //   },
+    //   set(target, prop, value) {
+    //     if (target.length >= target.limit && !isNaN(parseInt(prop))) {
+    //       const err = new Error(
+    //         `Inventory is full (${target.length}/${target.limit})`
+    //       );
+    //       err.name = "InventoryFullError";
+    //       err.code = "ERR_INVENTORY_FULL";
+    //       throw err;
+    //     } else {
+    //       target[prop] = value;
+    //     }
+    //     return true;
+    //   },
+    // });
+  }
+  sanitize(inv = this.inv) {
+    if (!Array.isArray(inv)) {
+      throw new Error("Inventory must be an array.");
+    }
+    let result = inv.slice(0, this.limit).map((item, index) => {
+      const {
+        name = "Unknown Item",
+        key = "",
+        flavorText = "Mysteriously not known to anyone.",
+        icon = "❓",
+        type = "generic",
+        cannotToss = false,
+        sellPrice = 0,
+      } = item;
+      if (!key) {
+        return;
+      }
+      let result = {
+        ...item,
+        name: String(name),
+        key: String(key).replaceAll(" ", ""),
+        flavorText: String(flavorText),
+        icon: String(icon),
+        type: String(type),
+        index: Number(index),
+        sellPrice: parseInt(sellPrice),
+        cannotToss: !!cannotToss,
+      };
+      if (type === "food") {
+        result.heal ??= 0;
+        result.heal = parseInt(result.heal);
+      }
+      if (type === "weapon" || type === "armor") {
+        result.atk ??= 0;
+        result.def ??= 0;
+        result.atk = parseFloat(result.atk);
+        result.def = parseFloat(result.def);
+      }
+      return result;
+    });
+    return result.filter(Boolean);
+  }
+
+  at(index) {
+    const parsedIndex = parseInt(index);
+    return isNaN(parsedIndex) ? undefined : this.inv.at(parsedIndex - 1);
+  }
+
+  getOne(key) {
+    return this.inv.find((item) => item.key === key) || this.at(key);
+  }
+  get(key) {
+    return this.inv.filter(
+      (item) => item.key === key || item.key === this.keyAt(key)
+    );
+  }
+  getAll() {
+    return this.inv;
+  }
+  deleteRef(item) {
+    let index = this.inv.indexOf(item);
+    if (index === -1) {
+      index = parseInt(item) - 1;
+    }
+    if (index !== -1 && !isNaN(index)) {
+      this.inv = this.inv.filter((_, ind) => ind !== index);
+    }
+  }
+  deleteRefs(items) {
+    for (const item of items) {
+      this.deleteRef(item);
+    }
+  }
+  findKey(callback) {
+    const result = this.inv.find((item) => callback(item) || this.keyAt(item));
+    if (result) {
+      return result.key;
+    } else {
+      return null;
+    }
+  }
+  indexOf(item) {
+    return this.inv.indexOf(item);
+  }
+  size() {
+    return this.inv.length;
+  }
+  clone() {
+    return new Inventory(this.inv);
+  }
+  toJSON() {
+    return this.inv;
+  }
+  deleteOne(key) {
+    let index = this.inv.findIndex((item) => item.key === key);
+    if (index === -1) {
+      index = parseInt(key) - 1;
+    }
+    if (index === -1 || isNaN(index)) {
+      return false;
+    }
+    this.inv = this.inv.filter((_, i) => i !== index);
+  }
+  keyAt(index) {
+    return this.at(index).key;
+  }
+  delete(key) {
+    this.inv = this.inv.filter(
+      (item) => item.key !== key || item.key !== this.keyAt(key)
+    );
+  }
+  has(key) {
+    return this.inv.some(
+      (item) => item.key === key || item.key === this.keyAt(key)
+    );
+  }
+  hasAmount(key, amount) {
+    const length = this.getAmount(key);
+    return length >= amount;
+  }
+  getAmount(key) {
+    return this.get(key).length;
+  }
+  addOne(item) {
+    return this.inv.push(item);
+  }
+
+  add(item) {
+    return this.inv.push(...item);
+  }
+  tossDEPRECATED(key, amount) {
+    if (amount === "all") {
+      const i = this.getAmount(key);
+      this.delete(key);
+      return i;
+    }
+    let r = 0;
+    for (let i = 0; i < amount; i++) {
+      if (!this.has(key)) {
+        break;
+      }
+      this.deleteOne(key);
+      r++;
+    }
+    return r;
+  }
+  setAmount(key, amount) {
+    const data = this.get(key);
+    for (let i = 0; i < amount; i++) {
+      this.addOne(data[i]);
+    }
+  }
+  *[Symbol.iterator]() {
+    yield* this.inv;
+  }
+  *keys() {
+    yield* this.inv.map((item) => item.key);
+  }
+}
+export class Collectibles {
+  #collectibles;
+  constructor(collectibles = []) {
+    this.#collectibles = this.sanitize(collectibles);
+  }
+
+  get collectibles() {
+    return this.#collectibles;
+  }
+
+  sanitize(c = this.#collectibles) {
+    const collectibleMap = new Map();
+
+    for (let i = c.length - 1; i >= 0; i--) {
+      const collectible = c[i];
+      if (!collectible.metadata) continue;
+
+      let {
+        key,
+        name = "Unknown Collectible",
+        icon = "❓",
+        type = "generic",
+        limit = undefined,
+      } = collectible.metadata;
+
+      if (!key) continue;
+
+      if (collectibleMap.has(key)) {
+        collectibleMap.get(key).amount += collectible.amount;
+      } else {
+        collectibleMap.set(key, {
+          metadata: { key, name, icon, type, limit },
+          amount: collectible.amount,
+        });
+      }
+    }
+
+    return Array.from(collectibleMap.values());
+  }
+  register(key, metadata) {
+    let index = this.#collectibles.findIndex((c) => c?.metadata.key === key);
+    if (index === -1) {
+      this.#collectibles.push({ metadata, amount: 0 });
+      index = this.#collectibles.length - 1;
+    } else {
+      this.#collectibles[index].metadata = metadata;
+    }
+    this.#collectibles = this.sanitize(this.#collectibles);
+    this.combineDuplicates();
+    return index;
+  }
+
+  combineDuplicates() {
+    const collectibleMap = new Map();
+    for (const collectible of this.#collectibles) {
+      const key = collectible.metadata.key;
+      const amount = collectible.amount;
+      if (collectibleMap.has(key)) {
+        collectibleMap.get(key).amount += amount;
+      } else {
+        collectibleMap.set(key, { ...collectible });
+      }
+    }
+    this.#collectibles = Array.from(collectibleMap.values());
+  }
+
+  raiseOne(key) {
+    return this.raise(key, 1);
+  }
+
+  getAll() {
+    return this.collectibles;
+  }
+
+  toJSON() {
+    return this.getAll();
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.collectibles;
+  }
+
+  *keys() {
+    yield* this.collectibles.map((c) => c.metadata.key);
+  }
+
+  raise(key, amount = 0) {
+    this.validate(key);
+    if (isNaN(amount)) {
+      throw new Error("Amount must be a number.");
+    }
+    const data = this.get(key);
+    data.amount = (data.amount ?? 0) + amount;
+    if (data.metadata.limit) {
+      data.amount = Math.min(data.amount, data.metadata.limit);
+    }
+    return data.amount;
+  }
+
+  get(key) {
+    return this.collectibles.find((c) => c?.metadata.key === key);
+  }
+
+  set(key, amount) {
+    this.validate(key);
+    const index = this.#collectibles.findIndex((c) => c?.metadata.key === key);
+    if (index !== -1) {
+      this.#collectibles[index].amount = amount;
+      if (this.#collectibles[index].metadata.limit) {
+        this.#collectibles[index].amount = Math.min(
+          this.#collectibles[index].amount,
+          this.#collectibles[index].metadata.limit
+        );
+      }
+    }
+    return index;
+  }
+
+  getAmount(key) {
+    return this.get(key)?.amount ?? 0;
+  }
+
+  hasAmount(key, amount) {
+    return this.getAmount(key) >= (amount ?? 1);
+  }
+
+  has(key) {
+    return this.get(key) !== undefined;
+  }
+
+  atLimit(key) {
+    const data = this.get(key);
+    return (
+      data?.metadata.limit !== undefined && data.amount >= data.metadata.limit
+    );
+  }
+
+  validate(key) {
+    if (!this.get(key)) {
+      throw new Error(`Collectible "${key}" is not yet registered.`);
+    }
+  }
+
+  getMeta(key) {
+    return this.get(key)?.metadata;
+  }
+
+  remove(key) {
+    this.validate(key);
+    this.#collectibles = this.#collectibles.filter(
+      (c) => c?.metadata.key !== key
+    );
+  }
+
+  removeEmpty() {
+    for (const key of this.keys()) {
+      const amount = this.getAmount(key);
+      if (amount === 0) {
+        this.remove(key);
+      }
+    }
+    return this.collectibles;
+  }
+
+  resetAmount(key) {
+    this.validate(key);
+    const data = this.get(key);
+    if (data) {
+      data.amount = 0;
+    }
+    return data.amount;
+  }
 }

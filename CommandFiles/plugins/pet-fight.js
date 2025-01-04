@@ -128,13 +128,13 @@ class ElementalChilds {
   getAllStrongs() {
     return this.elements.reduce(
       (acc, i) => [...acc, ...Object.keys(i.strong)],
-      [],
+      []
     );
   }
   getAllWeaks() {
     return this.elements.reduce(
       (acc, i) => [...acc, ...Object.keys(i.weak)],
-      [],
+      []
     );
   }
   isStrongerThan(childs) {
@@ -148,7 +148,7 @@ class ElementalChilds {
       const value = elementalPets[key];
       const childs = new ElementalChilds(...value);
       const acc = Math.abs(
-        childs.getModifierAgainst(this) - this.getModifierAgainst(childs),
+        childs.getModifierAgainst(this) - this.getModifierAgainst(childs)
       );
       if (acc === 0) {
         continue;
@@ -181,7 +181,7 @@ class ElementalChild {
     this.element = JSON.parse(
       JSON.stringify({
         ...(mapping[element] ?? { strong: {}, weak: {}, classification: "PK" }),
-      }),
+      })
     );
     this.element.name = element;
   }
@@ -382,7 +382,7 @@ function randArr(array) {
 function randObj(obj) {
   return randArr(Object.entries(obj));
 }
-class PetGame {
+export class PetGame {
   constructor(petPlayers, petOpponents) {
     this.pets = petPlayers;
     this.opponents = petOpponents;
@@ -418,7 +418,7 @@ class PetGame {
     }
   }
 }
-class WildPlayer {
+export class WildPlayer {
   constructor(wildData, battlePets = []) {
     wildData = JSON.parse(JSON.stringify(wildData));
     this.battlePets = battlePets;
@@ -478,8 +478,14 @@ class WildPlayer {
     selectionOptions,
   } = {}) {
     let fled = this.isAlmostFled();
-    let txt = `${icon ?? this.wildIcon} **${this.wildName} LV${this.level ?? 1}** ${!upperPop ? `` : `(***${upperPop}***)`}\n`;
-    txt += `**HP**: ${fled ? "**" : ""}${this.HP}/${this.maxHP}${fled ? "** ⚠️" : ""} ${pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`}\n**MERCY**: ${this.MERCY}%`;
+    let txt = `${icon ?? this.wildIcon} **${this.wildName} LV${
+      this.level ?? 1
+    }** ${!upperPop ? `` : `(***${upperPop}***)`}\n`;
+    txt += `**HP**: ${fled ? "**" : ""}${this.HP}/${this.maxHP}${
+      fled ? "** ⚠️" : ""
+    } ${
+      pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`
+    }\n**MERCY**: ${this.MERCY}%`;
     if (turn) {
       txt += `\n\n${this.getSelectionUI(selectionOptions)}`;
     }
@@ -553,7 +559,7 @@ class WildPlayer {
   getAttackMenu() {
     let result = "";
     const [answer = "...", attackName = "Triple dots attack."] = randObj(
-      this.attacks ?? {},
+      this.attacks ?? {}
     );
     result += `* ${this.wildIcon} **${this.wildName}** is charging **${attackName}**!\n\n`;
     for (const attackAnswer in this.attacks) {
@@ -591,7 +597,7 @@ class WildPlayer {
     function helper(text) {
       return text.replaceAll(
         "{name}",
-        `${targetPet.petIcon} **${targetPet.petName}**`,
+        `${targetPet.petIcon} **${targetPet.petName}**`
       );
     }
     return {
@@ -619,7 +625,7 @@ class WildPlayer {
   }
 }
 
-class PetPlayer {
+export class PetPlayer {
   #damageTaken = 0;
   constructor(petData = {}, gearData = {}) {
     petData = JSON.parse(JSON.stringify(petData));
@@ -657,8 +663,12 @@ class PetPlayer {
     upperPop = null,
     selectionOptions,
   } = {}) {
-    let txt = `${icon ?? this.petIcon} **${this.petName} LV${this.level}** ${!upperPop ? (this.isDown() ? `(***DOWN***)` : ``) : `(***${upperPop}***)`}\n`;
-    txt += `**HP**: ${this.HP}/${this.maxHP} ${pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`}`;
+    let txt = `${icon ?? this.petIcon} **${this.petName} LV${this.level}** ${
+      !upperPop ? (this.isDown() ? `(***DOWN***)` : ``) : `(***${upperPop}***)`
+    }\n`;
+    txt += `**HP**: ${this.HP}/${this.maxHP} ${
+      pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`
+    }`;
     if (turn) {
       txt += `\n\n${this.getSelectionUI(selectionOptions)}`;
     }
@@ -670,17 +680,17 @@ class PetPlayer {
   getHungryModifier() {
     const { lastFeed = Date.now(), lastSaturation = 0 } = this.OgpetData;
     const currentTime = Date.now();
-    
+
     const timeSinceLastFeed = currentTime - lastFeed;
     const remainingSaturation = lastSaturation - timeSinceLastFeed;
-    
+
     if (remainingSaturation > 0) {
-        return 0;
+      return 0;
     }
-    
+
     const hungerTime = -remainingSaturation;
     const hungerModifier = Math.pow(hungerTime / (60 * 60 * 1000), 1.2);
-    
+
     return Math.floor(hungerModifier);
   }
   getSelectionUI(options) {
@@ -693,7 +703,7 @@ class PetPlayer {
         mercy: true,
         defend: true,
       },
-      options ?? {},
+      options ?? {}
     );
     let result = ``;
     if (options.fight) {
@@ -722,9 +732,13 @@ class PetPlayer {
   debug() {
     return (
       global.utils.representObject(this) +
-      `\n30 => ${this.calculateTakenDamage(30)}\n\n${this.getPlayerUI({ turn: true })}\n\nHP: ${this.HP}\nDF: ${this.DF}\nMax HP: ${this.maxHP}\nDown HP: ${this.getDownHP()}\nDown Heal: ${this.getDownHeal()}\nExtta Taken: ${PetPlayer.calculateExtraTakenDamage(this.HP)}\n\n${Array(
-        20,
-      )
+      `\n30 => ${this.calculateTakenDamage(30)}\n\n${this.getPlayerUI({
+        turn: true,
+      })}\n\nHP: ${this.HP}\nDF: ${this.DF}\nMax HP: ${
+        this.maxHP
+      }\nDown HP: ${this.getDownHP()}\nDown Heal: ${this.getDownHeal()}\nExtta Taken: ${PetPlayer.calculateExtraTakenDamage(
+        this.HP
+      )}\n\n${Array(20)
         .fill("")
         .map((_, index) => `LV${index + 1}: ${PetPlayer.getHPOf(index + 1)} HP`)
         .join("\n")}`
@@ -764,7 +778,7 @@ class PetPlayer {
       damage -
         (((this.DF * 2) / 5) *
           (1 + (Math.random() * DAMAGE_VARIABILITY - DAMAGE_VARIABILITY / 2))) /
-          1.2,
+          1.2
     );
     const scalingFactor = PetPlayer.calculateExtraTakenDamage(this.HP);
 
@@ -828,7 +842,9 @@ class PetPlayer {
     const extra = PetPlayer.getExtraATKOf(this.level);
     const weaponAtks = this.weapon[0].atk;
     const armorAtks = this.armors.reduce((acc, armor) => acc + armor.atk, 0);
-    return Math.round((armorAtks / 4) + (weaponAtks / 2) + extra + this.atkModifier);
+    return Math.round(
+      armorAtks / 4 + weaponAtks / 2 + extra + this.atkModifier
+    );
   }
   get extraATK() {
     return PetPlayer.getExtraATKOf(this.level);
@@ -843,8 +859,8 @@ class PetPlayer {
     return Math.max(
       1,
       Math.floor(
-        (atk - df / 5 + Math.floor(Math.random() * 8)) * (1 - df / 100) * 2.2,
-      ),
+        (atk - df / 5 + Math.floor(Math.random() * 8)) * (1 - df / 100) * 2.2
+      )
     );
   }
   calculateAttack(enemyDef, atk) {
@@ -852,7 +868,7 @@ class PetPlayer {
     const df = enemyDef;
     return Math.max(
       1,
-      Math.floor((atk + Math.floor(Math.random() * 15)) * 2.2) - df / 5,
+      Math.floor((atk + Math.floor(Math.random() * 15)) * 2.2) - df / 5
     );
   }
   magicModifier = 0;
@@ -863,7 +879,7 @@ class PetPlayer {
     }, 0);
     const extra = PetPlayer.getExtraMagicOf(
       (weaponMagic + armorsMagic) / 100,
-      this.exp,
+      this.exp
     );
     return Math.round(weaponMagic + armorsMagic + extra + this.magicModifier);
   }
@@ -976,7 +992,7 @@ class PetPlayer {
   }
 }
 
-class GearData {
+export class GearData {
   constructor(gearData = {}) {
     gearData = JSON.parse(JSON.stringify(gearData));
     this.key = gearData.key;
@@ -1010,11 +1026,15 @@ class GearData {
   }
 
   get weapon() {
-    return PetPlayer.sanitizeWeapon((this.weaponArray ?? []).filter(Boolean)).filter(Boolean);
+    return PetPlayer.sanitizeWeapon(
+      (this.weaponArray ?? []).filter(Boolean)
+    ).filter(Boolean);
   }
 
   get armors() {
-    return PetPlayer.sanitizeArmors((this.armorsArray ?? []).filter(Boolean)).filter(Boolean);
+    return PetPlayer.sanitizeArmors(
+      (this.armorsArray ?? []).filter(Boolean)
+    ).filter(Boolean);
   }
 
   getWeaponUI() {
@@ -1027,7 +1047,7 @@ class GearData {
     return this.weapon
       .map(
         (weapon) =>
-          `${weapon.icon} **${weapon.name}**\nATK ${weapon.atk} DEF ${weapon.def} MAGIC ${weapon.magic}`,
+          `${weapon.icon} **${weapon.name}**\nATK ${weapon.atk} DEF ${weapon.def} MAGIC ${weapon.magic}`
       )
       .join("\n\n");
   }
@@ -1062,10 +1082,10 @@ class GearData {
   }
 }
 
-class GearsManage {
+export class GearsManage {
   constructor(gearsData = []) {
     this.gearsData = JSON.parse(JSON.stringify(gearsData)).map(
-      (gearData) => new GearData(gearData),
+      (gearData) => new GearData(gearData)
     );
   }
 
@@ -1105,7 +1125,7 @@ class GearsManage {
   }
 }
 
-class Quest {
+export class Quest {
   constructor(questData) {
     this.data = JSON.parse(JSON.stringify(questData || []));
     this.sanitize();

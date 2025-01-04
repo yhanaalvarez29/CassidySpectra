@@ -16,7 +16,12 @@ export async function loadPluginsEach(
   require.cache = {};
   const plugins = fs
     .readdirSync("CommandFiles/plugins")
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+    .filter(
+      (file) =>
+        (file.endsWith(".js") || file.endsWith(".ts")) &&
+        !file.endsWith(".d.ts")
+    );
+
   for (const plugin of plugins) {
     try {
       /*global.logger(`Loading plugin '${plugin}'...`, "Plugin");*/

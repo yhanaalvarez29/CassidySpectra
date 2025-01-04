@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 15,
-  shopPrice: 5000000,
+  shopPrice: 50,
   requirement: "2.5.0",
   icon: "",
 };
