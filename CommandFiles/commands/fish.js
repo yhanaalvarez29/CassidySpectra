@@ -95,6 +95,9 @@ export const style = {
   contentFont: "fancy",
 };
 
+const { invLimit } = global.Cassidy;
+
+
 export async function entry({
   input,
   output,
@@ -105,7 +108,7 @@ export async function entry({
   const { inventory = [], fishStamp } = await money.get(input.senderID);
   let updatedInventory = new Inventory(inventory);
 
-  if (updatedInventory.length >= 8) {
+  if (updatedInventory.length >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
 

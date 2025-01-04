@@ -20,13 +20,16 @@ export const style = {
   contentFont: "fancy",
 };
 
+const { invLimit } = global.Cassidy;
+
+
 export async function entry(octx) {
   const { input, output, args, Inventory, money, cassIO, VirtualFiles } = octx;
   let userData = await money.get(input.senderID);
   let userInventory = new Inventory(userData.inventory);
   const vf = new VirtualFiles(userData.virtualFiles);
 
-  if (userData.inventory.length >= 8) {
+  if (userData.inventory.length >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
 
@@ -110,7 +113,7 @@ ${icon} **${name}** (c_${key})
           type: "custom",
         };
 
-        if (userInventory.length >= 8) {
+        if (userInventory.length >= invLimit) {
           return cassIO.out(`❌ You're carrying too many items!`);
         }
 

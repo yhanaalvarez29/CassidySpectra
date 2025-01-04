@@ -13,6 +13,8 @@ export const meta = {
   requirement: "2.5.0",
   icon: "",
 };
+const { invLimit } = global.Cassidy;
+
 const { parseCurrency: pCy } = global.utils;
 
 export const style = {
@@ -1557,8 +1559,8 @@ async function uncageReply({ input, output, Inventory, money, repObj }) {
     }
     let { name, petsData = [] } = await money.get(input.senderID);
     petsData = new Inventory(petsData);
-    if (petsData.getAll().length >= 8) {
-      return output.reply(`🐾 You can only have a maximum of 8 pets!`);
+    if (petsData.getAll().length >= invLimit) {
+      return output.reply(`🐾 You can only have a maximum of ${invLimit} pets!`);
     }
     switch (type) {
       case "uncaging":

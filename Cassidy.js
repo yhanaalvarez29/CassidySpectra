@@ -141,6 +141,7 @@ global.Cassidy = {
   set commands(data) {
     commands = data;
   },
+  // invLimit: 36,
   invLimit: 36,
   presets: new Map(),
   loadCommand,

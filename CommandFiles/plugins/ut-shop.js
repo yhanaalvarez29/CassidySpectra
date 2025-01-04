@@ -770,8 +770,10 @@ export async function use(obj) {
     }
     async onPlay(context = obj) {
       try {
+        const { invLimit } = global.Cassidy;
+
         const { UTYPlayer } = global.utils;
-        const inventoryLimit = 8;
+        const inventoryLimit = invLimit;
         const { input, output, money, args, Inventory, getInflationRate } =
           context;
         if (args[0]) {
@@ -832,9 +834,11 @@ ${this.optionText()}
     }
     async onReply(context = obj) {
       try {
+        const { invLimit } = global.Cassidy;
+
         const { input, output, money, args, repObj } = context;
         const { author, detectID, player } = repObj;
-        const inventoryLimit = 8;
+        const inventoryLimit = invLimit;
         const self = this;
         if (input.senderID !== author) {
           return;
@@ -961,7 +965,7 @@ ${this.optionText()}
           boxItems = new Inventory(boxItems, 100);
           const dialogue = self.rand(self.askSellTexts);
           const i = await output.reply(
-            `✦ ${dialogue}\n\n**A.** Sell **Items** **(${inventory.size()}/8)**\n**B**. Sell **Box** Items **(${boxItems.size()}/100)**\n\n**Back**\n**${cash}**$`
+            `✦ ${dialogue}\n\n**A.** Sell **Items** **(${inventory.size()}/${invLimit})**\n**B**. Sell **Box** Items **(${boxItems.size()}/100)**\n\n**Back**\n**${cash}**$`
           );
           handleEnd(i.messageID, {
             sellChoose: true,

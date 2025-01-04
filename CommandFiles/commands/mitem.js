@@ -19,17 +19,19 @@ export const style = {
   contentFont: "fancy",
 };
 
+const { invLimit } = global.Cassidy;
+
 export async function entry({ input, output, args, Inventory, money }) {
   const userData = await money.get(input.senderID);
   let userInventory = new Inventory(userData.inventory);
 
-  if (userData.inventory.length >= 8) {
+  if (userData.inventory.length >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
 
   if (args.length === 0) {
     return output.reply(
-      `❌ Please provide a JSON string to create a custom item.`,
+      `❌ Please provide a JSON string to create a custom item.`
     );
   }
 
@@ -38,7 +40,7 @@ export async function entry({ input, output, args, Inventory, money }) {
     itemData = JSON.parse(args.join(" "));
   } catch (e) {
     return output.reply(
-      `❌ Invalid JSON format. Please provide a valid JSON string.`,
+      `❌ Invalid JSON format. Please provide a valid JSON string.`
     );
   }
 
@@ -46,7 +48,7 @@ export async function entry({ input, output, args, Inventory, money }) {
 
   if (!key || !icon || !flavorText || !name || !type || !sellPrice) {
     return output.reply(
-      `❌ Missing important required fields. Ensure your JSON includes "key", "icon", "flavorText", "type", "sellPrice" and "name".`,
+      `❌ Missing important required fields. Ensure your JSON includes "key", "icon", "flavorText", "type", "sellPrice" and "name".`
     );
   }
   if (userInventory.has(key)) {
@@ -56,7 +58,7 @@ export async function entry({ input, output, args, Inventory, money }) {
         emoji: "👍",
         authorOnly: true,
         edit: "✅ Proceeding...",
-      },
+      }
     );
   }
 
@@ -71,6 +73,6 @@ export async function entry({ input, output, args, Inventory, money }) {
   });
 
   return output.reply(
-    `✅ Created a new item: ${sanitizedItem.name}. Check your inventory to see it.`,
+    `✅ Created a new item: ${sanitizedItem.name}. Check your inventory to see it.`
   );
 }

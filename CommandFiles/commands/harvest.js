@@ -204,7 +204,9 @@ export async function entry({
       text += `\n💗 Harvested ${types} type(s) of crops.\n`;
       text += `\n🗃️ Storage: ${totalYield}/${plantMax}\n✓ You can **upgrade** this storage by checking the **shop!**\n`;
     }
-    if (totalYield > 100 && userInventory.getAll().length < 8) {
+    const { invLimit } = global.Cassidy;
+
+    if (totalYield > 100 && userInventory.getAll().length < invLimit) {
       text += `\n🎁 You received a **gift** from your harvest!\n`;
       userInventory.addOne(gift);
     }

@@ -5,6 +5,8 @@ export const style = {
 };
 
 const { delay, Tiles } = global.utils;
+const { invLimit } = global.Cassidy;
+
 
 export const meta = {
   name: "tiles",
@@ -232,7 +234,7 @@ ${board}`;
       explodes++;
       let { inventory } = await money.get(input.senderID);
       inventory = new Inventory(inventory);
-      if (inventory.getAll().length < 8) {
+      if (inventory.getAll().length < invLimit) {
         inventory.addOne({
           key: "tilesBomb",
           name: "Tiles Bomb",

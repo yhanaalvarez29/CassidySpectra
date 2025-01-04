@@ -17,6 +17,8 @@ export const style = {
 };
 const diaCost = 2;
 const { parseCurrency: pCy } = global.utils;
+const { invLimit } = global.Cassidy;
+
 
 async function handlePaid({
   input,
@@ -30,7 +32,7 @@ async function handlePaid({
   if (String(input.words[0]).toLowerCase() !== "buy") {
     return;
   }
-  if (inventory.length >= 8) {
+  if (inventory.length >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
   inventory = new Inventory(inventory);
@@ -83,7 +85,7 @@ export async function entry({
     lastGiftClaim,
     collectibles = [],
   } = await money.get(input.senderID);
-  if (inventory.length >= 8) {
+  if (inventory.length >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
   inventory = new Inventory(inventory);

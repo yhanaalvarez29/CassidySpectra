@@ -20,6 +20,8 @@ export const style = {
   contentFont: "fancy",
 };
 
+const { invLimit } = global.Cassidy;
+
 const home = new ReduxCMDHome(
   {
     isHypen: true,
@@ -55,7 +57,7 @@ const home = new ReduxCMDHome(
             `❌ Invalid amount specified. Please provide a valid amount.`
           );
         }
-        if (userData.inventory.length >= 8) {
+        if (userData.inventory.length >= invLimit) {
           return output.reply(`❌ You're carrying too many items!`);
         }
 

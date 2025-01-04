@@ -67,6 +67,8 @@ export async function entry({
     inventory,
     casinoLuck = false,
   } = await money.get(senderID);
+  const { invLimit } = global.Cassidy;
+
 
   if (casinoLuck) cancelCooldown();
   inventory = new Inventory(inventory);
@@ -82,7 +84,7 @@ export async function entry({
         Object.values(gamesInfo).join("\n\n") +
         `\n\n[font=typewriter]Use the command: {prefix}casino {gamename} {betamount}[:font=typewriter]\n\n$**${pCy(
           playerMoney
-        )}** **${inventory.size()}/8**`
+        )}** **${inventory.size()}/${invLimit}**`
     );
   }
 
@@ -248,7 +250,7 @@ export async function entry({
     });
     resultMessage += `\n\n$**${pCy(
       playerMoney
-    )}** **${inventory.size()}/8** (**${
+    )}** **${inventory.size()}/${invLimit}** (**${
       netGain >= 0 ? `+${pCy(netGain)}` : pCy(netGain)
     }**)`;
 

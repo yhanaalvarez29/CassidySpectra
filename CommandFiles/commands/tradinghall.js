@@ -13,6 +13,7 @@ export const meta = {
   icon: "",
 };
 const { parseCurrency: pCy } = global.utils;
+const { invLimit } = global.Cassidy;
 
 export const style = {
   title: "Trading Hall 🛒",
@@ -37,12 +38,12 @@ export const entry = {
 
     if (!inventory.has(key)) {
       return output.reply(
-        `❌ | You don't have "${key}" in your inventory!\n\n${guide}`,
+        `❌ | You don't have "${key}" in your inventory!\n\n${guide}`
       );
     }
     if (isNaN(amount) || amount <= 0 || inventory.getAmount(key) < amount) {
       return output.reply(
-        `❌ | The amount you entered is invalid.\n\n${guide}`,
+        `❌ | The amount you entered is invalid.\n\n${guide}`
       );
     }
     if (isNaN(price) || price <= 0) {
@@ -51,12 +52,14 @@ export const entry = {
     const existing = tradeVentory.getOne(key);
     if (existing && existing.price && existing.price !== price) {
       return output.reply(
-        `❌ | The price of existing "${key}" was $${existing.price}, your prices must be consistent!`,
+        `❌ | The price of existing "${key}" was $${existing.price}, your prices must be consistent!`
       );
     }
-    if (amount + tradeVentory.getAll().length > 8) {
+    if (amount + tradeVentory.getAll().length > invLimit) {
       return output.reply(
-        `❌ | You can only **hold** up to 8 **items** in your trading hall, you currently have ${tradeVentory.getAll().length} items in the **hall**.`,
+        `❌ | You can only **hold** up to ${invLimit} **items** in your trading hall, you currently have ${
+          tradeVentory.getAll().length
+        } items in the **hall**.`
       );
     }
 
@@ -74,7 +77,9 @@ export const entry = {
       inventory: Array.from(inventory),
     });
     return output.reply(
-      `✅ | Added ${amount} item(s) for **$${price}** each to the trading hall!\n\n${items.map((item) => `${item.icon} **${item.name}**`).join("\n")}`,
+      `✅ | Added ${amount} item(s) for **$${price}** each to the trading hall!\n\n${items
+        .map((item) => `${item.icon} **${item.name}**`)
+        .join("\n")}`
     );
   },
   async buy({
@@ -107,7 +112,7 @@ export const entry = {
           }
           mappedTrades = mappedTrades.filter((trades) => {
             return trades.some((item) =>
-              String(item[tag]).toLowerCase().includes(value.toLowerCase()),
+              String(item[tag]).toLowerCase().includes(value.toLowerCase())
             );
           });
         }
@@ -138,7 +143,7 @@ export const entry = {
     for (const trade of slicer.getPage(args[0])) {
       i++;
       const num = Object.keys(preservedIndex).find(
-        (key) => preservedIndex[key] === trade.userID,
+        (key) => preservedIndex[key] === trade.userID
       );
       const { name = "Unregistered" } = allUsers[trade.userID];
       result += `${num}. ***${name}***\n\n`;
@@ -156,7 +161,11 @@ export const entry = {
               ? "✅"
               : "💰"
             : "❌";
-        result += `${item.icon} **x${tradeX.getAmount(item.key)}** **${item.name}** (${item.key}) ${emoji1}\n- $**${pCy(item.price)} each**${invAmount ? ` 🎒 **x${invAmount}**` : ""}${boxAmount ? ` 📦 **x${boxAmount}**` : ""}\n✦ ${item.flavorText}\n\n`;
+        result += `${item.icon} **x${tradeX.getAmount(item.key)}** **${
+          item.name
+        }** (${item.key}) ${emoji1}\n- $**${pCy(item.price)} each**${
+          invAmount ? ` 🎒 **x${invAmount}**` : ""
+        }${boxAmount ? ` 📦 **x${boxAmount}**` : ""}\n✦ ${item.flavorText}\n\n`;
         existedKeys.push(item.key);
       }
       result += "━━━━━━━━━━━━━━━\n\n";
@@ -167,7 +176,7 @@ ${input.words[0]} 1[key=gift, icon=🎁]
 
 Reply with <index> <key> <amount> to **purchase**.
 
-$**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
+$**${pCy(userMoney)}** **${inventory.getAll().length}/${invLimit}**`;
     const inf = await output.reply(result);
     input.setReply(inf.messageID, {
       author: input.senderID,
@@ -195,7 +204,7 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
       }
       if (userID === input.senderID) {
         return output.reply(
-          `❌ | You can't buy your own items! Consider **cancelling** instead.`,
+          `❌ | You can't buy your own items! Consider **cancelling** instead.`
         );
       }
       const trades = allUsers[userID].tradeVentory ?? [];
@@ -205,13 +214,13 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
       let traderMoney = allUsers[userID].money ?? 0;
       if (!key) {
         return output.reply(
-          `❌ | Please enter a **key** to buy, haven't you read the guide?`,
+          `❌ | Please enter a **key** to buy, haven't you read the guide?`
         );
       }
 
       if (!tradeVentory.has(key)) {
         return output.reply(
-          `❌ | **${trader}** doesn't have "${key}" in their trading hall!`,
+          `❌ | **${trader}** doesn't have "${key}" in their trading hall!`
         );
       }
       if (isNaN(amount) || amount <= 0) {
@@ -228,7 +237,7 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
           continue;
         }
 
-        if (inventory.getAll().length >= 8) {
+        if (inventory.getAll().length >= invLimit) {
           bought.push({
             ...item,
             error: "Inventory full.",
@@ -268,13 +277,29 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
           title: `${firstItem.icon} Purchased for $${pCy(total)}💵`,
           author: input.senderID,
           timeStamp: Date.now(),
-          body: `**${userData.name ?? "Unregistered"}** has purchased **${success.length}** of your trading hall item(s) for a total of $${pCy(total)}💵\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID: ${input.senderID}`,
+          body: `**${userData.name ?? "Unregistered"}** has purchased **${
+            success.length
+          }** of your trading hall item(s) for a total of $${pCy(
+            total
+          )}💵\n\n${success
+            .map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`)
+            .join("\n")}\n\nIf you need more info, here is the UID: ${
+            input.senderID
+          }`,
         });
         userCass.createMail({
           title: `You purchased ${firstItem.icon}`,
           author: input.senderID,
           timeStamp: Date.now(),
-          body: `Thank you **${userData.name ?? "Unregistered"}** for purchasing **${success.length}** item(s) from **${trader}**!\n\n${success.map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`).join("\n")}\n\nIf you need more info, here is the UID of trader: ${userID}`,
+          body: `Thank you **${
+            userData.name ?? "Unregistered"
+          }** for purchasing **${
+            success.length
+          }** item(s) from **${trader}**!\n\n${success
+            .map((i) => `${i.icon} **${i.name}** $${pCy(i.price)}💵`)
+            .join(
+              "\n"
+            )}\n\nIf you need more info, here is the UID of trader: ${userID}`,
         });
       }
       await money.set(input.senderID, {
@@ -288,7 +313,16 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
         cassExpress: traderCass.raw(),
       });
       return output.reply(
-        `✅ You bought ${bought.filter((i) => !i.error).length} items from **${trader}**!\n\n${bought.map((i) => `${i.icon} **${i.name}** - $**${i.price}** ${i.error ? `\n❌ ${i.error}\n` : ""}`).join("\n")}\n**Total Spent**: $**${total}**`,
+        `✅ You bought ${
+          bought.filter((i) => !i.error).length
+        } items from **${trader}**!\n\n${bought
+          .map(
+            (i) =>
+              `${i.icon} **${i.name}** - $**${i.price}** ${
+                i.error ? `\n❌ ${i.error}\n` : ""
+              }`
+          )
+          .join("\n")}\n**Total Spent**: $**${total}**`
       );
     }
   },
@@ -313,12 +347,16 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
     }
     if (!tradeVentory.hasAmount(key, amount)) {
       return output.reply(
-        `❌ | The amount of "${key}" you want to cancel is **invalid**, you currently have ${tradeVentory.getAmount(key)} of it.`,
+        `❌ | The amount of "${key}" you want to cancel is **invalid**, you currently have ${tradeVentory.getAmount(
+          key
+        )} of it.`
       );
     }
-    if (inventory.getAll().length + amount > 8) {
+    if (inventory.getAll().length + amount > invLimit) {
       return output.reply(
-        `❌ | You can only **hold** up to 8 **items** in your inventory, you currently have ${inventory.getAll().length}/8 items.`,
+        `❌ | You can only **hold** up to ${invLimit} **items** in your inventory, you currently have ${
+          inventory.getAll().length
+        }/${invLimit} items.`
       );
     }
     const items = tradeVentory
@@ -335,7 +373,9 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/8**`;
       inventory: Array.from(inventory),
     });
     return output.reply(
-      `✅ | You canceled ${amount} items!\n\n${items.map((item) => `${item.icon} **${item.name}**`).join("\n")}`,
+      `✅ | You canceled ${amount} items!\n\n${items
+        .map((item) => `${item.icon} **${item.name}**`)
+        .join("\n")}`
     );
   },
 };
