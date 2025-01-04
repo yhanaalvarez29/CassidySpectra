@@ -1,3 +1,7 @@
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { toTitleCase, UNIRedux } from "../modules/unisym.js";
+import { ShopClass } from "../plugins/shopV2.js";
+
 export const meta = {
   name: "shop",
   description: "Buy anything!",
@@ -51,7 +55,7 @@ const stoData = {
 global.stoData = stoData;
 const { UserSorter } = global.utils; //{ users, limit = null, sortBy = "money", defaultValue = 0 }
 
-export const entry = {
+export const entryConfig = {
   async top({ input, output, money }) {
     const allData = await money.getAll();
     let usersCalc = {};
@@ -126,7 +130,7 @@ export const entry = {
     return output.reply(result);
   },
   async cmd(context) {
-    const { input, output, Shop, args, money, prefix } = context;
+    const { input, output, args, money, prefix } = context;
     if (args[0] === "buy") {
       if (!args[1]) {
         return output.reply(
@@ -138,66 +142,82 @@ export const entry = {
         money: userMoney,
         name,
       } = await money.get(input.senderID);
+      const shop = new ShopClass(shopInv);
       if (!name) {
         return output.reply(
           "❌ Please register first using the identity-setname command."
         );
       }
       async function buyReply(item, price) {
-        await output.quickWaitReact(
-          `⚠️ Buy "${
-            args[1]
-          }" for ${price}$?\n\n**Balance**\nBefore - ${userMoney}$\nAfter - ${
-            userMoney - price
-          }$`,
-          {
-            authorOnly: true,
-            edit: "✅ Proceeding...",
-          }
-        );
+        // await output.quickWaitReact(
+        //   `⚠️ Buy "${
+        //     args[1]
+        //   }" for ${price}$?\n\n**Balance**\nBefore - ${userMoney}$\nAfter - ${
+        //     userMoney - price
+        //   }$`,
+        //   {
+        //     authorOnly: true,
+        //     edit: "✅ Proceeding...",
+        //   }
+        // );
+
         return output.reply(`✅ Successfully purchased ${item} for ${price}$!`);
       }
 
       if (shopInv[args[1]]) {
         return buyReply("an already-purchased item", 0);
       }
-      const price = Shop.getPrice(args[1]);
+      const price = shop.getPrice(args[1]);
       if (price === null) {
         return buyReply("a non-existent item", 0);
       }
       if (price <= 0) {
         return buyReply("a free item", 0);
       }
-      const canPurchase = await Shop.canPurchase(args[1], input.senderID);
+      if (isNaN(price)) {
+        return output.reply("Something went wrong...");
+      }
+      const canPurchase = await shop.canPurchase(args[1], userMoney);
       if (!canPurchase) {
         return output.reply(
           `❌ You don't have enough money to buy "${args[1]}" for ${price}$.`
         );
       }
 
-      await Shop.purchase(args[1], input.senderID);
+      await shop.purchase(args[1], userMoney);
+
+      await money.set(input.senderID, {
+        shopInv: shop.raw(),
+        money: userMoney - price,
+      });
       return buyReply(`"${args[1]}"`, price);
     } else {
       const { shopInv = {}, money: userMoney } = await money.get(
         input.senderID
       );
-      const allItems = Shop.getItems();
+      const shop = new ShopClass(shopInv);
+      const allItems = shop.getItems();
       let result = "";
+      let i = 0;
+      result += `🔍 Type ${prefix}**shop-cmd buy <item name>** to buy an item.\n\n`;
+
       for (const { meta } of allItems) {
-        result += `**${meta.name}** ${meta.shopPrice}$${
+        i++;
+        result += `${i}. ${meta.icon || "📄"} **${toTitleCase(
+          meta.name
+        )}**\n- **${Number(meta.shopPrice).toLocaleString()}**$ ${
           shopInv[meta.name]
             ? " ✅"
             : userMoney >= meta.shopPrice
             ? " 💰"
             : " ❌"
-        }\n- ${meta.description}\n\n`;
+        }\n${UNIRedux.charm} ${meta.description}\n\n`;
       }
-      result += `\nType ${prefix}**shop.cmd buy <item name>** fo buy an item.`;
 
-      return output.reply(result);
+      return output.reply(result.trimEnd());
     }
   },
-  comingsoon: "Coming Soon!",
+
   async storage({ input, output, args, money, prefix, Inventory }) {
     if (args[0] !== "buy") {
       let text = "";
@@ -300,3 +320,32 @@ Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`
     );
   },
 };
+
+const home = new ReduxCMDHome({
+  entryConfig,
+  isHypen: true,
+  entryInfo: {
+    cmd: {
+      key: "command",
+      description: "Buy or unlock commands using your balance.",
+      args: ["buy <item_name | no argument: lists items>"],
+      aliases: ["-c", "cmd"],
+    },
+    storage: {
+      key: "storage",
+      description:
+        "Upgrade your storage for games like Harvest or Mine using your battle points.",
+      args: ["buy <item_name | no argument: lists items>"],
+      aliases: ["-s", "sto"],
+    },
+    top: {
+      key: "top",
+      description: "View the highest upgraded storage.",
+      aliases: ["-t"],
+    },
+  },
+});
+
+export async function entry(ctx) {
+  home.runInContext(ctx);
+}
