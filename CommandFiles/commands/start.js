@@ -18,7 +18,7 @@ export const meta = {
   permissions: [0],
   requirement: "2.5.0",
   requirement: "2.5.0",
-  icon: "",
+  icon: "🧰",
 };
 export async function entry({
   input,

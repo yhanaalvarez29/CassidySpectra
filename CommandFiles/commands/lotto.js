@@ -10,7 +10,7 @@ export const meta = {
   waitingTime: 15,
   shopPrice: 50,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🎟️",
 };
 export const style = {
   title: "Lotto 🎟️",

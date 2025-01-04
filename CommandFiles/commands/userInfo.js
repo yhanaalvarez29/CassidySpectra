@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: "both",
   noWeb: true,
   requirement: "2.5.0",
-  icon: "",
+  icon: "📛",
 };
 
 export async function entry({ input, output, userInfos, args }) {

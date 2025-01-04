@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: false,
   otherNames: [],
   requirement: "2.5.0",
-  icon: "",
+  icon: "♻️",
 };
 
 export const style = {

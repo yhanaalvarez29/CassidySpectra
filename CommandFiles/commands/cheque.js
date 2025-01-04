@@ -11,7 +11,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   requirement: "2.5.0",
-  icon: "",
+  icon: "💰",
 };
 
 export const style = {

@@ -13,7 +13,7 @@ export const meta = {
   noWeb: true,
   ext_plugins: {},
   requirement: "2.5.0",
-  icon: "",
+  icon: "💗",
 };
 
 export const style = {

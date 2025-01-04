@@ -12,7 +12,7 @@ export const meta = {
   waitingTime: 1,
   otherNames: ["devapi", "cassapi"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "💻",
 };
 
 export const style = {

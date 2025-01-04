@@ -13,7 +13,7 @@ export const meta = {
   usage: "{prefix}{name}",
   otherNames: ["ff", "feud"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🔎",
 };
 
 const logo = `🔎 [ **FAMILY FEUD** ] 🔍\n${UNIRedux.standardLine}\n`;

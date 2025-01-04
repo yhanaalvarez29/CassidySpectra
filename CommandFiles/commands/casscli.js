@@ -15,7 +15,7 @@ export const meta = {
   otherNames: ["ccli", "cbox", "cassbox"],
   waitingTime: 0.01,
   requirement: "2.5.0",
-  icon: "",
+  icon: ">_",
 };
 
 import util from "util";

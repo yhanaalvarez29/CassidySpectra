@@ -15,7 +15,7 @@ export const meta = {
   otherNames: ["box", "bx", "vt"],
   shopPrice: 10000,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🗃️",
 };
 
 const { invLimit } = global.Cassidy;

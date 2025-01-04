@@ -12,7 +12,7 @@ export const meta = {
   botAdmin: true,
   noPrefix: false,
   requirement: "2.5.0",
-  icon: "",
+  icon: "💻",
 };
 
 export async function entry(context) {

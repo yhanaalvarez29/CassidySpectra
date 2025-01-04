@@ -11,7 +11,7 @@ export const meta = {
   waitingTime: 1,
   shopPrice: 200,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🐕",
 };
 const { invLimit } = global.Cassidy;
 

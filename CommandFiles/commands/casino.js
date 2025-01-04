@@ -35,7 +35,7 @@ export const meta = {
   otherNames: ["cas", "cs"],
   shopPrice: 100000,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🎲",
 };
 
 const { randArrValue } = global.utils;

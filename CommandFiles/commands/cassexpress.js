@@ -8,7 +8,7 @@ export const meta = {
   noPrefix: "both",
   otherNames: ["cexpress", "cbank"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "💵",
 };
 const charm = "✦";
 const circle = "⦿";

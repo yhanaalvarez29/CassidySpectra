@@ -10,7 +10,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["catshop", "felinestore"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "😺",
 };
 
 const meowShop = {

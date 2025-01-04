@@ -11,7 +11,7 @@ export const meta = {
   otherNames: ["customitem"],
   shopPrice: 200000,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🛠️",
 };
 
 export const style = {

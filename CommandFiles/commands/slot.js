@@ -12,7 +12,7 @@ export const meta = {
   waitingTime: 30,
   shopPrice: 1000,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🍒",
 };
 const { randArrValue } = global.utils;
 

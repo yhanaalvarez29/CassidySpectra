@@ -10,7 +10,7 @@ export const meta = {
   cooldown: 10,
   noPrefix: false,
   requirement: "2.5.0",
-  icon: "",
+  icon: "📝",
 };
 const prize = 70;
 export const style = {

@@ -10,7 +10,7 @@ export const meta = {
   otherNames: ["makeitem"],
   botAdmin: true,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🛠️",
 };
 
 export const style = {

@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 20,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🤣",
 };
 const { randArrValue } = global.utils;
 const winTexts = [

@@ -7,7 +7,7 @@ export const meta = {
   category: "Fun",
   usage: "{prefix}{name}",
   requirement: "2.5.0",
-  icon: "",
+  icon: "🧩",
 };
 
 const initialReward = 400;

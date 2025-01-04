@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 60,
   requirement: "2.5.0",
-  icon: "",
+  icon: "⭕",
 };
 const reward = 50;
 const X = "❌";

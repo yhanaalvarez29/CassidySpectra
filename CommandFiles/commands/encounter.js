@@ -13,7 +13,7 @@ export const meta = {
   waitingTime: 1,
   // botAdmin: true,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🔱",
 };
 const meow = {
   wildName: "Meow",

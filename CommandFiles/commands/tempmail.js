@@ -9,7 +9,7 @@ export const meta = {
   params: [["gen", "inbox"]],
   shopPrice: 100,
   requirement: "2.5.0",
-  icon: "",
+  icon: "📩",
 };
 
 export async function entry({ api, event }) {

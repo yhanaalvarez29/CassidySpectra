@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["snowdinshop", "bunnyshop"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "👒",
 };
 
 const qcShop = {

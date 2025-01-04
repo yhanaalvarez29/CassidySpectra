@@ -19,7 +19,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🟨",
 };
 
 // Created by Liane Cagara, do not own.

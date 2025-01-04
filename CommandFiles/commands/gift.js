@@ -8,7 +8,7 @@ export const meta = {
   waitingTime: 1,
   noPrefix: false,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🎁",
 };
 export const style = {
   title: "Free Gift 💗",

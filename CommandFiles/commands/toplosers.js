@@ -7,7 +7,7 @@ export const meta = {
   permissions: [0, 1, 2],
   waitingTime: 3,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🤣",
 };
 
 export class style {

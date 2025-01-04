@@ -17,7 +17,7 @@ export const meta = {
   whiteList: null,
   ext_plugins: {},
   requirement: "2.5.0",
-  icon: "",
+  icon: ">_",
 };
 
 export const style = {

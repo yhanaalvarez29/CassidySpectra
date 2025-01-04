@@ -12,7 +12,7 @@ module.exports = {
     noPrefix: "both",
     shopPrice: 2500,
     requirement: "2.5.0",
-    icon: "",
+    icon: "🪙",
   },
   style: class {
     title = {

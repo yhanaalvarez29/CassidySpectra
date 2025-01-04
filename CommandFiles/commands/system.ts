@@ -16,7 +16,7 @@ export const meta: { [key: string]: any } = {
   allowModerators: true,
   waitingTime: 1,
   requirement: "2.5.0",
-  icon: "",
+  icon: "💽",
 };
 
 interface Errors {
@@ -63,7 +63,7 @@ export async function entry({
     loadPlugins: (
       arg: any,
       force: boolean,
-      callback?: any,
+      callback?: any
     ) => Promise<Errors | boolean>;
     commands: any;
     loadCommand: (
@@ -71,9 +71,9 @@ export async function entry({
       commands?: any,
       isObj?: boolean,
       force?: boolean,
-      transpileOnly?: boolean,
+      transpileOnly?: boolean
     ) => Promise<any>;
-  } = global.Cassidy;
+  } = global.Cassidy as any;
   const {
     fileStrings,
     fileVersions,
@@ -86,7 +86,7 @@ export async function entry({
     let i: any;
     const fsp = fs.promises;
     const files: string[] = (await fsp.readdir(commandsPath)).filter(
-      (i) => i.endsWith(".js") || i.endsWith(".ts"),
+      (i) => i.endsWith(".js") || i.endsWith(".ts")
     );
     const currentFileStrings: Map<string, string> = new Map();
     const errors: Errors = {};
@@ -138,7 +138,7 @@ export async function entry({
           }
           //txt += `\n${status === "added" ? diffString : "No Changes."}`;
           return txt;
-        }),
+        })
       )
     ).join("\n");
     if (!input.isWeb) {
@@ -153,7 +153,7 @@ React with 👍 to continue.`
         {
           authorOnly: true,
           emoji: "👍",
-        },
+        }
       );
       i = z.self;
     }
@@ -191,7 +191,9 @@ React with 👍 to continue.`
     let response = "";
     if (Object.keys(errors).length > 0) {
       const errs = errors;
-      let res: string = `❌ | Failed to reload ${errs && typeof errs === "object" ? Object.keys(errs).length : 0} modules:\n\n`;
+      let res: string = `❌ | Failed to reload ${
+        errs && typeof errs === "object" ? Object.keys(errs).length : 0
+      } modules:\n\n`;
       await new Promise<void>((r) => setTimeout(r, 1000));
       let num: number = 1;
       for (const x of Object.entries(errs)) {
@@ -240,7 +242,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         {
           authorOnly: true,
           emoji: "👍",
-        },
+        }
       );
       i = z.self;
       //await box.edit(`⚙️ | Getting started..`, i.messageID);
@@ -261,7 +263,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         } else {
           auto = await auto.do(`✅ ${fileName}`);
         }
-      },
+      }
     );
     await new Promise<void>((r) => setTimeout(r, 1000));
     console.log(`Commands loaded.`);
@@ -279,7 +281,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         } else {
           auto = await auto.do(`✅ ${fileName}`);
         }
-      },
+      }
     );
     auto.do(`✅ | Plugins Loaded!`);
 
@@ -288,7 +290,9 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       ...(errs1 as Errors),
       ...(errs2 as Errors),
     };
-    let res: string = `❌ | Failed to reload ${errs && typeof errs === "object" ? Object.keys(errs).length : 0} modules and plugins:\n\n`;
+    let res: string = `❌ | Failed to reload ${
+      errs && typeof errs === "object" ? Object.keys(errs).length : 0
+    } modules and plugins:\n\n`;
     await new Promise<void>((r) => setTimeout(r, 1000));
     let num: number = 1;
     if (errs && Object.keys(errs).length > 0) {
@@ -343,7 +347,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       {
         edit: `✅ Moving to trash...`,
         authorOnly: true,
-      },
+      }
     );
     let num = 0;
     while (fs.existsSync(trashPath)) {
@@ -353,7 +357,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     fs.writeFileSync(trashPath, backup);
     fs.unlinkSync(filePath);
     const commandKeys = Object.keys(commands).filter(
-      (key) => commands[key].fileName === fileName,
+      (key) => commands[key].fileName === fileName
     );
     setTimeout(() => {
       if (commandKeys.length > 0) {
@@ -363,20 +367,20 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       }
     }, 5000);
     await box.reply(
-      `✅ | File "${fileName}" has been moved to trash, and will be unloaded after 5 seconds..`,
+      `✅ | File "${fileName}" has been moved to trash, and will be unloaded after 5 seconds..`
     );
     return true;
   }
   async function recoverTrash(
     trashName: string,
-    fileName?: string,
+    fileName?: string
   ): Promise<boolean> {
     fileName ??= trashName;
     const trashPath: string = `CommandFiles/commands/trash/${trashName}`;
     const newPath: string = `CommandFiles/commands/${fileName ?? trashName}`;
     if (fs.existsSync(newPath)) {
       box.reply(
-        `❌ | File "${newPath}" already exists in the command files, you must delete/trash it first.`,
+        `❌ | File "${newPath}" already exists in the command files, you must delete/trash it first.`
       );
       return false;
     }
@@ -389,7 +393,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       {
         edit: `✅ | File "${fileName}" has been recovered from trash.`,
         authorOnly: true,
-      },
+      }
     );
 
     const backup: string = fs.readFileSync(trashPath, "utf-8");
@@ -446,7 +450,10 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         publicity: 1,
       });
       await box.reply({
-        body: `✅ | Uploaded "${fileName}" to Pastebin: ${url.replaceAll("pastebin.com/", "pastebin.com/raw/")}`,
+        body: `✅ | Uploaded "${fileName}" to Pastebin: ${url.replaceAll(
+          "pastebin.com/",
+          "pastebin.com/raw/"
+        )}`,
         noStyle: true,
       });
       return true;
@@ -491,11 +498,13 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       const orig = fs.readFileSync(filePath, "utf-8");
       const { status, diffString } = await compareCode(code, orig);
       await box.quickWaitReact(
-        `⚠️ The file ${fileName} already exists, please react with any emoji to proceed.(Your files will be automatically added to trash.)${status === "added" ? `\n\n💻 **Cassidy Diff**\n\n${diffString}` : ""}`,
+        `⚠️ The file ${fileName} already exists, please react with any emoji to proceed.(Your files will be automatically added to trash.)${
+          status === "added" ? `\n\n💻 **Cassidy Diff**\n\n${diffString}` : ""
+        }`,
         {
           edit: `✅ Proceeding...`,
           authorOnly: true,
-        },
+        }
       );
       let trashPath = `CommandFiles/commands/trash/replace_${fileName}`;
       let num: number = 0;
@@ -525,7 +534,7 @@ ${files.join("\n")}`);
     }
     if (!args[1]) {
       await box.reply(
-        `❌ | Please specify the filename you want to move to trash.`,
+        `❌ | Please specify the filename you want to move to trash.`
       );
       return false;
     }
@@ -547,7 +556,7 @@ ${files.join("\n")}`);
 
     if (!args[1]) {
       await box.reply(
-        `❌ | Please specify the filename to upload to Pastebin.`,
+        `❌ | Please specify the filename to upload to Pastebin.`
       );
       return false;
     }

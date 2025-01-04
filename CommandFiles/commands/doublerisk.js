@@ -11,7 +11,7 @@ export const meta = {
   waitingTime: 60,
   shopPrice: 50000,
   requirement: "2.5.0",
-  icon: "",
+  icon: "💥",
 };
 
 export class style {

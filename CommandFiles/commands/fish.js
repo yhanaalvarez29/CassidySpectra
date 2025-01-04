@@ -84,7 +84,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["fishing", "catch"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🎣",
 };
 
 const fishingDelay = 300000;

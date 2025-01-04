@@ -11,7 +11,7 @@ export const meta = {
   usage: "{p}calc 20*20",
   params: [true],
   requirement: "2.5.0",
-  icon: "",
+  icon: "💻",
 };
 export const style = {
   title: "Calculator 💻",

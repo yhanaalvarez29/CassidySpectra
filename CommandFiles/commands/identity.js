@@ -13,7 +13,7 @@ export const meta = {
   waitingTime: 5,
   otherNames: ["id", "users"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "💬",
 };
 
 const { parseCurrency: pCy } = global.utils;

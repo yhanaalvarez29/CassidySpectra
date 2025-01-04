@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🏗️",
 };
 
 export const style = {

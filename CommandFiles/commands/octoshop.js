@@ -10,7 +10,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["krakenshop", "deepstore"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🐙",
 };
 export async function entry({ UTShop }) {
   const shop = new UTShop(octoShop);

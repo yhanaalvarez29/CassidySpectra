@@ -13,7 +13,7 @@ export const meta = {
   waitingTime: 2,
   shopPrice: 100,
   requirement: "2.5.0",
-  icon: "",
+  icon: "✏️",
 };
 
 export const style = {

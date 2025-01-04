@@ -10,7 +10,7 @@ export const meta = {
   otherNames: [],
   shopPrice: 40,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🍽️",
 };
 
 /*export const style = {

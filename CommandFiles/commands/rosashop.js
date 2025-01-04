@@ -10,7 +10,7 @@ export const meta = {
   noPrefix: false,
   otherNames: ["cuteshop", "adorablestore"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🌹",
 };
 
 const rosaShop = {

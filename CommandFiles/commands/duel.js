@@ -10,7 +10,7 @@ export const meta = {
   waitingTime: 1,
   otherNames: [],
   requirement: "2.5.0",
-  icon: "",
+  icon: "⚔️",
 };
 
 export const style = {

@@ -13,7 +13,7 @@ export const meta = {
   noPrefix: "both",
   otherNames: [],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🛒",
 };
 
 export const style = {

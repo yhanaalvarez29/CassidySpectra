@@ -10,7 +10,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 5,
   requirement: "2.5.0",
-  icon: "",
+  icon: "🌏",
 };
 import os from "os";
 

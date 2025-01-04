@@ -10,7 +10,7 @@ export const meta = {
   waitingTime: 1,
   otherNames: ["tradehall", "trade"],
   requirement: "2.5.0",
-  icon: "",
+  icon: "🛒",
 };
 const { parseCurrency: pCy } = global.utils;
 const { invLimit } = global.Cassidy;
