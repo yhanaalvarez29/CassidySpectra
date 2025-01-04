@@ -1355,6 +1355,9 @@ export class Inventory {
   constructor(inventory = [], limit = global.Cassidy.invLimit) {
     inventory ??= [];
     this.limit = limit;
+    /**
+     * @type {Array}
+     */
     this.inv = this.sanitize(JSON.parse(JSON.stringify(inventory)));
 
     // this.inv = new Proxy(this.inv, {
@@ -1437,13 +1440,16 @@ export class Inventory {
   }
   deleteRef(item) {
     let index = this.inv.indexOf(item);
+
     if (index === -1) {
       index = parseInt(item) - 1;
     }
+
     if (index !== -1 && !isNaN(index)) {
-      this.inv = this.inv.filter((_, ind) => ind !== index);
+      this.inv.splice(index, 1);
     }
   }
+
   deleteRefs(items) {
     for (const item of items) {
       this.deleteRef(item);
@@ -1470,7 +1476,9 @@ export class Inventory {
     return this.inv;
   }
   deleteOne(key) {
-    let index = this.inv.findIndex((item) => item.key === key);
+    let index = this.inv.findIndex(
+      (item) => item.key === key || item.key === this.keyAt(key)
+    );
     if (index === -1) {
       index = parseInt(key) - 1;
     }
@@ -1480,7 +1488,7 @@ export class Inventory {
     this.inv = this.inv.filter((_, i) => i !== index);
   }
   keyAt(index) {
-    return this.at(index).key;
+    return this.at(index)?.key;
   }
   delete(key) {
     this.inv = this.inv.filter(

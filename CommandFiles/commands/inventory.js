@@ -260,18 +260,509 @@ export async function entry({ ...ctx }) {
           "Uses or activates a specific item for its intended effect.",
         aliases: ["activate", "consume", "equip", "-u"],
         args: ["<item_id | index>"],
+        async handler() {
+          const [key] = actionArgs;
+          if (!key) {
+            return output.reply(`❌ Please specify an item key to use.`);
+          }
+          const eKey = "--unequip";
+          let item = inventory.getOne(key);
+          if (!item && !String(key).startsWith(eKey)) {
+            return output.reply(
+              `❌ Item with key "${key}" not found in your inventory.`
+            );
+          }
+          if (item.type === "food") {
+            return output.reply(
+              `${item.icon} **${item.name}** is a general food item that can be used to **feed your pet**. 
+                Feeding your pet with this item will heal it, and the amount of healing provided affects how much experience 
+                your pet gains. More healing results in more experience!`
+            );
+          }
+          if (item.type.endsWith("_food")) {
+            const petType = item.type.replaceAll("_food", "");
+            const durationMinutes = ((item.saturation ?? 0) / 60000).toFixed(1);
+
+            if (petType === "any") {
+              return output.reply(
+                `${item.icon} **${item.name}** is a versatile food item that can be **fed to any pet**, 
+                    regardless of its type. 
+                    Feeding this to a pet will keep it satisfied for **${durationMinutes} minutes**. 
+                    It's a perfect choice for pet owners with multiple pet types!`
+              );
+            } else {
+              return output.reply(
+                `${item.icon} **${item.name}** is a specialized food item.\nIt can be **fed** to any pet of type **${petType}**.\nFeeding this to a compatible pet will keep it satisfied for **${durationMinutes} minutes**.\nMake sure the pet matches the type to benefit from this food!`
+              );
+            }
+          }
+
+          if (item.type === "pet") {
+            return output.reply(
+              `${item.icon} **${item.name}** is a **caged pet**. 
+                You might be able to **uncage** it using a command like **${prefix}pet-uncage ${item.key}**\nHonestly, I have no idea if that command actually works, but hey, it might be worth a try!`
+            );
+          }
+
+          item ??= {};
+          /*if (!item.canUse) {
+        return output.reply(`❌ This item has no direct usage here.`);
+      }*/
+          if (
+            item.type === "armor" ||
+            item.type === "weapon" ||
+            key.startsWith(eKey)
+          ) {
+            if (petsData.getAll().length === 0) {
+              return output.reply(
+                `❌ You don't have any pets to use this item.`
+              );
+            }
+            const i = await output.reply(
+              `**Choose a pet name to equip this item:** (Also try <pet name> <armor slot number> for armors)\n\n${getPetList(
+                petsData,
+                gearsData,
+                item,
+                0
+              )}`
+            );
+            input.setReply(i.messageID, {
+              key: commandName,
+              callback: handleEquip,
+            });
+            async function handleEquip(ctx) {
+              if (ctx.input.senderID !== input.senderID) {
+                return;
+              }
+              const userData = await ctx.money.get(ctx.input.senderID);
+              const { inventory, petsData, gearsData } = getDatas(userData);
+              item ??= {};
+              if (!key.startsWith(eKey) && !inventory.has(item.key)) {
+                return ctx.output.reply(
+                  `❓ Where did the item go? I can't find it from your inventory.`
+                );
+              }
+
+              const petName = String(ctx.input.words[0]);
+              let slot = parseInt(ctx.input.words[1]) - 1;
+              if (isNaN(slot)) {
+                slot = 0;
+              }
+              let pet = petsData
+                .getAll()
+                .find(
+                  (i) =>
+                    String(i.name).toLowerCase().trim() ===
+                    petName.toLowerCase().trim()
+                );
+              if (!pet) {
+                return ctx.output.reply(
+                  `❌ You don't have a pet named "${petName}"`
+                );
+              }
+              const gearData = gearsData.getGearData(pet.key);
+              const [, keyType] = key.split("_");
+              item ??= {};
+
+              if (item.type === "armor") {
+                const oldArmor = gearData.equipArmor(slot, item);
+                inventory.deleteOne(item.key);
+
+                if (oldArmor) {
+                  inventory.addOne(oldArmor);
+                }
+              } else if (item.type === "weapon") {
+                const oldWeapon = gearData.equipWeapon(item);
+                inventory.deleteOne(item.key);
+                if (oldWeapon) {
+                  inventory.addOne(oldWeapon);
+                }
+              } else if (keyType === "armor") {
+                const oldArmor = gearData.equipArmor(slot, item);
+
+                if (oldArmor) {
+                  if (inventory.getAll().length >= 8) {
+                    return ctx.output.reply(
+                      `❌ You're carrying too many items`
+                    );
+                  }
+                  inventory.addOne(oldArmor);
+                }
+              } else if (keyType === "weapon") {
+                const oldWeapon = gearData.equipWeapon(item);
+
+                if (oldWeapon) {
+                  if (inventory.getAll().length >= 8) {
+                    return ctx.output.reply(
+                      `❌ You're carrying too many items`
+                    );
+                  }
+                  inventory.addOne(oldWeapon);
+                }
+              } else {
+                return ctx.output.reply(
+                  `❌ This item is no longer an armor or weapon, what bug are you trying to discover? Or maybe wrong syntax for ${eKey}_armor or ${eKey}_weapon`
+                );
+              }
+              gearsData.setGearData(pet.key, gearData);
+              await ctx.money.set(ctx.input.senderID, {
+                inventory: Array.from(inventory),
+                gearsData: gearsData.toJSON(),
+              });
+              await ctx.output.reply(
+                `✅ Equipped **${item.icon}** **${item.name}** to **${
+                  pet.name
+                }**. (use inv use --unequip_armor or --unequip_weapon to unequip.)\n\n${getPetList(
+                  petsData,
+                  gearsData,
+                  {},
+                  0
+                )}`
+              );
+            }
+            return;
+          }
+          if (item.type === "cheque") {
+            const userInventory = inventory;
+            let chequeKey = actionArgs[0];
+            if (!String(chequeKey).startsWith("cheque_")) {
+              chequeKey = `cheque_${chequeKey}`;
+            }
+            const itemToCash = userInventory.getOne(chequeKey);
+
+            if (
+              !itemToCash ||
+              !chequeKey.startsWith("cheque_") ||
+              itemToCash?.type !== "cheque"
+            ) {
+              return output.reply(
+                `❌ No valid cheque found with the specified key.`
+              );
+            }
+
+            const chequeAmount = parseInt(itemToCash.chequeAmount);
+
+            if (isNaN(chequeAmount) || chequeAmount <= 0) {
+              return output.reply(`❌ The cheque amount is invalid.`);
+            }
+
+            userInventory.deleteOne(chequeKey);
+            userData.money += chequeAmount;
+
+            await money.set(input.senderID, {
+              inventory: Array.from(userInventory),
+              money: userData.money,
+            });
+
+            return output.reply(
+              `✅ Cashed a cheque worth $${chequeAmount}. Your new balance is $${userData.money}.`
+            );
+          }
+          if (item.type === "potion") {
+            return output.reply(
+              item.useText ??
+                `✦ A potion? What is a **potion**? Can you eat it? can you drink it? CAN YOU INJECT IT!??
+
+${item.icon} **${item.name}**: "Shut up ${item.name} is taking a NAP!"
+
+✦ Since when did items learned how to **talk**?`
+            );
+          }
+          if (item.type !== "treasure") {
+            const flavorText =
+              item.useText ??
+              `You used ${item.icon} ${item.name}, nothing happened.`;
+            return output.reply(`✅ ${flavorText}`);
+          }
+          /*const treasureItem = generateTreasure(item.treasureKey);
+        if (!treasureItem) {
+          return output.reply(`${item.icon} The treasure failed to open.`);
+        }*/
+          let diaCost = 5;
+          let tresCount = item.tresCount || 5;
+          const author = input.senderID;
+          let chosenNumbers = [];
+          async function handleTriple(ctx) {
+            const { input, output, money } = ctx;
+
+            if (author !== ctx.input.senderID) {
+              return;
+            }
+            const userData = await ctx.money.get(ctx.input.senderID);
+            const { inventory, collectibles } = getDatas(userData);
+
+            const { treasures, paidMode } = ctx.repObj;
+
+            if (paidMode && !collectibles.hasAmount("gems", diaCost)) {
+              return output.reply(`❌ | You cannot afford a retry.`);
+            }
+            if (paidMode && String(input.words[0]).toLowerCase() !== "retry") {
+              return;
+            }
+            if (paidMode) {
+              input.words.shift();
+            }
+
+            if (!inventory.has(item.key) && !paidMode) {
+              return output.reply(
+                `❌ | Where did the item go? I can't find it from your inventory.`
+              );
+            }
+            let number = parseInt(input.words[0]);
+            if (chosenNumbers.includes(number)) {
+              return output.reply(`❌ | You already chose this number.`);
+            }
+            if (chosenNumbers.length >= tresCount) {
+              return output.reply(`❌ | There's nothing to choose.`);
+            }
+            if (isNaN(number) || number < 1 || number > tresCount) {
+              return output.reply(
+                `❌ | Please go back to the previous message and reply a number **between 1 to ${tresCount}.**`
+              );
+            }
+            const treasure = treasures[number - 1];
+            if (!treasure) {
+              return output.reply(`❌ | The treasure failed to open, weird.`);
+            }
+            if (inventory.getAll().length >= 8) {
+              return output.reply(`❌ | You're carrying too many items!`);
+            }
+            inventory.addOne(treasure);
+            if (paidMode) {
+              collectibles.raise("gems", -diaCost);
+            }
+            const treasureItem = treasure;
+            if (!paidMode) {
+              inventory.deleteOne(key);
+            }
+            input.delReply(ctx.detectID);
+
+            await money.set(input.senderID, {
+              inventory: Array.from(inventory),
+              collectibles: Array.from(collectibles),
+            });
+            chosenNumbers.push(number);
+
+            const infoDone = await output.replyStyled(
+              `${item.icon} You opened ${item.name}!
+
+${treasures.map((i) => i.icon).join(" | ")}
+${
+  collectibles.hasAmount("gems", diaCost)
+    ? `\n[font=typewriter]Retry for 💎 ${diaCost}[:font=typewriter]\n[font=typewriter](retry <number>)[:font=typewriter]`
+    : ""
+}
+
+**Reward Details:**
+Name: **${treasureItem.icon}** **${treasureItem.name}**
+Info: ${treasureItem.flavorText}
+
+Type **inv check ${treasureItem.key}** for more details!
+
+💎 **${pCy(collectibles.getAmount("gems"))}** ${
+                paidMode ? `(-${diaCost})` : ""
+              }`,
+              style
+            );
+            treasures[number - 1] = {
+              icon: "✅",
+              isNothing: true,
+            };
+            input.setReply(infoDone.messageID, {
+              key: "inventory",
+              callback: handleTriple,
+              paidMode: true,
+
+              treasures,
+            });
+          }
+
+          let treasures = [];
+          for (let i = 0; i < tresCount; i++) {
+            let newTreasure;
+            do {
+              newTreasure = generateTreasure(item.treasureKey);
+            } while (
+              /* treasures.some(
+              (t) => t.key === newTreasure.key || t.icon === newTreasure.icon
+            )*/
+              false
+            );
+            treasures.push(newTreasure);
+          }
+          treasures = treasures.sort(() => Math.random() - 0.5);
+          const info = await output.reply(
+            `✦ Choose a treasure to open:\n\n${Array(tresCount)
+              .fill(item.icon)
+              .join(
+                " | "
+              )}\n\nReply with a **number** from **1** to **${tresCount}**.`
+          );
+          input.setReply(info.messageID, {
+            key: "inventory",
+            callback: handleTriple,
+            treasures,
+          });
+        },
       },
       {
         key: "transfer",
         description: "Sends an item to another user or entity.",
         aliases: ["give", "send", "-t"],
         args: ["<item_id | index>*<num|'all'>", "<uid>"],
+        async handler() {
+          let [keyTX = "", recipientID] = actionArgs;
+          let [keyT, amountItem = "1"] = keyTX.split("*");
+
+          if (recipientID === input.senderID) {
+            return output.reply(
+              `❌ You cannot send items to yourself, I already tried.`
+            );
+          }
+          if (!inventory.has(keyT)) {
+            return output.reply(
+              `❌ You don't have any "${keyT}" in your inventory.`
+            );
+          }
+          if (amountItem === "all") {
+            amountItem = inventory.getAmount(keyT);
+          }
+          amountItem = parseInt(amountItem);
+          if (isNaN(amountItem)) {
+            amountItem = 1;
+          }
+          if (!inventory.hasAmount(keyT, amountItem) || amountItem < 1) {
+            return output.reply(
+              `❌ Please enter a valid amount of "${keyT}", you currently have ${inventory.getAmount(
+                keyT
+              )} of it.`
+            );
+          }
+          const allUsers = await money.getAll();
+          const recipientData = allUsers[recipientID];
+          if (!recipientData) {
+            return output.reply(`❌ User with ID "${recipientID}" not found.`);
+          }
+          const rInventory = new Inventory(recipientData.inventory);
+          if (rInventory.getAll().length >= 8) {
+            return output.reply(`❌ The recipient's inventory is full.`);
+          }
+          if (rInventory.getAll().length + amountItem > 8) {
+            return output.reply(
+              `❌ The recipient's inventory currently have ${
+                rInventory.getAll().length
+              }/8 items and you're trying to send ${amountItem} items.`
+            );
+          }
+          let sentItems = [];
+          let failItems = [];
+          for (let i = 0; i < amountItem; i++) {
+            const itemToSend = inventory.getOne(keyT);
+            if (itemToSend?.cannotSend) {
+              failItems.push({ ...itemToSend, error: `Item cannot be sent.` });
+              continue;
+            }
+
+            rInventory.addOne(itemToSend);
+            inventory.deleteRef(itemToSend);
+            sentItems.push(itemToSend);
+          }
+
+          await money.set(input.senderID, {
+            inventory: Array.from(inventory),
+          });
+          await money.set(recipientID, {
+            inventory: Array.from(rInventory),
+          });
+
+          await output.reply(
+            `${
+              sentItems.length !== 0
+                ? `✅ Sent ${sentItems.length} items to ${
+                    recipientData.name ?? "Unregistered"
+                  }`
+                : `❌ No items were sent to ${
+                    recipientData.name ?? "Unregistered"
+                  }`
+            }\n\n${[...sentItems, ...failItems]
+              .map(
+                (i) =>
+                  `${i.icon} ${i.name}${i.error ? `\n❌ ${i.error}\n` : ""}`
+              )
+              .join("\n")}`
+          );
+        },
       },
       {
         key: "toss",
         description: "Discards an item from the user's inventory.",
         aliases: ["discard", "drop", "throw"],
         args: ["<item_id | index>*<num|'all'>"],
+        async handler() {
+          let [key, amount = "1"] = (actionArgs[0] ?? "").split("*");
+
+          if (!key) {
+            return output.reply(
+              "❌ Please specify an item key. Example: `cat*3` to select 3 items with the key `cat`."
+            );
+          }
+
+          let items = inventory.get(key);
+
+          if (!items || items.length === 0) {
+            return output.reply(`❌ No items found for the key: **${key}**.`);
+          }
+
+          if (amount === "all") {
+            amount = items.length;
+          } else {
+            amount = parseInt(amount, 10);
+            if (isNaN(amount) || amount <= 0) {
+              return output.reply(
+                `❌ Invalid amount specified: **${actionArgs[0]}**. Please use a valid number or "all".`
+              );
+            }
+          }
+
+          items = items.slice(0, amount);
+
+          if (items.length < amount) {
+            output.reply(
+              `⚠️ Requested ${amount} items, but only ${items.length} are available for the key: **${key}**.`
+            );
+          }
+
+          const deletable = items.filter((i) => i.cannotToss !== true);
+          const cannot = items.filter((i) => i.cannotToss === true);
+
+          inventory.deleteRefs(deletable);
+
+          await money.set(input.senderID, {
+            inventory: Array.from(inventory),
+          });
+
+          let successMsg = `Tossed ${deletable.length} item${
+            deletable.length !== 1 ? "s" : ""
+          }:\n`;
+          deletable.forEach((i) => {
+            successMsg += `${i.icon} **${i.name}**\n`;
+          });
+
+          let failMsg = `Failed tossing ${cannot.length} item${
+            cannot.length !== 1 ? "s" : ""
+          }:\n`;
+          cannot.forEach((i) => {
+            failMsg += `${i.icon} **${i.name}**\n`;
+          });
+
+          if (deletable.length > 0 && cannot.length > 0) {
+            output.reply(`${successMsg}\n${failMsg}`);
+          } else if (deletable.length > 0) {
+            output.reply(successMsg);
+          } else if (cannot.length > 0) {
+            output.reply(failMsg);
+          }
+        },
       },
     ]
   );
