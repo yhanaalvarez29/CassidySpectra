@@ -31,7 +31,7 @@ function hasDuplicate(args) {
 
 export async function entry({ input, output, money, icon, cancelCooldown }) {
   const lottoLen = 3;
-  const rangeB = 75;
+  const rangeB = 45;
   const {
     money: userMoney,
     lastLottoWin,
