@@ -8,12 +8,11 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 15,
-  shopPrice: 50,
   requirement: "2.5.0",
-  icon: "🎟️",
+  icon: "🔖",
 };
 export const style = {
-  title: "Lotto 🎟️",
+  title: "Lotto 🔖",
   contentFont: "fancy",
   titleFont: "bold",
 };
@@ -29,18 +28,27 @@ function hasDuplicate(args) {
   return false;
 }
 
-export async function entry({ input, output, money, icon, cancelCooldown }) {
+export async function entry({ input, output, money, icon, cancelCooldown, Inventory }) {
   const lottoLen = 6;
-  const rangeB = 120;
+  const rangeB = 170;
   const {
     money: userMoney,
     lastLottoWin,
     lottoLooses = 0,
+    inv,
   } = await money.get(input.senderID);
+
+  const inventory = new Inventory(inv ?? []);
+
+  if (!inventory.has("lottoTicket")) {
+    return output.reply(`A 🔖 **Lotto Ticket** is required to play every single game.`);
+  }
+    
   checkLottoWin: {
     if (isNaN(lastLottoWin)) {
       break checkLottoWin;
     }
+    
     const interval = Date.now() - lastLottoWin;
     const timeElapsed = interval / 1000;
     if (timeElapsed < 60) {
@@ -52,6 +60,7 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
       );
     }
   }
+  
 
   const args = input.arguments
     .map(Number)
