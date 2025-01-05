@@ -50,6 +50,22 @@ const stoData = {
     price: 100,
     key: "plantitaMaxZ",
   },
+  spaceex: {
+    price: 200,
+    key: "plantitaMaxZ",
+  },
+  spaceexplorer: {
+    price: 500,
+    key: "spaceexplorerZ",
+  },
+  deepseadiver: {
+    price: 500,
+    key: "deepseadiverZ",
+  },
+  wizardsforge: {
+    price: 500,
+    key: "wizardsforgeZ",
+  },
 };
 
 global.stoData = stoData;
