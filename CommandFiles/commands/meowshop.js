@@ -5,7 +5,7 @@ export const meta = {
   version: "1.1.2",
   author: "Liane Cagara",
   usage: "{prefix}meowshop",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
   otherNames: ["catshop", "felinestore"],

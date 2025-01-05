@@ -5,7 +5,7 @@ export const meta = {
   version: "1.0.3",
   author: "Liane Cagara",
   usage: "{prefix}shawn",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
   requirement: "2.5.0",

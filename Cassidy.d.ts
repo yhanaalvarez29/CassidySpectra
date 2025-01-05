@@ -1,4 +1,3 @@
-
 declare global {
   var Cassidy: {
     config: {
@@ -16,6 +15,7 @@ declare global {
     logo: any;
     oldLogo: string;
     accessToken: string | null;
+    redux: boolean;
   };
 }
 

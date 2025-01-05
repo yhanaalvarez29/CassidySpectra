@@ -7,7 +7,7 @@ export const meta = {
   version: "1.0.0",
   waitingTime: 5,
   description: "perform simple and scientific calculation ",
-  category: "tools",
+  category: "Utilities",
   usage: "{p}calc 20*20",
   params: [true],
   requirement: "2.5.0",

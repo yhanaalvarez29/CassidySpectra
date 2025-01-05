@@ -5,7 +5,7 @@ export const meta = {
   author: "Liane",
   version: "1.0.0",
   usage: "{prefix}{name}",
-  category: "Fun",
+  category: "Puzzle Games",
   permissions: [0],
   cooldown: 10,
   noPrefix: false,

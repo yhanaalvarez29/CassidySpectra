@@ -4,7 +4,7 @@ export const meta = {
   version: "1.0.3",
   author: "Liane Cagara",
   usage: "{prefix}resto",
-  category: "Simulation",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: false,
   otherNames: [],

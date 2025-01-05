@@ -9,7 +9,7 @@ export const meta = {
   version: "1.0.0",
   waitingTime: 5,
   description: "Family Feud style game!",
-  category: "Fun",
+  category: "Puzzle Games",
   usage: "{prefix}{name}",
   otherNames: ["ff", "feud"],
   requirement: "2.5.0",

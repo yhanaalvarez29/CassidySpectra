@@ -4,7 +4,7 @@ export const meta = {
   version: "1.0.5",
   author: "Liane Cagara",
   usage: "{prefix}recycle",
-  category: "Eco-friendly",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: false,
   otherNames: [],

@@ -6,7 +6,7 @@ export const meta = {
   otherNames: ["enc"],
   version: "1.0.2",
   usage: "{prefix}{name}",
-  category: "Pet",
+  category: "Spinoff Games",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: "both",

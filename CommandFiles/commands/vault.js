@@ -8,7 +8,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.1.3",
   usage: "{prefix}vault <action> [arguments]",
-  category: "User Management",
+  category: "Inventory",
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,

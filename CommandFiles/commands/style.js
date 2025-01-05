@@ -4,7 +4,7 @@ export const meta = {
   otherNames: ["style", "des", "styler"],
   version: "1.0.8",
   usage: "{prefix}{name} <title> | <content>",
-  category: "Utility",
+  category: "Utilities",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: false,
@@ -23,7 +23,7 @@ export async function entry({ input, output, prefix }) {
   const [title, content] = input.splitArgs("|");
   if (!title || !content) {
     return output.reply(
-      `Usage: ${prefix}style <title> | <content>\n\nThe ** symbol is allowed to make bold texts, use \\| for | symbols that is not meant to split.`,
+      `Usage: ${prefix}style <title> | <content>\n\nThe ** symbol is allowed to make bold texts, use \\| for | symbols that is not meant to split.`
     );
   }
   if (content === "code") {

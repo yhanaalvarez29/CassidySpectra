@@ -5,7 +5,7 @@ export const meta = {
   version: "1.0.0",
   author: "Liane",
   usage: "{prefix}octoshop",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
   otherNames: ["krakenshop", "deepstore"],

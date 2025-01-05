@@ -4,7 +4,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.0.0",
   usage: "{prefix}duel <pet name>",
-  category: "Gameplay",
+  category: "Spinoff Games",
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,

@@ -17,6 +17,7 @@ export const meta: { [key: string]: any } = {
   waitingTime: 1,
   requirement: "2.5.0",
   icon: "💽",
+  category: "System",
 };
 
 interface Errors {

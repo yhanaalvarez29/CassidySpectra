@@ -3,7 +3,7 @@ export const meta = {
   description: "Claim your daily reward!",
   version: "1.0.0",
   author: "Liane Cagara",
-  category: "Utility",
+  category: "Rewards",
   permissions: [0],
   noPrefix: false,
   requirement: "2.5.0",

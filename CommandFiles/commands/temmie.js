@@ -5,7 +5,7 @@ export const meta = {
   version: "1.0.3",
   author: "Liane Cagara",
   usage: "{prefix}temmieshop",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
   otherNames: ["temshop", "temstore", "temmie"],
@@ -222,7 +222,7 @@ export async function entry({ UTShop, money, input }) {
       });
       moneySet.temmieCollege = true;
       temmieShop.itemData = temmieShop.itemData.filter(
-        (i) => i.xKey !== "temCollege",
+        (i) => i.xKey !== "temCollege"
       );
     },
   };
@@ -244,7 +244,6 @@ export async function entry({ UTShop, money, input }) {
         type: "armor",
         def: 65,
         sellPrice: 5,
-        
       });
     },
   };

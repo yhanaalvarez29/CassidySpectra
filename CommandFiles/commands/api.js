@@ -6,7 +6,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.1.3",
   usage: "{prefix}inventory <action> [args]",
-  category: "Developer",
+  category: "Finance",
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,

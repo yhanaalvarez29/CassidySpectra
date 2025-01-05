@@ -8,6 +8,7 @@ export const meta = {
   waitingTime: 3,
   requirement: "2.5.0",
   icon: "⚡",
+  category: "User Management",
 };
 
 export class style {

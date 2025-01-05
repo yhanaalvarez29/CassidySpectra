@@ -9,7 +9,7 @@ export const meta = {
   version: "1.0.3",
   description: "Execute shell commands",
   usage: "{prefix}{name} <command>",
-  category: "System",
+  category: "Utilities",
   permissions: [2],
   waitingTime: 5,
   botAdmin: true,

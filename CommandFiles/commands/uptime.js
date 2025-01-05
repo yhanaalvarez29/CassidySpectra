@@ -5,7 +5,7 @@ export const meta = {
   version: "1.0.0",
   author: "Liane Cagara",
   usage: "{prefix}{name}",
-  category: "Info",
+  category: "System",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 5,
@@ -27,17 +27,19 @@ export async function entry({ output, input, icon }) {
   }
 
   const { uptime } = global.Cassidy;
-  const { years, months, days, hours, minutes, seconds } = formatTimeDiff(
-    uptime,
-  );
+  const { years, months, days, hours, minutes, seconds } =
+    formatTimeDiff(uptime);
 
   const uptimeString = `The bot is running for ${formatTimeUnit(
     years,
-    "year",
-  )}${formatTimeUnit(months, "month")}${formatTimeUnit(days, "day")}${formatTimeUnit(
-    hours,
-    "hour",
-  )}${formatTimeUnit(minutes, "minute")}and ${seconds} second${seconds > 1 ? "s" : ""}.`;
+    "year"
+  )}${formatTimeUnit(months, "month")}${formatTimeUnit(
+    days,
+    "day"
+  )}${formatTimeUnit(hours, "hour")}${formatTimeUnit(
+    minutes,
+    "minute"
+  )}and ${seconds} second${seconds > 1 ? "s" : ""}.`;
   const osInfo = {
     platform: os.platform(), // this is the operating system platform (e.g., "win32", "linux", "darwin")
     type: os.type(), // the operating system name (e.g., "Windows_NT", "Linux", "Darwin")

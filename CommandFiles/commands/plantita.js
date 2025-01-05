@@ -4,7 +4,7 @@ export const meta = {
   version: "1.0.1",
   author: "Liane Cagara",
   usage: "{prefix}plantita",
-  category: "Simulation",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: false,
   otherNames: ["plant", "halaman", "plantito"],

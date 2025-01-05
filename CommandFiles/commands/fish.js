@@ -4,7 +4,8 @@ const fishItems = [
     name: "Goldfish",
     icon: "🐟",
     type: "cat_food",
-    flavorText: "A shiny fish with golden scales. Perfect for your feline friend!",
+    flavorText:
+      "A shiny fish with golden scales. Perfect for your feline friend!",
     saturation: 600000, // 10 minutes
     sellPrice: 500,
   },
@@ -12,9 +13,9 @@ const fishItems = [
     key: "fishSalmon",
     name: "Salmon",
     icon: "🐠",
-    type: "cat_food", 
+    type: "cat_food",
     flavorText: "A nutritious fish loved by cats. Packed with omega-3!",
-    saturation: 3000000, 
+    saturation: 3000000,
     sellPrice: 4000,
   },
   {
@@ -31,7 +32,8 @@ const fishItems = [
     name: "Catfish",
     icon: "🐟",
     type: "cat_food",
-    flavorText: "A bottom-dwelling fish with a unique taste. Ideal for your pet!",
+    flavorText:
+      "A bottom-dwelling fish with a unique taste. Ideal for your pet!",
     saturation: 180000, // 3 minutes
     sellPrice: 200,
   },
@@ -40,7 +42,8 @@ const fishItems = [
     name: "Trout",
     icon: "🐟",
     type: "cat_food",
-    flavorText: "A freshwater fish with a delicate flavor. Your cat will enjoy it!",
+    flavorText:
+      "A freshwater fish with a delicate flavor. Your cat will enjoy it!",
     saturation: 120000, // 2 minutes
     sellPrice: 150,
   },
@@ -58,7 +61,8 @@ const fishItems = [
     name: "Swordfish",
     icon: "🐟",
     type: "cat_food",
-    flavorText: "A large and powerful fish. A high-quality treat for your feline friend!",
+    flavorText:
+      "A large and powerful fish. A high-quality treat for your feline friend!",
     saturation: 300000, // 5 minutes
     sellPrice: 500,
   },
@@ -78,7 +82,7 @@ export const meta = {
   description: "Catch a fish and add it to your inventory.",
   version: "1.0.0",
   author: "Liane Cagara",
-  category: "Utility",
+  category: "Rewards",
   permissions: [0],
   waitingTime: 1,
   noPrefix: false,
@@ -97,14 +101,7 @@ export const style = {
 
 const { invLimit } = global.Cassidy;
 
-
-export async function entry({
-  input,
-  output,
-  money,
-  Inventory,
-  Collectibles,
-}) {
+export async function entry({ input, output, money, Inventory, Collectibles }) {
   const { inventory = [], fishStamp } = await money.get(input.senderID);
   let updatedInventory = new Inventory(inventory);
 
@@ -113,12 +110,14 @@ export async function entry({
   }
 
   const currentTime = Date.now();
-  if (fishStamp && (currentTime - fishStamp < fishingDelay)) {
+  if (fishStamp && currentTime - fishStamp < fishingDelay) {
     const timeRemaining = fishingDelay - (currentTime - fishStamp);
     const minutesRemaining = Math.floor(timeRemaining / (1000 * 60));
     const secondsRemaining = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-    
-    return output.reply(`⏳ You need to wait ${minutesRemaining} minutes and ${secondsRemaining} seconds before fishing again.`);
+
+    return output.reply(
+      `⏳ You need to wait ${minutesRemaining} minutes and ${secondsRemaining} seconds before fishing again.`
+    );
   }
 
   let caughtFish = null;
@@ -130,12 +129,13 @@ export async function entry({
 
   const randomChance = Math.random();
   if (randomChance < 0.8) {
-    caughtFish = shuffledFishItems[Math.floor(Math.random() * shuffledFishItems.length)];
+    caughtFish =
+      shuffledFishItems[Math.floor(Math.random() * shuffledFishItems.length)];
 
     updatedInventory.addOne(caughtFish);
 
     output.reply(
-      `You caught a **${caughtFish.icon} ${caughtFish.name}**!\nPlease check your **inventory** or type **inv check ${caughtFish.key}** for more information.`,
+      `You caught a **${caughtFish.icon} ${caughtFish.name}**!\nPlease check your **inventory** or type **inv check ${caughtFish.key}** for more information.`
     );
   } else {
     output.reply(`🎣 Unfortunately, you didn't catch anything this time.`);

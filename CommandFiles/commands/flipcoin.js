@@ -13,6 +13,7 @@ module.exports = {
     shopPrice: 2500,
     requirement: "2.5.0",
     icon: "🪙",
+    category: "Gambling Games",
   },
   style: class {
     title = {

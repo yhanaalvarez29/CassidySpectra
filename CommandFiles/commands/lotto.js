@@ -6,7 +6,7 @@ export const meta = {
   version: "1.0.0",
   author: "Liane Cagara",
   usage: "{prefix}lotto <...numbers>",
-  category: "Fun",
+  category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
   waitingTime: 24,

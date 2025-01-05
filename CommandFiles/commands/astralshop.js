@@ -5,7 +5,7 @@ export const meta = {
   version: "1.1.0",
   author: "MrkimstersDev",
   usage: "{prefix}astralshop",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
 };

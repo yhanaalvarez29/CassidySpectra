@@ -5,13 +5,14 @@ export const meta = {
   version: "1.0.0",
   author: "AkhiroDEV",
   permissions: [0],
-  category: "AI",
+  category: "Social",
   description: "Talk to Aria AI.",
-  icon: "💗",
+  //-- Cassidy 2.5.0 --//
+  icon: global.Cassidy.redux ? "💗" : null,
 };
 
 export const style = {
-  title: "💗 Aria",
+  title: global.Cassidy.redux ? "Aria 💗" : "💗 Aria",
   titleFont: "bold",
   contentFont: "fancy",
 };

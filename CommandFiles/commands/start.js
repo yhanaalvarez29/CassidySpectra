@@ -91,7 +91,24 @@ export async function entry({
     {}
   );
 
-  const sortedCategories = Object.keys(categorizedCommands).sort();
+  const sortedCategories = Object.keys(categorizedCommands).sort((a, b) => {
+    const aContainsGame = a.toLowerCase().includes("game");
+    const bContainsGame = b.toLowerCase().includes("game");
+
+    if (aContainsGame && bContainsGame) {
+      return a.localeCompare(b);
+    }
+
+    if (aContainsGame) {
+      return -1;
+    }
+    if (bContainsGame) {
+      return 1;
+    }
+
+    return a.localeCompare(b);
+  });
+
   const itemsPerPage = 3;
   const totalPages = Math.ceil(sortedCategories.length / itemsPerPage);
   let currentPage = parseInt(args[0]) || 1;
@@ -125,7 +142,10 @@ export async function entry({
     });
   });
 
-  result += `\n\n» To navigate pages, type **${prefix}start <page_number>**.\n`;
+  result += `\n\n» Theres **MORE** commands! To navigate pages, type **${prefix}start <page_number>**.\n`;
+  result += `\n\n» To see the next page, type **${prefix}start ${
+    currentPage + 1
+  }**.\n`;
   result += `\n» To get an information about a certain command, type **${prefix}start <command_name>**.\n`;
 
   return output.reply(

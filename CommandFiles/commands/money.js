@@ -16,7 +16,7 @@ export const meta = {
   ],
   version: "2.5.0",
   usage: "{prefix}{name}",
-  category: "Financial",
+  category: "Finance",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: "both",

@@ -4,7 +4,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.0.0",
   usage: "{prefix}{name}",
-  category: "Fun",
+  category: "Chance Games",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 60,
@@ -29,7 +29,7 @@ const WINNING_COMBINATIONS = [
 const { delay } = global.utils;
 function checkWin(board, player) {
   return WINNING_COMBINATIONS.some((combination) =>
-    combination.every((slot) => board[slot] === player),
+    combination.every((slot) => board[slot] === player)
   );
 }
 
@@ -75,11 +75,11 @@ class TicTacToe {
     }
     for (const combination of shuffledCombinations) {
       const currentPlayerSlots = combination.filter(
-        (slot) => this.board[slot] === this.currentPlayer,
+        (slot) => this.board[slot] === this.currentPlayer
       );
       if (currentPlayerSlots.length === 2) {
         const emptySlot = combination.find(
-          (slot) => this.board[slot] === EMPTY,
+          (slot) => this.board[slot] === EMPTY
         );
         if (emptySlot !== undefined) {
           this.board[emptySlot] = this.currentPlayer;

@@ -4,7 +4,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.0.0",
   usage: "{prefix}{name}",
-  category: "Tools",
+  category: "Utilities",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 1,

@@ -16,6 +16,7 @@ export const meta = {
   waitingTime: 0.01,
   requirement: "2.5.0",
   icon: ">_",
+  category: "Utilities",
 };
 
 import util from "util";

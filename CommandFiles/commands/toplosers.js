@@ -8,6 +8,7 @@ export const meta = {
   waitingTime: 3,
   requirement: "2.5.0",
   icon: "🤣",
+  category: "Utilities",
 };
 
 export class style {
@@ -19,9 +20,8 @@ const { parseCurrency: pCy } = global.utils;
 
 export async function entry({ output, input, money, Slicer, args }) {
   const time = Date.now();
-  const isLean = args.includes("--lean")
-  const allUsers =
-    await money[isLean ? "toLeanObject" : "getAll"]();
+  const isLean = args.includes("--lean");
+  const allUsers = await money[isLean ? "toLeanObject" : "getAll"]();
 
   const sortedUsers = Object.keys(allUsers).sort((a, b) => {
     allUsers[a] ??= {};
@@ -52,7 +52,9 @@ export async function entry({ output, input, money, Slicer, args }) {
   let i = ((isNaN(parseInt(args[0])) ? 1 : parseInt(args[0])) - 1) * 10;
   const slicer = new Slicer(sortedUsers, 10);
 
-  let result = `Top 10 Losers: (${Date.now() - time}ms)${isLean ? "(lean mode)": ""}\n\n`;
+  let result = `Top 10 Losers: (${Date.now() - time}ms)${
+    isLean ? "(lean mode)" : ""
+  }\n\n`;
 
   for (const userID of slicer.getPage(args[0])) {
     i++;
@@ -66,7 +68,11 @@ export async function entry({ output, input, money, Slicer, args }) {
     } = data;
     const slot = parseInt(slotLooses - slotWins);
     const dr = parseInt(drLooses - drWins);
-    result += `${i}. **${data.name}**\n🍋 Slot ${slot > -1 ? "Loose" : "Win"}(s): **$${pCy(Math.abs(slot))}**💵\n💰 Doublerisk ${dr > -1 ? "Loose" : "Win"}(s): **$${pCy(Math.abs(dr))}**💵\n\n`;
+    result += `${i}. **${data.name}**\n🍋 Slot ${
+      slot > -1 ? "Loose" : "Win"
+    }(s): **$${pCy(Math.abs(slot))}**💵\n💰 Doublerisk ${
+      dr > -1 ? "Loose" : "Win"
+    }(s): **$${pCy(Math.abs(dr))}**💵\n\n`;
   }
 
   output.reply(result + `\n\n${input.words[0]} <page> - View a specific page.`);

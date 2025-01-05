@@ -147,9 +147,10 @@ global.Cassidy = {
   loadCommand,
   loadPlugins,
   loadAllCommands,
-  logo: UNIRedux.redux,
+  logo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
   oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
   accessToken: null,
+  redux: true,
 };
 const login = require(global.Cassidy.config.FCA.path);
 

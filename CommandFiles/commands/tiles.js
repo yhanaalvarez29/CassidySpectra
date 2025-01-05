@@ -7,7 +7,6 @@ export const style = {
 const { delay, Tiles } = global.utils;
 const { invLimit } = global.Cassidy;
 
-
 export const meta = {
   name: "tiles",
   author: "Liane Cagara, idea from Duke",
@@ -20,6 +19,7 @@ export const meta = {
   noPrefix: false,
   requirement: "2.5.0",
   icon: "🟨",
+  category: "Chance Games",
 };
 
 // Created by Liane Cagara, do not own.
@@ -46,13 +46,13 @@ export async function entry({
     if (isNaN(sizeX) || isNaN(sizeY)) {
       cancelCooldown();
       return output.reply(
-        `❌ | Make sure both sizes are numbers! Example: ${prefix}tiles size 3x7`,
+        `❌ | Make sure both sizes are numbers! Example: ${prefix}tiles size 3x7`
       );
     }
     if (sizeX > 10 || sizeY > 10 || sizeX < 5 || sizeY < 5) {
       cancelCooldown();
       return output.reply(
-        `❌ | Make sure both sizes are between 5 and 10! Example: ${prefix}tiles size 3x7`,
+        `❌ | Make sure both sizes are between 5 and 10! Example: ${prefix}tiles size 3x7`
       );
     }
   }
@@ -104,7 +104,9 @@ export async function entry({
         break limitCheck;
       }
 
-      const txt = `🕜 | You can use this command again in ${Math.ceil((10 * 60 * 1000 - elapsedTime) / 60 / 1000)} minutes.`;
+      const txt = `🕜 | You can use this command again in ${Math.ceil(
+        (10 * 60 * 1000 - elapsedTime) / 60 / 1000
+      )} minutes.`;
       if (info) {
         await output.edit(txt, info.messageID);
       } else {
@@ -130,7 +132,7 @@ export async function entry({
   } else if (info) {
     await output.edit(
       `⚙️ Checking tileConfig (existing user)...`,
-      info.messageID,
+      info.messageID
     );
     await delay(1000);
   }
@@ -147,8 +149,14 @@ export async function entry({
   if (input.body.includes("reveal")) {
     board.reveal();
   }
-  const text = `Welcome to this game! Please reply with a number between ${board.range()[0]} and ${board.range()[1]} to choose a tile.
-${isPendantUsed ? `\n❕ You have used your Time Pendant to bypass time limit.\n` : ``}
+  const text = `Welcome to this game! Please reply with a number between ${
+    board.range()[0]
+  } and ${board.range()[1]} to choose a tile.
+${
+  isPendantUsed
+    ? `\n❕ You have used your Time Pendant to bypass time limit.\n`
+    : ``
+}
 Tiles:
 ${board.tileIcon} **Unselected**
 • You can select this tile.
@@ -209,22 +217,25 @@ export async function reply({
     let num = parseInt(input.words[0]);
     if (isNaN(num)) {
       return output.reply(
-        `❌ | Please go back to the tiles and enter a valid number!`,
+        `❌ | Please go back to the tiles and enter a valid number!`
       );
     }
     const code = board.choose(num);
     if (code === "OUT_OF_RANGE") {
       return output.reply(
-        `❌ | The number ${num} is out of range! Please go back to the tiles and choose a number between ${board.range()[0]} and ${board.range()[1]}!`,
+        `❌ | The number ${num} is out of range! Please go back to the tiles and choose a number between ${
+          board.range()[0]
+        } and ${board.range()[1]}!`
       );
     }
     if (code === "ALREADY_CHOSEN") {
       return output.reply(
-        `❌ | You already selected this tile! Please go back to the tiles and choose another tile!`,
+        `❌ | You already selected this tile! Please go back to the tiles and choose another tile!`
       );
     }
-    const makeText =
-      () => `Please **choose** a number between **${board.range()[0]}** and **${board.range()[1]}**
+    const makeText = () => `Please **choose** a number between **${
+      board.range()[0]
+    }** and **${board.range()[1]}**
 
 ${board.coinIcon} **Total Coins**: ${coins}$
 
@@ -253,8 +264,9 @@ ${board}`;
 
       if (explodes < 3) {
         const nth = explodes === 1 ? "1st" : "2nd";
-        const { messageID: id } =
-          await output.reply(`❕ ${board.bombIcon} You hit a bomb for the ${nth} time!
+        const { messageID: id } = await output.reply(`❕ ${
+          board.bombIcon
+        } You hit a bomb for the ${nth} time!
 Hitting it for the 3rd time will explode all of them.
 
 ${makeText()}`);
@@ -290,14 +302,16 @@ ${revealBoard}`);
       await money.set(author, {
         money: userMoney + reward,
       });
-      const { messageID: id } =
-        await output.reply(`${board.coinIcon} You hit a **coin** and got ${reward}$
+      const { messageID: id } = await output.reply(`${
+        board.coinIcon
+      } You hit a **coin** and got ${reward}$
 
 ${makeText()}`);
       handleAgain(id);
     } else if (code === "EMPTY") {
-      const { messageID: id } =
-        await output.reply(`${board.emptyIcon} You hit an **empty** tile, nothing happened.
+      const { messageID: id } = await output.reply(`${
+        board.emptyIcon
+      } You hit an **empty** tile, nothing happened.
 
 ${makeText()}`);
       handleAgain(id);

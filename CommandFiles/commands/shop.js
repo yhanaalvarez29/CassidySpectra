@@ -8,7 +8,7 @@ export const meta = {
   version: "1.1.9",
   author: "Liane Cagara",
   usage: "{prefix}shop",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: "both",
   otherNames: [],

@@ -10,6 +10,7 @@ export const meta = {
   permissions: [0, 1, 2],
   requirement: "2.5.0",
   icon: "",
+  category: "User Management",
 };
 const { Cassidy } = global;
 export const style = {

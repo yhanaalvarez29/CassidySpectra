@@ -4,7 +4,7 @@ export const meta = {
   version: "1.0.1",
   waitingTime: 5,
   description: "Quiz game!",
-  category: "Fun",
+  category: "Puzzle Games",
   usage: "{prefix}{name}",
   requirement: "2.5.0",
   icon: "🎉",

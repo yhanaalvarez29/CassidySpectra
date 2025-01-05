@@ -4,7 +4,7 @@ export const meta = {
   version: "1.2.2",
   author: "Liane Cagara, Original Idea by: Dymyrius",
   usage: "{prefix}mine",
-  category: "Fun",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: "both",
   otherNames: [],

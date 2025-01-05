@@ -7,7 +7,7 @@ export const meta = {
   version: "2.5.0",
   usage: "<prefix>baybayin <query>",
   author: "Liane Cagara",
-  category: "translator",
+  category: "Utilities",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 2,

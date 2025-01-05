@@ -3,7 +3,7 @@ export const meta = {
   description: "Claim your gift every hours.",
   version: "1.0.0",
   author: "Liane Cagara",
-  category: "Utility",
+  category: "Rewards",
   permissions: [0],
   waitingTime: 1,
   noPrefix: false,

@@ -4,7 +4,7 @@ export const meta = {
   author: "Liane",
   version: "1.0.0",
   usage: "{prefix}{name}",
-  category: "Info",
+  category: "User Management",
   permissions: [0],
   noPrefix: "both",
   noWeb: true,
@@ -22,7 +22,9 @@ export async function entry({ input, output, userInfos, args }) {
     return output.reply(`${input.threadID}`);
   }
   const info = await userInfos.get(ID);
-  await output.reply(`📛 ${fonts.bold(`${info.name}`)}${info.vanity ? `\n📝 ${fonts.sans(`${info.vanity}`)}` : ""}${info.alternateName ? `\n✨ ${fonts.sans(`${info.alternateName}`)}` : ""}
+  await output.reply(`📛 ${fonts.bold(`${info.name}`)}${
+    info.vanity ? `\n📝 ${fonts.sans(`${info.vanity}`)}` : ""
+  }${info.alternateName ? `\n✨ ${fonts.sans(`${info.alternateName}`)}` : ""}
 ${fonts.sans(`${info.gender === 1 ? "👧 Female" : "👦 Male"}`)}
 
 𝙄𝘿: ${ID}

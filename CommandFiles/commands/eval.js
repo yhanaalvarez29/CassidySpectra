@@ -14,6 +14,7 @@ export const meta = {
   requirement: "2.5.0",
   icon: "💻",
   waitingTime: 0.01,
+  category: "Utilities",
 };
 
 export async function entry(context) {

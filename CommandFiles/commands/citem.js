@@ -4,7 +4,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.0.2",
   usage: "{prefix}citem <...json>",
-  category: "Custom Items",
+  category: "Inventory",
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,

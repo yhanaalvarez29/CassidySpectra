@@ -4,7 +4,7 @@ export const meta = {
   version: "1.1.4",
   author: "Liane Cagara",
   usage: "{prefix}doublerisk <amount>",
-  category: "Fun",
+  category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
   otherNames: ["doubleorlose", "riskitall", "doubleornothing", "don"],

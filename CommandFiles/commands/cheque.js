@@ -6,7 +6,7 @@ export const meta = {
   author: "Liane Cagara",
   version: "1.0.7",
   usage: "{prefix}cheque <action> [amount]",
-  category: "Financial Management",
+  category: "Finance",
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,

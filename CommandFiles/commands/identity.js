@@ -8,6 +8,7 @@ export const meta = {
   version: "1.1.1",
   usage: "{prefix}setname <newName>",
   category: "User Management",
+
   permissions: [0],
   noPrefix: false,
   waitingTime: 5,

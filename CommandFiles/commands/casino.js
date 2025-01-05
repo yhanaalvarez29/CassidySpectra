@@ -28,7 +28,7 @@ export const meta = {
   author: "MrkimstersDEV & Liane Cagara",
   version: "1.0.0",
   usage: "{prefix}{name} {gamename} {betamount} {additional arguments}",
-  category: "Fun",
+  category: "Gambling Games",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 15,
@@ -68,7 +68,6 @@ export async function entry({
     casinoLuck = false,
   } = await money.get(senderID);
   const { invLimit } = global.Cassidy;
-
 
   if (casinoLuck) cancelCooldown();
   inventory = new Inventory(inventory);

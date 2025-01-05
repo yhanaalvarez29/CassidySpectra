@@ -4,7 +4,7 @@ export const meta = {
   otherNames: ["p"],
   version: "1.5.2",
   usage: "{prefix}{name}",
-  category: "Pet",
+  category: "Idle Investment Games",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: "both",
@@ -1560,7 +1560,9 @@ async function uncageReply({ input, output, Inventory, money, repObj }) {
     let { name, petsData = [] } = await money.get(input.senderID);
     petsData = new Inventory(petsData);
     if (petsData.getAll().length >= invLimit) {
-      return output.reply(`🐾 You can only have a maximum of ${invLimit} pets!`);
+      return output.reply(
+        `🐾 You can only have a maximum of ${invLimit} pets!`
+      );
     }
     switch (type) {
       case "uncaging":

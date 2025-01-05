@@ -8,7 +8,7 @@ export const meta = {
   version: "1.0.0",
   description: "Execute npm commands",
   usage: "{prefix}npm <command>",
-  category: "System",
+  category: "Utilities",
   permissions: [2],
   waitingTime: 5,
   noPrefix: false,

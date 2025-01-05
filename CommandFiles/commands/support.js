@@ -5,7 +5,7 @@ export const meta = {
   description: "Support Group Chat!",
   otherNames: ["supportgc", "gc"],
   usage: "{prefix}{name}",
-  category: "System",
+  category: "Social",
   permissions: [0],
   waitingTime: 5,
   noPrefix: "both",
