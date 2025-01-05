@@ -109,6 +109,121 @@ const meow = {
   goldSpared: 400,
 };
 const encounters = {
+  greatSeptimus: {
+    wildName: "Harmonious Choir: The Great Septimus",
+    wildIcon: "🎶",
+    wildType: "Divine Entity",
+    HP: 6000,
+    ATK: 45,
+    DF: 5,
+    fakeHP: 25000,
+    fakeATK: 230,
+    fakeDEF: 180,
+    winDias: 3,
+    flavor: {
+      check: "A symphony of ethereal notes fills the air as The Great Septimus makes its presence known. The harmony beckons you to face your destiny.",
+      encounter: ["The Harmonious Choir's song swells as The Great Septimus steps forth from the void, its divine presence overwhelming the battlefield."],
+      neutral: [
+        "The Great Septimus stands motionless, its eyes glowing with the power of an ancient melody. The song reverberates through your very soul.",
+        "A wave of divine sound echoes as The Great Septimus raises its hands, signaling the beginning of the trial.",
+        "The celestial symphony swirls around you, and The Great Septimus is its unyielding conductor.",
+        "You can feel the rhythm of the universe itself. The Great Septimus commands the flow of time with every note played.",
+        "Every step The Great Septimus takes is perfectly in tune with the song of the cosmos.",
+        "The Great Septimus' presence radiates an overwhelming force, the music of the heavens swirling in the air.",
+        "The melody of fate is unavoidable—do you have the strength to endure?"
+      ],
+      lowHP: [
+        "The celestial song falters as the Great Septimus' power begins to wane, but its will remains unbroken.",
+        "The harmony of the Great Septimus is weakening, but the final note has not yet been sung.",
+        "The music fades into silence as The Great Septimus is pushed to its limits."
+      ],
+      run: [
+        "The Great Septimus' celestial presence begins to fade, its song falling silent as it retreats into the ether."
+      ],
+      satisfied: [
+        "The Great Septimus acknowledges your strength, its melody calming as it returns to the heavens, leaving a lingering sense of accomplishment."
+      ],
+    },
+    dialogues: {
+      neutral: [
+        "I am the harmony that binds the cosmos.",
+        "The song of fate is eternal. You cannot escape it.",
+        "The melody of the universe guides my every action.",
+        "Can you hear the music? It sings of your destiny.",
+        "A single note can change the course of everything.",
+        "You are but a fleeting echo in this divine symphony.",
+        "The rhythm of the stars cannot be defied."
+      ],
+      satisfied: [
+        "Your strength resonates with the harmony of the cosmos. You have earned my respect.",
+        "You have proven yourself worthy of the song of the heavens."
+      ],
+      lowHP: [
+        "Do not mistake this moment for weakness. The music still plays.",
+        "The song may fade, but I will rise again.",
+        "My power is everlasting—this is not the end."
+      ],
+    },
+    acts: {
+      Gaze: {
+        flavor: `You instructed the leader to meet the Great Septimus' gaze, its divine eyes glowing with the power of eternal music.`,
+        pet: ["[leader]"],
+        mercyPts: 20,
+      },
+      Resonance: {
+        flavor: `You asked {name} to resonate with the divine melody, disrupting the Great Septimus’ control over the harmony.`,
+        pet: ["[slot:1]"],
+        petLine: ["Let the music echo!", "Resonance amplified!"],
+        response: [
+          "You think you can match the song of eternity?",
+          "This is not a battle you can win with mere noise.",
+          "The symphony is beyond your reach."
+        ],
+        mercyPts: 30,
+      },
+      Crescendo: {
+        flavor: `You commanded {name} to unleash a crescendo of energy, forcing the Great Septimus into a final confrontation of power and will.`,
+        pet: ["[slot:1]", "[slot:2]"],
+        petLine: ["The crescendo builds!", "Let the heavens sing!"],
+        mercyPts: 40,
+        response: [
+          "The crescendo is nothing compared to the divine song I lead.",
+          "You cannot overpower the music of the universe.",
+          "This is just a fleeting moment in an eternal symphony."
+        ],
+      },
+      Dissonance: {
+        flavor: `You told {pet} to disrupt the harmony with a sudden dissonance, attempting to fracture the Great Septimus' control over the celestial song.`,
+        pet: ["[slot:2]"],
+        petLine: ["Create the dissonance!", "Break the harmony!"],
+        mercyPts: 35,
+        response: [
+          "Dissonance cannot challenge the divine symphony.",
+          "Your noise is but a shadow of the true song.",
+          "The song will always find its way back to harmony."
+        ],
+      },
+    },
+    attacks: {
+      harmony: "Harmonious Resonance Ω",
+      symphony: "Celestial Symphony γ",
+      crescendo: "Crescendo of Eternity β",
+      dissonance: "Disruptive Dissonance Ω",
+      chorus: "Chorus of the Heavens α",
+      aria: "Aria of Ascension π",
+      silence: "Silence of the Cosmos γ",
+      rupture: "Rupture of Time π",
+      echo: "Echo of Infinity α",
+      chord: "Divine Chord β",
+      refrain: "Refrain of Eternity Ω",
+      tone: "Sacred Tone α",
+      pulse: "Pulse of Creation β",
+      beat: "Celestial Beat γ",
+    },
+    goldFled: 15000,
+    goldSpared: 75000,
+  },
+  
   meow,
   flier: {
     wildName: "Flier 𝔼𝕏",
