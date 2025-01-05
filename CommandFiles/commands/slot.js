@@ -65,9 +65,9 @@ export async function entry({
     return;
   }
   let hasPass = inventory.has(highRollPass.key);
-  if (!hasPass && bet > 100000) {
+  if (!hasPass && bet > global.Cassidy.highRoll) {
     return output.reply(
-      `${icon}\n\nYou need a **HighRoll Pass** 🃏 to place bets over 100000$`
+      `${icon}\n\nYou need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
     );
   }
   if (bet > playerMoney * 0.75) {

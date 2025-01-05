@@ -143,6 +143,7 @@ global.Cassidy = {
   },
   // invLimit: 36,
   invLimit: 36,
+  highRoll: 10_000_000,
   presets: new Map(),
   loadCommand,
   loadPlugins,

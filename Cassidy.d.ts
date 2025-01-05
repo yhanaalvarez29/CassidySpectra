@@ -12,10 +12,11 @@ declare global {
     loadCommand: Function;
     loadPlugins: Function;
     loadAllCommands: Function;
-    logo: any;
+    readonly logo: any;
     oldLogo: string;
     accessToken: string | null;
-    redux: boolean;
+    readonly redux: boolean;
+    readonly highRoll: 10_000_000;
   };
 }
 

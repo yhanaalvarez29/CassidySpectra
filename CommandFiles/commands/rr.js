@@ -1,24 +1,32 @@
 export const meta = {
-  name: "russianroulette",
-  description: "Take your chances with a game of Russian Roulette.",
+  name: "richroll",
+  description:
+    "Roll your way to riches as you test your luck in a high-stakes game of fortune.",
   version: "1.1.5",
   author: "Liane Cagara",
   otherNames: ["rr"],
   usage: "{prefix}{name}",
-  category: "Parang Xavia",
+  category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
-  waitingTime: 40,
+  waitingTime: 20,
+  icon: "🌪️",
+  requirement: "2.5.0",
 };
 
 const outcomes = [
-  "You pulled the trigger and survived! You get $<amount>💵 as a reward for your bravery.",
-  "Click... You're lucky this time! You win $<amount>💵.",
-  "BANG! You lose $<amount>💵 in medical bills.",
-  "You survived this round. Here's $<amount>💵 as a consolation prize.",
-  "Phew! The gun didn't fire. You earn $<amount>💵 for your nerves of steel.",
-  "BOOM! You lose $<amount>💵 in medical bills.",
-  "KABOOM! You lose $<amount>💵 in medical bills.",
+  "💰 ***CHA-CHING!*** You hit the jackpot! You win $<amount>💵 and roll your way to riches.",
+  "🔔 ***DING-DING-DING!*** Lucky roll! You win $<amount>💵 on your way to becoming the wealthiest.",
+  "💥 ***THUD...*** Oops, the dice turned against you. You lose $<amount>💵 in a bad roll.",
+  "😅 ***WHEW!*** A close call! You win $<amount>💵 as your luck holds out just a bit longer.",
+  "💎 ***BLING-BLING!*** What a roll! You gain $<amount>💵 as fortune smiles upon you.",
+  "💣 ***CRASH!*** The dice betrayed you. You lose $<amount>💵 in a risky gamble.",
+  "🔔 ***DING!*** A lucky streak! You gain $<amount>💵 as your fortunes rise.",
+  "🌪️ ***WOOSH...*** Unlucky roll! You lose $<amount>💵 and your riches slip away.",
+  "💥 ***THUD...*** Oh no! The dice turned cold. You lose $<amount>💵 as the luck fades.",
+  "💎 ***BLING!*** Rolling high! You earn $<amount>💵 as you get closer to untold riches.",
+  "💥 ***BAM!*** Bad luck strikes! You lose $<amount>💵 in a devastating roll.",
+  "⚡ ***ZING!*** You're on a roll! You win $<amount>💵 and get one step closer to the fortune.",
 ];
 
 export class style {
@@ -33,7 +41,6 @@ export async function entry({
   cancelCooldown,
   Inventory,
 }) {
-  // get money of user so you'll know how much the user has
   let {
     money: userMoney,
     inventory,
@@ -43,36 +50,29 @@ export async function entry({
   inventory = new Inventory(inventory);
   let hasPass = inventory.has("highRollPass");
 
-  // make random index of outcome, check outcomes above :)
   const outcomeIndex = Math.floor(Math.random() * outcomes.length);
 
-  // get the first argument as a bet
   const [bet] = input.arguments;
 
-  // get the outcome text using the random index we made earlier
   const outcome = outcomes[outcomeIndex];
-  // parse it to number because its a string
   let amount = parseInt(bet);
   if (!hasPass && amount > global.Cassidy.highRoll) {
     return output.reply(
-      `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`,
+      `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
     );
   }
 
-  // check if bet is not a number, also check if its a negative, i dont wanna see weird bugs, also check if the amount is more than the user has, just avoiding some exploits
   if (isNaN(amount) || amount <= 0 || amount > userMoney) {
     cancelCooldown();
     return output.reply(`⚠️ Invalid bet amount.`);
   }
-  // get the cashField and resultText (see CommandFiles/stylePresets/cash_games.json for details)
   const cashField = styler.getField("cashField");
   const resultText = styler.getField("resultText");
   let xText = "";
 
   if (outcome.includes("lose")) {
-    // lol its impossible to get -1
     amount = Math.min(amount, userMoney);
-    //.modify the field
+
     cashField.applyTemplate({
       cash: +amount,
     });
@@ -86,19 +86,12 @@ export async function entry({
       rrWins,
     });
   } else {
-    // do i even need to explain this
-    if (rrWins >= 10000000) {
-      amount = 0;
-      xText = `\n❌ You won nothing because the RR Guy ran out of money for reward, try playing other games like **doublerisk** and **slot**.\n`;
-    }
-
     rrWins += amount;
     cashField.applyTemplate({
       cash: +amount,
     });
 
     resultText.changeContent("You Won:");
-    // finally, ofc set the money to the user, dont bluff em
     await money.set(input.senderID, {
       money: userMoney + amount,
       rrWins,
@@ -106,11 +99,10 @@ export async function entry({
     });
   }
 
-  // wtf concatenation?
   output.reply(
     `💥 ` +
       outcome.replace("<amount>", amount) +
       xText +
-      ` Your new balance is $${(await money.get(input.senderID)).money}💵`,
+      ` Your new balance is $${(await money.get(input.senderID)).money}💵`
   );
 }

@@ -58,10 +58,10 @@ export async function entry({
     cancelCooldown();
     return;
   }
-  if (!hasPass && betAmount > 100000) {
+  if (!hasPass && betAmount > global.Cassidy.highRoll) {
     cancelCooldown();
     return output.reply(
-      `You need a **HighRoll Pass** 🃏 to place bets over 100000$`
+      `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
     );
   }
 
