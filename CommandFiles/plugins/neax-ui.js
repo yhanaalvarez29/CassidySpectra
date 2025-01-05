@@ -559,6 +559,22 @@ export class VirtualFiles {
 
     return result;
   }
+
+  isDirectory(path) {
+    const parts = path.split("/");
+    let currentDir = this.data.mainDir;
+
+    for (let part of parts) {
+      if (!part) continue;
+      const dir = currentDir.find((item) => item.name === part);
+      if (!dir || !Array.isArray(dir.content)) {
+        return false;
+      }
+      currentDir = dir.content;
+    }
+
+    return true;
+  }
 }
 
 export async function use(obj) {

@@ -70,20 +70,306 @@ export async function entry({ input, output, money }) {
       return `${util.inspect(target, { showHidden: false, depth: 1 })}`;
     },
   });
+  const axios = require("axios");
+
+  parser.registerCommand({
+    command: "curl",
+    usage: "curl <url> [options]",
+    description:
+      "Fetch content from a URL with complex options like headers, methods, body, etc.",
+    async handler({ args }) {
+      const url = args[1];
+      if (!url) {
+        return "Error: URL is required.";
+      }
+
+      let options = {
+        method: "GET",
+        headers: {},
+        timeout: 10000,
+        params: {},
+      };
+
+      let i = 2;
+      while (i < args.length) {
+        const arg = args[i];
+
+        if (arg === "-X" || arg === "--request") {
+          const method = args[++i]?.toUpperCase();
+          if (method) options.method = method;
+        } else if (arg === "-H" || arg === "--header") {
+          const header = args[++i];
+          if (header && header.includes(":")) {
+            const [key, value] = header.split(":");
+            options.headers[key.trim()] = value.trim();
+          }
+        } else if (arg === "-d" || arg === "--data") {
+          const data = args[++i];
+          if (data) options.data = data;
+        } else if (arg === "--max-time") {
+          const timeout = parseInt(args[++i], 10);
+          if (!isNaN(timeout)) options.timeout = timeout * 1000;
+        } else if (arg === "-L" || arg === "--location") {
+          options.maxRedirects = 5;
+        } else if (arg === "-u" || arg === "--user") {
+          const userCreds = args[++i];
+          if (userCreds) {
+            const [username, password] = userCreds.split(":");
+            options.auth = {
+              username: username.trim(),
+              password: password.trim(),
+            };
+          }
+        } else if (arg === "--data-urlencode") {
+          const param = args[++i];
+          if (param) {
+            const [key, value] = param.split("=");
+            options.params[key.trim()] = value.trim();
+          }
+        }
+
+        i++;
+      }
+
+      try {
+        const response = await axios(url, options);
+
+        if (response.status >= 200 && response.status < 300) {
+          return `Response from ${url}:\n${JSON.stringify(
+            response.data,
+            null,
+            2
+          ).substring(0, 1000)}...`;
+        } else {
+          return `Error: Failed to fetch ${url}. Status: ${response.status}`;
+        }
+      } catch (error) {
+        if (error.response) {
+          return `Error: ${error.response.status} - ${error.response.statusText}`;
+        } else if (error.request) {
+          return "Error: No response received.";
+        } else {
+          return `Error: ${error.message}`;
+        }
+      }
+    },
+  });
+
+  const os = require("os");
+
+  parser.registerCommand({
+    command: "top",
+    usage: "top [options]",
+    description:
+      "Displays real-time information about system resources and memory usage, simulating CPU usage based on memory usage.",
+    async handler({ args }) {
+      const options = {
+        sortBy: "cpu",
+        interval: 3,
+      };
+
+      let i = 1;
+      while (i < args.length) {
+        const arg = args[i];
+
+        if (arg === "-s" || arg === "--sort") {
+          const sortOption = args[++i];
+          if (sortOption && (sortOption === "cpu" || sortOption === "memory")) {
+            options.sortBy = sortOption;
+          }
+        } else if (arg === "-i" || arg === "--interval") {
+          const interval = parseInt(args[++i], 10);
+          if (!isNaN(interval) && interval > 0) options.interval = interval;
+        }
+
+        i++;
+      }
+
+      try {
+        const systemStats = {
+          freeMemory: os.freemem(),
+          totalMemory: os.totalmem(),
+          loadAverage: os.loadavg(),
+          uptime: os.uptime(),
+          cpuCount: os.cpus().length,
+        };
+
+        const memoryUsedPercentage =
+          ((systemStats.totalMemory - systemStats.freeMemory) /
+            systemStats.totalMemory) *
+          100;
+
+        const simulatedCpuUsage = Math.min(
+          100,
+          Math.max(0, memoryUsedPercentage)
+        );
+
+        return `Top System Stats (sorted by ${
+          options.sortBy
+        }):\nFree Memory: ${(systemStats.freeMemory / 1024 / 1024).toFixed(
+          2
+        )} MB\nTotal Memory: ${(systemStats.totalMemory / 1024 / 1024).toFixed(
+          2
+        )} MB\nLoad Average: ${systemStats.loadAverage.join(", ")}\nUptime: ${
+          systemStats.uptime
+        } seconds\nCPU Count: ${
+          systemStats.cpuCount
+        }\nSimulated CPU Usage (based on memory usage): ${simulatedCpuUsage.toFixed(
+          2
+        )}%`;
+      } catch (error) {
+        return `Error: Unable to retrieve system stats. ${error.message}`;
+      }
+    },
+  });
+
+  parser.registerCommand({
+    command: "uname",
+    usage: "uname [options]",
+    description:
+      "Displays system information such as OS name, version, and architecture.",
+    async handler({ args }) {
+      const options = {
+        all: false,
+        kernelName: false,
+        nodeVersion: false,
+      };
+
+      let i = 1;
+      while (i < args.length) {
+        const arg = args[i];
+
+        if (arg === "-a" || arg === "--all") {
+          options.all = true;
+        } else if (arg === "-s" || arg === "--kernel-name") {
+          options.kernelName = true;
+        } else if (arg === "-v" || arg === "--node-version") {
+          options.nodeVersion = true;
+        }
+
+        i++;
+      }
+
+      try {
+        let result = "";
+
+        if (options.all) {
+          result = `OS: ${os.type()} ${os.release()} (${os.arch()})\nNode.js Version: ${
+            process.version
+          }\nUptime: ${os.uptime()} seconds`;
+        } else {
+          if (options.kernelName) {
+            result += `Kernel: ${os.type()}\n`;
+          }
+          if (options.nodeVersion) {
+            result += `Node.js Version: ${process.version}\n`;
+          }
+        }
+
+        return (
+          result ||
+          "Error: Invalid option. Use '-a' for all info, '-s' for kernel name, or '-v' for node version."
+        );
+      } catch (error) {
+        return `Error: Unable to retrieve system information. ${error.message}`;
+      }
+    },
+  });
 
   parser.registerCommand({
     command: "ls",
-    usage: "ls <optional path>",
+    usage: "ls [options] <optional path>",
     description:
-      "Lists the contents of a directory. If no path is specified, it lists the contents of the root directory.",
+      "Lists the contents of a directory with complex options. If no path is specified, it lists the contents of the root directory.",
     async handler({ args }) {
-      const path = args[1] || "/";
-      const items = vf.readdir(path);
-      return items.length > 0
-        ? `${items.join("  ")}`
-        : "No files or directories found.";
+      let directoryPath =
+        args[args.length - 1] === "ls" ? "/" : args[args.length - 1];
+      let options = {
+        longFormat: false,
+        showHidden: false,
+        humanReadable: false,
+        recursive: false,
+        sortBy: "name",
+      };
+
+      for (let i = 1; i < args.length - 1; i++) {
+        const arg = args[i];
+
+        switch (arg) {
+          case "-l":
+            options.longFormat = true;
+            break;
+          case "-a":
+            options.showHidden = true;
+            break;
+          case "-h":
+            options.humanReadable = true;
+            break;
+          case "-R":
+            options.recursive = true;
+            break;
+          case "--sort":
+            const sortOption = args[++i];
+            if (sortOption && ["name", "size", "time"].includes(sortOption)) {
+              options.sortBy = sortOption;
+            }
+            break;
+        }
+      }
+
+      try {
+        let items = await vf.readdir(directoryPath);
+        if (!options.showHidden) {
+          items = items.filter((item) => !item.startsWith("."));
+        }
+
+        if (options.sortBy === "size") {
+          items.sort(
+            (a, b) =>
+              vf.stat(path.join(directoryPath, a)).size -
+              vf.stat(path.join(directoryPath, b)).size
+          );
+        } else if (options.sortBy === "time") {
+          items.sort(
+            (a, b) =>
+              vf.stat(path.join(directoryPath, a)).mtime -
+              vf.stat(path.join(directoryPath, b)).mtime
+          );
+        } else {
+          items.sort();
+        }
+
+        if (options.longFormat) {
+          const fileDetails = items.map((item) => {
+            const stats = vf.stat(path.join(directoryPath, item));
+            let fileSize = stats.size;
+            if (options.humanReadable) {
+              fileSize = humanReadableSize(fileSize);
+            }
+            return `${stats.mode.toString(8)} ${stats.nlink} ${stats.uid} ${
+              stats.gid
+            } ${fileSize} ${stats.mtime.toLocaleString()} ${item}`;
+          });
+
+          return fileDetails.join("\n");
+        } else {
+          return items.join("  ");
+        }
+      } catch (error) {
+        return `Error: Unable to list directory contents. ${error.message}`;
+      }
     },
   });
+
+  function humanReadableSize(size) {
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
+  }
 
   parser.registerCommand({
     command: "cat",
@@ -120,22 +406,86 @@ export async function entry({ input, output, money }) {
 
   parser.registerCommand({
     command: "rm",
-    usage: "rm <path>",
-    description: "Removes a virtual file at the specified path.",
+    usage: "rm <options> <path>...",
+    description:
+      "Removes virtual files or directories with complex options (e.g., -r, -f, -i).",
     async handler({ args }) {
-      const path = args[1];
+      let options = {
+        recursive: false,
+        force: false,
+        interactive: false,
+      };
+      let paths = [];
+      let i = 1;
 
-      if (!vf.exists(path)) {
-        return `Error: File ${path} does not exist.`;
+      while (i < args.length) {
+        const arg = args[i];
+
+        if (arg === "-r" || arg === "--recursive") {
+          options.recursive = true;
+        } else if (arg === "-f" || arg === "--force") {
+          options.force = true;
+        } else if (arg === "-i" || arg === "--interactive") {
+          options.interactive = true;
+        } else {
+          paths.push(arg);
+        }
+        i++;
       }
 
-      vf.unlink(path);
+      if (paths.length === 0) {
+        return "Error: At least one path is required.";
+      }
 
-      await money.set(input.senderID, {
-        virtualFiles: vf.raw(),
-      });
+      let results = [];
 
-      return `File ${path} has been successfully removed.`;
+      for (const path of paths) {
+        if (!vf.exists(path)) {
+          if (!options.force) {
+            results.push(`Error: File ${path} does not exist.`);
+          } else {
+            results.push(`Warning: File ${path} does not exist, skipping.`);
+          }
+          continue;
+        }
+
+        if (vf.isDirectory(path) && options.recursive) {
+          try {
+            const files = vf.readdir(path);
+            files.forEach((file) => {
+              const filePath = `${path}/${file}`;
+              if (vf.isDirectory(filePath)) {
+                vf.rmdir(filePath);
+              } else {
+                vf.unlink(filePath);
+              }
+            });
+            vf.rmdir(path);
+            results.push(
+              `Directory ${path} and its contents have been successfully removed.`
+            );
+          } catch (error) {
+            results.push(
+              `Error: Failed to remove directory ${path}. ${error.message}`
+            );
+          }
+        } else if (vf.isDirectory(path) && !options.recursive) {
+          results.push(
+            `Error: Directory ${path} is not empty, use -r for recursive removal.`
+          );
+        } else {
+          try {
+            vf.unlink(path);
+            results.push(`File ${path} has been successfully removed.`);
+          } catch (error) {
+            results.push(
+              `Error: Failed to remove file ${path}. ${error.message}`
+            );
+          }
+        }
+      }
+
+      return results.join("\n");
     },
   });
 
@@ -227,6 +577,145 @@ export async function entry({ input, output, money }) {
       }**\n\n***Available Commands:***\n\n${parser.showHelp(args[1] || null)}`;
     },
   });
+  parser.registerCommand({
+    command: "date",
+    usage: "date",
+    description: "Displays the current system date and time.",
+    async handler() {
+      const currentDate = new Date().toLocaleString();
+      return `Current system date and time: ${currentDate}`;
+    },
+  });
+  parser.registerCommand({
+    command: "head",
+    usage: "head <path> [number-of-lines]",
+    description: "Displays the first few lines of a file. Default is 10 lines.",
+    async handler({ args }) {
+      const path = args[1];
+      const numLines = parseInt(args[2]) || 10;
+      if (!vf.exists(path)) {
+        return `Error: File ${path} does not exist.`;
+      }
+      const content = vf
+        .readFile(path)
+        .split("\n")
+        .slice(0, numLines)
+        .join("\n");
+      return content;
+    },
+  });
+
+  parser.registerCommand({
+    command: "tail",
+    usage: "tail <path> [number-of-lines]",
+    description: "Displays the last few lines of a file. Default is 10 lines.",
+    async handler({ args }) {
+      const path = args[1];
+      const numLines = parseInt(args[2]) || 10;
+      if (!vf.exists(path)) {
+        return `Error: File ${path} does not exist.`;
+      }
+      const content = vf.readFile(path).split("\n").slice(-numLines).join("\n");
+      return content;
+    },
+  });
+  parser.registerCommand({
+    command: "pwd",
+    usage: "pwd",
+    description: "Displays the current working directory.",
+    async handler() {
+      return "Current working directory: /";
+    },
+  });
+
+  parser.registerCommand({
+    command: "touch",
+    usage: "touch <path>",
+    description: "Creates an empty virtual file at the specified path.",
+    async handler({ args }) {
+      const path = args[1];
+      if (vf.exists(path)) {
+        return `Error: File ${path} already exists.`;
+      }
+      await vf.writeFile(path, "");
+      await money.set(input.senderID, { virtualFiles: vf.raw() });
+      return `File ${path} created successfully.`;
+    },
+  });
+
+  parser.registerCommand({
+    command: "cp",
+    usage: "cp <source-path> <destination-path>",
+    description: "Copies a file from source to destination.",
+    async handler({ args }) {
+      if (args.length < 3) {
+        return "Error: Missing arguments. Usage: cp <source-path> <destination-path>";
+      }
+
+      const sourcePath = args[1];
+      const destinationPath = args[2];
+
+      if (!vf.exists(sourcePath)) {
+        return `Error: Source file ${sourcePath} does not exist.`;
+      }
+
+      const content = vf.readFile(sourcePath);
+      if (vf.exists(destinationPath)) {
+        return `Error: Destination file ${destinationPath} already exists.`;
+      }
+
+      vf.writeFile(destinationPath, content);
+      await money.set(input.senderID, { virtualFiles: vf.raw() });
+      return `File copied from ${sourcePath} to ${destinationPath}.`;
+    },
+  });
+
+  parser.registerCommand({
+    command: "find",
+    usage: "find <pattern>",
+    description: "Finds files matching the given pattern.",
+    async handler({ args }) {
+      const pattern = args[1];
+      const files = vf.readdir("/").filter((file) => file.includes(pattern));
+      return files.length > 0
+        ? `Files matching "${pattern}": ${files.join(" ")}`
+        : `No files found matching "${pattern}".`;
+    },
+  });
+
+  parser.registerCommand({
+    command: "mkdir",
+    usage: "mkdir <directory-path>",
+    description: "Creates a new directory at the specified path.",
+    async handler({ args }) {
+      const path = args[1];
+      if (vf.exists(path)) {
+        return `Error: Directory ${path} already exists.`;
+      }
+      vf.mkdir(path);
+      await money.set(input.senderID, { virtualFiles: vf.raw() });
+      return `Directory ${path} created successfully.`;
+    },
+  });
+
+  parser.registerCommand({
+    command: "rmdir",
+    usage: "rmdir <directory-path>",
+    description: "Removes an empty directory at the specified path.",
+    async handler({ args }) {
+      const path = args[1];
+      if (!vf.exists(path)) {
+        return `Error: Directory ${path} does not exist.`;
+      }
+      if (vf.readdir(path).length > 0) {
+        return `Error: Directory ${path} is not empty.`;
+      }
+      vf.rmdir(path);
+      await money.set(input.senderID, { virtualFiles: vf.raw() });
+      return `Directory ${path} removed successfully.`;
+    },
+  });
+
   const pt = await parser.parse(input.arguments.join(" ") || "help");
   if (pt) {
     output.reply(pt);
