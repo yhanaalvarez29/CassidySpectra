@@ -1529,6 +1529,15 @@ export class Inventory {
   add(item) {
     return this.inv.push(...item);
   }
+  toss(key, amount) {
+    if (amount === "all") {
+      amount = this.getAmount(key);
+    }
+
+    for (let i = 0; i < amount; i++) {
+      this.deleteOne(key);
+    }
+  }
   tossDEPRECATED(key, amount) {
     if (amount === "all") {
       const i = this.getAmount(key);
