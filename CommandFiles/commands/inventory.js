@@ -295,14 +295,16 @@ export async function entry({ ...ctx }) {
               `❌ Item with key "${key}" not found in your inventory.`
             );
           }
-          if (item.type === "food") {
+
+          item ??= {};
+          if (item?.type === "food") {
             return output.reply(
               `${item.icon} **${item.name}** is a general food item that can be used to **feed your pet**. 
                 Feeding your pet with this item will heal it, and the amount of healing provided affects how much experience 
                 your pet gains. More healing results in more experience!`
             );
           }
-          if (item.type.endsWith("_food")) {
+          if (item?.type.endsWith("_food")) {
             const petType = item.type.replaceAll("_food", "");
             const durationMinutes = ((item.saturation ?? 0) / 60000).toFixed(1);
 
@@ -320,14 +322,13 @@ export async function entry({ ...ctx }) {
             }
           }
 
-          if (item.type === "pet") {
+          if (item?.type === "pet") {
             return output.reply(
               `${item.icon} **${item.name}** is a **caged pet**. 
                 You might be able to **uncage** it using a command like **${prefix}pet-uncage ${item.key}**\nHonestly, I have no idea if that command actually works, but hey, it might be worth a try!`
             );
           }
 
-          item ??= {};
           /*if (!item.canUse) {
         return output.reply(`❌ This item has no direct usage here.`);
       }*/
@@ -722,7 +723,10 @@ Type **inv check ${treasureItem.key}** for more details!
         aliases: ["discard", "drop", "throw"],
         args: ["<item_id | index>*<num|'all'>"],
         async handler() {
-          let [key, amount = "1"] = (actionArgs[0] ?? "").split("*");
+          let [key, amount] = (actionArgs[0] ?? "").split("*");
+          if (!amount && actionArgs[1]) {
+            amount = actionArgs[1];
+          }
 
           if (!key) {
             return output.reply(

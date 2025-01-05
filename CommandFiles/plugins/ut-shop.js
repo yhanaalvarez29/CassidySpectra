@@ -182,6 +182,17 @@ const treasures = [
     group: ["generic", "banking"],
   },
   {
+    name: "Lotto Ticket",
+    key: "lottoTicket",
+    flavorText:
+      "A mysterious ticket purchased from the Meow Shop. Its purpose remains unclear, but it brims with potential.",
+    icon: "🔖",
+    type: "key",
+    sellPrice: 5,
+    prob: 0.35,
+    group: ["generic", "banking"],
+  },
+  {
     key: "tilesBomb",
     name: "Tiles Bomb",
     flavorText:
@@ -250,7 +261,7 @@ const treasures = [
     icon: "🍏",
     type: "anypet_food",
     saturation: -2000000,
-    sellPrice: 1,
+    sellPrice: -100,
     cannotToss: true,
     cannotBox: true,
     cannotSend: true,
@@ -1542,6 +1553,9 @@ export class Inventory {
   }
   *[Symbol.iterator]() {
     yield* this.inv;
+  }
+  raw() {
+    return Array.from(this.inv);
   }
   *keys() {
     yield* this.inv.map((item) => item.key);

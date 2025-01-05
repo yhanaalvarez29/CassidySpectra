@@ -1,3 +1,19 @@
+import crypto from "crypto";
+
+/**
+ * Generates a highly secure random number in the range [0, 1).
+ *
+ * @returns {number} A cryptographically secure pseudo-random number in the range [0, 1).
+ */
+export function secureRandom() {
+  const randomInt = crypto.randomBytes(4).readUInt32BE(0);
+
+  // const bias = crypto.randomBytes(4).readUInt32BE(0) / 0xffffffff - 0.5;
+  // const shiftedRandom = randomInt / 0xffffffff + bias * 0.3;
+  // return Math.min(Math.max(shiftedRandom, 0), 1);
+  return randomInt / 0xffffffff;
+}
+
 export class UNIRedux {
   static burger = "☰"; // burger menu
   static standardLine = "━━━━━━━━━━━━━━━"; // Line

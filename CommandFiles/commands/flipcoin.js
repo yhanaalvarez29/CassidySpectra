@@ -191,7 +191,7 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
 
     let result = Math.random() < 0.5 ? "head" : "tails";
     if (side === result && Math.random() < 0.65) {
-      side = (result === "head" ? "tails" : "head");
+      side = result === "head" ? "tails" : "head";
     }
     const isLucky = await luck.isLucky(input.senderID);
     const luckToss = parseInt(Math.random() * (luckStat * 2));

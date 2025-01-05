@@ -38,7 +38,10 @@ export class ShopClass {
   }
 
   getPrice(commandName) {
-    const { meta = {} } = global.Cassidy.commands[commandName] ?? {};
+    const { meta = {} } =
+      Object.values(global.Cassidy.commands).find(
+        (i) => i.meta.name === commandName
+      ) ?? {};
     return meta.shopPrice || 0;
   }
 

@@ -1,6 +1,6 @@
-global.requireEsm = async function(url) {
+global.requireEsm = async function (url) {
   return await import(url);
-}
+};
 
 global.discordJS = require("discord.js");
 
@@ -27,7 +27,7 @@ require.url = async function (url) {
   try {
     if (typeof url !== "string") {
       throw new TypeError(
-        `The first argument (url) must be a string. Received ${typeof url}`,
+        `The first argument (url) must be a string. Received ${typeof url}`
       );
     }
     const response = await axios.get(url);
@@ -37,12 +37,14 @@ require.url = async function (url) {
       typeof response.data !== "object"
     ) {
       throw new TypeError(
-        `The url ${url} returned a non-string value. Received ${typeof response.data}`,
+        `The url ${url} returned a non-string value. Received ${typeof response.data}`
       );
     } else if (typeof response.data === "object") {
       fileContent = JSON.stringify(response.data);
     }
-    const filePath = `${__dirname}/require-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+    const filePath = `${__dirname}/require-${Date.now()}-${Math.floor(
+      Math.random() * 1000000
+    )}`;
     fs.writeFileSync(filePath, fileContent);
     const result = require(filePath);
     fs.unlinkSync(filePath);
@@ -105,5 +107,10 @@ require = new Proxy(originalRequire, requireProxy);
 
 // finally execute main file :)
 require("ts-node").register();
+
+const { secureRandom } = require("./CommandFiles/modules/unisym");
+
+Math.randomOriginal = Math.random.bind(Math);
+Math.random = secureRandom;
 
 require("./Cassidy");

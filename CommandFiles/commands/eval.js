@@ -13,6 +13,7 @@ export const meta = {
   noPrefix: false,
   requirement: "2.5.0",
   icon: "💻",
+  waitingTime: 0.01,
 };
 
 export async function entry(context) {

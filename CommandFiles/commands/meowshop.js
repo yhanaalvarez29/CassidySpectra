@@ -40,6 +40,25 @@ const meowShop = {
       },
     },
     {
+      icon: "🔖",
+      name: "Lotto Ticket",
+      flavorText: "A ticket of chance, filled with dreams and possibilities.",
+      key: "lottoTicket",
+      price: 1000,
+      isDiamond: false,
+      onPurchase({ moneySet }) {
+        moneySet.inventory.push({
+          name: "Lotto Ticket",
+          key: "lottoTicket",
+          flavorText:
+            "A mysterious ticket purchased from the Meow Shop. Its purpose remains unclear, but it brims with potential.",
+          icon: "🔖",
+          type: "key",
+          sellPrice: 5,
+        });
+      },
+    },
+    {
       icon: "📚",
       name: "Card Book",
       key: "cardBook",

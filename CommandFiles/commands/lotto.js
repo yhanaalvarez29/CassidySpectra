@@ -1,3 +1,5 @@
+import { Inventory } from "../plugins/ut-shop.js";
+
 export const meta = {
   name: "lotto",
   description: "Test your luck with the lotto game!",
@@ -7,7 +9,7 @@ export const meta = {
   category: "Fun",
   permissions: [0],
   noPrefix: false,
-  waitingTime: 15,
+  waitingTime: 24,
   requirement: "2.5.0",
   icon: "🔖",
 };
@@ -16,7 +18,6 @@ export const style = {
   contentFont: "fancy",
   titleFont: "bold",
 };
-const fee = 100;
 function hasDuplicate(args) {
   for (let i = 0; i < args.length; i++) {
     for (let j = i + 1; j < args.length; j++) {
@@ -28,39 +29,41 @@ function hasDuplicate(args) {
   return false;
 }
 
-export async function entry({ input, output, money, icon, cancelCooldown, Inventory }) {
-  const lottoLen = 6;
-  const rangeB = 170;
+export async function entry({ input, output, money, icon, cancelCooldown }) {
+  const lottoLen = 3;
+  const rangeB = 75;
   const {
     money: userMoney,
     lastLottoWin,
     lottoLooses = 0,
-    inv,
+    inventory: inv,
   } = await money.get(input.senderID);
 
   const inventory = new Inventory(inv ?? []);
 
   if (!inventory.has("lottoTicket")) {
-    return output.reply(`A 🔖 **Lotto Ticket** is required to play every single game.`);
+    cancelCooldown();
+    return output.reply(
+      `A 🔖 **Lotto Ticket** is required to play every single game.`
+    );
   }
-    
+
   checkLottoWin: {
     if (isNaN(lastLottoWin)) {
       break checkLottoWin;
     }
-    
+
     const interval = Date.now() - lastLottoWin;
     const timeElapsed = interval / 1000;
-    if (timeElapsed < 60) {
+    if (timeElapsed < 120 && !input.isAdmin) {
       cancelCooldown();
       return output.reply(
         `⏳ You have already won the lottery in the last hour. Please wait for ${Math.ceil(
-          60 - timeElapsed
+          120 - timeElapsed
         )} seconds before trying again.`
       );
     }
   }
-  
 
   const args = input.arguments
     .map(Number)
@@ -78,52 +81,65 @@ export async function entry({ input, output, money, icon, cancelCooldown, Invent
     cancelCooldown();
     return;
   }
-  if (userMoney < fee) {
-    return output.reply(`You don't have ${fee}$ to pay the lottery.`);
-  }
 
-  const crypto = require('crypto');
+  const crypto = require("crypto");
 
   function secureRandomInt(min, max) {
     const range = max - min + 1;
-    const randomBytes = crypto.randomBytes(4);
-    const randomInt = randomBytes.readUInt32BE(0);
-    return min + (randomInt % range);
+
+    const randomBytes = crypto.randomBytes(8);
+    const randomInt = randomBytes.readUInt32BE(0) ^ randomBytes.readUInt32BE(4);
+
+    const timeEntropy = Date.now() & 0xfffffff;
+    return min + ((((randomInt ^ timeEntropy) % range) + range) % range);
   }
 
-  const lottoNumbers = Array.from(
-    { length: lottoLen },
-    () => secureRandomInt(1, rangeB)
-  );
+  const lottoNumbers = Array.from({ length: lottoLen }, () =>
+    secureRandomInt(1, rangeB)
+  ).map((i) => {
+    if (args.includes(i) && Math.random() < 0.7) {
+      return i + (Math.random() < 0.5 ? 1 : -1);
+    } else {
+      return i;
+    }
+  });
 
   const matchedNumbers = args.filter((num) => lottoNumbers.includes(num));
-  let winnings;
+  let winnings = 0;
 
   let resultText;
-  if (matchedNumbers.length === 0) {
-    resultText = `🥲 Sorry, no matched numbers. Better luck next time! (You lost your ${fee}$ as fee)`;
+  const isLoose = matchedNumbers.length === 0;
+  if (isLoose) {
+    resultText = `🥲 Sorry, no matched numbers. Better luck next time!`;
   } else {
-    winnings = 8530 * 2 ** matchedNumbers.length;
+    winnings = 12500 * 2 ** matchedNumbers.length;
 
     // each prize
     // = winnings >> matchedNumbers.length;
     resultText = `🎉 Congratulations! You won ${winnings}$.`;
   }
 
+  inventory.deleteOne("lottoTicket");
+
   const text = `**Lotto numbers**:
 ${lottoNumbers.join(", ")}\n**Your numbers**:
-${args.join(", ")}\n\n${resultText}`;
+${args.join(", ")}\n\n${resultText}\n\n$**${Number(
+    userMoney + (isLoose ? 0 : winnings)
+  ).toLocaleString()}**${
+    !isLoose ? ` **(+${winnings})**` : ""
+  } | 🔖 **${inventory.getAmount("lottoTicket")}** (**-1**)`;
   output.reply(`${text}`);
 
   if (matchedNumbers.length > 0 && winnings) {
     await money.set(input.senderID, {
       money: userMoney + winnings,
       lastLottoWin: Date.now(),
+      inventory: Array.from(inventory),
     });
   } else {
     await money.set(input.senderID, {
-      money: userMoney - fee,
-      lottoLooses: lottoLooses + fee,
+      lottoLooses: lottoLooses + 1000,
+      inventory: Array.from(inventory),
     });
   }
 }

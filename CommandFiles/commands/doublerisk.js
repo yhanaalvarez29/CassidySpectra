@@ -26,7 +26,15 @@ export class style {
     // text_prefix: "✦ ",
   };
 }
-export async function entry({ input, output, money, icon, styler, Inventory }) {
+export async function entry({
+  input,
+  output,
+  money,
+  icon,
+  styler,
+  Inventory,
+  cancelCooldown,
+}) {
   let {
     money: userMoney,
     drWin = 0,
@@ -41,22 +49,29 @@ export async function entry({ input, output, money, icon, styler, Inventory }) {
   const betAmount = parseFloat(input.arguments[0]);
   const title = styler.getField("title");
 
+  if (input.isAdmin) {
+    cancelCooldown();
+  }
+
   if (isNaN(betAmount) || betAmount <= 0) {
     output.reply("Please enter a valid bet amount greater than 0.");
+    cancelCooldown();
     return;
   }
   if (!hasPass && betAmount > 100000) {
+    cancelCooldown();
     return output.reply(
       `You need a **HighRoll Pass** 🃏 to place bets over 100000$`
     );
   }
 
   if (betAmount > userMoney) {
+    cancelCooldown();
     output.reply("You do not have enough money to place this bet.");
     return;
   }
 
-  const outcome = Math.random() < 0.5 ? "win" : "lose";
+  const outcome = Math.random() < 0.3 ? "win" : "lose"; // HAHA DI FAIR
   let resultText;
   let newBalance;
 
