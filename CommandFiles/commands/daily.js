@@ -31,13 +31,7 @@ export async function entry({
   } = await money.get(input.senderID);
   cassExpress = new CassExpress(cassExpress);
   collectibles = new Collectibles(collectibles);
-  collectibles.register("gems", {
-    key: "gems",
-    name: "Daily Gems",
-    flavorText: "Gems, what do you even expect?",
-    icon: "💎",
-    type: "currency",
-  });
+  
   const currentTime = Date.now();
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
 

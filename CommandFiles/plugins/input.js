@@ -6,6 +6,7 @@ import { formatIP } from "../../webSystem.js";
   can result in severe consequences, including a global ban from my server.
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
+
 const { censor } = require("fca-liane-utils");
 const { stringArrayProxy } = global.utils;
 export const meta = {

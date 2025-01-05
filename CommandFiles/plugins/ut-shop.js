@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+
 export const meta = {
   name: "ut-shop",
   author: "Liane Cagara",
@@ -1574,6 +1576,21 @@ export class Collectibles {
   #collectibles;
   constructor(collectibles = []) {
     this.#collectibles = this.sanitize(collectibles);
+    try {
+      const data = JSON.parse(
+        readFileSync(
+          process.cwd() +
+            "/CommandFiles/resources/collectibles/collectibles.json",
+          "utf-8"
+        )
+      );
+      for (const key in data) {
+        const meta = data[key];
+        this.register(key, meta);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   get collectibles() {

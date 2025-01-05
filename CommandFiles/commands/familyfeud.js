@@ -74,13 +74,7 @@ export async function reply({
 
     let { question, answers } = lastFeudGame;
     const collectibles = new Collectibles(userData.collectibles ?? []);
-    collectibles.register("feudTickets", {
-      name: "Feud Tickets",
-      icon: "🎫",
-      flavorText: "Wtf is this.",
-      key: "feudTickets",
-      type: "hardWork",
-    });
+
     answers = answers.map((i, j) => {
       i.index = j;
       return i;
