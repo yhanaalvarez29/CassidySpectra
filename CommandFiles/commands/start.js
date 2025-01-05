@@ -1,4 +1,5 @@
 import {
+  fontMarkups,
   isAdminCommand,
   listIcons,
   removeCommandAliases,
@@ -126,7 +127,13 @@ export async function entry({
   pageCategories.forEach((category, index) => {
     result += `\n**${category}** 📁\n`;
     categorizedCommands[category].forEach((command) => {
-      const { name, description, icon, otherNames } = command.meta;
+      const {
+        name,
+        description,
+        icon,
+        otherNames,
+        shopPrice = 0,
+      } = command.meta;
       const statusIcon = isAdminCommand(command)
         ? "👑"
         : shop.isUnlocked(name)
@@ -134,21 +141,31 @@ export async function entry({
         : shop.canPurchase(name, userData.money)
         ? "🔐"
         : "🔒";
-      result += `  ${statusIcon} ${prefix}${name} ${
-        UNIRedux.charm
-      }\n    **Description**: ${description} 💬\n    **Aliases**: ${
-        otherNames?.join(", ") || "None 📝"
-      }\n`;
+      result += `  ${statusIcon} ${prefix}**${toTitleCase(name)}**${
+        shopPrice
+          ? ` - $**${shopPrice}** ${
+              shop.canPurchase(name, userData.money)
+                ? shop.isUnlocked(name)
+                  ? "✅"
+                  : "💰"
+                : "❌"
+            }`
+          : ""
+      } ${UNIRedux.charm}\n    ${UNIRedux.charm} ${fontMarkups.fancy_italic(
+        "Description"
+      )}: ${description} 💬\n    ${UNIRedux.charm} ${fontMarkups.fancy_italic(
+        "Aliases"
+      )}: ${otherNames?.join(", ") || "None 📝"}\n`;
     });
   });
 
   result += `\n\n» Theres **MORE** commands! To navigate pages, type **${prefix}start <page_number>**.\n`;
-  result += `\n\n» To see the next page, type **${prefix}start ${
+  result += `\n» To see the next page, type **${prefix}start ${
     currentPage + 1
   }**.\n`;
   result += `\n» To get an information about a certain command, type **${prefix}start <command_name>**.\n`;
 
   return output.reply(
-    `${icon}\n  ${UNIRedux.standardLine}\n🔍 | **Available Commands** 🧰\n\n${result}\n\n» Developed by @**Liane Cagara** 🎀`
+    `${icon}\n  ${UNIRedux.standardLine}\n🔍 | **Available Commands** 🧰\n\n${result}\n» Developed by @**Liane Cagara** 🎀`
   );
 }

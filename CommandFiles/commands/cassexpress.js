@@ -6,7 +6,7 @@ export const meta = {
   description: "Advanced and Sophisticated way of managing bank system.",
   category: "Finance",
   noPrefix: "both",
-  otherNames: ["cexpress", "cbank"],
+  otherNames: ["cexpress", "cbank", "bank"],
   requirement: "2.5.0",
   icon: "💵",
 };
@@ -164,7 +164,7 @@ export async function entry({
       );
     },
     async interest() {
-      const originalInterestRate = 0.000001;
+      const originalInterestRate = 0.001;
       let interestRate = originalInterestRate;
       if (!bankData.lastInterestClaimed) {
         return output.reply(`You don't have transactions in this database.`);
