@@ -73,10 +73,20 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
     return output.reply(`You don't have ${fee}$ to pay the lottery.`);
   }
 
+  const crypto = require('crypto');
+
+  function secureRandomInt(min, max) {
+    const range = max - min + 1;
+    const randomBytes = crypto.randomBytes(4);
+    const randomInt = randomBytes.readUInt32BE(0);
+    return min + (randomInt % range);
+  }
+
   const lottoNumbers = Array.from(
     { length: lottoLen },
-    () => Math.floor(Math.random() * rangeB) + 1
+    () => secureRandomInt(1, rangeB)
   );
+
   const matchedNumbers = args.filter((num) => lottoNumbers.includes(num));
   let winnings;
 
@@ -84,7 +94,7 @@ export async function entry({ input, output, money, icon, cancelCooldown }) {
   if (matchedNumbers.length === 0) {
     resultText = `🥲 Sorry, no matched numbers. Better luck next time! (You lost your ${fee}$ as fee)`;
   } else {
-    winnings = 12500 * 2 ** matchedNumbers.length;
+    winnings = 8530 * 2 ** matchedNumbers.length;
 
     // each prize
     // = winnings >> matchedNumbers.length;
