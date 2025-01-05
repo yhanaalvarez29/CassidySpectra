@@ -63,15 +63,17 @@ export async function reply({
       });
     }
 
-    return output.reply(
+    return output.replyStyled(
       `✅ | Correct ${
         name?.split(" ")[0]
-      }! You have been rewarded ${currentReward} coins!`
+      }! You have been rewarded ${currentReward} coins!`,
+      style
     );
   } else {
     const userInfo = await moneyH.get(input.senderID);
-    return output.reply(
-      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`
+    return output.replyStyled(
+      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`,
+      style
     );
   }
 }
@@ -128,13 +130,12 @@ Test your vocabulary skills with our engaging word game! Unscramble the shuffled
   }
   let shuffledWord = lastWordGame?.word;
   if (!shuffledWord || input.property["refresh"]) {
-    const { data: response } = await axios.get(
-      "https://liaspark.chatbotcommunity.ltd/api/random-word"
-    );
+    const allItems = require("./json/words.json");
+    const item = allItems[Math.floor(Math.random() * allItems.length)];
 
-    shuffledWord = shuffleWord(response.message);
+    shuffledWord = shuffleWord(item);
     (lastWordGame.word = shuffledWord), (lastWordGame.timeStamp = Date.now());
-    lastWordGame.correct = response.message;
+    lastWordGame.correct = item;
   }
 
   const str = `🧩 Unscramble the word: [font=typewriter]${shuffledWord}[:font=typewriter]\n\nYou can type 'wordgame guide' if you need help.`;

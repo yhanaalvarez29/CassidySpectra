@@ -30,35 +30,41 @@ export async function reply({
   if (!recieve) return;
   recieve.mid = detectID;
   if (recieve.fail?.includes(input.senderID) && !input.isWeb) {
-    return output.reply(
+    return output.replyStyled(
       `❌ | You have failed your previous answer! You cannot answer again.`,
+      style
     );
   }
 
   const curr = Date.now();
   if (recieve.author !== input.senderID && !recieve.public) {
-    return output.reply(
+    return output.replyStyled(
       `❌ | Please wait for the user to fail his answer before you can answer!`,
+      style
     );
   }
   if (input?.words[0]?.toLowerCase().trim() === recieve.correct?.toString()) {
     api.unsendMessage(recieve.mid);
     input.delReply(recieve.mid);
     const userInfo = await moneyH.get(input.senderID);
-    const { name } = await userInfos.get(input.senderID);
+    const { name } = userInfo;
     const { money = 0, quizWins = 0 } = userInfo;
     const finalReward = reward - Math.floor((curr - recieve.timestamp) / 500);
     if (finalReward <= 0) {
-      return output.reply(
+      return output.replyStyled(
         `❌ | Your answer is correct but you have answered too late!`,
+        style
       );
     }
     await moneyH.set(input.senderID, {
       money: money + finalReward,
       quizWins: quizWins + 1,
     });
-    return output.reply(
-      `✅ | Correct ${name?.split(" ")[0]}! You have been rewarded ${finalReward} coins!`,
+    return output.replyStyled(
+      `✅ | Correct ${
+        name?.split(" ")[0]
+      }! You have been rewarded ${finalReward} coins!`,
+      style
     );
   } else {
     //api.unsendMessage(recieve.mid);
@@ -74,8 +80,13 @@ export async function reply({
       fail: [...recieve.fail, input.senderID],
       public: true,
     });
-    return output.reply(
-      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Other members can now answer the same question.${input.isWeb ? ".. Hold up, there's no other members in the web.." : ""}`,
+    return output.replyStyled(
+      `❌ | Wrong ${
+        userInfo?.name?.split(" ")[0]
+      }! Other members can now answer the same question.${
+        input.isWeb ? ".. Hold up, there's no other members in the web.." : ""
+      }`,
+      style
     );
   }
 }
@@ -129,7 +140,15 @@ Test your skills with our engaging quiz! Answer questions to earn rewards and sh
   if (!input.isWeb) {
     info = await output.reply(`Fetching...`);
   }
-  const { data: response } = await axios.get(`${global.lia}/api/quizzes`);
+  const total = require("./json/quiz.json");
+  const responses = total.map((i) => ({
+    ...i,
+    message: `${i.question}\n\n${i.options
+      .map((opt, ind) => `**${ind + 1}**. ${opt}`)
+      .join("\n")}`,
+    correct: i.answer + 1,
+  }));
+  const response = responses[Math.floor(Math.random() * responses.length)];
 
   const str =
     response.message + `\n\n𝘠𝘰𝘶 𝘤𝘢𝘯 𝘵𝘺𝘱𝘦 𝚀𝚞𝚒𝚣 𝚐𝚞𝚒𝚍𝚎 𝘪𝘧 𝘺𝘰𝘶 𝘯𝘦𝘦𝘥 𝘩𝘦𝘭𝘱.`;
