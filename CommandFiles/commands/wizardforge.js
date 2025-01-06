@@ -11,7 +11,7 @@ export const meta = {
   requirement: "2.5.0",
   icon: "🪄",
   otherNames: ["wizardf"],
-  shopPrice: 700,
+  shopPrice: 1000000,
 };
 
 export const style = {
