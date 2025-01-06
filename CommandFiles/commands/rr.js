@@ -11,6 +11,8 @@ export const meta = {
   noPrefix: false,
   waitingTime: 20,
   icon: "🌪️",
+  shopPrice: 2500,
+
   requirement: "2.5.0",
 };
 

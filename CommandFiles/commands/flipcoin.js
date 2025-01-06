@@ -54,7 +54,7 @@ module.exports = {
     if (!cooldown) cooldownEmo();
     if (cooldown) output.react("❕");
 
-    const side = input.arguments[0]?.toLowerCase();
+    let side = input.arguments[0]?.toLowerCase();
     const bet = parseInt(input.arguments[1]);
     const data = await botData.get(input.senderID);
 
