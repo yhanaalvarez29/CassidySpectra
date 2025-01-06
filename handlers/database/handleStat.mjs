@@ -86,18 +86,18 @@ export default class UserStatsManager {
   }
 
   async handleBitBros(gameID, userData) {
-    try {
-      const bitbros = new BitBrosAPI({
-        username: userData.name,
-        password: `cassidy-${gameID}`,
-        token: userData.bitbrosToken,
-      });
-      await bitbros.init(true, false);
-      await bitbros.setMoney(userData.money);
-      this.bb[gameID] = bitbros;
-    } catch (error) {
-      console.error("BITBROS SYNC", gameID, error);
-    }
+    // try {
+    //   const bitbros = new BitBrosAPI({
+    //     username: userData.name,
+    //     password: `cassidy-${gameID}`,
+    //     token: userData.bitbrosToken,
+    //   });
+    //   await bitbros.init(true, false);
+    //   await bitbros.setMoney(userData.money);
+    //   this.bb[gameID] = bitbros;
+    // } catch (error) {
+    //   console.error("BITBROS SYNC", gameID, error);
+    // }
   }
 
   async get(key) {
