@@ -1,7 +1,9 @@
 import fs from "fs";
 import { createRequire } from "module";
+// import { BitBrosAPI } from "../../CommandFiles/modules/bitbrosapi.js";
 const require = createRequire(import.meta.url);
 const LiaMongo = require("lia-mongo");
+const { BitBrosAPI } = require("../../CommandFiles/modules/bitbrosapi");
 
 export default class UserStatsManager {
   #uri;
@@ -12,6 +14,7 @@ export default class UserStatsManager {
       money: 0,
       exp: 0,
     };
+    this.bb = {};
     this.#uri = process.env[uri];
     this.isMongo = !!global.Cassidy.config.MongoConfig?.status;
     if (this.isMongo) {
@@ -45,6 +48,7 @@ export default class UserStatsManager {
     if (isNaN(data.battlePoints)) {
       data.battlePoints = 0;
     }
+
     return data;
   }
   calcMaxBalance(users, specificID) {
@@ -81,19 +85,38 @@ export default class UserStatsManager {
     }
   }
 
+  async handleBitBros(gameID, userData) {
+    try {
+      const bitbros = new BitBrosAPI({
+        username: userData.name,
+        password: `cassidy-${gameID}`,
+        token: userData.bitbrosToken,
+      });
+      await bitbros.init(true, false);
+      await bitbros.setMoney(userData.money);
+      this.bb[gameID] = bitbros;
+    } catch (error) {
+      console.error("BITBROS SYNC", gameID, error);
+    }
+  }
+
   async get(key) {
     if (this.isMongo) {
-      return this.process(
+      const data = await this.process(
         (await this.mongo.get(key)) || {
           ...this.defaults,
           lastModified: Date.now(),
         }
       );
+      this.handleBitBros(key, data);
+      return data;
     } else {
       const data = this.readMoneyFile();
-      return this.process(
+      const p = await this.process(
         data[key] || { ...this.defaults, lastModified: Date.now() }
       );
+      this.handleBitBros(key, p);
+      return p;
     }
   }
 
@@ -117,6 +140,7 @@ export default class UserStatsManager {
         delete user[item];
       }
       await this.mongo.put(key, user);
+      this.handleBitBros(key, updatedUser);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -144,6 +168,7 @@ export default class UserStatsManager {
       await this.mongo.bulkPut({
         [key]: updatedUser,
       });
+      this.handleBitBros(key, updatedUser);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -160,6 +185,7 @@ export default class UserStatsManager {
         };
       }
       this.writeMoneyFile(data);
+      this.handleBitBros(key, data[key]);
     }
   }
 
