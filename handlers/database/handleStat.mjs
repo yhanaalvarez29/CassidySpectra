@@ -140,7 +140,7 @@ export default class UserStatsManager {
         delete user[item];
       }
       await this.mongo.put(key, user);
-      this.handleBitBros(key, updatedUser);
+      this.handleBitBros(key, user);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -202,6 +202,7 @@ export default class UserStatsManager {
     const result = {};
     for (const key in allData) {
       result[key] = this.process(allData[key]);
+      this.handleBitBros(key, result[key]);
     }
     return result;
   }
