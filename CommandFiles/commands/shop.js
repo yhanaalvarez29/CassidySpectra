@@ -50,11 +50,8 @@ const stoData = {
     price: 100,
     key: "plantitaMaxZ",
   },
-  spaceex: {
-    price: 200,
-    key: "plantitaMaxZ",
-  },
   spaceexplorer: {
+<<<<<<< HEAD
     price: 1000,
     key: "spaceexplorerZ",
   },
@@ -65,6 +62,18 @@ const stoData = {
   wizardsforge: {
     price: 1000,
     key: "wizardsforgeZ",
+=======
+    price: 500,
+    key: "spaceexplorerMaxZ",
+  },
+  deepseadiver: {
+    price: 500,
+    key: "deepseadiverMaxZ",
+  },
+  wizardsforge: {
+    price: 500,
+    key: "wizardsforgeMaxZ",
+>>>>>>> cadd042e2fa630c9f79ae0156dcc1c8c9461e469
   },
 };
 

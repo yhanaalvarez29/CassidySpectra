@@ -188,6 +188,9 @@ export async function loadCommand(
         `'{root}.meta.name' shouldn't have spaces, recieved '${meta.name}'`
       );
     }
+    if (!Array.isArray(meta.otherNames)) {
+      meta.otherNames = [meta.otherNames];
+    }
     meta.name = meta.name.toLowerCase();
     if (commands[meta.name] && !force) {
       throw new Error(

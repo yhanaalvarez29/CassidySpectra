@@ -70,7 +70,7 @@ export async function entry({
   const resultText = styler.getField("resultText");
   let xText = "";
 
-  if (outcome.includes("lose")) {
+  if (outcome.includes(" lose")) {
     amount = Math.min(amount, userMoney);
 
     cashField.applyTemplate({
