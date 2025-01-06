@@ -9,6 +9,8 @@ require("dotenv").config();
 const MEMORY_THRESHOLD = 500;
 const WARNING_THRESHOLD = MEMORY_THRESHOLD * 0.75;
 
+import cors from "cors";
+
 const checkMemoryUsage = (normal) => {
   const memoryUsage = process.memoryUsage();
   const usedMemoryMB = memoryUsage.heapUsed / 1024 / 1024;
@@ -467,6 +469,7 @@ const fake502 = rateLimit(limit);
 function web(api, funcListen, settings) {
   let passKey = `${Math.random().toString(36).substring(2, 15)}`;
   const app = express();
+  app.use(cors());
   const listener = new Listener({ api, app });
   listener.startListen(funcListen);
   //app.use(fake502);
