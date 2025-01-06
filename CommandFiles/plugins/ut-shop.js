@@ -1371,9 +1371,10 @@ ${self.optionText()}
 export class Inventory {
   constructor(inventory = [], limit = global.Cassidy.invLimit) {
     inventory ??= [];
+
     this.limit = limit;
     /**
-     * @type {Array}
+     * @type {Array<import("cassidy-userData").InventoryItem>}
      */
     this.inv = this.sanitize(JSON.parse(JSON.stringify(inventory)));
 

@@ -5,6 +5,13 @@ const require = createRequire(import.meta.url);
 const LiaMongo = require("lia-mongo");
 const { BitBrosAPI } = require("../../CommandFiles/modules/bitbrosapi");
 
+/**
+ * @typedef {import("cassidy-userData").UserData} UserData;
+ */
+/**
+ *  @typedef {import("cassidy-userData").NullableUserData} Nullable;
+ */
+
 export default class UserStatsManager {
   #uri;
 
@@ -100,6 +107,12 @@ export default class UserStatsManager {
     // }
   }
 
+  /**
+   *
+   * @async
+   * @param {string} key
+   * @returns {Promise<UserData>}
+   */
   async get(key) {
     if (this.isMongo) {
       const data = await this.process(
@@ -156,6 +169,13 @@ export default class UserStatsManager {
     return this.getAll();
   }
 
+  /**
+   *
+   * @async
+   * @returns {Promise<void>}
+   * @param {string} key
+   * @param {Nullable} updatedProperties
+   */
   async set(key, updatedProperties = {}) {
     if (this.isMongo) {
       const user = await this.get(key);
@@ -196,6 +216,12 @@ export default class UserStatsManager {
       return this.readMoneyFile();
     }
   }
+
+  /**
+   *
+   * @async
+   * @returns {Promise<{ [key: string]: UserData }>}
+   */
   async getAll() {
     const allData = await this.getAllOld();
 
@@ -225,6 +251,12 @@ export default class UserStatsManager {
       console.error("Error writing money data:", error);
     }
   }
+
+  /**
+   *
+   * @async
+   * @returns {Promise<{ [key: string]: UserData }>}
+   */
   async toLeanObject() {
     if (!this.mongo) {
       return this.getAll();
