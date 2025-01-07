@@ -164,10 +164,10 @@ export class Event {
     }
 
     if (Object.keys(this.mentions ?? {}).length > 0) {
-      this.mentions = Object.entries(this.mentions).map((i) => [
+      this.mentions = Object.fromEntries(Object.entries(this.mentions).map((i) => [
         formatIP(i[0]),
         i[1],
-      ]);
+      ]));
     }
   }
 }
