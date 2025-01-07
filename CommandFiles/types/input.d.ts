@@ -1,5 +1,18 @@
 declare module "input-cassidy" {
   interface InputProps {
+    body: string;
+    senderID: string;
+    type: string;
+    threadID: string;
+    author: string;
+    reaction: string;
+    messageReply: any;
+    mentions: { [key: string]: any };
+    attachments: Array<any>;
+    timestamp: string;
+    isGroup: boolean;
+    isWeb: boolean;
+    isWss: boolean;
     arguments: string[];
     argPipe: string[];
     argPipeArgs: string[][];

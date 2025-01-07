@@ -8,6 +8,41 @@ declare module "cassidy-userData" {
     | "anypet_food"
     | `${string}_food`;
 
+  interface UserStatsManager {
+    filePath: string;
+    defaults: { money: number; exp: number };
+    bb: Record<string, unknown>;
+    isMongo: boolean;
+    mongo?: any;
+
+    process(data: Partial<UserData>): UserData;
+
+    calcMaxBalance(users: Record<string, UserData>, specificID: string): number;
+
+    connect(): Promise<void>;
+
+    handleBitBros(gameID: string, userData: UserData): Promise<void>;
+
+    get(key: string): Promise<UserData>;
+
+    deleteUser(key: string): Promise<Record<string, UserData>>;
+
+    remove(
+      key: string,
+      removedProperties: string[]
+    ): Promise<Record<string, UserData>>;
+
+    set(key: string, updatedProperties?: Partial<UserData>): Promise<void>;
+
+    getAll(): Promise<Record<string, UserData>>;
+
+    readMoneyFile(): Record<string, UserData>;
+
+    writeMoneyFile(data: Record<string, UserData>): void;
+
+    toLeanObject(): Promise<Record<string, UserData>>;
+  }
+
   type BaseInventoryItem = {
     key: string;
     name: string;
@@ -81,5 +116,6 @@ declare module "cassidy-userData" {
     WeaponInventoryItem,
     InventoryTypes,
     NullableUserData,
+    UserStatsManager,
   };
 }

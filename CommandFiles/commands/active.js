@@ -20,12 +20,12 @@ const { parseCurrency: pCy } = global.utils;
 
 export async function entry({ output, input, money, Slicer, args }) {
   const time = Date.now();
+
   const allUsers = await money.getAll();
 
   const sortedUsers = Object.keys(allUsers).sort((a, b) => {
     allUsers[a] ??= {};
     allUsers[b] ??= {};
-
     const { lastModified: lastModifiedA = Date.now() } = allUsers[a];
 
     const { lastModified: lastModifiedB = Date.now() } = allUsers[b];
