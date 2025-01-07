@@ -75,7 +75,7 @@ export async function postEvent(event) {
 
 export function formatIP(ip) {
   try {
-    ip = ip.replaceAll("custom_", "");
+    ip = ip?.replaceAll("custom_", "");
 
     const formattedIP = ip
       .split("")
@@ -161,6 +161,13 @@ export class Event {
     }
     if (Array.isArray(this.participantIDs)) {
       this.participantIDs = this.participantIDs.map((id) => formatIP(id));
+    }
+
+    if (Object.keys(this.mentions ?? {}).length > 0) {
+      this.mentions = Object.entries(this.mentions).map((i) => [
+        formatIP(i[0]),
+        i[1],
+      ]);
     }
   }
 }
