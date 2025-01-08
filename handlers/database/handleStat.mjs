@@ -3,6 +3,7 @@ import { createRequire } from "module";
 // import { BitBrosAPI } from "../../CommandFiles/modules/bitbrosapi.js";
 const require = createRequire(import.meta.url);
 const LiaMongo = require("lia-mongo");
+// import { LiaMongo } from "lia-mongo";
 const { BitBrosAPI } = require("../../CommandFiles/modules/bitbrosapi");
 
 /**
@@ -22,6 +23,11 @@ export default class UserStatsManager {
       exp: 0,
     };
     this.bb = {};
+
+    /**
+     * @type {LiaMongo}
+     */
+    this.mongo = null;
     this.#uri = process.env[uri];
     this.isMongo = !!global.Cassidy.config.MongoConfig?.status;
     if (this.isMongo) {
@@ -31,7 +37,14 @@ export default class UserStatsManager {
         collection: "reduxcassstats",
       });
     }
+
+    this.cache = {};
   }
+
+  updateCache(key, value) {
+    this.cache[key] = value;
+  }
+
   process(data) {
     data ??= {};
     data.money ??= 0;
@@ -111,6 +124,20 @@ export default class UserStatsManager {
    *
    * @async
    * @param {string} key
+   * @returns {UserData}
+   */
+  async getCache(key) {
+    if (!this.cache[key]) {
+      await this.get(key);
+    }
+
+    return JSON.parse(JSON.stringify(this.cache[key]));
+  }
+
+  /**
+   *
+   * @async
+   * @param {string} key
    * @returns {Promise<UserData>}
    */
   async get(key) {
@@ -122,6 +149,7 @@ export default class UserStatsManager {
         }
       );
       this.handleBitBros(key, data);
+      this.updateCache(key, data);
       return data;
     } else {
       const data = this.readMoneyFile();
@@ -129,6 +157,7 @@ export default class UserStatsManager {
         data[key] || { ...this.defaults, lastModified: Date.now() }
       );
       this.handleBitBros(key, p);
+      this.updateCache(key, p);
       return p;
     }
   }
@@ -154,6 +183,7 @@ export default class UserStatsManager {
       }
       await this.mongo.put(key, user);
       this.handleBitBros(key, user);
+      this.updateCache(key, user);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -165,6 +195,7 @@ export default class UserStatsManager {
         }
         this.writeMoneyFile(data);
       }
+      this.updateCache(key, data[key]);
     }
     return this.getAll();
   }
@@ -189,6 +220,7 @@ export default class UserStatsManager {
         [key]: updatedUser,
       });
       this.handleBitBros(key, updatedUser);
+      this.updateCache(key, updatedUser);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -206,6 +238,7 @@ export default class UserStatsManager {
       }
       this.writeMoneyFile(data);
       this.handleBitBros(key, data[key]);
+      this.updateCache(key, data[key]);
     }
   }
 
