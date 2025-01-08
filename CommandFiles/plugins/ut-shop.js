@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import { CassEXP } from "../modules/cassEXP.js";
 
 export const meta = {
   name: "ut-shop",
@@ -1365,6 +1366,7 @@ ${self.optionText()}
 
   obj.UTShop = UTShop;
   obj.Inventory = Inventory;
+  obj.CassEXP = CassEXP;
   obj.next();
 }
 

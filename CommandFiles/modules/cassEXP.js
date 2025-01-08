@@ -15,7 +15,7 @@ export class CassEXP {
    */
   constructor(cassEXP = {}) {
     this.cxp = this.sanitize(cassEXP);
-    this.expControls = new EXP(this.getEXP());
+    this.expControls = new EXP(this);
   }
 
   /**
@@ -339,30 +339,39 @@ export class CassEXP {
 }
 
 class EXP {
-  constructor(exp = 0) {
-    this.exp = exp;
+  constructor(parent = new CassEXP()) {
+    // this.exp = exp;
+    this.parent = parent;
+  }
+  get exp() {
+    return this.parent.exp;
   }
 
   raise(expAmount) {
     this.exp += expAmount;
+    this.parent.setEXP(this.exp);
   }
 
   decrease(expAmount) {
     this.exp -= expAmount;
+    this.parent.setEXP(this.exp);
   }
 
   raiseToLevel(level) {
     const targetEXP = EXP.getEXPFromLevel(level);
     this.exp = targetEXP;
+    this.parent.setEXP(this.exp);
   }
 
   raiseTo(targetEXP) {
     this.exp = targetEXP;
+    this.parent.setEXP(this.exp);
   }
 
   raiseWithLevel(level) {
     const baseEXP = CassEXP.getEXPFromLevel(level);
     this.exp = baseEXP + this.exp;
+    this.parent.setEXP(this.exp);
   }
 
   retrieve() {

@@ -154,9 +154,11 @@ export function use(obj) {
         );
         const inst = new CassEXP(cassEXP);
 
-        options.body = `${options.body}\n\n━━━【**Profile**】━━━\n**${name}** ${
-          UNIRedux.charm
-        } **LV${inst.level}** (${inst.exp}/${inst.getNextRemaningEXP()})`;
+        options.body = `${
+          options.body
+        }\n\n━━━━【**Profile**】━━━━━\n**${name}** ${UNIRedux.charm} **LV${
+          inst.level
+        }** (${inst.exp}/${inst.getNextRemaningEXP()})`;
       }
       if (!options.noStyle) {
         options.body = stylerShallow.text(options.body);

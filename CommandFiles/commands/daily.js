@@ -14,12 +14,18 @@ export const style = {
   titleFont: "bold",
   contentFont: "fancy",
 };
+
+/**
+ *
+ * @type {CommandEntry}
+ */
 export async function entry({
   input,
   output,
   money,
   Collectibles,
   CassExpress,
+  CassEXP,
 }) {
   let {
     money: userMoney,
@@ -27,11 +33,13 @@ export async function entry({
     collectibles,
     battlePoints = 0,
     cassExpress = {},
+    cassEXP: cxp,
     name = "Unregistered",
   } = await money.get(input.senderID);
+  let cassEXP = new CassEXP(cxp);
   cassExpress = new CassExpress(cassExpress);
   collectibles = new Collectibles(collectibles);
-  
+
   const currentTime = Date.now();
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
 
@@ -64,24 +72,28 @@ export async function entry({
   );
   const dailyReward = 100 * claimTimes;
   collectibles.raise("gems", claimTimes);
+  const extraEXP = claimTimes * cassEXP.level * 25;
 
   if (canClaim) {
     cassExpress.createMail({
       title: `Daily Reward Claimed`,
       author: input.senderID,
-      body: `Congratulations **${name}** for claiming your daily reward of $${dailyReward} and ${claimTimes} 💎 Gems!`,
+      body: `Congratulations **${name}** for claiming your daily reward of ${extraEXP} exp, $${dailyReward} and ${claimTimes} 💎 Gems!`,
       timeStamp: Date.now(),
     });
+
+    cassEXP.expControls.raise(extraEXP);
     await money.set(input.senderID, {
       money: userMoney + dailyReward,
       lastDailyClaim: currentTime,
       battlePoints: battlePoints + Math.floor(dailyReward / 10),
       collectibles: Array.from(collectibles),
       cassExpress: cassExpress.raw(),
+      cassEXP: cassEXP.raw(),
     });
 
     output.reply(
-      `💰 You've claimed your daily reward of **$${dailyReward.toLocaleString()}💵**, **${Math.floor(
+      `💰 You've claimed your daily reward of ${extraEXP} exp,**$${dailyReward.toLocaleString()}💵**, **${Math.floor(
         dailyReward / 10
       ).toLocaleString()}**💷 and ${claimTimes} 💎 Gems! Come back tomorrow for more.`
     );

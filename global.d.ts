@@ -6,6 +6,7 @@ import type {
 
 import type InputX from "input-cassidy";
 import type OutputX from "output-cassidy";
+import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 
 export {};
 
@@ -23,6 +24,7 @@ declare global {
     prefix: string;
     prefixes: string[];
     commands: { [key: string]: any };
+    CassEXP: typeof CassEXP;
   }) => any | Promise<any>;
 
   type UserData = Cass.UserData;
