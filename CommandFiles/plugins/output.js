@@ -149,7 +149,7 @@ export function use(obj) {
         });
       }*/
       if (!options.noUI) {
-        const { cassEXP, name } = await money.getCache(
+        const { cassEXP, name } = await obj.money.getCache(
           options.threadID ?? input.senderID
         );
         const inst = new CassEXP(cassEXP);
