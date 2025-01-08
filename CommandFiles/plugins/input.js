@@ -26,6 +26,7 @@ export function use(obj) {
     obj.censor = censor;
     const { event, api } = obj;
     event.originalBody = `${event.body}`;
+
     if (forceWebUID && event) {
       if (!event.senderID?.startsWith("web:")) {
         event.senderID = formatIP("custom_" + String(event.senderID));
@@ -50,6 +51,11 @@ export function use(obj) {
       event.body = censor(event.body);
     }
     let { body = "" } = event;
+    if (event.mentions && Object.keys(event.mentions).length > 0) {
+      for (const uid in event.mentions) {
+        event.body = String(event.body).replace(event.mentions[uid], uid);
+      }
+    }
     body = body.replace(/\[uid\]/gi, event.senderID);
     body = body.replace(
       /\[thisid\]/gi,
