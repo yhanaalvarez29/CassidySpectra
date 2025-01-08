@@ -347,31 +347,31 @@ class EXP {
     return this.parent.exp;
   }
 
+  set exp(expp) {
+    this.parent.exp = expp;
+    return true;
+  }
+
   raise(expAmount) {
     this.exp += expAmount;
-    this.parent.setEXP(this.exp);
   }
 
   decrease(expAmount) {
     this.exp -= expAmount;
-    this.parent.setEXP(this.exp);
   }
 
   raiseToLevel(level) {
     const targetEXP = EXP.getEXPFromLevel(level);
     this.exp = targetEXP;
-    this.parent.setEXP(this.exp);
   }
 
   raiseTo(targetEXP) {
     this.exp = targetEXP;
-    this.parent.setEXP(this.exp);
   }
 
   raiseWithLevel(level) {
     const baseEXP = CassEXP.getEXPFromLevel(level);
     this.exp = baseEXP + this.exp;
-    this.parent.setEXP(this.exp);
   }
 
   retrieve() {
