@@ -116,22 +116,21 @@ export class CassEXP {
     const baseExp = 100;
     const multiplier = 1.5;
 
-    if (level < 1) {
+    if (level < 2) {
       return 0;
     }
 
-    return Math.floor(baseExp * Math.pow(level, multiplier));
+    return Math.floor(baseExp * Math.pow(level - 1, multiplier));
   }
 
   static getLevelFromEXP(exp) {
-    const baseExp = 100;
-    const multiplier = 1.5;
+    let level = 1;
 
-    let level = 0;
-    while (exp >= baseExp * Math.pow(level, multiplier)) {
+    while (exp >= this.getEXPFromLevel(level + 1)) {
       level++;
     }
-    return level - 1;
+
+    return level;
   }
 
   // until level 200 lang to, bwahaha

@@ -1,5 +1,6 @@
 import fs from "fs";
 import { createRequire } from "module";
+import { CassEXP } from "../../CommandFiles/modules/cassEXP.js";
 // import { BitBrosAPI } from "../../CommandFiles/modules/bitbrosapi.js";
 const require = createRequire(import.meta.url);
 const LiaMongo = require("lia-mongo");
@@ -9,6 +10,7 @@ const { BitBrosAPI } = require("../../CommandFiles/modules/bitbrosapi");
 /**
  * @typedef {import("cassidy-userData").UserData} UserData;
  */
+
 /**
  *  @typedef {import("cassidy-userData").NullableUserData} Nullable;
  */

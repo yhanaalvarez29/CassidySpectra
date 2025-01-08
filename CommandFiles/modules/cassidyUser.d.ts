@@ -1,3 +1,8 @@
+// import type { Inventory, Collectibles } from "../plugins/ut-shop.js";
+// import type { CassEXP } from "./cassEXP.js";
+
+
+
 declare module "cassidy-userData" {
   type InventoryTypes =
     | "generic"
@@ -24,6 +29,8 @@ declare module "cassidy-userData" {
     handleBitBros(gameID: string, userData: UserData): Promise<void>;
 
     get(key: string): Promise<UserData>;
+    getCache(key: string): Promise<UserData>;
+    // getTyped(key: string): Promise<TypedUserData>;
 
     deleteUser(key: string): Promise<Record<string, UserData>>;
 
@@ -102,11 +109,19 @@ declare module "cassidy-userData" {
     exp: number;
     name?: string | "Unregistered";
     lastModified?: number;
+    cassEXP?: any;
   };
 
   type NullableUserData = {
     [K in keyof UserData]: UserData[K] | null;
   };
+
+  // type TypedUserData = UserData & {
+  //   inventory: Inventory;
+  //   collectibles: Collectibles;
+  //   cassEXP: CassEXP;
+  //   petsData: Inventory;
+  // };
 
   export {
     UserData,
@@ -117,5 +132,6 @@ declare module "cassidy-userData" {
     InventoryTypes,
     NullableUserData,
     UserStatsManager,
+    // TypedUserData,
   };
 }

@@ -5,6 +5,9 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
+import { CassEXP } from "../modules/cassEXP.js";
+import { UNIRedux } from "../modules/unisym.js";
+
 export const meta = {
   name: "output",
   author: "Liane Cagara",
@@ -90,6 +93,11 @@ ${options.lineStart ? options.lineStart : "━━━━━━━━━━━━�
 ${styleKey === "none" ? String(text).trim() : fonts.sans(String(text).trim())}
 ${options.lineEnd ? options.lineEnd : "━━━━━━━━━━━━━━━"}`.trim();
 }
+
+/**
+ *
+ * @type {CommandEntry}
+ */
 export function use(obj) {
   try {
     obj.CassidyIO = CassidyIO;
@@ -140,6 +148,16 @@ export function use(obj) {
           ...options.style,
         });
       }*/
+      if (!options.noUI) {
+        const { cassEXP, name } = await money.getCache(
+          options.threadID ?? input.senderID
+        );
+        const inst = new CassEXP(cassEXP);
+
+        options.body = `${options.body}\n\n━━━【**Profile**】━━━\n**${name}** ${
+          UNIRedux.charm
+        } **LV${inst.level}** (${inst.exp}/${inst.getNextRemaningEXP()})`;
+      }
       if (!options.noStyle) {
         options.body = stylerShallow.text(options.body);
       }
