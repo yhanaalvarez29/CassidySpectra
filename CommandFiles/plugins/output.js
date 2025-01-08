@@ -148,7 +148,7 @@ export function use(obj) {
           ...options.style,
         });
       }*/
-      if (!options.noUI) {
+      if (!options.noUI && obj.money) {
         const { cassEXP, name } = await obj.money.getCache(
           options.threadID ?? input.senderID
         );
