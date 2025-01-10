@@ -206,6 +206,12 @@ export async function use(obj) {
     obj.userDataCache = userDataCache;
     obj.shopCache = shop;
 
+    if (!userDataCache.name) {
+      return output.replyStyled(`🎀 Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Example***: ${prefix}id-setname Liane`, 
+        { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
+      );
+    }
+
     // if (hasAwaitStack(input.senderID, meta.name)) {
     //   if (isFn(awaiting)) {
     //     return awaiting(obj);
