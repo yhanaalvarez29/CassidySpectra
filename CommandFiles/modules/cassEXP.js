@@ -124,26 +124,15 @@ export class CassEXP {
   }
 
   static getEXPFromLevel(level) {
-    const baseExp = 100;
-    const multiplier = 1.5;
-
-    if (level < 2) {
+    if (level === 1) {
       return 0;
+    } else {
+      return 10 * Math.pow(2, level - 1);
     }
-
-    return Math.floor(baseExp * Math.pow(level - 1, multiplier));
   }
 
-  static getLevelFromEXP(exp) {
-    let level = 1;
-    let nextLevelExp = this.getEXPFromLevel(level + 1);
-
-    while (exp >= nextLevelExp) {
-      level++;
-      nextLevelExp = this.getEXPFromLevel(level + 1);
-    }
-
-    return level;
+  static getLevelFromEXP(lastExp) {
+    return lastExp < 10 ? 1 : Math.floor(Math.log2(lastExp / 10)) + 1;
   }
 
   static rankNames = [
