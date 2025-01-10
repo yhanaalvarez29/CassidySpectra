@@ -34,6 +34,10 @@ export const meta = {
 
 const { Cooldown } = global.utils;
 const handleCD = new Cooldown();
+
+/**
+ * @type {CommandEntry}
+ */
 export async function use(obj) {
   try {
     const {
@@ -77,7 +81,12 @@ export async function use(obj) {
       Shop,
       popularCMD,
       recentCMD,
+      money,
     } = obj;
+    /**
+     * @type {typeof import("./shopV2.js").ShopClass}
+     */
+    const ShopClass = obj.ShopClass;
     global.runner = obj;
     const {
       text,
@@ -192,6 +201,11 @@ export async function use(obj) {
       awaiting,
     } = command;
     console.log(`Handling command "${meta.name}"`);
+    const userDataCache = await money.getCache(senderID);
+    const shop = new ShopClass(userDataCache.shopInv);
+    obj.userDataCache = userDataCache;
+    obj.shopCache = shop;
+
     // if (hasAwaitStack(input.senderID, meta.name)) {
     //   if (isFn(awaiting)) {
     //     return awaiting(obj);
@@ -200,14 +214,17 @@ export async function use(obj) {
     //     `⚠️ | The command "${meta.name}" is currently running, please wait.`,
     //   );
     // }
-    const isShopUnlocked = await Shop.isUnlocked(meta.name, input.senderID);
+    const isShopUnlocked = await shop.isUnlocked(meta.name);
     if (!isShopUnlocked) {
-      const price = Shop.getPrice(meta.name);
+      const price = await shop.getPrice(meta.name);
       shopLabel: {
         if (price <= 0) {
           break shopLabel;
         }
-        const isAffordable = await Shop.canPurchase(meta.name, input.senderID);
+        const isAffordable = await shop.canPurchase(
+          meta.name,
+          userDataCache.money
+        );
 
         if (isFn(shopLocked)) {
           obj.isAffordable = isAffordable;

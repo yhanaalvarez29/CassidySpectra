@@ -25,6 +25,7 @@ declare global {
     prefixes: string[];
     commands: { [key: string]: any };
     CassEXP: typeof CassEXP;
+    userDataCache: UserData;
   }) => any | Promise<any>;
 
   type UserData = Cass.UserData;
