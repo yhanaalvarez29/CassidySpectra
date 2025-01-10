@@ -113,17 +113,6 @@ export class CassEXP {
   }
 
   static getEXPFromLevel(level) {
-    const baseExp = 100;
-    const multiplier = 1.5;
-
-    if (level < 2) {
-      return 0;
-    }
-
-    return Math.floor(baseExp * Math.pow(level - 1, multiplier));
-  }
-
-  static getEXPFromLevel(level) {
     if (level === 1) {
       return 0;
     } else {
