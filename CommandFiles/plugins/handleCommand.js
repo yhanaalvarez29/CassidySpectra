@@ -206,7 +206,7 @@ export async function use(obj) {
     obj.userDataCache = userDataCache;
     obj.shopCache = shop;
 
-    if (!userDataCache.name) {
+    if (!userDataCache.name && meta.name !== "identity") {
       return output.replyStyled(`🎀 Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Example***: ${prefix}id-setname Liane`, 
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
