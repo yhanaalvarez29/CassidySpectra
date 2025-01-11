@@ -1,3 +1,6 @@
+import { CassEXP } from "../modules/cassEXP.js";
+import { clamp } from "../modules/unisym.js";
+
 export const meta = {
   name: "pet",
   description: "Manage your pets!",
@@ -870,6 +873,9 @@ async function confirmSell({ input, output, repObj, money }) {
   );
 }
 
+/**
+ * @type {Record<string, CommandEntry>}
+ */
 export const entry = {
   async gear({
     PetPlayer,
@@ -1100,7 +1106,9 @@ You are going to sell ${petToSell.icon} **${petToSell.name}** for $${price}💵`
       petsData = [],
       inventory,
       gearsData,
+      cassEXP: cxp,
     } = await money.get(input.senderID);
+    const cassEXP = new CassEXP(cxp);
     const [targetPet, foodKey] = input.arguments;
     if (!targetPet || !foodKey) {
       return output.reply(`🐾 Here's a **guide**!
@@ -1207,6 +1215,8 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     targetPetData.lastExp ??= 0;
     const addedExp = Math.floor(targetFood.saturation / 60 / 1000);
     targetPetData.lastExp += addedExp;
+    const userAddedExp = clamp(3, Math.floor(addedExp / 1000), 50);
+    cassEXP.expControls.raise(userAddedExp);
     targetPetData = autoUpdatePetData(targetPetData);
     inventory.deleteOne(targetFood.key);
     petsData.deleteOne(targetPetData.key);
@@ -1231,6 +1241,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
     await money.set(input.senderID, {
       petsData: Array.from(petsData),
       inventory: Array.from(inventory),
+      cassEXP: cassEXP.raw(),
     });
     let pet = targetPetData;
     pet = autoUpdatePetData(pet);
