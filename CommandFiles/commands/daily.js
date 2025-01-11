@@ -72,7 +72,7 @@ export async function entry({
   );
   const dailyReward = 100 * claimTimes;
   collectibles.raise("gems", claimTimes);
-  const extraEXP = claimTimes * cassEXP.level * 25;
+  const extraEXP = claimTimes * cassEXP.level * 5;
 
   if (canClaim) {
     cassExpress.createMail({
@@ -93,7 +93,7 @@ export async function entry({
     });
 
     output.reply(
-      `💰 You've claimed your daily reward of ${extraEXP} exp,**$${dailyReward.toLocaleString()}💵**, **${Math.floor(
+      `💰 You've claimed your daily reward of ${extraEXP} exp, **$${dailyReward.toLocaleString()}💵**, **${Math.floor(
         dailyReward / 10
       ).toLocaleString()}**💷 and ${claimTimes} 💎 Gems! Come back tomorrow for more.`
     );
