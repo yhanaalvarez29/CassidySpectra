@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import { CassEXP } from "../modules/cassEXP.js";
+import { clamp } from "../modules/unisym.js";
 
 export const meta = {
   name: "ut-shop",
@@ -846,6 +847,9 @@ ${this.optionText()}
         obj.output?.error?.(error);
       }
     }
+    /**
+     * @type {CommandEntry}
+     */
     async onReply(context = obj) {
       try {
         const { invLimit } = global.Cassidy;
@@ -1124,7 +1128,11 @@ ${this.optionText()}
             boxItems: boxInventory = [],
             petsData = [],
             gearsData = [],
+            cassEXP: cxp,
           } = userInfo;
+
+          const cassEXP = new CassEXP(cxp);
+
           let { playersMap } = petPlayerMaps(userInfo);
 
           let items = self.stringItemData({
@@ -1171,9 +1179,14 @@ ${this.optionText()}
               `(You cannot buy anything right now.. Your inventory is full (${inventory.length}/${inventoryLimit})`
             );
           }
+          cassEXP.expControls.raise(
+            targetItem.expReward ??
+              clamp(0, targetItem.price / 100, 10) * amount
+          );
           const argu = {
             money: cash - price,
             inventory,
+            cassEXP: cassEXP.raw(),
             boxInventory,
           };
           context.moneySet = argu;

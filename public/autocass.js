@@ -18,6 +18,8 @@ const defStyle = {
   title: "Cassidy Bot",
 };
 
+const mappings = new Map();
+
 module.exports = {
   config: {
     name: "autocass",
@@ -35,8 +37,24 @@ module.exports = {
       en: "{pn} [query]",
     },
   },
-  onStart() {},
+  onStart({ message, event, api, args }) {
+    let choice =
+      args[0] === "on"
+        ? true
+        : args[0] === "off"
+        ? false
+        : mappings.get(event.threadID)
+        ? !mappings.get(event.threadID)
+        : true;
+    mappings.set(event.threadID, choice);
+
+    return message.reply(`✅ ${choice ? "Enabled" : "Disabled"} successfully!`);
+  },
   async onChat({ message, event, api }) {
+    const state = mappings.get(event.threadID) ?? false;
+    if (!state) {
+      return;
+    }
     if (!event.body?.toLowerCase().startsWith("#")) {
       return;
     }
