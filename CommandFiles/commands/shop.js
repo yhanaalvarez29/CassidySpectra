@@ -361,3 +361,186 @@ const home = new ReduxCMDHome({
 export async function entry(ctx) {
   home.runInContext(ctx);
 }
+
+const tilesThemes = [
+  {
+    name: "Treasure Hunt",
+    price: 30000,
+    description:
+      "A pirate-inspired theme full of hidden treasures and gold, ideal for adventurers.",
+    tileConfig: {
+      bombIcon: "☠️",
+      coinIcon: "🏴‍☠️",
+      tileIcon: "🏝️",
+      emptyIcon: "🎁",
+    },
+  },
+  {
+    name: "Cyberpunk City",
+    price: 80000,
+    description:
+      "A futuristic, neon-lit theme set in a dystopian city with cyberpunk vibes.",
+    tileConfig: {
+      bombIcon: "🔫",
+      coinIcon: "💎",
+      tileIcon: "🟩",
+      emptyIcon: "💡",
+    },
+  },
+  {
+    name: "Mystic Forest",
+    price: 40000,
+    description:
+      "A mysterious theme with enchanting forests, hidden magic, and mythical creatures.",
+    tileConfig: {
+      bombIcon: "🦇",
+      coinIcon: "🍄",
+      tileIcon: "🌳",
+      emptyIcon: "✨",
+    },
+  },
+  {
+    name: "Space Odyssey",
+    price: 120000,
+    description:
+      "A space-themed adventure set in a galaxy far, far away, with planets and stars scattered around.",
+    tileConfig: {
+      bombIcon: "🌌",
+      coinIcon: "🪐",
+      tileIcon: "🌠",
+      emptyIcon: "🚀",
+    },
+  },
+  {
+    name: "Haunted Mansion",
+    price: 70000,
+    description:
+      "A spooky theme filled with ghosts, cobwebs, and eerie vibes for those who love a thrill.",
+    tileConfig: {
+      bombIcon: "👻",
+      coinIcon: "🕯️",
+      tileIcon: "🏰",
+      emptyIcon: "💀",
+    },
+  },
+  {
+    name: "Underwater World",
+    price: 60000,
+    description:
+      "A deep-sea theme full of marine life, shipwrecks, and underwater treasure.",
+    tileConfig: {
+      bombIcon: "🐙",
+      coinIcon: "⚓",
+      tileIcon: "🦑",
+      emptyIcon: "🐚",
+    },
+  },
+  {
+    name: "Wild West",
+    price: 35000,
+    description:
+      "A western theme with cowboys, desert landscapes, and wild frontier action.",
+    tileConfig: {
+      bombIcon: "🤠",
+      coinIcon: "🏜️",
+      tileIcon: "🏜️",
+      emptyIcon: "🌵",
+    },
+  },
+  {
+    name: "Neon Dream",
+    price: 100000,
+    description:
+      "A vibrant neon-lit dreamland filled with lights and colors for a futuristic, fantasy feel.",
+    tileConfig: {
+      bombIcon: "💥",
+      coinIcon: "🔮",
+      tileIcon: "🟦",
+      emptyIcon: "🌟",
+    },
+  },
+  {
+    name: "Ancient Ruins",
+    price: 45000,
+    description:
+      "A theme inspired by forgotten civilizations, ancient temples, and mystical artifacts.",
+    tileConfig: {
+      bombIcon: "⚒️",
+      coinIcon: "🗿",
+      tileIcon: "🏺",
+      emptyIcon: "🔮",
+    },
+  },
+  {
+    name: "Steampunk Adventure",
+    price: 55000,
+    description:
+      "A theme set in a world where steam power reigns, with gears, clocks, and Victorian-era machinery.",
+    tileConfig: {
+      bombIcon: "🔩",
+      coinIcon: "⚙️",
+      tileIcon: "🛠️",
+      emptyIcon: "🕰️",
+    },
+  },
+  {
+    name: "Arctic Expedition",
+    price: 65000,
+    description:
+      "A cold, snow-covered theme with polar ice caps, glaciers, and the thrill of exploring the arctic.",
+    tileConfig: {
+      bombIcon: "❄️",
+      coinIcon: "🏔️",
+      tileIcon: "🧊",
+      emptyIcon: "🌨️",
+    },
+  },
+  {
+    name: "Jungle Safari",
+    price: 70000,
+    description:
+      "A theme set in a dense jungle with exotic wildlife and untamed nature awaiting explorers.",
+    tileConfig: {
+      bombIcon: "🐍",
+      coinIcon: "🍃",
+      tileIcon: "🌿",
+      emptyIcon: "🌳",
+    },
+  },
+  {
+    name: "Medieval Kingdom",
+    price: 90000,
+    description:
+      "A theme inspired by castles, knights, and dragons, perfect for fans of the medieval era.",
+    tileConfig: {
+      bombIcon: "🛡️",
+      coinIcon: "👑",
+      tileIcon: "🏰",
+      emptyIcon: "⚔️",
+    },
+  },
+  {
+    name: "Futuristic Metropolis",
+    price: 100000,
+    description:
+      "A highly advanced city full of towering skyscrapers, flying cars, and advanced technology.",
+    tileConfig: {
+      bombIcon: "🔮",
+      coinIcon: "💳",
+      tileIcon: "🏙️",
+      emptyIcon: "🛰️",
+    },
+  },
+  {
+    name: "Wild Jungle",
+    price: 55000,
+    description:
+      "A theme based on untamed wilderness, dense forests, and the beauty of nature's raw power.",
+    tileConfig: {
+      bombIcon: "🐆",
+      coinIcon: "🍌",
+      tileIcon: "🌳",
+      emptyIcon: "🦁",
+    },
+  },
+];
