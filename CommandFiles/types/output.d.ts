@@ -32,6 +32,7 @@ declare module "output-cassidy" {
         edit(body: string, messageID: string, delay?: number): Promise<any>;
       };
     };
+    wentWrong(): Promise<any>;
     syntaxError(commandX?: any): Promise<any>;
     edit(
       text: string,

@@ -67,6 +67,9 @@ const stoData = {
 global.stoData = stoData;
 const { UserSorter } = global.utils; //{ users, limit = null, sortBy = "money", defaultValue = 0 }
 
+/**
+ * @type {{ [key: string]: CommandEntry }}
+ */
 export const entryConfig = {
   async top({ input, output, money }) {
     const allData = await money.getAll();
@@ -331,6 +334,117 @@ Type ${prefix}**shop.storage buy <item name>** fo buy an upgrade.`
       } 🗃️\n**New Battle Points**: ${userMoney - price}💷 (-${price})`
     );
   },
+  async tiles({ input, output, args, money, prefix }) {
+    const userData = await money.get(input.senderID);
+    /**
+     * @type {UserData}
+     */
+    const { tilesKeys = [], money: userMoney } = userData;
+    const targetKey = args[1];
+
+    if (args[0] === "buy") {
+      if (!targetKey) {
+        return output.reply(
+          `❌ Please specify a theme **key** as argument, not a name.`
+        );
+      }
+      const item = tilesThemes.find(
+        (i) =>
+          i.key === targetKey ||
+          String(i.key).toLowerCase() === String(targetKey).toLowerCase()
+      );
+      if (!item) {
+        return output.reply(`❌ Theme not found for **${targetKey}**`);
+      }
+
+      if (isNaN(item.price)) {
+        return output.wentWrong();
+      }
+      if (userMoney < item.price) {
+        return output.reply(
+          `❌ The price of **${
+            item.name
+          }** is $${item.price.toLocaleString()}💵, and your balance is just $${userMoney.toLocaleString()}💵.`
+        );
+      }
+      if (item.price < 1) {
+        return output.wentWrong();
+      }
+      tilesKeys.push(item.key);
+      await money.set(input.senderID, {
+        money: userMoney - item.price,
+        tilesKeys,
+      });
+
+      await output.reply(
+        `✅ Successfully purchased!\n\n**${item.name}** (${
+          item.key
+        })\n${mapThemeIcons(item)}\n\n🎀 Type ${prefix}**shop-tiles apply ${
+          item.key
+        }** to apply.`
+      );
+      return;
+    }
+
+    if (args[0] === "apply") {
+      if (!targetKey) {
+        return output.reply(
+          `❌ Please specify a theme **key** as argument, not a name.`
+        );
+      }
+      if (!["default", ...tilesKeys].includes(targetKey)) {
+        return output.reply(
+          `❌ Theme not found. Ensure you have purchased this theme or that the theme key exists.`
+        );
+      }
+
+      const item = tilesThemes.find(
+        (i) =>
+          i.key === targetKey ||
+          String(i.key).toLowerCase() === String(targetKey).toLowerCase()
+      );
+      if (!item) {
+        return output.reply(`❌ Theme not found for **${targetKey}**`);
+      }
+
+      const { tileConfig } = item;
+      if (!tileConfig) {
+        return output.wentWrong();
+      }
+      await money.set(input.senderID, {
+        tileConfig,
+      });
+      await output.reply(
+        `✅ Successfully applied!\n\n**${item.name}** (${
+          item.key
+        })\n${mapThemeIcons(
+          item
+        )}\n\n🎀 Type ${prefix}**shop-tiles apply <key>** to apply other themes.`
+      );
+      return;
+    }
+
+    if (true) {
+      let result = ``;
+      let i = 0;
+      result += `🔍 Type ${prefix}**shop-tiles buy <key>** to buy a theme.\n\n`;
+      for (const value of tilesThemes) {
+        i++;
+        result += `${i}. **${value.name}**\n- **${Number(
+          value.price
+        ).toLocaleString()}**$ ${
+          tilesKeys.includes(value.key)
+            ? " ✅"
+            : userMoney >= value.price
+            ? " 💰"
+            : " ❌"
+        }\n***Key***: ${value.key}\n***Preview***: ${mapThemeIcons(value)}\n${
+          UNIRedux.charm
+        } ${value.description}\n\n`;
+      }
+      return output.reply(result);
+    }
+  },
 };
 
 const home = new ReduxCMDHome({
@@ -355,6 +469,11 @@ const home = new ReduxCMDHome({
       description: "View the highest upgraded storage.",
       aliases: ["-t"],
     },
+    tiles: {
+      key: "tiles",
+      description: "Buy or apply a tiles theme.",
+      aliases: ["-ti"],
+    },
   },
 });
 
@@ -362,9 +481,27 @@ export async function entry(ctx) {
   home.runInContext(ctx);
 }
 
+function mapThemeIcons(theme) {
+  return Object.values(theme.tileConfig).join("");
+}
+
 const tilesThemes = [
   {
+    name: "Default",
+    default: true,
+    price: 0,
+    key: "default",
+    description: "The default look and feel.",
+    tileConfig: {
+      bombIcon: "💣",
+      coinIcon: "💰",
+      tileIcon: "🟨",
+      emptyIcon: "⬜",
+    },
+  },
+  {
     name: "Treasure Hunt",
+    key: "treasureHunt",
     price: 30000,
     description:
       "A pirate-inspired theme full of hidden treasures and gold, ideal for adventurers.",
@@ -377,6 +514,7 @@ const tilesThemes = [
   },
   {
     name: "Cyberpunk City",
+    key: "cyberpunkCity",
     price: 80000,
     description:
       "A futuristic, neon-lit theme set in a dystopian city with cyberpunk vibes.",
@@ -389,6 +527,7 @@ const tilesThemes = [
   },
   {
     name: "Mystic Forest",
+    key: "mysticForest",
     price: 40000,
     description:
       "A mysterious theme with enchanting forests, hidden magic, and mythical creatures.",
@@ -401,6 +540,7 @@ const tilesThemes = [
   },
   {
     name: "Space Odyssey",
+    key: "spaceOdyssey",
     price: 120000,
     description:
       "A space-themed adventure set in a galaxy far, far away, with planets and stars scattered around.",
@@ -413,6 +553,7 @@ const tilesThemes = [
   },
   {
     name: "Haunted Mansion",
+    key: "hauntedMansion",
     price: 70000,
     description:
       "A spooky theme filled with ghosts, cobwebs, and eerie vibes for those who love a thrill.",
@@ -425,6 +566,7 @@ const tilesThemes = [
   },
   {
     name: "Underwater World",
+    key: "underwaterWorld",
     price: 60000,
     description:
       "A deep-sea theme full of marine life, shipwrecks, and underwater treasure.",
@@ -437,6 +579,7 @@ const tilesThemes = [
   },
   {
     name: "Wild West",
+    key: "wildWest",
     price: 35000,
     description:
       "A western theme with cowboys, desert landscapes, and wild frontier action.",
@@ -449,6 +592,7 @@ const tilesThemes = [
   },
   {
     name: "Neon Dream",
+    key: "neonDream",
     price: 100000,
     description:
       "A vibrant neon-lit dreamland filled with lights and colors for a futuristic, fantasy feel.",
@@ -461,6 +605,7 @@ const tilesThemes = [
   },
   {
     name: "Ancient Ruins",
+    key: "ancientRuins",
     price: 45000,
     description:
       "A theme inspired by forgotten civilizations, ancient temples, and mystical artifacts.",
@@ -473,6 +618,7 @@ const tilesThemes = [
   },
   {
     name: "Steampunk Adventure",
+    key: "streampunkAdventure",
     price: 55000,
     description:
       "A theme set in a world where steam power reigns, with gears, clocks, and Victorian-era machinery.",
@@ -485,6 +631,7 @@ const tilesThemes = [
   },
   {
     name: "Arctic Expedition",
+    key: "arcticExpedition",
     price: 65000,
     description:
       "A cold, snow-covered theme with polar ice caps, glaciers, and the thrill of exploring the arctic.",
@@ -497,6 +644,7 @@ const tilesThemes = [
   },
   {
     name: "Jungle Safari",
+    key: "jungleSafari",
     price: 70000,
     description:
       "A theme set in a dense jungle with exotic wildlife and untamed nature awaiting explorers.",
@@ -509,6 +657,7 @@ const tilesThemes = [
   },
   {
     name: "Medieval Kingdom",
+    key: "medievalKingdom",
     price: 90000,
     description:
       "A theme inspired by castles, knights, and dragons, perfect for fans of the medieval era.",
@@ -521,6 +670,7 @@ const tilesThemes = [
   },
   {
     name: "Futuristic Metropolis",
+    key: "futuristicMetropolis",
     price: 100000,
     description:
       "A highly advanced city full of towering skyscrapers, flying cars, and advanced technology.",
@@ -533,6 +683,7 @@ const tilesThemes = [
   },
   {
     name: "Wild Jungle",
+    key: "wildJungle",
     price: 55000,
     description:
       "A theme based on untamed wilderness, dense forests, and the beauty of nature's raw power.",

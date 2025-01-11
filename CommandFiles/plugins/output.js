@@ -254,6 +254,12 @@ export function use(obj) {
         const errMsg = formatError(error);
         return await output(errMsg, { callback, isReply: true });
       },
+      async wentWrong() {
+        return await output(
+          "❌ Sorry, something went wrong. This message indicates that an **unexpected issue has occurred**, which may lead to potential problems if not addressed. **It is uncommon to see this message**, as it is primarily used for rapid edge case handling and debugging. Better error messages will be added in the **future**. Please **report** this to the administrator or developer for further investigation.",
+          { callback, isReply: true }
+        );
+      },
       async send(body, id, callback) {
         return await output(body, { callback, threadID: id });
       },

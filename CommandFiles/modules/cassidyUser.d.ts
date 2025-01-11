@@ -1,8 +1,6 @@
 // import type { Inventory, Collectibles } from "../plugins/ut-shop.js";
 // import type { CassEXP } from "./cassEXP.js";
 
-
-
 declare module "cassidy-userData" {
   type InventoryTypes =
     | "generic"
@@ -110,6 +108,8 @@ declare module "cassidy-userData" {
     name?: string | "Unregistered";
     lastModified?: number;
     cassEXP?: any;
+    tilesKeys?: string[];
+    shopInv: { [key: string]: boolean };
   };
 
   type NullableUserData = {

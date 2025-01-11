@@ -22,35 +22,44 @@ export class ShopClass {
   }
 
   lock(commandName, userID) {
+    commandName = String(commandName).toLowerCase();
     if (commandName in this.shopInv) {
       delete this.shopInv[commandName];
     }
   }
 
   unlock(commandName, userID) {
+    commandName = String(commandName).toLowerCase();
     this.getPrice(commandName) !== 0
       ? (this.shopInv[commandName] = true)
       : null;
   }
 
   isUnlocked(commandName) {
+    commandName = String(commandName).toLowerCase();
     return commandName in this.shopInv || this.getPrice(commandName) === 0;
   }
 
   getPrice(commandName) {
+    commandName = String(commandName).toLowerCase();
     const { meta = {} } =
       Object.values(global.Cassidy.commands).find(
-        (i) => i.meta.name === commandName
+        (i) =>
+          i.meta.name === commandName ||
+          String(i.meta.name).toLowerCase() ===
+            String(commandName).toLowerCase()
       ) ?? {};
     return meta.shopPrice || 0;
   }
 
   canPurchase(commandName, money) {
+    commandName = String(commandName).toLowerCase();
     const price = this.getPrice(commandName);
     return price !== 0 && money >= price;
   }
 
   purchase(commandName, money) {
+    commandName = String(commandName).toLowerCase();
     const price = this.getPrice(commandName);
     if (price === 0 || money < price) return { success: false, cost: price };
     this.shopInv[commandName] = true;
