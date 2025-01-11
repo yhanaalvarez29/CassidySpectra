@@ -505,3 +505,84 @@ export function listIcons(array) {
 
   return result;
 }
+
+export class PrizePool {
+  constructor(pool) {
+    this.pool = pool || 0;
+  }
+
+  /**
+   * Adjusts the prize pool by adding or subtracting an amount.
+   * @param {number} amount - The amount to adjust the pool by. Can be positive or negative.
+   * @throws {Error} If the resulting pool would be negative.
+   */
+  addLost(amount) {
+    const newPool = this.pool + amount;
+    if (newPool < 0) {
+      throw new Error("Prize pool cannot be negative.");
+    }
+    this.pool = newPool;
+  }
+
+  /**
+   * Determines if the player wins based on their bet, the prize pool, and chance.
+   * If the prize pool cannot cover the bet, the player automatically loses.
+   * @param {number} bet - The player's bet amount.
+   * @param {number} [chance=0.5] - The base winning chance (default is 0.5).
+   * @returns {boolean} True if the player wins, false otherwise.
+   */
+  getOdds(bet, chance = 0.5) {
+    if (bet > this.pool) return false;
+    return Math.random() < chance;
+  }
+
+  /**
+   * Determines if the player wins based solely on chance, ignoring the prize pool.
+   * @param {number} [chance=0.5] - The base winning chance (default is 0.5).
+   * @returns {boolean} True if the player wins, false otherwise.
+   */
+  getOddsNoPool(chance = 0.5) {
+    return Math.random() < chance;
+  }
+
+  /**
+   * Returns the current prize pool amount.
+   * @returns {number} The current prize pool amount.
+   */
+  getPoolAmount() {
+    return this.pool;
+  }
+
+  /**
+   * Clears the prize pool, resetting it to zero.
+   */
+  clearPool() {
+    this.pool = 0;
+  }
+}
+
+/**
+ * Clamps a value to ensure it is within the specified range.
+ *
+ * @param {number} min - The minimum allowable value.
+ * @param {number} desired - The value to clamp.
+ * @param {number} max - The maximum allowable value.
+ * @returns {number} The clamped value.
+ * @throws {TypeError} If any of the arguments are not numbers.
+ * @throws {RangeError} If `min` is greater than `max`.
+ */
+export function clamp(min, desired, max) {
+  if (
+    typeof min !== "number" ||
+    typeof desired !== "number" ||
+    typeof max !== "number"
+  ) {
+    throw new TypeError("All arguments must be numbers.");
+  }
+  if (min > max) {
+    throw new RangeError(
+      "The minimum value cannot be greater than the maximum value."
+    );
+  }
+  return Math.min(Math.max(desired, min), max);
+}

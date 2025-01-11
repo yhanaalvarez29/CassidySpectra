@@ -1,3 +1,6 @@
+import { CassEXP } from "../modules/cassEXP.js";
+import { clamp } from "../modules/unisym.js";
+
 export const style = {
   title: "Tiles 🟨",
   titleFont: "bold",
@@ -26,6 +29,9 @@ export const meta = {
 // Allows different emoji so you can literally customize it LMAO
 // Also tiles can be customized easily
 
+/**
+ * @type {CommandEntry}
+ */
 export async function entry({
   input,
   output,
@@ -164,8 +170,8 @@ ${board.bombIcon} **Bomb**
 • Bomb ends the game.
 ${board.coinIcon} **Coin**
 • Coin gives you a random amount of coins.
-${board.emptyIcon} **Empty**
-• Empty tile, nothing happens.
+${board.emptyIcon} **EXP**
+• White tiles give you random amount of exp.
 
 ${board}`;
   let xInfo = info;
@@ -193,6 +199,9 @@ ${board}`;
   });
 }
 
+/**
+ * @type {CommandEntry}
+ */
 export async function reply({
   input,
   output: { ...output },
@@ -309,9 +318,23 @@ ${revealBoard}`);
 ${makeText()}`);
       handleAgain(id);
     } else if (code === "EMPTY") {
+      //       const { messageID: id } = await output.reply(`${
+      //         board.emptyIcon
+      //       } You hit an **empty** tile, nothing happened.
+
+      // ${makeText()}`);
+      //       handleAgain(id);
+
+      const userData = await money.get(author);
+      const reward = clamp(10, Math.floor(randomCoin() / 20), 100);
+      const cassEXP = new CassEXP(userData.cassEXP);
+      cassEXP.expControls.raise(reward);
+      await money.set(author, {
+        cassEXP: cassEXP.raw(),
+      });
       const { messageID: id } = await output.reply(`${
         board.emptyIcon
-      } You hit an **empty** tile, nothing happened.
+      } You hit an **exp tile** and got **${reward} EXP**
 
 ${makeText()}`);
       handleAgain(id);

@@ -155,7 +155,7 @@ export async function entry({
         "Description"
       )}: ${description} 💬\n    ${UNIRedux.charm} ${fontMarkups.fancy_italic(
         "Aliases"
-      )}: ${otherNames?.join(", ") || "None 📝"}\n`;
+      )}: ${otherNames?.join(", ") || "None 📝"}\n\n`;
     });
   });
 

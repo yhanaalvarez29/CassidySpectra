@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["doubleorlose", "riskitall", "doubleornothing", "don"],
-  waitingTime: 60,
+  waitingTime: 30,
   shopPrice: 50000,
   requirement: "2.5.0",
   icon: "💥",

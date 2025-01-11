@@ -9,7 +9,7 @@ export const meta = {
   category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
-  waitingTime: 20,
+  waitingTime: 30,
   icon: "🌪️",
   shopPrice: 2500,
 
