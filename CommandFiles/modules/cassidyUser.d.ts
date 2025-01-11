@@ -9,6 +9,7 @@ declare module "cassidy-userData" {
     | "key"
     | "food"
     | "anypet_food"
+    | "cheque"
     | `${string}_food`;
 
   interface UserStatsManager {
@@ -75,6 +76,11 @@ declare module "cassidy-userData" {
     type: "armor";
   };
 
+  type ChequeItem = {
+    chequeAmount: number;
+    type: "cheque";
+  };
+
   type PetUncaged = {
     name: string;
     key: string;
@@ -94,6 +100,7 @@ declare module "cassidy-userData" {
   type InventoryItem =
     | (BaseInventoryItem & WeaponInventoryItem)
     | (BaseInventoryItem & ArmorInventoryItem)
+    | (BaseInventoryItem & ChequeItem)
     | BaseInventoryItem;
 
   type UserData = {
