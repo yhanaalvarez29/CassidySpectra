@@ -158,7 +158,7 @@ export function use(obj) {
           options.body
         }\n\n━━━━【**Profile**】━━━━━\n**${name}** ${UNIRedux.charm} **LV${
           inst.level
-        }** (${inst.exp}/${inst.getNextRemaningEXP()})`;
+        }** (${inst.exp}/${inst.getNextEXP()})`;
       }
       if (!options.noStyle) {
         options.body = stylerShallow.text(options.body);
