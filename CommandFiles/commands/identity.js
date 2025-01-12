@@ -1,4 +1,5 @@
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
   name: "identity",
@@ -88,7 +89,15 @@ const home = new ReduxCMDHome(
       description: "Set or change your display name.",
       args: ["<new name> (No Spaces)"],
       aliases: ["set", "-s"],
-      async handler({ input, output, money, args, Inventory, CassExpress }) {
+      async handler({
+        input,
+        output,
+        money,
+        args,
+        Inventory,
+        CassExpress,
+        prefix,
+      }) {
         const userData = await money.get(input.senderID);
         let isRequire = !!userData.name;
         const name = args.join(" ");
@@ -96,12 +105,12 @@ const home = new ReduxCMDHome(
         const cassExpress = new CassExpress(userData.cassExpress ?? {});
         if (!inventory.has("nameChanger") && isRequire) {
           return output.reply(
-            "❌ You don't have the required item to change your name, there may or may not be a way to get it."
+            "A 🎟️ **Name Changer** is required for this action."
           );
         }
         if (!name || name.length > 20) {
           return output.reply(
-            "❌ Please enter a valid name (lower than 20 characters)"
+            `❌ Please enter a valid name (lower than 20 characters)\n\n***Example***: ${prefix}id-setname Liane`
           );
         }
         const names = {
@@ -141,21 +150,29 @@ const home = new ReduxCMDHome(
           },
         };
         const allowed = ["chara", "frisk", "clover", "sand", "papyru"];
-        if (!names[name.toLowerCase()]) {
+        if (
+          !names[name.toLowerCase()] ||
+          !Object.keys(names).some((i) =>
+            name.toLowerCase().includes(i.toLowerCase())
+          )
+        ) {
           allowed.push(name.toLowerCase());
         }
         const nameOk = allowed.includes(name.toLowerCase());
         let proceed = isRequire ? `Proceed for 1 🎟️` : `Proceed (Free 1st)`;
-        const i = await output.reply(`* ${
-          names[name] || names[name.toLowerCase()] || "Is the name correct?"
-        }
-      
-      **${name.split("").join(" ")}**
-      
-      * Back
-      ${nameOk ? `* ${proceed}` : ""}
-      
-      🎟️ **${inventory.getAmount("nameChanger")}**`);
+        const i = await output.reply(
+          `${UNIRedux.charm} ${
+            names[name] || names[name.toLowerCase()] || "Is the name correct?"
+          }\n\n**${name.split("").join(" ")}**\n\n${
+            nameOk
+              ? `🔍 Please reply **'proceed'** without prefix if the name is correct.${
+                  isRequire
+                    ? "\n⚠️ This will cost you 1 🎟️ **Name Changer** item."
+                    : "\n🎁 Your first name change is **free**."
+                }`
+              : "❌ You cannot use this name. Please select a different one."
+          }\n\n🎟️ **${inventory.getAmount("nameChanger")}**`
+        );
         input.setReply(i.messageID, {
           key: "changename",
           isRequire,
