@@ -319,7 +319,7 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
       return;
     }
   }
-  await money.set(input.senderID, {
+  await moneyH.set(input.senderID, {
     ffRunStamp: Date.now(),
     inventory: inventory.raw(),
   });
