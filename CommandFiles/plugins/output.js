@@ -149,15 +149,25 @@ export function use(obj) {
         });
       }*/
       if (!options.noUI && obj.money) {
-        const { cassEXP, name } = await obj.money.getCache(
-          options.threadID ?? input.senderID
-        );
+        const {
+          cassEXP,
+          name,
+          money: userMoney,
+          inventory,
+          boxItems,
+        } = await obj.money.getCache(options.threadID ?? input.senderID);
         const inst = new CassEXP(cassEXP);
 
         options.body = name
-          ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n**${name}** ${
+          ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
               UNIRedux.charm
-            } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
+            } **LV${inst.level}** (${
+              inst.exp
+            }/${inst.getNextEXP()})\n$**${userMoney}** ${UNIRedux.charm} 🎒 **${
+              inventory.length
+            }/${global.Cassidy.invLimit}** ${UNIRedux.charm} 🗃️ **${
+              boxItems.length
+            }/100**`
           : options.body;
       }
       if (!options.noStyle) {

@@ -29,7 +29,7 @@ export const meta = {
 export const style = {
   title: "Cash • Dashboard 💵",
   titleFont: "bold",
-  contentFont: "fancy",
+  contentFont: "redux",
 };
 
 function isBrokenMoney(playerMoney) {
@@ -105,7 +105,15 @@ const configs = [
     description: "View your money status or check someone else's",
     args: ["<optional uid>"],
     aliases: ["-v", "show"],
-    async handler({ money, input, output, icon, prefix, clearCurrStack }) {
+    async handler({
+      money,
+      input,
+      output,
+      icon,
+      prefix,
+      clearCurrStack,
+      Collectibles,
+    }) {
       let { senderID } = input;
       if (input.replier) {
         ({ senderID } = input.replier);
@@ -124,12 +132,24 @@ const configs = [
 
       const allUsers = await money.getAll();
       let warn = "";
-      const playerMoney = (await allUsers[senderID]) ?? {};
+      let playerMoney = allUsers[senderID];
+      const cll = new Collectibles(playerMoney.collectibles ?? []);
+
       playerMoney.money ??= 0;
+
       playerMoney.name ??= "No name";
       if (isBrokenMoney(playerMoney.money)) {
         warn = `\n\n⚠️ Warning: This money might be corrupted! Use "${prefix}money fix" to reset it.`;
       }
+
+      const mappedCl = cll
+        .getAll()
+        .filter(({ metadata, amount }) => amount > 0)
+        .map(
+          ({ metadata, amount }) =>
+            `${metadata.icon} **x${pCy(amount)}** ${metadata.name}`
+        )
+        .join("\n");
 
       const topIndex = getTop(senderID, allUsers);
       const otherPlayers = getBehindAhead(senderID, allUsers);
@@ -141,7 +161,7 @@ const configs = [
         ? playerMoney.name
         : "You";
       let topText = `${
-        topIndex <= 10 ? `🏅 **Top #${topIndex}**!` : `🌱 **Climbing UP!**`
+        topIndex <= 10 ? `🏅 **#${topIndex}** Rank` : `🌱 **Climbing UP!**`
       }\n${UNIRedux.standardLine}\n🏆 ${targetName} rank${
         targetName === "You" ? "" : "s"
       } behind **${otherPlayers.ahead.length}** players and ahead of **${
@@ -149,9 +169,11 @@ const configs = [
       }** players.\n\n⚠️ **Disclaimer**: This is a virtual money balance and cannot be exchanged for real money.`;
 
       const has = targetName === "You" ? "have" : "has";
-      let resu = `📛 **${playerMoney.name}**\n💳 $${pCy(
+      let resu = `📛 **${playerMoney.name}**\n💵 **x${pCy(
         playerMoney.money ?? 0
-      )}💵\n⚔️ $${pCy(playerMoney.battlePoints ?? 0)}💷${warn}\n${topText}`;
+      )}** Money\n💷 **x${pCy(
+        playerMoney.battlePoints ?? 0
+      )}** Battle Points\n${mappedCl}${warn}\n${topText}`;
 
       if (i) {
         output.edit(resu, i.messageID);
@@ -165,13 +187,25 @@ const configs = [
     key: "lboard",
     description: "View the current Top 10 leaderboard",
     aliases: ["top", "leaderboard", "richest", "-l"],
-    async handler({ money, input, output, icon, prefix, clearCurrStack }) {
+    async handler({
+      money,
+      input,
+      output,
+      icon,
+      prefix,
+      clearCurrStack,
+      CassEXP,
+      Collectibles,
+    }) {
       let { participantIDs = [] } = input;
       if (!Array.isArray(participantIDs)) {
         participantIDs = [];
       }
       const users = await money.getAll();
 
+      /**
+       * @type {Record<string, UserData>}
+       */
       const topUsers = sortUsers(users, 10);
 
       let result = `🏅 | **Leaderboards**\n\n`;
@@ -185,15 +219,26 @@ const configs = [
           money: playerMoney,
           maxMoney,
           battlePoints = 0,
+          cassEXP: cxp,
         } = topUsers[key];
         const userData = topUsers[key];
+        const cll = new Collectibles(userData.collectibles ?? []);
+        const mappedCl = cll
+          .getAll()
+          .filter(({ metadata, amount }) => amount > 0)
+          .map(
+            ({ metadata, amount }) =>
+              `${metadata.icon} ${metadata.name}: ${abbreviateNumber(amount)}`
+          )
+          .join("\n");
+        const cassEXP = new CassEXP(cxp);
         result += `${index === 1 ? "👑" : index < 10 ? `0${index}` : index}${
           index === 1
-            ? ` ✦ [font=double_struck]${name
+            ? ` LV${cassEXP.level} ✦ [font=double_struck]${name
                 .split("")
                 .map((name) => name.toUpperCase())
                 .join(" ")}[:font=double_struck] ✦`
-            : `. **${name}**`
+            : `. LV${cassEXP.level} **${name}**`
         }\n💰 Money: $**${abbreviateNumber(
           playerMoney
         )}**💵\n⚔️ Battle Points: $**${abbreviateNumber(
@@ -201,6 +246,9 @@ const configs = [
         )}**💷\n`;
         if (lastMoney) {
           result += `💸 Gap: $${abbreviateNumber(lastMoney - playerMoney)}💵\n`;
+        }
+        if (mappedCl) {
+          result += `${mappedCl}\n`;
         }
         if (isGroup) {
           result += `✅ In Group\n`;

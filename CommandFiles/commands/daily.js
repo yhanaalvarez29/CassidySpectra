@@ -1,3 +1,5 @@
+import { UNIRedux } from "../modules/unisym.js";
+
 export const meta = {
   name: "daily",
   description: "Claim your daily reward!",
@@ -51,6 +53,8 @@ export async function entry({
     const timeElapsed = currentTime - lastDailyClaim;
     if (timeElapsed >= oneDayInMilliseconds) {
       canClaim = true;
+    } else if (input.isAdmin && input.arguments[0] === "cheat") {
+      canClaim = true;
     } else {
       const timeRemaining = oneDayInMilliseconds - timeElapsed;
       const hoursRemaining = Math.floor(
@@ -78,7 +82,7 @@ export async function entry({
     cassExpress.createMail({
       title: `Daily Reward Claimed`,
       author: input.senderID,
-      body: `Congratulations **${name}** for claiming your daily reward of ${extraEXP} exp, $${dailyReward} and ${claimTimes} 💎 Gems!`,
+      body: `Congratulations **${name}** for claiming your daily reward!`,
       timeStamp: Date.now(),
     });
 
@@ -93,9 +97,11 @@ export async function entry({
     });
 
     output.reply(
-      `💰 You've claimed your daily reward of ${extraEXP} exp, **$${dailyReward.toLocaleString()}💵**, **${Math.floor(
+      `${
+        UNIRedux.charm
+      } You've claimed your daily reward! Come back tomorrow for more.\n\n🧪 **x${extraEXP}** Experience Points (exp)\n💵 **x${dailyReward.toLocaleString()}** Money (money)\n💷 **x${Math.floor(
         dailyReward / 10
-      ).toLocaleString()}**💷 and ${claimTimes} 💎 Gems! Come back tomorrow for more.`
+      ).toLocaleString()}** Battle Points (battlePoints)`
     );
   }
 }
