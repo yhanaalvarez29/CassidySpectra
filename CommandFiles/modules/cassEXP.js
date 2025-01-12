@@ -28,7 +28,7 @@ export class CassEXP {
     if (isNaN(exp)) {
       exp = 0;
     }
-    exp = parseFloat(exp, 10);
+    exp = parseInt(exp, 10);
 
     return {
       ...data,

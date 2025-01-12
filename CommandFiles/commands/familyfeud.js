@@ -1,7 +1,7 @@
 import fs from "fs";
 import stringSimilarity from "string-similarity";
 import { translate } from "@vitalets/google-translate-api";
-import { UNIRedux } from "../modules/unisym.js";
+import { clamp, UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
   name: "familyfeud",
@@ -43,7 +43,10 @@ function generateTable(answers) {
 
   return table;
 }
-
+/**
+ *
+ * @type {CommandEntry}
+ */
 export async function reply({
   api,
   input,
@@ -53,6 +56,8 @@ export async function reply({
   userInfos,
   detectID,
   Collectibles,
+  CassEXP,
+  Inventory,
 }) {
   try {
     const logo = "🔎 [ **FAMILY FEUD** ] 🔍\n";
@@ -67,6 +72,8 @@ export async function reply({
     let userAnswer = input.words.join(" ").trim().toLowerCase();
 
     let userData = await moneyH.get(input.senderID);
+
+    const cassEXP = new CassEXP(userData.cassEXP);
     let lastFeudGame = userData.lastFeudGame;
     let money = userData.money || 0;
     let name = userData.name;
@@ -123,6 +130,7 @@ export async function reply({
           collectibles: Array.from(collectibles),
           lastFeudGame: null,
           strikes: 0,
+          ffStamp: Date.now(),
         });
         input.delReply(detectID);
         const allPoints = answers.reduce(
@@ -145,14 +153,18 @@ export async function reply({
         } points** that was added to your balance!\n\nKeep guessing! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(
           answers
         )}`;
+        const xp = clamp(1, correctAnswer.points / 20, 10);
+        cassEXP.expControls.raise(xp);
         await moneyH.set(input.senderID, {
           ...userData,
           money,
+          cassEXP: cassEXP.raw(),
           lastFeudGame: {
             ...lastFeudGame,
             answers,
           },
           strikes,
+          ffStamp: Date.now(),
         });
 
         const newReply = await output.reply(replyMessage);
@@ -173,13 +185,14 @@ export async function reply({
           money,
           lastFeudGame: null,
           strikes: 0,
+          ffStamp: Date.now(),
         });
         input.delReply(detectID);
 
         return output.reply(
           `[ ${"❌ ".repeat(strikes).trim()} ]\n\nSorry ${
             name?.split(" ")[0]
-          }, you've received three strikes! Better luck next time.\n\nQuestion: ${question}\n\n${generateTable(
+          }, you've received ten strikes! Better luck next time.\n\nQuestion: ${question}\n\n${generateTable(
             answers
           )}`
         );
@@ -191,6 +204,7 @@ export async function reply({
             ...lastFeudGame,
           },
           strikes,
+          ffStamp: Date.now(),
         });
         const replyMessage = `[ ${"❌ "
           .repeat(strikes)
@@ -212,6 +226,11 @@ export async function reply({
     output.error(error);
   }
 }
+
+/**
+ *
+ * @type {CommandEntry}
+ */
 export async function entry({
   api,
   input,
@@ -219,6 +238,7 @@ export async function entry({
   prefix,
   money: moneyH,
   repObj: receive,
+  Inventory,
 }) {
   output.prepend = logo;
 
@@ -261,7 +281,48 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
 `);
   }
 
-  let { lastFeudGame, name } = await moneyH.get(input.senderID);
+  let {
+    lastFeudGame,
+    name,
+    ffRunStamp,
+    ffStamp = Date.now() - 10 * 60 * 1000,
+    inventory: inv = [],
+  } = await moneyH.get(input.senderID);
+  const inventory = new Inventory(inv);
+  let isPendantUsed = false;
+  limitCheck: {
+    if (ffRunStamp && Date.now() - ffRunStamp < 10 * 60 * 1000) {
+      if (inventory.has("timePendant")) {
+        isPendantUsed = true;
+        inventory.deleteOne("timePendant");
+        break limitCheck;
+      }
+
+      const txt = `❌ | The game is still running! Please finish the game or just wait 10 minutes.`;
+
+      await output.reply(txt);
+      return;
+    }
+    const elapsedTime = Date.now() - ffStamp;
+    if (elapsedTime < 10 * 60 * 1000) {
+      if (inventory.has("timePendant")) {
+        isPendantUsed = true;
+        inventory.deleteOne("timePendant");
+        break limitCheck;
+      }
+
+      const txt = `🕜 | You can use this command again in ${Math.ceil(
+        (10 * 60 * 1000 - elapsedTime) / 60 / 1000
+      )} minutes.`;
+
+      await output.reply(txt);
+      return;
+    }
+  }
+  await money.set(input.senderID, {
+    ffRunStamp: Date.now(),
+    inventory: inventory.raw(),
+  });
   if (!name) {
     return output.reply(
       `❌ | Please use the command ${prefix}identity-setname first.`
