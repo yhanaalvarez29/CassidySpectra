@@ -128,6 +128,7 @@ async function handleMiddleWare({
     if (!commandName) {
       commandName = "";
     }
+
     let hasPrefix;
     let currentPrefix = prefix;
     for (const prefix of prefixes) {
@@ -139,6 +140,15 @@ async function handleMiddleWare({
     }
     if (hasPrefix) {
       commandName = commandName.slice(currentPrefix.length);
+    }
+    let isLink = false;
+
+    let command =
+      commands[commandName] || commands[commandName.toLowerCase()] || null;
+    if (command && command.meta && typeof command.meta.linkTo === "string") {
+      commandName = command.meta.linkTo;
+      isLink = true;
+      console.log(`Linking '${command.meta.name}' to ${commandName}`);
     }
     let property = [];
     [commandName, ...property] = commandName
@@ -170,11 +180,6 @@ async function handleMiddleWare({
         obj[prop] = true;
       }
     }
-
-    let command =
-      commands[commandName] || commands[commandName.toLowerCase()] || null;
-    const styler = new CassidyResponseStylerControl(command?.style ?? {});
-    styler.activateAllPresets();
 
     const runObjects = {
       api: new Proxy(api || {}, {
@@ -208,7 +213,7 @@ api.${key}(${args
           return;
         },
       }),
-      styler,
+
       event,
       commands,
       prefix: currentPrefix || prefix,
@@ -239,6 +244,25 @@ api.${key}(${args
       recentCMD,
     };
     runObjects.allObj = runObjects;
+    let command2 =
+      commands[commandName] || commands[commandName.toLowerCase()] || null;
+    if (!isLink) {
+      command = command2;
+    } else if (command && command2 && isLink) {
+      command = { ...command2, meta: command.meta };
+    } else {
+      return runObjects.api.sendMessage(
+        `❌ Internal Middleware Issue: Cannot find linkTo ${commandName} => ${JSON.stringify(
+          event.propertyArray
+        )}`,
+        event.threadID
+      );
+    }
+    runObjects.command = command;
+    const styler = new CassidyResponseStylerControl(command?.style ?? {});
+    styler.activateAllPresets();
+    runObjects.styler = styler;
+
     /*console.log({ ...event, participantIDs: "Hidden" });*/
     async function next() {
       pluginCount++;

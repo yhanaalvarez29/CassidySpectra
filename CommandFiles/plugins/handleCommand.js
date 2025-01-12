@@ -187,6 +187,7 @@ export async function use(obj) {
       }
     }
     obj.isThreadAdmin = isThreadAdmin;
+    
 
     const {
       meta,
