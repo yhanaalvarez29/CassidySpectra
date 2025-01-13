@@ -77,11 +77,16 @@ import { checkCompatibility } from "./util.js";
 export async function loadPlugin(name, allPlugins, force) {
   let plugin;
   const fileContent = fs.readFileSync(`CommandFiles/plugins/${name}`, "utf8");
+  let err1;
   try {
-    plugin = await import(`../../CommandFiles/plugins/${name}`);
+    // plugin = await import(`../../CommandFiles/plugins/${name}`);
+    // plugin = require(`../../CommandFiles/plugins/${name}`);
+    plugin = require(process.cwd() + `/CommandFiles/plugins/${name}`);
   } catch (err) {
     try {
-      plugin = await import(`../../CommandFiles/commands/${name}`);
+      // plugin = await import(`../../CommandFiles/commands/${name}`);
+      plugin = require(`../../CommandFiles/commands/${name}`);
+      err1 = err;
     } catch (err2) {
       global.logger(err.message, err2.message);
     }

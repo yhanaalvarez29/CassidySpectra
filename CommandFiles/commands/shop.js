@@ -1,4 +1,5 @@
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { stoData } from "../modules/stoData.js";
 import { toTitleCase, UNIRedux } from "../modules/unisym.js";
 import { ShopClass } from "../plugins/shopV2.js";
 
@@ -21,49 +22,6 @@ export const style = {
   titleFont: "bold",
   contentFont: "fancy",
 };
-const stoData = {
-  bank: {
-    price: 1000,
-    key: "cbankStorage",
-  },
-  harvest: {
-    price: 50,
-    key: "plantMaxZ",
-  },
-  mine: {
-    price: 1000,
-    key: "mineMaxZ",
-  },
-  littlejohn: {
-    price: 20,
-    key: "littlejohnMaxZ",
-  },
-  recycle: {
-    price: 50,
-    key: "recycleMaxZ",
-  },
-  resto: {
-    price: 100,
-    key: "restoMaxZ",
-  },
-  plantita: {
-    price: 100,
-    key: "plantitaMaxZ",
-  },
-  spaceexplorer: {
-    price: 1000,
-    key: "spaceexplorerMaxZ",
-  },
-  deepseadiver: {
-    price: 1000,
-    key: "deepseadiverMaxZ",
-  },
-  wizardsforge: {
-    price: 1000,
-    key: "wizardsforgeMaxZ",
-  },
-};
-
 global.stoData = stoData;
 const { UserSorter } = global.utils; //{ users, limit = null, sortBy = "money", defaultValue = 0 }
 

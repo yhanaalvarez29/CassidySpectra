@@ -161,13 +161,7 @@ export function use(obj) {
         options.body = name
           ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
               UNIRedux.charm
-            } **LV${inst.level}** (${
-              inst.exp
-            }/${inst.getNextEXP()})\n$**${userMoney}** ${UNIRedux.charm} 🎒 **${
-              inventory.length
-            }/${global.Cassidy.invLimit}** ${UNIRedux.charm} 🗃️ **${
-              boxItems.length
-            }/100**`
+            } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
           : options.body;
       }
       if (!options.noStyle) {

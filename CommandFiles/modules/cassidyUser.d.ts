@@ -118,6 +118,7 @@ declare module "cassidy-userData" {
     tilesKeys?: string[];
     shopInv: { [key: string]: boolean };
     boxItems: InventoryItem[];
+    battlePoints: number;
   };
 
   type NullableUserData = {

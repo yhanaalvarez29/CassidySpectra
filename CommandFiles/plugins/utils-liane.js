@@ -10,6 +10,8 @@ export const meta = {
 };
 import axios from "axios";
 import fs from "fs";
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { stoData } from "../modules/stoData.js";
 const moment = require("moment-timezone");
 
 /**
@@ -20,7 +22,7 @@ const moment = require("moment-timezone");
  * @param {string} [timeZone='Asia/Manila'] - The timezone to use (default is Philippines timezone).
  * @returns {boolean} - Returns true if the current time is within the range, otherwise false.
  */
-function isTimeAvailable(msStart, msEnd, timeZone = "Asia/Manila") {
+export function isTimeAvailable(msStart, msEnd, timeZone = "Asia/Manila") {
   const now = moment.tz(timeZone);
 
   const msCurrent =
@@ -32,14 +34,14 @@ function isTimeAvailable(msStart, msEnd, timeZone = "Asia/Manila") {
   return msCurrent >= msStart && msCurrent <= msEnd;
 }
 
-class ItemLister {
+export class ItemLister {
   constructor(inventory) {
     this.inventory = inventory;
   }
   minified(hasKey) {
     return this.raw()
       .map(
-        (item) => `${item.icon} ${item.name} ${hasKey ? `(${item.key})` : ""}`,
+        (item) => `${item.icon} ${item.name} ${hasKey ? `(${item.key})` : ""}`
       )
       .join("\n");
   }
@@ -47,7 +49,7 @@ class ItemLister {
     return this.raw()
       .map(
         (item) =>
-          `${item.icon} **${item.name}** ${hasKey ? `(${item.key})` : ""}`,
+          `${item.icon} **${item.name}** ${hasKey ? `(${item.key})` : ""}`
       )
       .join("\n");
   }
@@ -59,7 +61,9 @@ class ItemLister {
         if (!isNaN(price) && price > 0) {
           isOkay = true;
         }
-        return `${item.icon} **${item.name}**${hasPrice ? ` - ${isOkay ? `$**${item.price}**` : "🚫"}` : ""}\n✦ ${item.flavorText}`;
+        return `${item.icon} **${item.name}**${
+          hasPrice ? ` - ${isOkay ? `$**${item.price}**` : "🚫"}` : ""
+        }\n✦ ${item.flavorText}`;
       })
       .join("\n\n");
   }
@@ -148,7 +152,7 @@ class BulkUpdater {
         }
         tradeVentory.deleteRefs(tradeItems);
         tradeVentory.add(tradeItems);
-      },
+      }
     );
 
     const bulk2 = await bulk.mapUsers(async (userID, value) => {
@@ -239,7 +243,7 @@ class BulkUpdater {
     return new BulkUpdater(userMap);
   }
 }
-class Slicer {
+export class Slicer {
   constructor(array = [], limit = 10) {
     this.array = Array.from(array);
     this.limit = limit;
@@ -248,7 +252,7 @@ class Slicer {
     return Slicer.byPageArray(this.array, page, this.limit);
   }
   get pagesLength() {
-    return Math.floor(this.array.length / (this.limit || 10))
+    return Math.floor(this.array.length / (this.limit || 10));
   }
   static parseNum(page) {
     page = parseInt(page);
@@ -349,7 +353,7 @@ class ArgsHelper extends Array {
               : String(value);
           return true;
         },
-      },
+      }
     );
   }
   set properties(values) {
@@ -472,7 +476,7 @@ class TagParser {
     }
     const existingTags = TagParser.mainParser(this.args[index]);
     const updatedTags = existingTags.filter(
-      (tag) => !tagNames.includes(tag.tag),
+      (tag) => !tagNames.includes(tag.tag)
     );
     this.args[index] = `[${updatedTags
       .map((tag) => `${tag.tag}=${tag.value}`)
@@ -485,7 +489,7 @@ class TagParser {
     }
     const existingTags = TagParser.mainParser(this.args[index]);
     const updatedTags = existingTags.map((tag) =>
-      tag.tag === tagName ? { ...tag, value: newValue } : tag,
+      tag.tag === tagName ? { ...tag, value: newValue } : tag
     );
     this.args[index] = `[${updatedTags
       .map((tag) => `${tag.tag}=${tag.value}`)
@@ -513,7 +517,7 @@ export async function use(obj) {
               resolve(info.messageID);
             });
           },
-          isReply ? this.event.messageID : undefined,
+          isReply ? this.event.messageID : undefined
         );
         return this;
       }
@@ -565,7 +569,7 @@ export async function use(obj) {
       if (!this.isLoaded()) {
         return api.sendMessage(
           "[Attachment] Image not yet loaded.",
-          optionalThreadID || this.event.threadID,
+          optionalThreadID || this.event.threadID
         );
       }
       try {
@@ -579,7 +583,11 @@ export async function use(obj) {
         return payload;
       } catch (error) {
         await api.sendMessage(
-          `[Attachment] Failed sending attachment.\n${error instanceof Error ? error.toString() : JSON.stringify(error, null, 2)}`,
+          `[Attachment] Failed sending attachment.\n${
+            error instanceof Error
+              ? error.toString()
+              : JSON.stringify(error, null, 2)
+          }`
         );
         return null;
       }
@@ -641,6 +649,7 @@ export async function use(obj) {
       initialStorage = 30,
       itemData = [],
       actionEmoji = "🔖",
+      stoData,
     }) {
       this.key = key;
       this.verb = verb;
@@ -649,6 +658,7 @@ export async function use(obj) {
       this.checkIcon = checkIcon;
       this.actionEmoji = actionEmoji;
       this.storage = initialStorage;
+      this.stoData = stoData;
       this.itemData = itemData.map((i) => {
         return {
           ...i,
@@ -658,129 +668,267 @@ export async function use(obj) {
       });
     }
 
+    /**
+     * @type {CommandEntry}
+     */
     async simulateAction(context = obj) {
       try {
-        const { input, output, money, args, prefix, CassExpress } = context;
-        if (args[0] === "total") {
-          const { [this.key + "Total"]: totalItems = {}, name } =
-            await money.get(input.senderID);
-          if (!name) {
-            return output.reply(
-              "❌ Please register first using the identity-setname command.",
-            );
-          }
+        const { input, output, money, args, prefix, CassExpress, Inventory } =
+          context;
+        const self = this;
+        const home = new ReduxCMDHome({ isHypen: true }, [
+          {
+            key: "total",
+            description:
+              "Displays the total number of items earned, along with detailed information such as rarity, processing time, price range, and rankings based on the most frequently earned item types.",
+            aliases: ["-t"],
+            async handler() {
+              const { [self.key + "Total"]: totalItems = {}, name } =
+                await money.get(input.senderID);
+              if (!name) {
+                return output.reply(
+                  "❌ Please register first using the identity-setname command."
+                );
+              }
 
-          let result = `📝 **Total ${this.verb}s Items**:\n\n`;
-          const sortedItems = Object.entries(totalItems).sort(
-            (a, b) => b[1] - a[1],
-          );
-          sortedItems.forEach(([itemName, itemCount]) => {
-            const data = this.itemData.find((item) => item.name === itemName);
-            result += `${this.checkIcon} ${data.icon} **${itemName}**\nSold Amount: ${itemCount}\nRarity: ${100 - data.chance * 100}%\nProcessing Time: ${data.delay} minutes.\nPrice Range:\nBetween ${data.priceA} and ${data.priceB}.\n\n`;
-          });
-          const totalHarvest = Object.values(totalItems).reduce(
-            (acc, count) => acc + count,
-            0,
-          );
-          result += `\n**Total**: ${totalHarvest}`;
-          return output.reply(result);
-        }
+              let result = `📝 **Total ${self.verb}s Items**:\n\n`;
+              const sortedItems = Object.entries(totalItems).sort(
+                (a, b) => b[1] - a[1]
+              );
+              sortedItems.forEach(([itemName, itemCount]) => {
+                const data = self.itemData.find(
+                  (item) => item.name === itemName
+                );
+                result += `${self.checkIcon} ${
+                  data.icon
+                } **${itemName}**\nSold Amount: ${itemCount}\nRarity: ${
+                  100 - data.chance * 100
+                }%\nProcessing Time: ${
+                  data.delay
+                } minutes.\nPrice Range:\nBetween ${data.priceA} and ${
+                  data.priceB
+                }.\n\n`;
+              });
+              const totalHarvest = Object.values(totalItems).reduce(
+                (acc, count) => acc + count,
+                0
+              );
+              result += `\n**Total**: ${totalHarvest}`;
+              return output.reply(result);
+            },
+          },
+          {
+            key: "collect",
+            description: "Collect items that have finished processing.",
+            aliases: ["-c"],
+            async handler() {
+              const currentTimestamp = Date.now();
 
-        const currentTimestamp = Date.now();
+              const {
+                money: userMoney,
+                [self.key + "Stamp"]: actionStamp,
+                [self.key + "MaxZ"]: actionMax = self.storage,
+                [self.key + "Total"]: totalItems = {},
+                name,
+              } = await money.get(input.senderID);
+              if (!name) {
+                return output.reply(
+                  "❌ Please register first using the identity-setname command."
+                );
+              }
 
-        const {
-          money: userMoney,
-          [this.key + "Stamp"]: actionStamp,
-          [this.key + "MaxZ"]: actionMax = this.storage,
-          [this.key + "Total"]: totalItems = {},
-          name,
-        } = await money.get(input.senderID);
-        if (!name) {
-          return output.reply(
-            "❌ Please register first using the identity-setname command.",
-          );
-        }
+              let text = "";
+              let newMoney = userMoney;
+              let totalYield = 0;
+              let failYield = 0;
 
-        let text = "";
-        let newMoney = userMoney;
-        let totalYield = 0;
-        let failYield = 0;
+              if (!actionStamp) {
+                text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no ${self.verb} is in progress. Starting ${self.verbing} ${self.verb} now, come back later!`;
+              } else {
+                const elapsedTime =
+                  (currentTimestamp - actionStamp) / 1000 / 60;
 
-        if (!actionStamp) {
-          text = `${this.actionEmoji} Cannot perform ${this.verbing} action since no ${this.verb} is in progress. Starting ${this.verbing} ${this.verb} now, come back later!`;
-        } else {
-          const elapsedTime = (currentTimestamp - actionStamp) / 1000 / 60;
+                let harvestedItems = [];
+                for (const item of self.itemData) {
+                  let yieldAmount = Math.max(
+                    0,
+                    Math.floor(elapsedTime / item.delay)
+                  );
+                  const yieldArray = Array(yieldAmount).fill();
+                  yieldAmount = yieldArray.reduce(
+                    (acc) => acc + (Math.random() < item.chance ? 1 : 0),
+                    0
+                  );
+                  if (totalYield + yieldAmount > actionMax) {
+                    failYield += totalYield + yieldAmount - actionMax;
+                    yieldAmount = actionMax - totalYield;
+                  }
 
-          let harvestedItems = [];
-          for (const item of this.itemData) {
-            let yieldAmount = Math.max(0, Math.floor(elapsedTime / item.delay));
-            const yieldArray = Array(yieldAmount).fill();
-            yieldAmount = yieldArray.reduce(
-              (acc) => acc + (Math.random() < item.chance ? 1 : 0),
-              0,
-            );
-            if (totalYield + yieldAmount > actionMax) {
-              failYield += totalYield + yieldAmount - actionMax;
-              yieldAmount = actionMax - totalYield;
-            }
+                  if (yieldAmount <= 0) {
+                    continue;
+                  }
+                  let price = Math.floor(
+                    Math.random() * (item.priceB - item.priceA + 1) +
+                      item.priceA
+                  );
+                  price = CassExpress.farmUP(price, totalItems);
 
-            if (yieldAmount <= 0) {
-              continue;
-            }
-            let price = Math.floor(
-              Math.random() * (item.priceB - item.priceA + 1) + item.priceA,
-            );
-            price = CassExpress.farmUP(price, totalItems);
+                  totalYield += yieldAmount;
+                  if (!totalItems[item.name]) {
+                    totalItems[item.name] = 0;
+                  }
+                  totalItems[item.name] += yieldAmount;
 
-            totalYield += yieldAmount;
-            if (!totalItems[item.name]) {
-              totalItems[item.name] = 0;
-            }
-            totalItems[item.name] += yieldAmount;
+                  const total = yieldAmount * price;
+                  harvestedItems.push({
+                    name: item.name,
+                    icon: item.icon,
+                    yieldAmount,
+                    price,
+                    total,
+                  });
+                  newMoney += total;
+                }
 
-            const total = yieldAmount * price;
-            harvestedItems.push({
-              name: item.name,
-              icon: item.icon,
-              yieldAmount,
-              price,
-              total,
-            });
-            newMoney += total;
-          }
+                text = `📝 **Summary**:\n`;
+                let types = 0;
+                harvestedItems = harvestedItems.sort(
+                  (a, b) => a.total - b.total
+                );
+                harvestedItems.forEach((item) => {
+                  if (item.yieldAmount < 1) {
+                    return;
+                  }
+                  text += `${self.checkIcon} ${item.icon} **x${item.yieldAmount}** **${item.name}(s)** sold for **${item.price}$** each, total: **${item.total}$**\n`;
+                  types++;
+                });
+                if (failYield > 0) {
+                  text += `🥲 **Failed** ${self.verbing} ${failYield} **item(s)** due to full storage.\n`;
+                }
+                if (types === 0) {
+                  text += `\n🥲 No items ${self.pastTense}, you should wait for the next action!\n`;
+                } else {
+                  text += `\n💗 ${self.pastTense} ${types} type(s) of items.\n`;
+                }
+                text += `\n🗃️ Storage: `;
+                text += `${totalYield.toLocaleString()}/${Number(
+                  actionMax
+                ).toLocaleString()} (${Math.floor(
+                  (totalYield / actionMax) * 100
+                )}%)\n✓ You can **upgrade** this storage by using **${prefix}${
+                  self.key
+                }-upgrade**.`;
+                text += `\n\n✨ **Total Earnings**: $**${(
+                  newMoney - userMoney
+                ).toLocaleString()}💵**\n💰 **Your Balance**: $**${newMoney.toLocaleString()}**💵`;
+                text += `\n\n${self.actionEmoji} Starting another ${
+                  self.verbing
+                } cycle, please come back after ${Math.floor(
+                  (currentTimestamp - actionStamp) / 1000 / 60
+                )} minutes if you want to get the same amount of earnings.`;
+                // text += `\n\n`;
+              }
+              await money.set(input.senderID, {
+                money: newMoney,
+                [self.key + "Stamp"]: currentTimestamp,
+                [self.key + "MaxZ"]: actionMax,
+                [self.key + "Total"]: totalItems,
+              });
 
-          text = `📝 **Summary**:\n`;
-          let types = 0;
-          harvestedItems = harvestedItems.sort((a, b) => a.total - b.total);
-          harvestedItems.forEach((item) => {
-            if (item.yieldAmount < 1) {
-              return;
-            }
-            text += `${this.checkIcon} ${item.icon} ${item.yieldAmount} **${item.name}(s)** sold for **${item.price}$** each, total: **${item.total}$**\n`;
-            types++;
-          });
-          if (failYield > 0) {
-            text += `🥲 **Failed** ${this.verbing} ${failYield} **item(s)** due to full storage.\n`;
-          }
-          if (types === 0) {
-            text += `\n🥲 No items ${this.pastTense}, you should wait for the next action!\n`;
-          } else {
-            text += `\n💗 ${this.pastTense} ${types} type(s) of items.\n`;
-          }
-          text += `\n🗃️ Storage: `;
-          text += `${totalYield}/${actionMax}\n✓ You can **upgrade** this storage by checking the **shop**.`;
-          text += `\n\n✨ **Total Earnings**: ${newMoney - userMoney}$\n💰 **Your Balance**: ${newMoney}$`;
-          text += `\n\n${this.actionEmoji} Starting another ${this.verbing} cycle, please come back after ${Math.floor((currentTimestamp - actionStamp) / 1000 / 60)} minutes if you want to get the same amount of earnings.`;
-          text += `\n\nYou can also type ${prefix}${this.key} total`;
-        }
-        await money.set(input.senderID, {
-          money: newMoney,
-          [this.key + "Stamp"]: currentTimestamp,
-          [this.key + "MaxZ"]: actionMax,
-          [this.key + "Total"]: totalItems,
-        });
+              output.reply(text);
+            },
+          },
+          {
+            key: "upgrade",
+            description: "Upgrade your storage.",
+            aliases: ["-u"],
+            async handler() {
+              const data = self.stoData ?? stoData[self.key];
+              if (!data) {
+                return output.wentWrong();
+              }
+              const {
+                money: userMoney,
+                battlePoints: bp = 0,
+                [self.key + "Stamp"]: actionStamp,
+                [self.key + "MaxZ"]: actionMax = self.storage,
+                [self.key + "Total"]: totalItems = {},
+                [data.key]: storage,
+                [`${data.key}_upgrades`]: upgrades = 0,
+                inventory: inv,
+                name,
+              } = await money.get(input.senderID);
+              const inventory = new Inventory(inv);
 
-        output.reply(text);
+              if (!storage) {
+                return output.reply(
+                  `🎀 You cannot upgrade without playing the game.`
+                );
+              }
+
+              let hasDiscount = inventory.has("silkRibbon");
+              let multiplier = 1;
+              if (hasDiscount) {
+                multiplier = 0.75;
+              }
+              let price = Math.floor(data.price * 2 ** upgrades * multiplier);
+              if (isNaN(price)) {
+                return output.wentWrong();
+              }
+              if (bp < price) {
+                return output.reply(
+                  `❌ The price of "${
+                    self.key
+                  }" **storage** upgrade is **${price.toLocaleString()}**💷 but you only have **${bp.toLocaleString()}**💷.\n\n**Before Upgrading**: ${Number(
+                    storage
+                  ).toLocaleString()} 🗃️\n**After Upgrading**: ${(
+                    storage * 2
+                  ).toLocaleString()} 🗃️`
+                );
+              }
+
+              const i = await output.reply(
+                `⚠️ Buy "${
+                  self.key
+                }" storage upgrade for **${price.toLocaleString()}**💷?\n**Before Upgrading**: ${Number(
+                  storage
+                ).toLocaleString()} 🗃️\n**After Upgrading**: ${(
+                  storage * 2
+                ).toLocaleString()} 🗃️\n\n**Battle Points**\nBefore - **${bp.toLocaleString()}**💷\nAfter - **${(
+                  bp - price
+                ).toLocaleString()}**💷\n\n***Reply anything to confirm***`
+              );
+
+              input.setReply(i.messageID, {
+                key: self.key,
+                /**
+                 * @type {CommandEntry}
+                 */
+                async callback({ output }) {
+                  input.delReply(i.messageID);
+                  await money.set(input.senderID, {
+                    [`${data.key}_upgrades`]: upgrades + 1,
+                    battlePoints: bp - price,
+                    [data.key]: storage * 2,
+                  });
+                  await output.replyStyled(
+                    `✅ Successfully purchased "${self.key}"${
+                      hasDiscount ? "25% OFF! 🎀" : ""
+                    } storage upgrade for ${price}💷!\n\n**Old Storage**: ${storage} 🗃️\n**New Storage**: ${
+                      storage * 2
+                    } 🗃️\n**New Battle Points**: ${bp - price}💷 (-${price})`,
+                    context.command?.style ?? {
+                      title: "🛒 Upgrader",
+                      titleFont: "bold",
+                      contentFont: "fancy",
+                    }
+                  );
+                },
+              });
+            },
+          },
+        ]);
+        return home.runInContext(context);
       } catch (error) {
         output.error(error);
       }
@@ -793,37 +941,45 @@ export async function use(obj) {
     }
     async selectItem({
       format,
-      onItem = async function() {},
+      onItem = async function () {},
       head = "",
       bottom = "",
       onWrong,
     } = {}) {
       const { output, money, Inventory } = obj;
       format ??= (inv) => {
-        return [...inv].map((item, n) => `${n + 1} ${item.icon} **${item.name}** (${item.key})\n`);
-      }
+        return [...inv].map(
+          (item, n) => `${n + 1} ${item.icon} **${item.name}** (${item.key})\n`
+        );
+      };
       const self = this;
-      return output.waitForReply(`${head}\n${await format(this.inv)}\n${bottom}`.trim(), async (ctx) => {
-        const { repObj: { resolve } } = ctx;
-        let targetItem = self.inv.find((_, i) => String(i) === String(parseInt(ctx.input.words[0]) + 1));
-        if (!targetItem) {
-          if (onWrong) {
-            return await onWrong(ctx);
+      return output.waitForReply(
+        `${head}\n${await format(this.inv)}\n${bottom}`.trim(),
+        async (ctx) => {
+          const {
+            repObj: { resolve },
+          } = ctx;
+          let targetItem = self.inv.find(
+            (_, i) => String(i) === String(parseInt(ctx.input.words[0]) + 1)
+          );
+          if (!targetItem) {
+            if (onWrong) {
+              return await onWrong(ctx);
+            }
+            return ctx.output.reply(`❌ Item not found.`);
           }
-          return ctx.output.reply(`❌ Item not found.`);
+          let { inventory: newInv } = await ctx.money.get(ctx.input.senderID);
+          newInv = new Inventory(newInv);
+          if (![...newInv].some((i) => i === targetItem)) {
+            return ctx.output.reply(`❌ Missing item!`);
+          }
+          await onItem(ctx, targetItem);
+          return resolve(targetItem);
         }
-        let { inventory: newInv } = await ctx.money.get(ctx.input.senderID);
-        newInv = new Inventory(newInv);
-        if (![...newInv].some(i => i === targetItem)) {
-          return ctx.output.reply(`❌ Missing item!`);
-        }
-        await onItem(ctx, targetItem);
-        return resolve(targetItem);
-      });
+      );
     }
   }
   obj.ItemPrompt = ItemPrompt;
-  
 
   obj.GameSimulator = GameSimulator;
   obj.isTimeAvailable = isTimeAvailable;
