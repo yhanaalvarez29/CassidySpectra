@@ -153,8 +153,8 @@ export function use(obj) {
           cassEXP,
           name,
           money: userMoney,
-          inventory,
-          boxItems,
+          inventory = [],
+          boxItems = [],
         } = await obj.money.getCache(options.threadID ?? input.senderID);
         const inst = new CassEXP(cassEXP);
 
