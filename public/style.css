@@ -115,6 +115,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
+  font-size: 15px;
 }
 
 * {
@@ -403,7 +404,7 @@ hr {
   word-wrap: break-word;
   white-space: pre-wrap;
   padding: 8px 12px;
-  max-width: 33.33%;
+  max-width: min(70%, 564px);
 }
 
 .user-message:first-of-type {
@@ -436,8 +437,7 @@ hr {
   transition: background-color 0.3s ease, max-height 0.3s ease;
   white-space: pre-wrap;
   padding: 8px 12px;
-  width: 60%;
-  max-width: 564px;
+  max-width: min(70%, 564px);
 }
 
 .response-message:first-of-type {
