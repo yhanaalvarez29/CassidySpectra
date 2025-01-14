@@ -55,6 +55,7 @@ window.onload = async () => {
   } = await axios.get("/ws-url");*/
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+  const ccc = document.querySelector("#ccc");
   // You can freely customize this ws.onopen, just make sure it doesn't do stuffs that may break the page :)
   ws.onopen = () => {
     ws.send(
@@ -72,15 +73,15 @@ window.onload = async () => {
         break;
       case "message":
         handleMessage(data);
-        smoothScroll();
+        smoothScroll2(ccc);
         break;
       case "message_reply":
         handleMessage(data);
-        smoothScroll();
+        smoothScroll2(ccc);
         break;
       case "message_edit":
         handleMessageEdit(data);
-        smoothScroll();
+        smoothScroll2(ccc);
         break;
     }
   };
@@ -101,7 +102,7 @@ window.onload = async () => {
     return appendRep({ body: c.body, messageID: c.messageID, chatPad });
   });
   // After a lot of appending, we gonna scroll the entire page.
-  smoothScroll();
+  smoothScroll2(ccc);
 };
 function pushConvo(data) {
   const convo = loadConvo();
@@ -160,7 +161,7 @@ function xCopy(id) {
 function appendSend({ message, chatPad }) {
   const elem = document.createElement("span");
   pushConvo({ message });
-  elem.innerHTML += `<div class="user-message-container"><div class="user-message gradientTab">${autoAnchor(
+  elem.innerHTML += `<div class="user-message-container"><div class="user-message">${autoAnchor(
     sanitize(message)
   )}</div></div>`;
   chatPad.appendChild(elem);

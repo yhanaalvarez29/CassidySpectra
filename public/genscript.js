@@ -2,10 +2,10 @@ function toggleMenu() {
   const menuOptions = document.getElementById("menuOptions");
   menuOptions.classList.toggle("active-menu");
 
-  const header = document.getElementById("header");
-  header.style.height = menuOptions.classList.contains("active-menu")
-    ? menuOptions.scrollHeight + 20 + "px"
-    : "0px";
+  // const header = document.getElementById("header");
+  // header.style.height = menuOptions.classList.contains("active-menu")
+  //   ? `${menuOptions.scrollHeight + header.clientHeight}px`
+  //   : ``;
 }
 function limitStr(str, lim = 20) {
   return str.length > lim ? str.slice(0, lim) + "..." : str;
@@ -62,6 +62,35 @@ function smoothScroll() {
 
   requestAnimationFrame(scroll);
 }
+
+function smoothScroll2(container = document.documentElement) {
+  const duration = 1000;
+  const startTime = performance.now();
+
+  const startY = container.scrollTop;
+  const endY = container.scrollHeight - container.clientHeight;
+
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function scroll() {
+    const currentTime = performance.now();
+    const elapsedTime = currentTime - startTime;
+
+    if (elapsedTime < duration) {
+      const easedTime = easeOutExpo(elapsedTime / duration);
+      const newY = startY + (endY - startY) * easedTime;
+      container.scrollTo(0, newY);
+      requestAnimationFrame(scroll);
+    } else {
+      container.scrollTo(0, endY);
+    }
+  }
+
+  requestAnimationFrame(scroll);
+}
+
 function copyToClipboard(text) {
   var textarea = document.createElement("textarea");
   textarea.value = text;

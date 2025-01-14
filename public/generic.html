@@ -1,43 +1,62 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="style.css" />
+    <audio src="PurpleDream.mp3" autoplay loop></audio>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title }}</title>
-  <link rel="stylesheet" href="style.css">
-  <audio src="PurpleDream.mp3" autoplay loop></audio>
-
-</head>
-
-<body>
-  <div class="header" id="header">
-    <div class="replitHb">
-      <div class="hamburger" onclick="toggleMenu()">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div style="transform: scale(120%);" class="bar"></div>
+  <body>
+    <div class="header" id="header">
+      <span
+        style="
+          display: flex;
+          flex-direction: row;
+          gap: 5px;
+          justify-content: flex-start;
+          align-items: baseline;
+        "
+        ><h2
+          onclick="window.location.href = '/'"
+          class="replit"
+          style="flex: 1"
+        >
+          Cassidy<span class="gradientFont">BoT</span>
+        </h2>
+        <h4 class="replit" style="opacity: 0.6">Chatbot System</h4></span
+      >
+      <div class="replitHb">
+        <div class="hamburger" onclick="toggleMenu()">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
       </div>
     </div>
+    <div class="menu-options" id="menuOptions">
+      <a href="#" onclick="handleOptionClick('/')"><strong>Home</strong></a>
+      <a href="#" onclick="handleOptionClick('/f:chatv2')"
+        ><strong>Chat</strong></a
+      >
+      <a href="#" onclick="handleOptionClick('/f:underfight')"
+        ><strong>Underfight</strong></a
+      >
+      <a href="#" onclick="handleOptionClick('/f:password')"
+        ><strong>Login</strong></a
+      >
+      <a href="#" onclick="handleOptionClick('/f:stater')"
+        ><strong>State Extractor</strong></a
+      >
+      <a
+        href="#"
+        onclick="handleOptionClick('https://liaspark.chatbotcommunity.ltd')"
+        ><strong>API</strong></a
+      >
+    </div>
 
-    <h2 onclick="window.location.href = '/'" class="replit">Cassidy<span class="gradientFont">BoT</span></h2>
-    <h4 class="replit" style="top: 50px; opacity: 0.6">Chatbot System</h4>
-  </div>
-
-  <div class="menu-options" id="menuOptions">
-    <a href="#" onclick="handleOptionClick('/')"><strong>Home</strong></a>
-    <a href="#" onclick="handleOptionClick('/f:chatv2')"><strong>Chat</strong></a>
-    <a href="#" onclick="handleOptionClick('/f:underfight')"><strong>Underfight</strong></a>
-    <a href="#" onclick="handleOptionClick('/f:password')"><strong>Login</strong></a>
-    <a href="#" onclick="handleOptionClick('/f:stater')"><strong>State Extractor</strong></a>
-    <a href="#" onclick="handleOptionClick('https://liaspark.chatbotcommunity.ltd')"><strong>API</strong></a>
-  </div>
-
-  <br><br><br><br><br>
-  {{ content }}
-  <script src="genscript.js"></script>
-  
-</body>
-
+    {{ content }}
+    <script src="genscript.js"></script>
+  </body>
 </html>
-
