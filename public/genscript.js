@@ -21,11 +21,17 @@ function mapKey(meta, indent = 0) {
     .map(([key, value]) => {
       if (Array.isArray(value)) {
         const listItems = value.map((item) => `<li>${item}</li>`).join("");
-        return `<p style="margin-left: ${indent * 20}px;"><strong>${key}</strong>:<ul>${listItems}</ul></p>`;
+        return `<p style="margin-left: ${
+          indent * 20
+        }px;"><strong>${key}</strong>:<ul>${listItems}</ul></p>`;
       } else if (typeof value === "object" && value !== null) {
-        return `<p style="margin-left: ${indent * 20}px;"><strong>${key}</strong>:<br>${mapKey(value, indent + 1)}</p>`;
+        return `<p style="margin-left: ${
+          indent * 20
+        }px;"><strong>${key}</strong>:<br>${mapKey(value, indent + 1)}</p>`;
       } else {
-        return `<p style="margin-left: ${indent * 20}px;"><strong>${key}</strong>: ${value}</p>`;
+        return `<p style="margin-left: ${
+          indent * 20
+        }px;"><strong>${key}</strong>: ${value}</p>`;
       }
     })
     .join("\n");
@@ -66,10 +72,13 @@ function copyToClipboard(text) {
 }
 
 function sanitizeHTML(input) {
-  var sanitizedText = input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  sanitizedText = sanitizedText.replace(/\n/g, "<br>");
-  sanitizedText = sanitizedText.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-  sanitizedText = sanitizedText.replace(/&/g, "&amp;");
+  // var sanitizedText = input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // sanitizedText = sanitizedText.replace(/\n/g, "<br>");
+  // sanitizedText = sanitizedText.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+  // sanitizedText = sanitizedText.replace(/&/g, "&amp;");
+  const i = document.createElement("div");
+  i.innerText = input;
+  const sanitizedText = i.innerHTML;
   return autoAnchor(sanitizedText);
 }
 function autoAnchor(text) {
@@ -83,7 +92,9 @@ function autoAnchor(text) {
     if (!/^https?:\/\//i.test(url)) {
       url = `https://${url}`;
     }
-    return `<strong><a href="javascript:void(0)" style="color: white;" onclick="window.open('${url}')">${match}</a><strong>`;
+    return `<strong><a href="${sanitizeHTML(
+      url
+    )}" style="color: white;" target="_blank">${match}</a><strong>`;
   });
 
   return textWithAnchors;

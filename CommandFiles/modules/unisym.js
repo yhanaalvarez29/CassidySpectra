@@ -15,6 +15,7 @@ export function secureRandom() {
 }
 
 export class UNIRedux {
+  static specialSpace = "ᅠ";
   static burger = "☰"; // burger menu
   static standardLine = "━━━━━━━━━━━━━━━"; // Line
   static section = "§"; // Section sign

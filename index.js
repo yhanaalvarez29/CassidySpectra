@@ -38,6 +38,5 @@ runChildProcess();
 setInterval?.(async () => {
   try {
     await axios.get(`http://localhost:3000`);
-    console.log(`Server Healthy!`);
   } catch (err) {}
 }, 10000);
