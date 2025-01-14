@@ -87,20 +87,19 @@ export async function reply(cctx) {
     const bet = receive.bet;
     let mid = null;
     let sss = 0;
+    let nextPlayerr = players.find((i) => i !== players[0]);
+    if (!nextPlayerr) {
+      return output.wentWrong();
+    }
 
     const playTurn = async ({ output, input, repObj: receive }) => {
-      const currentPlayer = players[currentIndex];
-      const nextPlayer = players[1 - currentIndex];
       try {
         input.delReply(gameMessage.messageID);
       } catch {}
 
-      const playerInfo = await moneyH.getCache(currentPlayer);
-      const { name: playerName } = playerInfo;
-
       input.setReply(gameMessage.messageID, {
         key: "shoot",
-        author: currentPlayer,
+        author: nextPlayerr,
         /**
          * @type {CommandEntry}
          */
@@ -111,6 +110,7 @@ export async function reply(cctx) {
           const ath = receive.author;
           const currentPlayer = ath;
           const nextPlayer = players.find((i) => i !== ath);
+          nextPlayerr = nextPlayer;
           if (!nextPlayer || !ath) {
             return output.wentWrong();
           }
