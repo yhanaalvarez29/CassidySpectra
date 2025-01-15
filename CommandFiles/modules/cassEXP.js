@@ -372,3 +372,219 @@ class EXP {
     return CassEXP.getLevelFromEXP(this.exp);
   }
 }
+
+/**
+ * @typedef {Object} Quest
+ * @property {string} name - The name of the quest.
+ * @property {string} description - A brief description of the quest.
+ * @property {number} currentSteps - The current progress of the quest.
+ * @property {number} totalSteps - The total steps required to complete the quest.
+ * @property {boolean} isComplete - Indicates if the quest is complete.
+ */
+
+/**
+ * Class representing a quest system.
+ */
+export class CassQuest {
+  constructor(quests = {}) {
+    /**
+     * @type {Object.<string, Quest>}
+     * @private
+     */
+    this.quests = quests;
+  }
+
+  raw() {
+    return JSON.parse(JSON.stringify(this.quests));
+  }
+
+  /**
+   * Creates a new quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @param {string} name - The name of the quest.
+   * @param {string} description - A description of the quest.
+   * @param {number} [totalSteps=10] - The total steps to complete the quest.
+   * @throws {Error} If the quest already exists.
+   */
+  newQuest(questKey, name, description, totalSteps = 10) {
+    if (this.quests[questKey]) {
+      throw new Error(`Quest with key ${questKey} already exists.`);
+    }
+    this.quests[questKey] = {
+      name,
+      description,
+      currentSteps: 0,
+      totalSteps,
+      isComplete: false,
+    };
+  }
+
+  /**
+   * Deletes a quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @throws {Error} If the quest does not exist.
+   */
+  deleteQuest(questKey) {
+    if (!this.quests[questKey]) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    delete this.quests[questKey];
+  }
+
+  /**
+   * Completes a quest by deleting it, but only if the quest is complete.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @throws {Error} If the quest is not complete or doesn't exist.
+   */
+  complete(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    if (!quest.isComplete) {
+      throw new Error(
+        `Quest with key ${questKey} is not complete and cannot be deleted.`
+      );
+    }
+    this.deleteQuest(questKey);
+  }
+
+  /**
+   * Advances the steps of a quest by a certain number of steps.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @param {number} [steps=1] - The number of steps to advance.
+   * @throws {Error} If the quest does not exist.
+   */
+  advance(questKey, steps = 1) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    quest.currentSteps += steps;
+    quest.isComplete = quest.currentSteps >= quest.totalSteps;
+  }
+
+  /**
+   * Checks if a quest is complete.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @returns {boolean} True if the quest is complete, otherwise false.
+   * @throws {Error} If the quest does not exist.
+   */
+  isComplete(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    return quest.isComplete;
+  }
+
+  /**
+   * Checks if a quest exists.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @returns {boolean} True if the quest exists, otherwise false.
+   */
+  has(questKey) {
+    return !!this.quests[questKey];
+  }
+
+  /**
+   * Advances the quest steps only if it exists.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @param {number} [steps=1] - The number of steps to advance.
+   * @throws {Error} If the quest does not exist.
+   */
+  advanceIfHas(questKey, steps = 1) {
+    if (!this.has(questKey)) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    this.advance(questKey, steps);
+  }
+
+  /**
+   * Gets information about a specific quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @returns {Quest | null} The quest's details, or null if the quest doesn't exist.
+   * @throws {Error} If the quest does not exist.
+   */
+  getInfo(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    return {
+      name: quest.name,
+      description: quest.description,
+      currentSteps: quest.currentSteps,
+      totalSteps: quest.totalSteps,
+      isComplete: quest.isComplete,
+    };
+  }
+
+  /**
+   * Gets the current steps of a specific quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @returns {number} The current steps of the quest.
+   * @throws {Error} If the quest does not exist.
+   */
+  getCurrentSteps(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    return quest.currentSteps;
+  }
+
+  /**
+   * Gets the total steps of a specific quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @returns {number} The total steps of the quest.
+   * @throws {Error} If the quest does not exist.
+   */
+  getStepsTotal(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    return quest.totalSteps;
+  }
+
+  /**
+   * Sets the total steps for a specific quest.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @param {number} totalSteps - The total steps to set for the quest.
+   * @throws {Error} If the quest does not exist.
+   */
+  setTotalSteps(questKey, totalSteps) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    quest.totalSteps = totalSteps;
+  }
+
+  /**
+   * Resets a specific quest to its initial state.
+   *
+   * @param {string} questKey - The key of the quest.
+   * @throws {Error} If the quest does not exist.
+   */
+  reset(questKey) {
+    const quest = this.quests[questKey];
+    if (!quest) {
+      throw new Error(`Quest with key ${questKey} does not exist.`);
+    }
+    quest.currentSteps = 0;
+    quest.isComplete = false;
+  }
+}
