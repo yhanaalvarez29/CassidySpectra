@@ -10,6 +10,7 @@ export const meta = {
   otherNames: [],
   requirement: "2.5.0",
   icon: "♻️",
+  requiredLevel: 3,
 };
 
 export const style = {
@@ -181,7 +182,14 @@ const recyclableItems = [
   },
 ];
 
-export async function entry({ input, output, money, args, prefix, CassExpress }) {
+export async function entry({
+  input,
+  output,
+  money,
+  args,
+  prefix,
+  CassExpress,
+}) {
   const {
     money: userMoney,
     recycleStamp,
@@ -191,7 +199,7 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
   } = await money.get(input.senderID);
   if (!name) {
     return output.reply(
-      "❌ Please register first using the identity-setname command.",
+      "❌ Please register first using the identity-setname command."
     );
   }
 
@@ -203,7 +211,9 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
       return totalB - totalA;
     });
     for (const item of sortedItems) {
-      result += `♻️ ${item.icon} **${item.name}**: ${totalRecycledItems[item.name] || 0}\n`;
+      result += `♻️ ${item.icon} **${item.name}**: ${
+        totalRecycledItems[item.name] || 0
+      }\n`;
     }
     let totalRecycleCount = 0;
     for (const key in totalRecycledItems) {
@@ -231,7 +241,7 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
       const recycleArray = Array(recycleAmount).fill();
       recycleAmount = recycleArray.reduce(
         (acc) => acc + (Math.random() < item.chance / 2 ? 1 : 0),
-        0,
+        0
       );
       if (totalRecycled + recycleAmount > recycleMax) {
         failRecycle += totalRecycled + recycleAmount - recycleMax;
@@ -242,7 +252,7 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
         return null;
       }
       let price = Math.floor(
-        Math.random() * (item.priceB - item.priceA + 1) + item.priceA,
+        Math.random() * (item.priceB - item.priceA + 1) + item.priceA
       );
       price = CassExpress.farmUP(price, totalRecycledItems);
 
@@ -263,7 +273,7 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
 
     const totalRewards = recycledItems.reduce(
       (sum, item) => sum + item.total,
-      0,
+      0
     );
     newMoney += totalRewards;
 
@@ -286,7 +296,9 @@ export async function entry({ input, output, money, args, prefix, CassExpress })
       text += `\n💚 Recycled ${types} type(s) of items.\n`;
       text += `\n📦 Storage: ${totalRecycled}/${recycleMax}\n♻️ You can **upgrade** your recycling capacity in the **shop!**\n`;
     }
-    text += `\n💰 **Total earnings**: ${totalRewards}$\n💵 **Your Balance**: ${newMoney}$\n\n♻️ Start collecting recyclables now to earn more rewards!\n\nCome back after ${Math.floor((currentTimestamp - recycleStamp) / 1000 / 60)} minutes to get the same amount of rewards.
+    text += `\n💰 **Total earnings**: ${totalRewards}$\n💵 **Your Balance**: ${newMoney}$\n\n♻️ Start collecting recyclables now to earn more rewards!\n\nCome back after ${Math.floor(
+      (currentTimestamp - recycleStamp) / 1000 / 60
+    )} minutes to get the same amount of rewards.
 
 You can also type **${prefix}recycle total**`;
   }

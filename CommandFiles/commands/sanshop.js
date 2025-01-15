@@ -10,6 +10,7 @@ export const meta = {
   otherNames: ["skeletonshop", "funnystore"],
   requirement: "2.5.0",
   icon: "🕊️",
+  requiredLevel: 7,
 };
 
 const sanshop = {

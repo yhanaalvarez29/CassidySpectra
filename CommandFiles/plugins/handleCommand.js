@@ -8,6 +8,7 @@ global.listener = {};
 import { LianeAPI } from "fca-liane-utils";
 import axios from "axios";
 import stringSimilarity from "string-similarity";
+import { CassEXP } from "../modules/cassEXP.js";
 
 function getSuggestedCommand(input, commands) {
   const commandNames = Object.keys(commands);
@@ -187,7 +188,6 @@ export async function use(obj) {
       }
     }
     obj.isThreadAdmin = isThreadAdmin;
-    
 
     const {
       meta,
@@ -212,6 +212,19 @@ export async function use(obj) {
         `🎀 Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Copy this Example***: ${prefix}id-setname Liane`,
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
+    }
+
+    const cassEXP = new CassEXP(userDataCache.cassEXP);
+
+    if (typeof meta.requiredLevel === "number") {
+      if (isNaN(meta.requiredLevel)) {
+        return output.wentWrong();
+      }
+      if (!cassEXP.levelReached(meta.requiredLevel)) {
+        return reply(
+          `🧪🔒 To use this command, you need to be at least level **${meta.requiredLevel}**. You are currently at level **${cassEXP.level}**.`
+        );
+      }
     }
 
     // if (hasAwaitStack(input.senderID, meta.name)) {

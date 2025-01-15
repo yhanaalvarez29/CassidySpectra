@@ -11,6 +11,7 @@ export const meta = {
   otherNames: ["catshop", "felinestore"],
   requirement: "2.5.0",
   icon: "😺",
+  requiredLevel: 5,
 };
 
 const meowShop = {

@@ -8,6 +8,7 @@ export const meta = {
   category: "Shop",
   permissions: [0],
   noPrefix: false,
+  requiredLevel: 15,
 };
 
 const aeonShop = {

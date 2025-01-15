@@ -8,6 +8,7 @@ export const meta = {
   category: "Shopping",
   permissions: [0],
   noPrefix: false,
+  requiredLevel: 12,
 };
 
 const astralShop = {
@@ -19,14 +20,16 @@ const astralShop = {
       name: "Meteorite Blade",
       key: "meteoriteBlade",
       type: "weapon",
-      flavorText: "Forged from a falling star, it burns with celestial fire. ATK +100.",
+      flavorText:
+        "Forged from a falling star, it burns with celestial fire. ATK +100.",
       price: 2000000,
       atk: 100,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Meteorite Blade",
           key: "meteoriteBlade",
-          flavorText: "Forged from a falling star, it burns with celestial fire. ATK +100.",
+          flavorText:
+            "Forged from a falling star, it burns with celestial fire. ATK +100.",
           icon: "☄️",
           type: "weapon",
           atk: 100,
@@ -66,7 +69,8 @@ const astralShop = {
         moneySet.inventory.push({
           name: "Thunderstrike Spear",
           key: "thunderstrikeSpear",
-          flavorText: "A spear that crackles with the power of storms. ATK +80.",
+          flavorText:
+            "A spear that crackles with the power of storms. ATK +80.",
           icon: "⚡",
           type: "weapon",
           atk: 80,
@@ -79,14 +83,16 @@ const astralShop = {
       name: "Infernal Scythe",
       key: "infernalScythe",
       type: "weapon",
-      flavorText: "Wielded by a demon lord, it radiates unquenchable heat. ATK +120.",
+      flavorText:
+        "Wielded by a demon lord, it radiates unquenchable heat. ATK +120.",
       price: 3000000,
       atk: 120,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Infernal Scythe",
           key: "infernalScythe",
-          flavorText: "Wielded by a demon lord, it radiates unquenchable heat. ATK +120.",
+          flavorText:
+            "Wielded by a demon lord, it radiates unquenchable heat. ATK +120.",
           icon: "🔥",
           type: "weapon",
           atk: 120,
@@ -126,7 +132,8 @@ const astralShop = {
         moneySet.inventory.push({
           name: "Galaxy Bow",
           key: "galaxyBow",
-          flavorText: "An elegant bow that fires arrows of starlight. ATK +110.",
+          flavorText:
+            "An elegant bow that fires arrows of starlight. ATK +110.",
           icon: "🌌",
           type: "weapon",
           atk: 110,
@@ -166,7 +173,8 @@ const astralShop = {
         moneySet.inventory.push({
           name: "Eclipse Dagger",
           key: "eclipseDagger",
-          flavorText: "A dagger that dims the light wherever it strikes. ATK +60.",
+          flavorText:
+            "A dagger that dims the light wherever it strikes. ATK +60.",
           icon: "🗡️",
           type: "weapon",
           atk: 60,
@@ -201,14 +209,16 @@ const astralShop = {
       name: "Cosmic Relic",
       key: "cosmicRelic",
       type: "armor",
-      flavorText: "A piece of the universe itself, pulsing with infinite energy. DEF +50.",
+      flavorText:
+        "A piece of the universe itself, pulsing with infinite energy. DEF +50.",
       price: 1000000,
       def: 50,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Cosmic Relic",
           key: "cosmicRelic",
-          flavorText: "A piece of the universe itself, pulsing with infinite energy. DEF +50.",
+          flavorText:
+            "A piece of the universe itself, pulsing with infinite energy. DEF +50.",
           icon: "🌌",
           type: "armor",
           def: 50,
@@ -221,14 +231,16 @@ const astralShop = {
       name: "Voidshield",
       key: "voidshield",
       type: "armor",
-      flavorText: "A shield crafted from the void itself, absorbing all that touches it. DEF +70.",
+      flavorText:
+        "A shield crafted from the void itself, absorbing all that touches it. DEF +70.",
       price: 2500000,
       def: 70,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Voidshield",
           key: "voidshield",
-          flavorText: "A shield crafted from the void itself, absorbing all that touches it. DEF +70.",
+          flavorText:
+            "A shield crafted from the void itself, absorbing all that touches it. DEF +70.",
           icon: "🛡️",
           type: "armor",
           def: 70,
@@ -241,14 +253,16 @@ const astralShop = {
       name: "Eternal Prism",
       key: "eternalPrism",
       type: "armor",
-      flavorText: "A prism that refracts light into infinite dimensions. DEF +90.",
+      flavorText:
+        "A prism that refracts light into infinite dimensions. DEF +90.",
       price: 3000000,
       def: 90,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Eternal Prism",
           key: "eternalPrism",
-          flavorText: "A prism that refracts light into infinite dimensions. DEF +90.",
+          flavorText:
+            "A prism that refracts light into infinite dimensions. DEF +90.",
           icon: "🔮",
           type: "armor",
           def: 90,
@@ -261,14 +275,16 @@ const astralShop = {
       name: "Stellar Cloak",
       key: "stellarCloak",
       type: "armor",
-      flavorText: "A cloak that shimmers like the Milky Way, offering protection from cosmic forces. DEF +60.",
+      flavorText:
+        "A cloak that shimmers like the Milky Way, offering protection from cosmic forces. DEF +60.",
       price: 2200000,
       def: 60,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Stellar Cloak",
           key: "stellarCloak",
-          flavorText: "A cloak that shimmers like the Milky Way, offering protection from cosmic forces. DEF +60.",
+          flavorText:
+            "A cloak that shimmers like the Milky Way, offering protection from cosmic forces. DEF +60.",
           icon: "🌀",
           type: "armor",
           def: 60,
@@ -281,14 +297,16 @@ const astralShop = {
       name: "Galactic Breastplate",
       key: "galacticBreastplate",
       type: "armor",
-      flavorText: "A breastplate forged from the remnants of fallen stars. DEF +80.",
+      flavorText:
+        "A breastplate forged from the remnants of fallen stars. DEF +80.",
       price: 2800000,
       def: 80,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Galactic Breastplate",
           key: "galacticBreastplate",
-          flavorText: "A breastplate forged from the remnants of fallen stars. DEF +80.",
+          flavorText:
+            "A breastplate forged from the remnants of fallen stars. DEF +80.",
           icon: "🌟",
           type: "armor",
           def: 80,
@@ -308,7 +326,8 @@ const astralShop = {
         moneySet.inventory.push({
           name: "Astral Gauntlets",
           key: "astralGauntlets",
-          flavorText: "Gauntlets forged from the energy of distant stars. DEF +50.",
+          flavorText:
+            "Gauntlets forged from the energy of distant stars. DEF +50.",
           icon: "💫",
           type: "armor",
           def: 50,
@@ -321,14 +340,16 @@ const astralShop = {
       name: "Moonlit Helm",
       key: "moonlitHelm",
       type: "armor",
-      flavorText: "A helm crafted from moonstone, reflecting the power of the moon. DEF +40.",
+      flavorText:
+        "A helm crafted from moonstone, reflecting the power of the moon. DEF +40.",
       price: 1000000,
       def: 40,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Moonlit Helm",
           key: "moonlitHelm",
-          flavorText: "A helm crafted from moonstone, reflecting the power of the moon. DEF +40.",
+          flavorText:
+            "A helm crafted from moonstone, reflecting the power of the moon. DEF +40.",
           icon: "🌒",
           type: "armor",
           def: 40,
@@ -343,14 +364,16 @@ const astralShop = {
       name: "Astral Burger",
       key: "astralBurger",
       type: "food",
-      flavorText: "A burger made with ingredients from the far reaches of space. Restores 500 HP.",
+      flavorText:
+        "A burger made with ingredients from the far reaches of space. Restores 500 HP.",
       price: 1000000,
       heal: 500,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Astral Burger",
           key: "astralBurger",
-          flavorText: "A burger made with ingredients from the far reaches of space. Restores 500 HP.",
+          flavorText:
+            "A burger made with ingredients from the far reaches of space. Restores 500 HP.",
           icon: "🍔",
           type: "food",
           heal: 500,
@@ -369,7 +392,8 @@ const astralShop = {
         moneySet.inventory.push({
           name: "Galactic Donut",
           key: "galacticDonut",
-          flavorText: "A sweet donut infused with cosmic sugar. Restores 300 HP.",
+          flavorText:
+            "A sweet donut infused with cosmic sugar. Restores 300 HP.",
           icon: "🍩",
           type: "food",
           heal: 300,
@@ -381,14 +405,16 @@ const astralShop = {
       name: "Cosmic Fruit",
       key: "cosmicFruit",
       type: "food",
-      flavorText: "A fruit from a distant galaxy, said to have regenerative properties. Restores 150 HP.",
+      flavorText:
+        "A fruit from a distant galaxy, said to have regenerative properties. Restores 150 HP.",
       price: 400000,
       heal: 150,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Cosmic Fruit",
           key: "cosmicFruit",
-          flavorText: "A fruit from a distant galaxy, said to have regenerative properties. Restores 150 HP.",
+          flavorText:
+            "A fruit from a distant galaxy, said to have regenerative properties. Restores 150 HP.",
           icon: "🍇",
           type: "food",
           heal: 150,
@@ -400,14 +426,16 @@ const astralShop = {
       name: "Stellar Sushi",
       key: "stellarSushi",
       type: "food",
-      flavorText: "Sushi made from fish caught in the oceans of distant planets. Restores 200 HP.",
+      flavorText:
+        "Sushi made from fish caught in the oceans of distant planets. Restores 200 HP.",
       price: 600000,
       heal: 200,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Stellar Sushi",
           key: "stellarSushi",
-          flavorText: "Sushi made from fish caught in the oceans of distant planets. Restores 200 HP.",
+          flavorText:
+            "Sushi made from fish caught in the oceans of distant planets. Restores 200 HP.",
           icon: "🍣",
           type: "food",
           heal: 200,
@@ -419,14 +447,16 @@ const astralShop = {
       name: "Nebula Juice",
       key: "nebulaJuice",
       type: "food",
-      flavorText: "A refreshing drink made from the fruit of a nebula. Restores 400 HP.",
+      flavorText:
+        "A refreshing drink made from the fruit of a nebula. Restores 400 HP.",
       price: 900000,
       heal: 400,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Nebula Juice",
           key: "nebulaJuice",
-          flavorText: "A refreshing drink made from the fruit of a nebula. Restores 400 HP.",
+          flavorText:
+            "A refreshing drink made from the fruit of a nebula. Restores 400 HP.",
           icon: "🍇",
           type: "food",
           heal: 400,
@@ -439,7 +469,7 @@ const astralShop = {
     "💫 I cannot buy from you, but feel free to browse the cosmic wonders I sell!",
     "🌌 My shop is more than just business—it's about unlocking the mysteries of the universe.",
   ],
-  
+
   talkTexts: [
     {
       name: "Cosmic Wonders",
@@ -469,31 +499,31 @@ const astralShop = {
       icon: "🛸",
     },
   ],
-  
+
   buyTexts: [
     "🌠 What otherworldly treasure would you like to purchase, adventurer?",
     "✨ Step into the cosmos and choose an item to unlock unimaginable powers!",
     "🌌 The mysteries of the universe are in your hands. Choose wisely!",
   ],
-  
+
   welcomeTexts: [
     "🌟 Welcome to the Astral Shop, where cosmic wonders await!",
     "✨ Ah, a new adventurer! Come, explore relics from beyond the stars.",
     "🌌 The universe beckons, and I have just the items you need.",
   ],
-  
+
   goBackTexts: [
     "💫 Take your time, the cosmos is vast and full of mysteries.",
     "🌠 Return when you're ready to explore the unknown.",
     "✨ When you're ready to make a purchase, I'll be here waiting.",
   ],
-  
+
   askTalkTexts: [
     "🌌 Care to hear a tale from the farthest reaches of the universe?",
     "🌟 Let me tell you the story of how these relics came into my possession.",
     "✨ Interested in learning more about the mysteries of the cosmos?",
   ],
-  
+
   thankTexts: [
     "🌠 Thank you for visiting the Astral Shop. May your journey through the stars be filled with wonder!",
     "✨ Until we meet again, adventurer. The cosmos is always open to you.",

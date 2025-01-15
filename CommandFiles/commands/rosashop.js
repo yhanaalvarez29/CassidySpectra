@@ -11,6 +11,7 @@ export const meta = {
   otherNames: ["cuteshop", "adorablestore"],
   requirement: "2.5.0",
   icon: "🌹",
+  requiredLevel: 3,
 };
 
 const rosaShop = {

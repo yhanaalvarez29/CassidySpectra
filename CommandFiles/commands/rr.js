@@ -12,7 +12,7 @@ export const meta = {
   waitingTime: 30,
   icon: "🌪️",
   shopPrice: 2500,
-
+  requiredLevel: 10,
   requirement: "2.5.0",
 };
 

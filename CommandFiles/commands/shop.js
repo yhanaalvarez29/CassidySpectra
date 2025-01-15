@@ -15,6 +15,7 @@ export const meta = {
   otherNames: [],
   requirement: "2.5.0",
   icon: "🛒",
+  requiredLevel: 3,
 };
 
 export const style = {

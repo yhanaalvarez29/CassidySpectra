@@ -1,6 +1,7 @@
 export const meta = {
   name: "littlejohn",
-  description: "Collect and trade materials to build structures out of 0.0001m² apartment and earn rewards!",
+  description:
+    "Collect and trade materials to build structures out of 0.0001m² apartment and earn rewards!",
   version: "1.0.0",
   author: "Liane Cagara",
   usage: "{prefix}littlejohn",
@@ -9,6 +10,7 @@ export const meta = {
   noPrefix: false,
   requirement: "2.5.0",
   icon: "🏗️",
+  requiredLevel: 3,
 };
 
 export const style = {

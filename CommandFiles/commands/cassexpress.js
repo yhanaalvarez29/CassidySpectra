@@ -9,6 +9,7 @@ export const meta = {
   otherNames: ["cexpress", "cbank", "bank"],
   requirement: "2.5.0",
   icon: "💵",
+  requiredLevel: 10,
 };
 const charm = "✦";
 const circle = "⦿";

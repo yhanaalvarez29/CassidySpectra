@@ -9,6 +9,7 @@ export const meta = {
   noPrefix: false,
   requirement: "2.5.0",
   icon: "🎁",
+  requiredLevel: 3,
 };
 export const style = {
   title: "Free Gift 💗",
@@ -18,7 +19,6 @@ export const style = {
 const diaCost = 2;
 const { parseCurrency: pCy } = global.utils;
 const { invLimit } = global.Cassidy;
-
 
 async function handlePaid({
   input,
