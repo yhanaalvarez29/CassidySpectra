@@ -12,6 +12,8 @@ import axios from "axios";
 import fs from "fs";
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
 import { stoData } from "../modules/stoData.js";
+import { CassEXP } from "../modules/cassEXP.js";
+import { clamp } from "../modules/unisym.js";
 const moment = require("moment-timezone");
 
 /**
@@ -729,8 +731,10 @@ export async function use(obj) {
                 [self.key + "Stamp"]: actionStamp,
                 [self.key + "MaxZ"]: actionMax = self.storage,
                 [self.key + "Total"]: totalItems = {},
+                cassEXP: cxp,
                 name,
               } = await money.get(input.senderID);
+              const cassEXP = new CassEXP(cxp);
               if (!name) {
                 return output.reply(
                   "❌ Please register first using the identity-setname command."
@@ -787,6 +791,9 @@ export async function use(obj) {
                     price,
                     total,
                   });
+                  cassEXP.expControls.raise(
+                    clamp(0, Math.floor(total / 1000), 10)
+                  );
                   newMoney += total;
                 }
 
@@ -810,6 +817,9 @@ export async function use(obj) {
                 } else {
                   text += `\n💗 ${self.pastTense} ${types} type(s) of items.\n`;
                 }
+                cassEXP.expControls.raise(
+                  Math.floor((totalYield / actionMax) * 10)
+                );
                 text += `\n🗃️ Storage: `;
                 text += `${totalYield.toLocaleString()}/${Number(
                   actionMax
@@ -828,11 +838,13 @@ export async function use(obj) {
                 )} minutes if you want to get the same amount of earnings.`;
                 // text += `\n\n`;
               }
+
               await money.set(input.senderID, {
                 money: newMoney,
                 [self.key + "Stamp"]: currentTimestamp,
                 [self.key + "MaxZ"]: actionMax,
                 [self.key + "Total"]: totalItems,
+                cassEXP: cassEXP.raw(),
               });
 
               output.reply(text);

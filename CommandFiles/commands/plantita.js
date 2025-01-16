@@ -7,7 +7,7 @@ export const meta = {
   category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: false,
-  otherNames: ["plant", "halaman", "plantito"],
+  otherNames: ["halaman", "plantito"],
   shopPrice: 40,
   requirement: "2.5.0",
   icon: "🌱",
