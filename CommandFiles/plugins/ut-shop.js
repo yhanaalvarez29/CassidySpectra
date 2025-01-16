@@ -1181,7 +1181,7 @@ ${this.optionText()}
           }
           cassEXP.expControls.raise(
             targetItem.expReward ??
-              clamp(0, targetItem.price / 500, 10) * amount
+              clamp(0, targetItem.price / 500000, 10) * amount
           );
           const argu = {
             money: cash - price,
