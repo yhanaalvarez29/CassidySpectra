@@ -261,7 +261,7 @@ export function use(obj) {
       async wentWrong() {
         return await output(
           "❌ Sorry, something went wrong. This message indicates that an **unexpected issue has occurred**, which may lead to potential problems if not addressed. **It is uncommon to see this message**, as it is primarily used for rapid edge case handling and debugging. Better error messages will be added in the **future**. Please **report** this to the administrator or developer for further investigation.",
-          { callback, isReply: true }
+          { isReply: true }
         );
       },
       async send(body, id, callback) {
