@@ -138,6 +138,46 @@ export default class UserStatsManager {
 
   /**
    *
+   * @param {UserData} obj
+   * @returns {{ money: number, total: number, bank: number, lendAmount: number, cheques: number,}}
+   */
+  extractMoney(userData) {
+    const safeNumber = (value) =>
+      typeof value === "number" && !isNaN(value) ? value : 0;
+
+    const money = safeNumber(userData?.money);
+    const bank = safeNumber(userData?.bankData?.bank);
+    const lendAmount = safeNumber(userData?.lendAmount);
+
+    const getChequeAmount = (items) =>
+      Array.isArray(items)
+        ? items.reduce(
+            (acc, item) =>
+              item.type === "cheque"
+                ? acc + safeNumber(item.chequeAmount)
+                : acc,
+            0
+          )
+        : 0;
+
+    const cheques =
+      getChequeAmount(userData?.inventory) +
+      getChequeAmount(userData?.boxItems) +
+      getChequeAmount(userData?.tradeVentory);
+
+    const total = money + bank + lendAmount + cheques;
+
+    return {
+      money,
+      bank,
+      lendAmount,
+      cheques,
+      total,
+    };
+  }
+
+  /**
+   *
    * @async
    * @param {string} key
    * @returns {Promise<UserData>}

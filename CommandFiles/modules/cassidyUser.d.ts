@@ -25,6 +25,14 @@ declare module "cassidy-userData" {
 
     connect(): Promise<void>;
 
+    extractMoney(userData: UserData): {
+      money: number;
+      total: number;
+      bank: number;
+      lendAmount: number;
+      cheques: number;
+    };
+
     handleBitBros(gameID: string, userData: UserData): Promise<void>;
 
     get(key: string): Promise<UserData>;

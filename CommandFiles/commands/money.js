@@ -29,7 +29,7 @@ export const meta = {
 export const style = {
   title: "Cash • Dashboard 💵",
   titleFont: "bold",
-  contentFont: "redux",
+  contentFont: "fancy",
 };
 
 function isBrokenMoney(playerMoney) {
@@ -41,13 +41,22 @@ function isBrokenMoney(playerMoney) {
   );
 }
 
-function sortUsers(users, top) {
+/**
+ *
+ * @param {Record<string, UserData>} users
+ * @param {number} top
+ * @param {import("cassidy-userData").UserStatsManager} money
+ * @returns
+ */
+function sortUsers(users, top, money) {
   let result = {};
   let sortedKeys = Object.keys(users).sort((a, b) => {
-    const aValue =
-      Number(users[a].money) + Number(users[a].battlePoints ?? 0) * 1.5;
-    const bValue =
-      Number(users[b].money) + Number(users[b].battlePoints ?? 0) * 1.5;
+    // const aValue =
+    //   Number(users[a].money) + Number(users[a].battlePoints ?? 0) * 1.5;
+    // const bValue =
+    //   Number(users[b].money) + Number(users[b].battlePoints ?? 0) * 1.5;
+    const aValue = money.extractMoney(users[a]).total;
+    const bValue = money.extractMoney(users[b]).total;
 
     return bValue - aValue;
   });
@@ -61,8 +70,15 @@ function sortUsers(users, top) {
   return result;
 }
 
-function getBehindAhead(id, users) {
-  const sorted = sortUsers(users);
+/**
+ *
+ * @param {string} id
+ * @param {Record<string, UserData>} users
+ * @param {import("cassidy-userData").UserStatsManager} money
+ * @returns
+ */
+function getBehindAhead(id, users, money) {
+  const sorted = sortUsers(users, undefined, money);
   const sortedKeys = Object.keys(sorted);
   const index = sortedKeys.findIndex((key) => key === id);
 
@@ -76,8 +92,8 @@ function getBehindAhead(id, users) {
   return { ahead, behind };
 }
 
-function getTop(id, users) {
-  const sorted = sortUsers(users);
+function getTop(id, users, money) {
+  const sorted = sortUsers(users, undefined, money);
   return Object.keys(sorted).findIndex((key) => key === id) + 1;
 }
 
@@ -150,9 +166,10 @@ const configs = [
             `${metadata.icon} **x${pCy(amount)}** ${metadata.name}`
         )
         .join("\n");
+      const otherMoney = money.extractMoney(playerMoney);
 
-      const topIndex = getTop(senderID, allUsers);
-      const otherPlayers = getBehindAhead(senderID, allUsers);
+      const topIndex = getTop(senderID, allUsers, money);
+      const otherPlayers = getBehindAhead(senderID, allUsers, money);
       const targetName = input.hasMentions
         ? playerMoney.name
         : input.replier
@@ -173,7 +190,11 @@ const configs = [
         playerMoney.money ?? 0
       )}** Money\n💷 **x${pCy(
         playerMoney.battlePoints ?? 0
-      )}** Battle Points\n${mappedCl}${warn}\n${topText}`;
+      )}** Battle Points\n🎒 **x${pCy(
+        otherMoney.cheques ?? 0
+      )}** Cheque Amounts\n🏦 **x${pCy(
+        otherMoney.bank ?? 0
+      )}** Bank Amounts\n${mappedCl}${warn}\n${topText}`;
 
       if (i) {
         output.edit(resu, i.messageID);
@@ -206,7 +227,7 @@ const configs = [
       /**
        * @type {Record<string, UserData>}
        */
-      const topUsers = sortUsers(users, 10);
+      const topUsers = sortUsers(users, 10, money);
 
       let result = `🏅 | **Leaderboards**\n\n`;
       let index = 1;
@@ -221,6 +242,7 @@ const configs = [
           battlePoints = 0,
           cassEXP: cxp,
         } = topUsers[key];
+        const otherMoney = money.extractMoney(topUsers[key]);
         const userData = topUsers[key];
         const cll = new Collectibles(userData.collectibles ?? []);
         const mappedCl = cll
@@ -239,11 +261,17 @@ const configs = [
                 .map((name) => name.toUpperCase())
                 .join(" ")}[:font=double_struck] ✦`
             : `. LV${cassEXP.level} **${name}**`
-        }\n💰 Money: $**${abbreviateNumber(
+        }\n💸 **TOTAL**: $**${abbreviateNumber(
+          otherMoney.total ?? 0
+        )}**💵\n💰 Money: $${abbreviateNumber(
           playerMoney
-        )}**💵\n⚔️ Battle Points: $**${abbreviateNumber(
+        )}💵\n⚔️ Battle Points: $${abbreviateNumber(
           battlePoints ?? 0
-        )}**💷\n`;
+        )}💷\n🏦 Bank Amounts: $${abbreviateNumber(
+          otherMoney.bank ?? 0
+        )}💵\n🎒 Cheque Amounts: $${abbreviateNumber(
+          otherMoney.cheques ?? 0
+        )}💵\n`;
         if (lastMoney) {
           result += `💸 Gap: $${abbreviateNumber(lastMoney - playerMoney)}💵\n`;
         }

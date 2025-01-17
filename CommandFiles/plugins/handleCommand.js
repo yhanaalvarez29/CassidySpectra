@@ -577,6 +577,7 @@ ${prefix}${commandName}.${prop} ${args
 
     recentCMD[senderID].push(meta.name);
     await handleEntry(obj);
+    global.checkMemoryUsage(true);
   } catch (error) {
     console.log(error);
     const errorText = parseError(error);
