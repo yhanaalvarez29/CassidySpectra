@@ -42,11 +42,15 @@ export async function entry({
     slotWins = 0,
     slotLooses = 0,
     inventory,
+    prizePool = 0,
   } = await money.get(input.senderID);
   inventory = new Inventory(inventory);
   let hasPass = inventory.has("highRollPass");
 
   const betAmount = parseFloat(input.arguments[0]);
+
+  const isAffordable = prizePool * 2 >= betAmount;
+
   const title = styler.getField("title");
 
   if (input.isAdmin) {
@@ -71,23 +75,34 @@ export async function entry({
     return;
   }
 
-  const outcome = Math.random() < 0.3 ? "win" : "lose"; // HAHA DI FAIR
+  let outcome = Math.random() < 0.3 ? "win" : "lose"; // HAHA DI FAIR
+  if (!isAffordable) {
+    outcome = "lose";
+  }
   let resultText;
   let newBalance;
 
   if (outcome === "win") {
     newBalance = userMoney + betAmount;
     drWin += betAmount;
+    prizePool -= betAmount;
+    prizePool = Math.max(0, prizePool);
     title.style.line_bottom_inside_text_elegant = `Won`;
     resultText = `🎉 Congratulations! You doubled your bet and now have ${newBalance}$.`;
   } else {
     newBalance = userMoney - betAmount;
     drLost += betAmount;
+    prizePool += betAmount;
     title.style.line_bottom_inside_text_elegant = `Lost`;
     resultText = `😢 You lost your bet and now have ${newBalance}$.`;
   }
 
-  await money.set(input.senderID, { money: newBalance, drWin, drLost });
+  await money.set(input.senderID, {
+    money: newBalance,
+    drWin,
+    drLost,
+    prizePool,
+  });
   const i = slotWins - slotLooses;
 
   output.reply(`**Double Risk**:

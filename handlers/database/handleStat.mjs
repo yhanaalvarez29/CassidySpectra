@@ -263,6 +263,7 @@ export default class UserStatsManager {
     const result = {};
     for (const key in allData) {
       result[key] = this.process(allData[key]);
+      this.cache[key] = result[key];
       this.handleBitBros(key, result[key]);
     }
     return result;

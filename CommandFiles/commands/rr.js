@@ -52,6 +52,7 @@ export async function entry({
     inventory,
     rrWins = 0,
     rrLooses = 0,
+    prizePool = 0,
   } = await money.get(input.senderID);
   inventory = new Inventory(inventory);
   let hasPass = inventory.has("highRollPass");
@@ -60,8 +61,15 @@ export async function entry({
 
   const [bet] = input.arguments;
 
-  const outcome = outcomes[outcomeIndex];
   let amount = parseInt(bet);
+  const isAffordable = prizePool * 2 >= amount;
+  let outcome = outcomes.toSorted((i) => Math.random() - 0.5)[outcomeIndex];
+  if (!isAffordable) {
+    outcome = outcomes
+      .toSorted(() => Math.random() - 0.5)
+      .find((i) => i.includes(" lose"));
+  }
+
   if (!hasPass && amount > global.Cassidy.highRoll) {
     return output.reply(
       `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
@@ -83,6 +91,7 @@ export async function entry({
       cash: +amount,
     });
     rrLooses += amount;
+    prizePool += amount;
 
     resultText.changeContent("You lost:");
 
@@ -90,9 +99,12 @@ export async function entry({
       money: userMoney - amount,
       rrLooses,
       rrWins,
+      prizePool,
     });
   } else {
     rrWins += amount;
+    prizePool -= amount;
+    prizePool = Math.max(0, prizePool);
     cashField.applyTemplate({
       cash: +amount,
     });
@@ -102,6 +114,7 @@ export async function entry({
       money: userMoney + amount,
       rrWins,
       rrLooses,
+      prizePool,
     });
   }
 

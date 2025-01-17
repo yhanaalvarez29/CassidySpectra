@@ -57,6 +57,7 @@ module.exports = {
     let side = input.arguments[0]?.toLowerCase();
     const bet = parseInt(input.arguments[1]);
     const data = await botData.get(input.senderID);
+    data.prizePool ??= 0;
 
     async function getRank(targetuid) {
       const allData = await botData.getAll();
@@ -79,6 +80,7 @@ module.exports = {
       const updatedData = {
         money: data.money + parseInt(moneyChange),
         [flipcoinID]: data[flipcoinID] + parseInt(htRankChange),
+        prizePool: data.prizePool,
       };
       return updatedData;
     }
@@ -116,6 +118,7 @@ Luck: ${luckStat || "100"}🍀
       data[flipcoinID] = 50;
       await botData.set(input.senderID, data);
     }
+    const isAffordable = data.prizePool * 2 >= bet;
 
     if (
       (side !== "head" && side !== "tails") ||
@@ -192,7 +195,10 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
 
     let result = Math.random() < 0.5 ? "head" : "tails";
     if (side === result && Math.random() < 0.65) {
-      side = result === "head" ? "tails" : "head";
+      result = result === "head" ? "tails" : "head";
+    }
+    if (!isAffordable) {
+      result = result === "head" ? "tails" : "head";
     }
     const isLucky = await luck.isLucky(input.senderID);
     const luckToss = parseInt(Math.random() * (luckStat * 2));
@@ -221,6 +227,8 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
       const bonus = (data[flipcoinID] / wamMultiplier) * 10;
       //const winnings = 2 * (Math.abs(parseInt((bet * 2) * (data.htRank / wamMultiplier))));
       const winnings = bet * 1 + bonus;
+      data.prizePool -= winnings;
+      data.prizePool = Math.max(0, data.prizePool);
       const updatedData = updateUserData(
         winnings,
         wamMultiplier + bonus / wamMultiplier
@@ -228,6 +236,7 @@ Rank: ${ranker.getRank(data[flipcoinID])}`;
       await botData.set(input.senderID, updatedData);
 
       luck.addLuckStat(input.senderID, "random", 10, luckStat / 100);
+
       output.reply(
         `Congratulations! The result is ${result}, You won ${parseInt(
           winnings
@@ -241,6 +250,7 @@ Bad Luck: ${luckToss}/${luckStat}`
       const wamMultiplier = 14.5;
       const rankMultiplier = 2;
       const losses = bet;
+      data.prizePool += losses;
       const bonus = (data[flipcoinID] / wamMultiplier) * 10;
       const updatedData = updateUserData(
         -losses,
