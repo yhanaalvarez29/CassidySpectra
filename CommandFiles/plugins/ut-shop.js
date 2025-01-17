@@ -391,6 +391,10 @@ const treasures = [
 ];
 
 const treasuresCopy = [...treasures];
+
+/**
+ * @type {CommandEntry}
+ */
 export async function use(obj) {
   const treasures = [
     ...treasuresCopy,
@@ -400,6 +404,11 @@ export async function use(obj) {
     generateTrash(),
     generateTrash(),
   ];
+  /**
+   *
+   * @param {Record<string, UserData>} usersData
+   * @returns
+   */
   obj.getInflationRate = async function (usersData) {
     usersData ??= await obj.money.getAll();
     let sum = Object.values(usersData)
@@ -422,14 +431,43 @@ export async function use(obj) {
       (acc, { lendAmount }) => acc + lendAmount,
       0
     );
+
     const bankMean = bankSum / bankDatas.length;
     let mean = sum / Object.keys(usersData).length;
     !isNaN(bankMean) ? (mean += bankMean) : null;
-    mean += lendAmounts / lendUsers.length;
+    const ll = lendAmounts / lendUsers.length;
+    !isNaN(ll) ? (mean += ll) : null;
+
+    const getChequeAmount = (items) =>
+      items.reduce(
+        (acc, j) =>
+          j.type === "cheque" &&
+          typeof j.chequeAmount === "number" &&
+          !isNaN(j.chequeAmount)
+            ? j.chequeAmount + acc
+            : acc,
+        0
+      );
+
+    const invAmounts = Object.values(usersData).reduce((total, userData) => {
+      let userTotal = 0;
+      if (Array.isArray(userData.inventory)) {
+        userTotal += getChequeAmount(userData.inventory);
+      }
+      if (Array.isArray(userData.boxItems)) {
+        userTotal += getChequeAmount(userData.boxItems);
+      }
+      return total + userTotal;
+    }, 0);
+
+    mean += invAmounts;
+
     if (isNaN(mean)) {
       return 0;
     }
-    return mean / 5000000000000;
+    // return mean / 5000000000000;
+    // return mean / 5_000_000_000_000;
+    return mean / 1_000_000_000;
   };
   function randomWithProb(treasures) {
     // Step 1: Shuffle the treasures array to ensure random order for same probability items

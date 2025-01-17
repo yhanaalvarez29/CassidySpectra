@@ -28,11 +28,14 @@ export const style = {
 };
 const { parseCurrency: pCy } = global.utils;
 
+/**
+ * @type {CommandEntry}
+ */
 export async function entry({ ...ctx }) {
   /**
    *
    *
-   * @type {{ output: import("output-cassidy").default, input: import("input-cassidy").default }}
+ }
    */
   const {
     input,
@@ -667,6 +670,9 @@ Type **inv check ${treasureItem.key}** for more details!
           if (!recipientData) {
             return output.reply(`❌ User with ID "${recipientID}" not found.`);
           }
+          if (!recipientData.name) {
+            return output.reply(`❌ The recipient has no name.`);
+          }
           const rInventory = new Inventory(recipientData.inventory);
           if (rInventory.getAll().length >= invLimit) {
             return output.reply(`❌ The recipient's inventory is full.`);
@@ -680,16 +686,29 @@ Type **inv check ${treasureItem.key}** for more details!
           }
           let sentItems = [];
           let failItems = [];
+          let moneyAdd = 0;
           for (let i = 0; i < amountItem; i++) {
             const itemToSend = inventory.getOne(keyT);
             if (itemToSend?.cannotSend) {
               failItems.push({ ...itemToSend, error: `Item cannot be sent.` });
               continue;
             }
+            if (itemToSend.type === "cheque") {
+              const amount = itemToSend.chequeAmount;
+              if (isNaN(amount) || amount < 1) {
+                failItems.push({
+                  ...itemToSend,
+                  error: `Item cannot be parsed as a valid cheque.`,
+                });
+                continue;
+              }
+              moneyAdd += amount;
+            } else {
+              rInventory.addOne(itemToSend);
+              sentItems.push(itemToSend);
+            }
 
-            rInventory.addOne(itemToSend);
             inventory.deleteRef(itemToSend);
-            sentItems.push(itemToSend);
           }
 
           await money.set(input.senderID, {
@@ -697,17 +716,24 @@ Type **inv check ${treasureItem.key}** for more details!
           });
           await money.set(recipientID, {
             inventory: Array.from(rInventory),
+            money: recipientData.money + moneyAdd,
           });
 
           await output.reply(
             `${
+              moneyAdd > 0
+                ? `💰 A cheque amount of $**${moneyAdd}**💵 has been successfully transferred to **${
+                    recipientData.name ?? "Unregistered"
+                  }**. \n\n`
+                : ""
+            }${
               sentItems.length !== 0
-                ? `✅ Sent ${sentItems.length} items to ${
+                ? `✅ Sent ${sentItems.length} items to **${
                     recipientData.name ?? "Unregistered"
-                  }`
-                : `❌ No items were sent to ${
+                  }**`
+                : `❌ No items were sent to **${
                     recipientData.name ?? "Unregistered"
-                  }`
+                  }**`
             }\n\n${[...sentItems, ...failItems]
               .map(
                 (i) =>
