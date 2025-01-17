@@ -457,6 +457,9 @@ export async function use(obj) {
       if (Array.isArray(userData.boxItems)) {
         userTotal += getChequeAmount(userData.boxItems);
       }
+      if (Array.isArray(userData.tradeVentory)) {
+        userTotal += getChequeAmount(userData.tradeVentory);
+      }
       return total + userTotal;
     }, 0);
 
