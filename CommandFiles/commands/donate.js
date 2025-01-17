@@ -24,13 +24,16 @@ function isValidAmount(amount) {
   return !isNaN(amount) && amount > 0 && amount <= Number.MAX_SAFE_INTEGER;
 }
 
+/**
+ * @type {import("../modules/reduxCMDHome.js").Config[]}
+ */
 const configs = [
   {
     key: "send",
     description: "Donate money to charity",
     args: ["<amount>"],
     aliases: ["-s", "charity"],
-    async handler({ money, input, output, userData, prefix, clearCurrStack }) {
+    async handler({ money, input, output, prefix, clearCurrStack }) {
       const { arguments: args, senderID } = input;
 
       if (args.length < 1) {
@@ -38,7 +41,7 @@ const configs = [
       }
 
       const amountStr = args[0];
-      const amount = parseFloat(amountStr);
+      const amount = parseInt(amountStr);
 
       if (!isValidAmount(amount)) {
         return output.reply(
@@ -55,18 +58,18 @@ const configs = [
         );
       }
 
-      const currentDonatedAmount = userData.donatedAmount || 0;
-      userData.donatedAmount = currentDonatedAmount + amount;
+      const currentDonatedAmount = senderMoney.donatedAmount || 0;
+      senderMoney.donatedAmount = currentDonatedAmount + amount;
       await money.set(senderID, {
         money: senderMoney.money - amount,
-        donatedAmount: userData.donatedAmount,
+        donatedAmount: senderMoney.donatedAmount,
       });
 
       output.reply(
         `✅ | Thank you for donating $**${abbreviateNumber(
           amount
         )}**💵 to charity! Your total donated amount is now $**${abbreviateNumber(
-          userData.donatedAmount
+          senderMoney.donatedAmount
         )}**💵.`
       );
     },
