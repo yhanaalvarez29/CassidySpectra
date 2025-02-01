@@ -1,6 +1,6 @@
 {
   "FCA": {
-    "path": "./handlers/FCA/index.js",
+    "path": "./node_modules/ws3-fca/index.js",
     "forceLogin": true,
     "listenEvents": true,
     "logLevel": "silent",
@@ -33,15 +33,14 @@
     "note": "This is for the bot account, not your main account, if email_asEnvKey or password_asEnvKey is true, it will use the .env key provided in email and password fields, this is helpful when hiding the credentials."
   },
   "PREFIX": "+",
-  "ADMINBOT": [
-    "wss:admin"
-  ],
-  "EXTRAPREFIX": [
-    "@"
-  ],
-  "MODERATORBOT": [
-    "wss:moderator"
-  ],
+  "ADMINBOT": ["wss:admin", "100075058221244"],
+  "EXTRAPREFIX": ["@"],
+  "MODERATORBOT": ["wss:moderator"],
   "exitOnError": false,
-  "WEB_PASSWORD": "lialiaXCR"
+  "WEB_PASSWORD": "lialiaXCR",
+  "autoRestart": {
+    "enabled": true,
+    "interval": 3600000
+  },
+  "maintenanceMode": true
 }
