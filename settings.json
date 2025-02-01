@@ -42,5 +42,5 @@
     "enabled": true,
     "interval": 3600000
   },
-  "maintenanceMode": true
+  "maintenanceMode": false
 }

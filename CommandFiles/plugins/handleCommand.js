@@ -137,6 +137,7 @@ export async function use(obj) {
       handleNo();
       return;
     }
+
     if (hasPrefix && String(commandName).includes(".")) {
       return reply(
         `⚠️ | Commands with dot notation are **no longer supported** and even discouraged, instead use "${prefix}${String(
@@ -170,6 +171,13 @@ export async function use(obj) {
       }
 
       const suggestedCommand = getSuggestedCommand(commandName, commands);
+
+      if (
+        global.Cassidy.config.maintenanceMode &&
+        !ADMINBOT.includes(senderID)
+      ) {
+        return reply(`🚀 | Maintenance Mode. Only bot admins can use the bot.`);
+      }
       return output.replyStyled(
         `🔍 cassidy: ${commandName}: command not found\n\n` +
           (suggestedCommand
@@ -209,7 +217,7 @@ export async function use(obj) {
 
     if (!userDataCache.name && meta.name !== "identity") {
       return output.replyStyled(
-        `🎀 Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Copy this Example***: ${prefix}id-setname Liane`,
+        `🎀 | Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Copy this Example***: ${prefix}id-setname Liane`,
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
     }
@@ -222,7 +230,7 @@ export async function use(obj) {
       }
       if (!cassEXP.levelReached(meta.requiredLevel)) {
         return reply(
-          `🧪🔒 To use this command, you need to be at least level **${meta.requiredLevel}**. You are currently at level **${cassEXP.level}**.`
+          `🧪🔒 | To use this command, you need to be at least level **${meta.requiredLevel}**. You are currently at level **${cassEXP.level}**.`
         );
       }
     }
