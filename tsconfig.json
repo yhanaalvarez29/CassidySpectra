@@ -15,6 +15,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": false
-  }
+    "isolatedModules": false,
+    "outDir": "./dist-commandfiles",
+    "rootDir": "./CommandFiles"
+  },
+  "exclude": ["node_modules"]
 }
