@@ -857,8 +857,12 @@ export async function use(obj) {
             async handler() {
               const data = self.stoData ?? stoData[self.key];
               if (!data) {
-                return output.wentWrong();
+                return output.reply(
+                  `🔍 The upgrade data is **missing**, we cannot determine the price so we cannot upgrade.`
+                );
               }
+              data.key ??= `${self.key}MaxZ`;
+              data.price ??= 100;
               const {
                 money: userMoney,
                 battlePoints: bp = 0,
