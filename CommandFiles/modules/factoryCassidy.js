@@ -176,13 +176,24 @@ export class FactoryData {
    * @returns {boolean} - Whether the item is finished processing.
    */
   isFinished(ref) {
+    const remainingTime = this.getTimeLeft(ref);
+
+    return remainingTime <= 0;
+  }
+
+  /**
+   * Get the remaining time until an item finishes processing.
+   * @param {string} key - The key of the item to check.
+   * @returns {number|null} - The remaining time in milliseconds, or null if the item is not found.
+   */
+  getTimeLeft(key) {
     const item = this.userFactory.queue.find((item) => item.key === ref);
-    if (!item) return false;
+    if (!item) return 0;
 
     const timeElapsed = Date.now() - item.startTime;
     const recipe = this.metadata.recipes.find((r) => r.name === item.key);
 
-    if (!recipe) return false;
+    if (!recipe) return 0;
 
     const maxProcessingTime = recipe.waitingTime || 0;
 
@@ -195,36 +206,7 @@ export class FactoryData {
         Math.ceil(this.userFactory.queue.length / slotsAvailable) *
         maxProcessingTime;
 
-      return timeElapsed >= processingDuration;
-    }
-
-    return false;
-  }
-
-  /**
-   * Get the remaining time until an item finishes processing.
-   * @param {string} key - The key of the item to check.
-   * @returns {number|null} - The remaining time in milliseconds, or null if the item is not found.
-   */
-  getTimeLeft(key) {
-    const item = this.userFactory.queue.find((item) => item.key === key);
-    if (!item) {
-      console.warn(`Item with key "${key}" not found in queue.`);
-      return null;
-    }
-
-    const timeElapsed = Date.now() - item.startTime;
-    const recipe = this.metadata.recipes.find((r) => r.name === item.key);
-
-    if (!recipe) {
-      console.warn(`Recipe for item "${key}" not found.`);
-      return null;
-    }
-
-    const maxProcessingTime = recipe.waitingTime || 0;
-
-    if (timeElapsed < maxProcessingTime) {
-      return maxProcessingTime - timeElapsed;
+      return processingDuration - timeElapsed;
     }
 
     return 0;
