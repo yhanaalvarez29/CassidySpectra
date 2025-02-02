@@ -11,7 +11,39 @@ import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 export {};
 
 declare global {
-  type CommandEntry = (ctx: {
+  interface FactoryConfig {
+    title: string;
+    key: string;
+    init: {
+      slot: number;
+      proc: number;
+    };
+    upgrades: {
+      slot: number;
+      proc: number;
+    };
+    recipes: Recipe[];
+  }
+
+  interface Recipe {
+    name: string;
+    icon: string;
+    levelRequirement: number;
+    waitingTime: number;
+    ingr: IngredientGroup[];
+    result: RecipeResult;
+  }
+
+  type IngredientGroup = Ingredient | Ingredient[];
+
+  interface Ingredient {
+    name: string;
+    icon: string;
+    amount: number;
+    key: string;
+  }
+
+  interface CommandContext {
     [key: string]: any;
     money: Cass.UserStatsManager;
     Inventory: typeof Inventory;
@@ -26,7 +58,10 @@ declare global {
     commands: { [key: string]: any };
     CassEXP: typeof CassEXP;
     userDataCache: UserData;
-  }) => any | Promise<any>;
+  }
+
+  interface RecipeResult extends Cass.InventoryItem {}
+  type CommandEntry = (ctx: CommandContext) => any | Promise<any>;
 
   type UserData = Cass.UserData;
 }
