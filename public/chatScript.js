@@ -46,9 +46,11 @@ function loadConvo() {
 
 // window.onload always execute when the page loads..
 window.onload = async () => {
+  const reactOpt = document.querySelector("#reactOpt");
+
   //const reactOptions = document.querySelector("#reactOptions");
   for (const emoji of emojis) {
-    reactOptions.innerHTML += `<span onclick="sendReact('${emoji}', '%1')"${emoji}</span>`;
+    reactOpt.innerHTML += `<span onclick="sendReact('${emoji}', '%1')"${emoji}</span>`;
   }
   /*const {
     data: { url },
@@ -196,21 +198,30 @@ function appendRep({ body, messageID, chatPad }) {
       });
       let cloneS = null;
       let blurS = null;
-
+      let reS = null;
       const ctxmenu = new ContextMenu(userMessage, {
-        onOpen() {
+        onOpen(event) {
           userMessage.style.pointerEvents = "none";
           const rect1 = userMessage.getBoundingClientRect();
           ctxmenu.menu.style.width = `${rect1.width}px`;
           userMessage.scrollIntoView({
             behavior: "smooth",
-            block: "start",
+            block: "center",
           });
           const blur = document.createElement("div");
           blur.classList.add("blur-bg");
           blur.addEventListener("click", () => {
             ctxmenu.hide();
           });
+          const reactOpt = document.createElement("div");
+          reactOpt.classList.add("react-c");
+          reS = reactOpt;
+
+          reactOpt.innerHTML = "";
+          for (const emoji of emojis) {
+            reactOpt.innerHTML += `<span onclick="sendReact('${emoji}', '${messageID}')" style="font-size: 30px;">${emoji}</span>  `;
+          }
+
           blurS = blur;
           setTimeout(() => {
             const rect = userMessage.getBoundingClientRect();
@@ -229,7 +240,27 @@ function appendRep({ body, messageID, chatPad }) {
               clone.style.width = rect.width + "px";
               clone.style.height = rect.height + "px";
 
+              reactOpt.disabled = false;
+
+              reactOpt.style.left = rect.left + "px";
+              reactOpt.style.right = rect.right + "px";
+              // reactOpt.style.bottom = rect.bottom + "px";
+
               document.body.appendChild(clone);
+              document.body.appendChild(reactOpt);
+              // reactOpt.style.top = event.clientY - reactOpt.clientHeight + "px";
+
+              let newTop = rect.top - reactOpt.clientHeight - 20;
+              let alternativeTop = event.clientY - reactOpt.clientHeight;
+
+              if (newTop < 0) {
+                newTop = alternativeTop;
+              } else if (newTop + reactOpt.clientHeight > window.innerHeight) {
+                newTop = window.innerHeight - reactOpt.clientHeight;
+              }
+
+              reactOpt.style.top = `${newTop}px`;
+
               cloneS = clone;
             }
             document.body.appendChild(blur);
@@ -243,15 +274,18 @@ function appendRep({ body, messageID, chatPad }) {
             blurS.remove();
           }
           userMessage.style.pointerEvents = "";
+          if (reS instanceof HTMLElement) {
+            reS.remove();
+          }
         },
         items: [
-          {
-            label: "React",
-            svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M800-680v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM620-520q25 0 42.5-17.5T680-580q0-25-17.5-42.5T620-640q-25 0-42.5 17.5T560-580q0 25 17.5 42.5T620-520Zm-280 0q25 0 42.5-17.5T400-580q0-25-17.5-42.5T340-640q-25 0-42.5 17.5T280-580q0 25 17.5 42.5T340-520Zm140 260q68 0 123.5-38.5T684-400H276q25 63 80.5 101.5T480-260Zm0 180q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q43 0 83 8.5t77 24.5v167h80v80h142q9 29 13.5 58.5T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg>`,
-            async callback() {
-              chooseReaction(messageID);
-            },
-          },
+          // {
+          //   label: "React",
+          //   svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M800-680v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM620-520q25 0 42.5-17.5T680-580q0-25-17.5-42.5T620-640q-25 0-42.5 17.5T560-580q0 25 17.5 42.5T620-520Zm-280 0q25 0 42.5-17.5T400-580q0-25-17.5-42.5T340-640q-25 0-42.5 17.5T280-580q0 25 17.5 42.5T340-520Zm140 260q68 0 123.5-38.5T684-400H276q25 63 80.5 101.5T480-260Zm0 180q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q43 0 83 8.5t77 24.5v167h80v80h142q9 29 13.5 58.5T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg>`,
+          //   async callback() {
+          //     chooseReaction(messageID);
+          //   },
+          // },
           {
             label: "Reply",
             svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"/></svg>`,
@@ -326,6 +360,82 @@ function appendSend({ message, chatPad }) {
 
       chatPad.appendChild(messageContainer);
       animateSend(userMessage);
+      chatPad.addEventListener("scroll", () => {
+        ctxmenu.hide();
+      });
+      let cloneS = null;
+      let blurS = null;
+
+      const ctxmenu = new ContextMenu(userMessage, {
+        onOpen() {
+          userMessage.style.pointerEvents = "none";
+          const rect1 = userMessage.getBoundingClientRect();
+          ctxmenu.menu.style.width = `${rect1.width}px`;
+          userMessage.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          const blur = document.createElement("div");
+          blur.classList.add("blur-bg");
+          blur.addEventListener("click", () => {
+            ctxmenu.hide();
+          });
+          blurS = blur;
+          setTimeout(() => {
+            const rect = userMessage.getBoundingClientRect();
+            ctxmenu.show({
+              clientY: rect.bottom + 20,
+              clientX: rect.right - rect.width,
+              // isRight: true,
+            });
+
+            const clone = userMessage.cloneNode(true);
+            if (clone instanceof HTMLElement) {
+              clone.classList.add("center-fixed");
+              clone.style.left = rect.left + "px";
+              clone.style.right = rect.right + "px";
+              clone.style.top = rect.top + "px";
+              clone.style.bottom = rect.bottom + "px";
+              clone.style.width = rect.width + "px";
+              clone.style.height = rect.height + "px";
+
+              document.body.appendChild(clone);
+              cloneS = clone;
+            }
+            document.body.appendChild(blur);
+          }, 300);
+        },
+        onClose() {
+          if (cloneS instanceof HTMLElement) {
+            cloneS.remove();
+          }
+          if (blurS instanceof HTMLElement) {
+            blurS.remove();
+          }
+          userMessage.style.pointerEvents = "";
+        },
+        items: [
+          {
+            label: "React",
+            svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M800-680v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM620-520q25 0 42.5-17.5T680-580q0-25-17.5-42.5T620-640q-25 0-42.5 17.5T560-580q0 25 17.5 42.5T620-520Zm-280 0q25 0 42.5-17.5T400-580q0-25-17.5-42.5T340-640q-25 0-42.5 17.5T280-580q0 25 17.5 42.5T340-520Zm140 260q68 0 123.5-38.5T684-400H276q25 63 80.5 101.5T480-260Zm0 180q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q43 0 83 8.5t77 24.5v167h80v80h142q9 29 13.5 58.5T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg>`,
+            async callback() {
+              chooseReaction(messageID);
+            },
+          },
+
+          {
+            label: "Copy",
+            svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-160q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm240-440h200L560-840v200Z"/></svg>`,
+            async callback() {
+              await navigator.clipboard.writeText(message);
+            },
+          },
+        ],
+        allowance: 20,
+        bottom: true,
+      });
+
+      ctxmenu.init();
     }
   }
 }
@@ -404,16 +514,6 @@ function chooseReaction(messageID) {
   reactBG.disabled = false;
 }
 function sendReact(reaction, messageID) {
-  const reactOpt = document.querySelector("#reactOpt");
-  const reactBG = document.querySelector("#reactBG");
-
-  const reactOptions = document.querySelector("#reactOptions");
-  reactOptions.innerHTML = "";
-  reactOpt.style.display = "none";
-  reactOpt.disabled = true;
-  reactBG.style.display = "none";
-  reactBG.disabled = true;
-
   ws.send(
     JSON.stringify({
       type: "message_reaction",
@@ -791,7 +891,7 @@ class ContextMenu {
    *
    * @param {{ clientX?: number, clientY?: number }} [position] - The position to show the menu at.
    */
-  show({ clientX = 0, clientY = 0 } = {}) {
+  show({ clientX = 0, clientY = 0, isRight = false } = {}) {
     const { menu, isBottom, allowance } = this;
     const { innerWidth, innerHeight } = window;
     this.menu.style.animation = "openApp 0.2s ease-out forwards";
@@ -853,15 +953,20 @@ class ContextMenu {
       });
     }
 
-    // Ensure the menu doesn't overflow the viewport horizontally
-    if (clientX + menuWidth > innerWidth) {
-      left = innerWidth - menuWidth - allowance;
+    if (!isRight) {
+      if (clientX + menuWidth > innerWidth) {
+        left = innerWidth - menuWidth - allowance;
+      }
     }
 
     Object.assign(menu.style, {
-      left: `${left}px`,
-      display: "block",
+      [isRight ? "right" : "left"]: `${left}px`,
+      display: "flex",
     });
+
+    if (isRight) {
+      menu.style.left = "";
+    }
 
     document.body.appendChild(menu);
     this.visible = true;

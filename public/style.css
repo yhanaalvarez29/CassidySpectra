@@ -430,6 +430,7 @@ hr {
   white-space: pre-wrap;
   padding: 8px 12px;
   max-width: min(70%, 564px);
+  user-select: none;
   transition: border-radius 1s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
@@ -625,12 +626,13 @@ hr {
 .lia-ctxmenu {
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 9px;
   background-color: #1f1f1f;
   color: white;
   justify-content: center;
   align-items: center;
   /* min-width: 330px; */
+  min-width: fit-content;
   animation: openApp 0.2s ease-out forwards;
 }
 
@@ -643,10 +645,11 @@ hr {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding: 10px 15px;
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   user-select: none;
+  width: 100%;
 }
 
 .lia-ctxmenu .item:hover {
@@ -684,6 +687,7 @@ hr {
   z-index: 999;
   position: fixed;
   transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  border-radius: 18px;
 }
 
 .blur-bg {
@@ -696,4 +700,32 @@ hr {
   left: 0;
   z-index: 997;
   animation: openBG 0.2s ease-out forwards;
+}
+
+.react-c {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  padding: 10px 15px;
+  user-select: none;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: fit-content;
+  border-radius: 9px;
+  background-color: #1f1f1f;
+  color: white;
+  animation: openApp 0.2s ease-out forwards;
+  z-index: 999;
+  gap: 10px;
+  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.react-c > * {
+  cursor: pointer;
+  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.react-c > *:hover {
+  scale: 1.3;
 }
