@@ -144,6 +144,7 @@ function appendRep({ body, messageID, chatPad }) {
     sanitize(body)
   )}</div><span id="${messageID}_options" style="display: none;"><br><br><div class="vanillaButton bnw" onclick="xCopy('${messageID}'); ">Copy</div><br><div class="vanillaButton bnw" onclick="chooseReaction('${messageID}'); ">React</div><br><div class="vanillaButton bnw" onclick="reply('${messageID}')">Reply</div></span></div></div>`;
   chatPad.appendChild(elem);
+  animateSend(elem);
 }
 // some stuffs don't need to be documented
 function togOpt(messageID) {
@@ -165,6 +166,7 @@ function appendSend({ message, chatPad }) {
     sanitize(message)
   )}</div></div>`;
   chatPad.appendChild(elem);
+  animateSend(elem);
 }
 // this handles messages sent by user/bot
 function handleMessage(data) {
@@ -341,6 +343,27 @@ function adjustRows() {
   const ccc = document.querySelector("#ccc");
   if (isScrolledBottom(ccc, 20)) {
     ccc.lastElementChild.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
+function animateSend(element) {
+  if (element instanceof HTMLElement) {
+    element.animate(
+      [
+        {
+          transform: "translateY(20px)",
+          opacity: 0,
+        },
+        {
+          transform: "translateY(0)",
+          opacity: 1,
+        },
+      ],
+      {
+        duration: 300,
+        easing: "ease-out",
+      }
+    );
   }
 }
 
