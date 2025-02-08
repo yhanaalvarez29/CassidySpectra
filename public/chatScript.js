@@ -223,6 +223,7 @@ async function send(isReply, mid, extra = {}) {
   ws.send(JSON.stringify(payload.params));
 
   messageDoc.value = "";
+  adjustRows();
 }
 function chooseReaction(messageID) {
   const reactOpt = document.querySelector("#reactOpt");
@@ -335,7 +336,32 @@ function adjustRows() {
   const lines = textarea.value.split("\n");
   const rowCount = Math.min(lines.length, MAX_ROWS);
 
-  textarea.setAttribute("rows", rowCount + 1);
+  textarea.setAttribute("rows", rowCount);
+
+  const ccc = document.querySelector("#ccc");
+  if (isScrolledBottom(ccc, 20)) {
+    ccc.lastElementChild.scrollIntoView({ behavior: "smooth" });
+  }
 }
 
 textarea.addEventListener("input", adjustRows);
+
+function isScrolledBottom(element, allowance) {
+  if (!element) return false;
+
+  if (element instanceof HTMLElement) {
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+
+    console.log(
+      `${scrollPosition} >= ${scrollHeight} - ${allowance} (${
+        scrollHeight - allowance
+      })`,
+      scrollPosition >= scrollHeight - allowance
+    );
+
+    return scrollPosition >= scrollHeight - allowance;
+  }
+
+  return false;
+}

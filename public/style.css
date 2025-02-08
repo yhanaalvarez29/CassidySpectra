@@ -69,6 +69,7 @@
   --chat-scrollbar-thumb-color: rgba(227, 172, 172, 0.7);
   --chat-scrollbar-track-color: transparent;
   --mwp-header-background-color: #8c6262;
+  --mwp-header-background-color-alt: #946d6d;
   --mwp-header-button-color: #ff8080;
   --mwp-header-text-color: #ffffff;
   --mwp-message-list-actions-gap: 4px;
@@ -223,7 +224,7 @@ hr {
 */
 .header {
   /* background-color: #1a1a1a; */
-  background-color: var(--mwp-header-background-color);
+  background-color: var(--mwp-header-background-color-alt);
   color: white;
   user-select: none;
   /* padding: 45px; */
@@ -234,8 +235,9 @@ hr {
   left: 0px;
   width: 100%;
   /* border-bottom: 2px solid white; */
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
   /* box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   transition: height 0.4s ease-out;
   z-index: 2;
   height: var(--h);
@@ -299,7 +301,7 @@ hr {
   display: block;
   width: 100%;
   padding: 10px;
-  margin: 10px 0;
+  /* margin: 10px 0; */
   font-size: 16px;
   color: white;
   /* background-color: rgba(255, 255, 255, 0.1); */
@@ -314,6 +316,7 @@ hr {
   resize: none;
   border-radius: 18px;
   caret-color: var(--chat-composer-caret-color);
+  overflow: auto;
 }
 
 .textinput::selection {
@@ -379,7 +382,8 @@ hr {
 .chat-con::before {
   background-image: url("mess.jpg");
   background-attachment: fixed;
-  height: calc(100vh - var(--h) - 100px);
+  /* height: calc(100vh - var(--h) - 100px); */
+  height: calc(100vh - var(--h));
   object-fit: contain;
   content: "";
   position: fixed;
@@ -462,10 +466,12 @@ hr {
   /* box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); */
   transition: transform 0.3s ease-in-out, height 0.3s ease, width 0.3s ease;
   display: flex;
-  align-items: center;
+  align-items: end;
   z-index: 6;
-  height: 100px;
-  background-color: var(--mwp-header-background-color);
+  /* height: 100px; */
+  height: fit-content;
+  background-color: var(--chat-composer-background-color);
+  /* background-color: var(--mwp-header-background-color); */
   color: var(--mwp-header-text-color);
   border: 0.5px solid rgba(0, 0, 0, 0.1);
   gap: 10px;
@@ -483,9 +489,9 @@ hr {
   width: 100%;
 }
 
-.fixedBox > * {
+/* .fixedBox > * {
   height: 100%;
-}
+} */
 
 .c-textinput {
   flex: 1;
