@@ -175,7 +175,7 @@ function xCopy(id) {
   copyToClipboard(document.querySelector(`#${id}_text`).innerText);
 }
 // this one also appends but it's a little different one, it appends messages sent by YOU
-function appendSend({ message, chatPad }) {
+function appendSendOld({ message, chatPad }) {
   const elem = document.createElement("span");
   pushConvo({ message });
   elem.innerHTML += `<div class="user-message-container"><div class="user-message">${autoAnchor(
@@ -184,6 +184,35 @@ function appendSend({ message, chatPad }) {
   chatPad.appendChild(elem);
   animateSend(elem);
 }
+
+function appendSend({ message, chatPad }) {
+  if (chatPad instanceof HTMLElement) {
+    pushConvo({ message });
+    const messageContainer =
+      chatPad.lastElementChild &&
+      chatPad.lastElementChild &&
+      chatPad.lastElementChild.classList.contains("user-message-container")
+        ? chatPad.lastElementChild
+        : document.createElement("div");
+    messageContainer.classList.add("user-message-container");
+
+    if (messageContainer instanceof HTMLElement) {
+      const userMessage = document.createElement("div");
+      userMessage.classList.add("user-message");
+      const wrapper = messageContainer.querySelector(".col-user-message")
+        ? messageContainer.querySelector(".col-user-message")
+        : document.createElement("div");
+      wrapper.classList.add("col-user-message");
+      userMessage.textContent = message;
+      wrapper.append(userMessage);
+      messageContainer.append(wrapper);
+
+      chatPad.appendChild(messageContainer);
+      animateSend(userMessage);
+    }
+  }
+}
+
 // this handles messages sent by user/bot
 function handleMessage(data) {
   const chatPad = document.getElementById("chatPad");
