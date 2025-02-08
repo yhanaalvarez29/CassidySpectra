@@ -187,7 +187,7 @@
     "quizWins": 1
   },
   "wss:admin": {
-    "money": 100100,
+    "money": 100200,
     "exp": 0,
     "name": "Admin",
     "virtualFiles": {
@@ -209,7 +209,7 @@
         }
       ]
     },
-    "lastModified": 1735977807179,
+    "lastModified": 1738990851436,
     "inventory": [
       {
         "name": "***DOG*** Canned Food ",
@@ -231,11 +231,46 @@
     ],
     "lastGiftClaim": 1735977424556,
     "fishStamp": 1735977461906,
-    "collectibles": []
+    "collectibles": [
+      {
+        "metadata": {
+          "key": "feudTickets",
+          "name": "Feud Tickets",
+          "icon": "🎫",
+          "type": "hardWork"
+        },
+        "amount": 0
+      },
+      {
+        "metadata": {
+          "key": "gems",
+          "name": "Daily Gems",
+          "icon": "💎",
+          "type": "currency"
+        },
+        "amount": 1
+      }
+    ],
+    "lastDailyClaim": 1738990851433,
+    "battlePoints": 10,
+    "cassExpress": {
+      "mailList": [
+        {
+          "body": "Congratulations **Admin** for claiming your daily reward!",
+          "timeStamp": 1738990851434,
+          "title": "Daily Reward Claimed",
+          "author": "wss:admin"
+        }
+      ],
+      "bankLogs": []
+    },
+    "cassEXP": {
+      "exp": 5
+    }
   },
   "test": {
     "money": 0,
     "exp": 0,
-    "lastModified": 1735977314048
+    "lastModified": 1738990822455
   }
 }

@@ -1,25 +1,30 @@
 <style>
-  ::-webkit-scrollbar {
+  /* ::-webkit-scrollbar {
     display: none !important;
-  }
+  } */
 
   * {
     scrollbar-color: unset !important;
   }
 </style>
-<div class="chat-con" id="ccc">
-  <span id="chatPad"></span>
-  <p style="text-align: center">You can type "prefix".<br /><br /></p>
+<div class="rowCC">
+  <div class="chatZ">
+    <div class="chat-con" id="ccc">
+      <span id="chatPad"></span>
+      <p style="text-align: center">You can type "prefix".<br /><br /></p>
+    </div>
+    <div class="fixedBox">
+      <textarea
+        class="textinput"
+        placeholder="Type your message..."
+        id="userText"
+      ></textarea>
+      <button class="send-button" onclick="send()">Send</button>
+    </div>
+  </div>
+  <div class="opt-con"></div>
 </div>
-<br /><br /><br /><br /><br />
-<div class="fixedBox">
-  <textarea
-    class="textinput"
-    placeholder="Type your message..."
-    id="userText"
-  ></textarea>
-  <button class="send-button" onclick="send()">Send</button>
-</div>
+
 <div id="reactBG" class="darkBG" style="display: none"></div>
 <div class="fixedMiddle container" style="display: none" id="reactOpt">
   <strong>React with: </strong>

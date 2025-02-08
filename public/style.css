@@ -115,13 +115,15 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 * {
-  font-family: Roboto, "SF", sans-serif;
+  font-family: "SF", sans-serif;
   box-sizing: border-box;
-  /* letter-spacing: 0.02em; */
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .replit {
@@ -133,30 +135,6 @@ body {
 .replitHb {
   margin: 0;
 }
-/* ah yes, a replit fan. */
-
-/* .gradientFont {
-  background: linear-gradient(90deg, purple, fuchsia, purple);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  background-size: 400% 400%;
-
-  animation: gradientChange 5s infinite;
-}
-.gradientTab {
-  background: linear-gradient(65deg, purple, fuchsia, purple);
-  background-size: 400% 400%;
-  background-attachment: initial;
-  animation: gradientAnimation 4s infinite;
-  z-index: -1;
-} */
-
-/* .gradientFont {
-  color: var(--mwp-header-text-color);
-}
-
-.gra */
 
 hr {
   border: none;
@@ -247,6 +225,7 @@ hr {
   /* background-color: #1a1a1a; */
   background-color: var(--mwp-header-background-color);
   color: white;
+  user-select: none;
   /* padding: 45px; */
   padding: 20px;
   text-align: center;
@@ -331,7 +310,7 @@ hr {
   transition: border-color 0.3s ease;
   background-color: var(--chat-composer-input-background-color);
   color: var(--chat-message-text-color);
-  font-size: 15px;
+  font-size: 16px;
   resize: none;
   border-radius: 18px;
   caret-color: var(--chat-composer-caret-color);
@@ -350,13 +329,40 @@ hr {
   border-color: lightpink;
 }
 
-.chat-con {
-  height: calc(100% - var(--h) - 100px);
+.rowCC {
   position: fixed;
+  left: 0;
   top: var(--h);
-  right: 0;
+  /* height: calc(100% - var(--h) - 100px); */
+  height: calc(100% - var(--h));
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.opt-con {
   margin: 0;
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  width: min(400px, 100%);
+  background-color: var(--mwp-header-background-color);
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (max-width: 1115px) {
+  .opt-con {
+    display: none;
+  }
+}
+
+.chat-con {
+  margin: 0;
+  padding: 20px;
+  /* height: 100%; */
   scrollbar-color: var(
       --chat-scrollbar-thumb-color,
       var(--scrollbar-thumb-color)
@@ -365,13 +371,9 @@ hr {
       --chat-scrollbar-track-color,
       var(--mwp-message-row-background, var(--scrollbar-track-color))
     );
-  max-width: 900px;
-  float: right;
+  flex: 1;
   overflow-y: scroll;
-  width: 100vw;
-  /* background-color: var(--mwp-header-background-color); */
-
-  /* overflow: scroll; */
+  /* min-width: min(100%, 715px); */
 }
 
 .chat-con::before {
@@ -382,10 +384,11 @@ hr {
   content: "";
   position: fixed;
   top: var(--h);
-  right: 0;
+  left: 0;
   width: 100vw;
+  /* width: 100vw; */
   z-index: -1;
-  max-width: 900px;
+  /* max-width: 900px; */
 }
 
 .user-message-container {
@@ -400,7 +403,7 @@ hr {
   color: var(--chat-message-text-color);
   padding: 10px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 16px;
   word-wrap: break-word;
   white-space: pre-wrap;
   padding: 8px 12px;
@@ -431,7 +434,7 @@ hr {
   background-color: var(--chat-incoming-message-bubble-background-color);
   color: var(--chat-incoming-message-text-color);
   padding: 10px;
-  font-size: 15px;
+  font-size: 16px;
   border-radius: 4px;
   word-wrap: break-word;
   transition: background-color 0.3s ease, max-height 0.3s ease;
@@ -451,10 +454,7 @@ hr {
 }
 
 .fixedBox {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  max-width: 900px;
+  /* max-width: 900px; */
   padding: 10px;
   width: 100%;
   /* border: 2px solid white; */
@@ -469,6 +469,18 @@ hr {
   color: var(--mwp-header-text-color);
   border: 0.5px solid rgba(0, 0, 0, 0.1);
   gap: 10px;
+}
+
+.chatZ {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+.chatZ > * {
+  width: 100%;
 }
 
 .fixedBox > * {
@@ -499,7 +511,7 @@ hr {
 .send-button {
   padding: 10px 20px;
   /* margin-left: 10px; */
-  font-size: 15px;
+  font-size: 16px;
   /* background: linear-gradient(90deg, purple, fuchsia); */
   /* box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); */
   font-weight: bold;
