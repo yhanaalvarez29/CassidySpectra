@@ -53,10 +53,18 @@ window.onload = async () => {
   /*const {
     data: { url },
   } = await axios.get("/ws-url");*/
+
+  function scrollA(e) {
+    if (isScrolledBottom(e, 20)) {
+      smoothScroll2(e);
+    }
+  }
+
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
   const ccc = document.querySelector("#ccc");
   // You can freely customize this ws.onopen, just make sure it doesn't do stuffs that may break the page :)
+
   ws.onopen = () => {
     ws.send(
       JSON.stringify({
@@ -73,15 +81,23 @@ window.onload = async () => {
         break;
       case "message":
         handleMessage(data);
-        smoothScroll2(ccc);
+        if (data.botSend) {
+          scrollA(ccc);
+        } else {
+          smoothScroll2(ccc);
+        }
         break;
       case "message_reply":
         handleMessage(data);
-        smoothScroll2(ccc);
+        if (data.botSend) {
+          scrollA(ccc);
+        } else {
+          smoothScroll2(ccc);
+        }
         break;
       case "message_edit":
         handleMessageEdit(data);
-        smoothScroll2(ccc);
+        scrollA(ccc);
         break;
     }
   };
