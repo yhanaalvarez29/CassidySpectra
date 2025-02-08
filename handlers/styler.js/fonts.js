@@ -863,6 +863,7 @@ const FontSystem = {
     });
     return fontList;
   },
+  fontMap: fonts,
   get fonts() {
     return new Proxy(
       { ...fonts },
