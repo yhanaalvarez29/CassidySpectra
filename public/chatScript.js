@@ -204,6 +204,9 @@ function appendSend({ message, chatPad }) {
         : document.createElement("div");
       wrapper.classList.add("col-user-message");
       userMessage.textContent = message;
+      if (isEmojiAll(message)) {
+        userMessage.classList.add("emoji-only");
+      }
       wrapper.append(userMessage);
       messageContainer.append(wrapper);
 
@@ -432,4 +435,9 @@ function isScrolledBottom(element, allowance) {
   }
 
   return false;
+}
+
+function isEmojiAll(str) {
+  const regex = /^\p{Emoji}+$/u;
+  return regex.test(str.replace(/\n/g, "").replace(" ", ""));
 }
