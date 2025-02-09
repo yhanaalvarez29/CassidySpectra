@@ -6,7 +6,7 @@ if (!password) {
   localStorage.setItem("password", password);
 }
 
-const emojis = ["👍", "💗", "😮", "😂", "😭", "🥲"];
+const emojis = ["💜", "😆", "😮", "🥲", "😭", "👍"];
 /* create MAX_PROPERTIES variable.
 
 higher = saves more messages.
