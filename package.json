@@ -51,6 +51,7 @@
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
+    "git-cliff": "^2.8.0",
     "typescript": "^5.7.3"
   },
   "engines": {
