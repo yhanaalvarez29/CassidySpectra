@@ -1,3 +1,5 @@
+import { UNIRedux, emojiEnd } from "../../CommandFiles/modules/unisym.js";
+
 const { fonts } = require("./fonts");
 
 // FUCK DO NOT OWN, ENTIRELY MADE BY LIANE CAGARA.
@@ -31,6 +33,8 @@ whiteline - its just \n
 
 
 */
+
+
 export function convertLegacyStyling(style) {
   return {
     ...style,
@@ -38,10 +42,15 @@ export function convertLegacyStyling(style) {
     contentStyle: undefined,
     title: {
       text_font: style.titleFont ?? "bold",
-      content: (typeof style.title === "object" ? "Title Invalid" : String(style.title)),
+      content:
+        typeof style.title === "object"
+          ? "Title Invalid"
+          : emojiEnd(String(style.title)),
       line_bottom: "default",
       ...(typeof style.title === "object" && style.title ? style.title : {}),
-      ...(typeof style.titleStyle === "object" && style.titleStyle ? style.titleStyle : {}),
+      ...(typeof style.titleStyle === "object" && style.titleStyle
+        ? style.titleStyle
+        : {}),
     },
     content: {
       text_font: style.contentFont ?? "none",
@@ -67,7 +76,7 @@ export function parseTemplate(text, ...replacers) {
       if (typeof replacer === "string") {
         text = text.replace(
           new RegExp(`%${index + 1}(?!\\d)`, "g"),
-          String(replacer),
+          String(replacer)
         );
       } else if (replacer && typeof replacer === "object") {
         for (const key in replacer) {
@@ -113,12 +122,12 @@ export class CassidyResponseStyler {
   cloneField() {
     return new CassidyResponseStyler(
       JSON.parse(JSON.stringify(style)),
-      this.key,
+      this.key
     );
   }
   cloneOriginal() {
     return new CassidyResponseStyler(
-      JSON.parse(JSON.stringify(this.#originalX)),
+      JSON.parse(JSON.stringify(this.#originalX))
     );
   }
   changeContent(content, ...args) {
@@ -147,7 +156,7 @@ export class CassidyResponseStylerControl {
       }
       for (const preset of fields.preset) {
         const data = JSON.parse(
-          JSON.stringify(global.Cassidy.presets.get(preset)),
+          JSON.stringify(global.Cassidy.presets.get(preset))
         );
         if (!data) {
           continue;
@@ -163,8 +172,8 @@ export class CassidyResponseStylerControl {
         {},
         styles[0],
         JSON.parse(JSON.stringify(this.#fields)),
-        ...styles.slice(1),
-      ),
+        ...styles.slice(1)
+      )
     );
   }
   #proc(data, key) {
@@ -295,32 +304,32 @@ export function styled(text = "", StyleClass) {
       if (Array.isArray(ownStyling.content_template)) {
         container[key] = parseTemplate(
           container[key],
-          ...ownStyling.content_template,
+          ...ownStyling.content_template
         );
       }
       container[key] = applyLine(container[key], ownStyling);
       if (Array.isArray(ownStyling.content_template)) {
         container[key] = parseTemplate(
           container[key],
-          ...ownStyling.content_template,
+          ...ownStyling.content_template
         );
       }
       container[key] = applyText(container[key], ownStyling);
     }
     text = "";
     function addLineHelper(key, str) {
-      if (styling[key].new_line === true){
+      if (styling[key].new_line === true) {
         return str;
       } else {
         return extraWhiteLine(str);
       }
     }
     if (container.title) {
-      text += addLineHelper("title",`${container.title}\n`);
+      text += addLineHelper("title", `${container.title}\n`);
       delete container.title;
     }
     if (container.content) {
-      text += addLineHelper("content",`${container.content}\n`);
+      text += addLineHelper("content", `${container.content}\n`);
       delete container.content;
     }
     for (const key in container) {
@@ -350,7 +359,7 @@ export function fontNumbers(text, font) {
 export function autoBold(text) {
   text = String(text);
   text = text.replace(/\*\*\*(.*?)\*\*\*/g, (_, text) =>
-    fonts.bold_italic(text),
+    fonts.bold_italic(text)
   );
   text = text.replace(/\*\*(.*?)\*\*/g, (_, text) => fonts.bold(text));
   return text;
@@ -365,7 +374,7 @@ export function fontTag(text) {
   text = String(text);
   text = text.replace(
     /\[font=(.*?)\]\s*(.*?)\s*\[:font=(.*?)\]/g,
-    (_, font, text, font2) => (font === font2 ? fonts[font](text) : text),
+    (_, font, text, font2) => (font === font2 ? fonts[font](text) : text)
   );
   return text;
 }

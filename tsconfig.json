@@ -3,12 +3,8 @@
     "transpileOnly": true
   },
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "checkJs": false,
     "strict": false,
     "noImplicitAny": false,
     "noImplicitThis": false,
@@ -17,7 +13,17 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "outDir": "./dist-commandfiles",
-    "rootDir": "./CommandFiles"
+    "rootDir": "./",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "types": ["node"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "declaration": true,
+    "declarationMap": true,
+    "allowJs": true
   },
   "exclude": ["node_modules"]
 }

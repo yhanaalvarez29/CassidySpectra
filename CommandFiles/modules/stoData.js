@@ -27,9 +27,9 @@ export const stoData = {
     price: 100,
     key: "plantitaMaxZ",
   },
-  spaceexplorer: {
+  explorer: {
     price: 1000,
-    key: "spaceexplorerMaxZ",
+    key: "explorerMaxZ",
   },
   deepseadiver: {
     price: 1000,

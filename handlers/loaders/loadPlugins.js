@@ -72,7 +72,7 @@ export async function loadPlugins(
   });
 }
 
-import { checkCompatibility } from "./util.js";
+import { checkCompatibility, deprecationWarning } from "./util.js";
 
 export async function loadPlugin(name, allPlugins, force) {
   let plugin;

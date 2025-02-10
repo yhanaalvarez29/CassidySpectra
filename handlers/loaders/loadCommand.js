@@ -55,7 +55,9 @@ import {
   getNeanMartPlugin,
   packageInstallerErr,
   isValidVersion,
+  deprecationWarning,
 } from "./util.js";
+import { emojiEnd } from "../../CommandFiles/modules/unisym.js";
 
 export async function loadCommand(
   fileName,
@@ -139,9 +141,10 @@ export async function loadCommand(
       !checkCompatibility(meta.requirement || "^1.0.0", global.package.version)
     ) {
       throw new Error(
-        `Plugin ${fileName} requires a newer version of Cassidy. Your current Cassidy is ${global.package.version}, please update to ${meta.requirement}`
+        `Command ${fileName} requires a newer version of Cassidy. Your current Cassidy is ${global.package.version}, please update to ${meta.requirement}`
       );
     }
+    deprecationWarning(meta.requirement);
     if (typeof meta.ext_plugins === "object" && meta.ext_plugins) {
       for (const plugin in meta.ext_plugins) {
         if (!allPlugins[plugin]) {
@@ -222,6 +225,9 @@ export async function loadCommand(
         }
         assignCommand(name, command, commands);
       });
+    }
+    if (typeof command.style?.title === "string") {
+      emojiEnd(command.style.title);
     }
     global.logger(
       `Loaded command ${meta.name}@${version} ${

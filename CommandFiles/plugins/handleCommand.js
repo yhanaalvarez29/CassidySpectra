@@ -9,6 +9,7 @@ import { LianeAPI } from "fca-liane-utils";
 import axios from "axios";
 import stringSimilarity from "string-similarity";
 import { CassEXP } from "../modules/cassEXP.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
 
 function getSuggestedCommand(input, commands) {
   const commandNames = Object.keys(commands);
@@ -486,96 +487,118 @@ ${prefix}${commandName} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`
         await reply(`❌ | The entry function/object is corrupted.`);
         return;
       }
-      const list = Object.keys(entry)
-        .map((key) => {
-          const { description } = indivMeta?.[key] || {};
-          return `${prefix}${commandName}-${key}${
-            description ? ` - ${description}` : ""
-          }`;
-        })
-        .join("\n");
-      const listText = `🔎 Found ${Object.keys(entry).length} command${
-        Object.keys(entry).length > 1 ? "s" : ""
-      }.
+
+      if (meta.legacyMode === true) {
+        const list = Object.keys(entry)
+          .map((key) => {
+            const { description } = indivMeta?.[key] || {};
+            return `${prefix}${commandName}-${key}${
+              description ? ` - ${description}` : ""
+            }`;
+          })
+          .join("\n");
+        const listText = `🔎 Found ${Object.keys(entry).length} command${
+          Object.keys(entry).length > 1 ? "s" : ""
+        }.
 
 ${list}`;
-      for (const prop in entry) {
-        if (!input.property[prop.trim()]) {
-          continue;
-        } else {
-          const propEntry = entry[prop];
-          const { params = [], waitingTime = meta.waitingTime } =
-            indivMeta?.[prop] || {};
+        for (const prop in entry) {
+          if (!input.property[prop.trim()]) {
+            continue;
+          } else if (meta.legacyMode === true) {
+            const propEntry = entry[prop];
+            const { params = [], waitingTime = meta.waitingTime } =
+              indivMeta?.[prop] || {};
 
-          for (const paramKey in params) {
-            if (!params) {
-              break;
-            }
-            const currentValue = input.arguments[paramKey] || "";
-            const paramValue = params[paramKey];
-            const paramNum = parseInt(paramKey) + 1;
-            if (
-              Array.isArray(paramValue) &&
-              paramValue.includes(currentValue)
-            ) {
-              // do nothing lmfao
-            } else if (
-              !!paramValue === !!currentValue &&
-              paramValue !== undefined
-            ) {
-              // do nothing again.
-            } else if (currentValue && paramValue === false) {
-              return reply(
-                `❌ | The parameter ${paramNum} doesn't expect a value.
+            for (const paramKey in params) {
+              if (!params) {
+                break;
+              }
+              const currentValue = input.arguments[paramKey] || "";
+              const paramValue = params[paramKey];
+              const paramNum = parseInt(paramKey) + 1;
+              if (
+                Array.isArray(paramValue) &&
+                paramValue.includes(currentValue)
+              ) {
+                // do nothing lmfao
+              } else if (
+                !!paramValue === !!currentValue &&
+                paramValue !== undefined
+              ) {
+                // do nothing again.
+              } else if (currentValue && paramValue === false) {
+                return reply(
+                  `❌ | The parameter ${paramNum} doesn't expect a value.
 
 ${prefix}${commandName}.${prop} ${args.slice(0, paramNum).join(" ")} <= HERE`
-              );
-            } else {
-              return reply(
-                `❌ | The parameter ${paramNum} expects a value${
-                  Array.isArray(paramValue) ? ` (${paramValue.join(", ")})` : ""
-                }, received ${currentValue ? `"${currentValue}"` : "nothing."}
+                );
+              } else {
+                return reply(
+                  `❌ | The parameter ${paramNum} expects a value${
+                    Array.isArray(paramValue)
+                      ? ` (${paramValue.join(", ")})`
+                      : ""
+                  }, received ${currentValue ? `"${currentValue}"` : "nothing."}
 
 ${prefix}${commandName}.${prop} ${args
-                  .slice(0, paramNum - 1)
-                  .join(" ")} <= HERE`
+                    .slice(0, paramNum - 1)
+                    .join(" ")} <= HERE`
+                );
+              }
+            }
+
+            if (typeof propEntry === "function") {
+              setAwaitStack(input.senderID, meta.name);
+
+              try {
+                await propEntry(obj);
+              } catch (error) {
+                delAwaitStack(input.senderID, meta.name);
+
+                throw error;
+              }
+              delAwaitStack(input.senderID, meta.name);
+
+              if (willCooldown) {
+                handleCD.push(customCooldown ?? waitingTime, cooldownKey);
+              }
+              return;
+            } else if (typeof propEntry === "string") {
+              return await reply(propEntry);
+            } else {
+              return await reply(
+                `❌ | The entry function/string is corrupted in the key ${prop}.`
               );
             }
           }
-
-          if (typeof propEntry === "function") {
-            setAwaitStack(input.senderID, meta.name);
-
-            try {
-              await propEntry(obj);
-            } catch (error) {
-              delAwaitStack(input.senderID, meta.name);
-
-              throw error;
-            }
-            delAwaitStack(input.senderID, meta.name);
-
-            if (willCooldown) {
-              handleCD.push(customCooldown ?? waitingTime, cooldownKey);
-            }
-            return;
-          } else if (typeof propEntry === "string") {
-            return await reply(propEntry);
-          } else {
-            return await reply(
-              `❌ | The entry function/string is corrupted in the key ${prop}.`
-            );
-          }
+        }
+        if (meta.legacyMode === true) {
+          return obj.outputOld(listText, {
+            isReply: true,
+            defStyle: {
+              title: `📂 ${commandName.toUpperCase()} MENU`,
+              titleFont: "bold",
+              contentFont: "fancy",
+            },
+          });
+        }
+      } else {
+        const home = new ReduxCMDHome({
+          entryConfig: entry,
+          isHypen: true,
+          entryInfo: Object.keys(entry).map((i) => {
+            return {
+              key: i,
+              description: indivMeta?.[i]?.description ?? undefined,
+            };
+          }),
+        });
+        await home.runInContext(obj);
+        if (willCooldown) {
+          handleCD.push(customCooldown ?? meta.waitingTime, cooldownKey);
         }
       }
-      return obj.outputOld(listText, {
-        isReply: true,
-        defStyle: {
-          title: `📂 ${commandName.toUpperCase()} MENU`,
-          titleFont: "bold",
-          contentFont: "fancy",
-        },
-      });
     }
     recentCMD[senderID] ??= [];
     popularCMD[meta.name] ??= 0;

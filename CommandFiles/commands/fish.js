@@ -89,7 +89,7 @@ export const meta = {
   otherNames: ["fishing", "catch"],
   requirement: "2.5.0",
   icon: "🎣",
-  requiredLevel: 5,
+  requiredLevel: 3,
 };
 
 const fishingDelay = 300000;

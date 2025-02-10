@@ -17,9 +17,18 @@ export const meta = {
   icon: "🔱",
 };
 
+// Lahat ng encounter data nalipat na sa /CommandFiles/resources/spinoff/encounters.json
 const encounters = fs.readJSONSync(
   process.cwd() + "/CommandFiles/resources/spinoff/encounters.json"
 );
+
+function generateEnc() {
+  return Object.values(encounters)[
+    Math.floor(Math.random() * Object.values(encounters).length)
+  ];
+}
+
+let currentEnc = generateEnc();
 
 const petSchema = {
   fight: false,
@@ -76,11 +85,8 @@ export async function entry({
       playersMap,
     };
   }
-  const encounter =
-    encounters[args[0]] ??
-    Object.values(encounters)[
-      Math.floor(Math.random() * Object.values(encounters).length)
-    ];
+  const encounter = currentEnc;
+
   const i = await output.reply(`🔎 **Random Encounter**:
 Your opponent is ${encounter.wildIcon} ${encounter.wildName}
 
@@ -250,6 +256,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       return result;
     }
     async function handleWin(isGood, flavor) {
+      currentEnc = generateEnc();
       input.delReply(detectID);
       let dialogue;
       let multiplier = 1;
@@ -378,6 +385,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     }
     function handleDefeat() {
       isDefeat = true;
+      currentEnc = generateEnc();
       input.delReply(detectID);
       return output.reply(
         `❌ **Game Over**\n\n* All your pet members have been fainted. But that's not the end! Stay determined. You can always **try** again.`

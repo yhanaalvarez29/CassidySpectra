@@ -38,9 +38,5 @@
   "MODERATORBOT": ["wss:moderator"],
   "exitOnError": false,
   "WEB_PASSWORD": "lialiaXCR",
-  "autoRestart": {
-    "enabled": true,
-    "interval": 3600000
-  },
   "maintenanceMode": false
 }

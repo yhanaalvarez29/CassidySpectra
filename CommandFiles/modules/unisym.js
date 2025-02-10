@@ -14,6 +14,23 @@ export function secureRandom() {
   return randomInt / 0xffffffff;
 }
 
+export function emojiEnd(str) {
+  const emojiRegex = /\p{Emoji}/gu;
+
+  let emojis = [...str].filter((char) => emojiRegex.test(char)).join("");
+  let nonEmojis = [...str]
+    .filter((char) => !emojiRegex.test(char))
+    .join("")
+    .trim()
+    .replaceAll("|", "");
+
+  const res =
+    nonEmojis + " " + UNIRedux.charm + "" + (emojis ? " " + emojis : "");
+
+  console.log(str, " => ", res);
+  return res;
+}
+
 export class UNIRedux {
   static specialSpace = "ᅠ";
   static burger = "☰"; // burger menu

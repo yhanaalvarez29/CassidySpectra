@@ -11,11 +11,7 @@ export function isValidVersion(version) {
     return false;
   }
   const [, major, minor, patch] = matches;
-  return (
-    parseInt(major) >= 1 &&
-    parseInt(minor) >= 0 &&
-    parseInt(patch) >= 0
-  );
+  return parseInt(major) >= 1 && parseInt(minor) >= 0 && parseInt(patch) >= 0;
 }
 
 export function incrementVersion(version) {
@@ -45,6 +41,17 @@ export function incrementVersion(version) {
 
   return `${major}.${minor}.${patch}`;
 }
+
+export function deprecationWarning(inputVer = "1.0.0") {
+  const ver = global.package.version ?? "1.0.0";
+  if (!checkCompatibility(inputVer, ver)) {
+    global.logger(
+      "DEPRECATED",
+      `Warning: Any version below ${ver} is now marked as deprecated and may not work properly.`
+    );
+  }
+}
+
 export function checkCompatibility(reqVer, supVer) {
   const cleanReq = reqVer.replace(/^[\^v]/, "");
   const cleanSup = supVer.replace(/^[\^v]/, "");
@@ -105,7 +112,7 @@ npm install`.trim(),
         if (error) {
           result += error;
         }
-      },
+      }
     );
     child.on("exit", () => {
       //console.log(result);
@@ -115,7 +122,9 @@ npm install`.trim(),
 }
 
 export async function getNeanMartPlugin(plugin) {
-  const url = `https://neanmart-botcmds.onrender.com/rplugins/${encodeURIComponent(plugin)}`;
+  const url = `https://neanmart-botcmds.onrender.com/rplugins/${encodeURIComponent(
+    plugin
+  )}`;
   global.logger(`Installing plugin '${plugin}'...`, "NeanMart");
   try {
     const response = await axios.get(url);
@@ -129,7 +138,7 @@ export async function getNeanMartPlugin(plugin) {
   } catch (error) {
     global.logger(
       `Failed to install plugin '${plugin}'! Error: ${error.message}`,
-      "NeanMart",
+      "NeanMart"
     );
     throw error;
   }

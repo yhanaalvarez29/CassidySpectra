@@ -1,70 +1,74 @@
 export const meta = {
-  name: "spaceexplorer",
-  description:
-    "Explore distant planets, collect space resources, and upgrade your ship for more rewards in the cosmos!",
-  version: "1.0.0",
-  author: "Liane Cagara",
-  usage: "{prefix}spaceexplorer",
-  category: "Idle Accumulation Games",
+  name: "explorer",
+  description: "Explore space and discover new planets!",
+  version: "1.0.1",
+  author: "MrkimstersDev",
+  usage: "{prefix}explorer",
+  category: "Fun",
   permissions: [0],
-  noPrefix: false,
-  requirement: "2.5.0",
-  icon: "🚀",
-  otherNames: ["spaceex"],
-  shopPrice: 1000000,
+  noPrefix: "both",
+  shopPrice: 500,
 };
 
 export const style = {
-  title: "Space Explorer 🚀",
+  title: "🚀 Space Explorer",
   contentFont: "fancy",
   titleFont: "bold",
 };
 
-const spaceExplorerSimulation = {
-  key: "spaceexplorer",
+const explorerSimulation = {
+  key: "explorer",
   verb: "explore",
   verbing: "exploring",
   pastTense: "explored",
-  checkIcon: "✅",
-  initialStorage: 50,
+  checkIcon: "✓",
+  initialStorage: 40,
   itemData: [
     {
-      icon: "🌑",
-      delay: 10,
-      priceA: 50,
-      priceB: 80,
-      name: "Moon Rock",
-      chance: 0.85,
+      name: "Earth-like",
+      priceA: 1000,
+      priceB: 3000,
+      delay: 3,
+      icon: "🌍",
+      chance: 0.4,
     },
     {
-      icon: "💫",
-      delay: 12,
-      priceA: 60,
-      priceB: 100,
-      name: "Star Dust",
-      chance: 0.75,
-    },
-    {
-      icon: "🛸",
-      delay: 15,
-      priceA: 100,
-      priceB: 150,
-      name: "Alien Tech",
-      chance: 0.65,
-    },
-    {
+      name: "Gas Giant",
+      priceA: 5000,
+      priceB: 10000,
+      delay: 5,
       icon: "🪐",
-      delay: 20,
-      priceA: 200,
-      priceB: 300,
-      name: "Planetary Crystals",
-      chance: 0.6,
+      chance: 0.3,
+    },
+    {
+      name: "Ice Planet",
+      priceA: 2000,
+      priceB: 5000,
+      delay: 7,
+      icon: "❄️",
+      chance: 0.2,
+    },
+    {
+      name: "Magma World",
+      priceA: 8000,
+      priceB: 15000,
+      delay: 10,
+      icon: "🌋",
+      chance: 0.1,
+    },
+    {
+      name: "Crystal Planet",
+      priceA: 10000,
+      priceB: 30000,
+      delay: 12,
+      icon: "💎",
+      chance: 0.05,
     },
   ],
-  actionEmoji: "🚀",
+  actionEmoji: "🌌",
 };
 
 export async function entry({ GameSimulator }) {
-  const simu = new GameSimulator(spaceExplorerSimulation);
+  const simu = new GameSimulator(explorerSimulation);
   await simu.simulateAction();
 }
