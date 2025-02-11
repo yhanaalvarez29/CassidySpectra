@@ -357,7 +357,12 @@ export function use(obj) {
       }*/
       result = stylerShallow.text(text);
       return new Promise((res) => {
-        api.editMessage(result, mid, () => res(true));
+        const aa = api.editMessage(result, mid, () => res(true));
+        if (aa instanceof Promise) {
+          aa.then(res);
+        } else {
+          res();
+        }
       });
     };
     outputProps.frames = async (...args) => {
