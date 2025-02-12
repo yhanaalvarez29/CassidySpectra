@@ -6,24 +6,23 @@ const { tmpdir } = require("os");
 const defaultUrl = "https://github.com/lianecagara/CassidyRedux";
 
 /**
- * Creates an updater module that fetches updates from a repository.
- *
- * @param {string} repoUrl - The repository URL to clone from.
- * @param {string} [branch="main"] - The branch name to fetch updates from.
- * The update function applies changes from the repository.
- *
- * The update function accepts an options object:
- *  @returns {((options: { dontReplace?: string[]; ignore?: string[] }) => void) & { changes: { added: string[]; modified: string[]; removed: string[] } }}
- * - `dontReplace` {string[]} - List of files that should not be replaced.
- * - `ignore` {string[]} - List of files that should be ignored.
- *  Usage:
- * ```js
- * const update = createUpdater("https://github.com/user/repo.git", "dev");
- * update({ dontReplace: ["config.json"], ignore: ["temp/"] });
- * ```
+ * @typedef {{ added: string[], modified: string[], removed: string[] }} Changes
  */
 
-function createUpdater(repoUrl = defaultUrl, branch = "main") {
+/**
+ * Creates an updater function for synchronizing a repository.
+ * @param {string} [repoUrl=defaultUrl] - The repository URL.
+ * @param {string} [branch="main"] - The branch to pull updates from.
+ * @param {object} [options={}] - Configuration options.
+ * @param {string[]} [options.ignore=[]] - Files or directories to ignore.
+ * @param {string[]} [options.dontReplace=[]] - Files not to replace.
+ * @param {boolean} [options.dontDelete=false] - Whether to prevent deletion of removed files.
+ * @returns {(() => void) & { changes: Changes }} The update function.
+ */
+function createUpdater(repoUrl = defaultUrl, branch = "main", options = {}) {
+  const { ignore = [], dontReplace = [], dontDelete = false } = options;
+  const updatedIgnore = [...ignore, ".git", "node_modules", ".env"];
+
   const tempDir = path.join(tmpdir(), "repo-update-" + Date.now());
   const backupDir = path.join(process.cwd(), "backup");
   if (!fs.existsSync(backupDir)) {
@@ -37,8 +36,6 @@ function createUpdater(repoUrl = defaultUrl, branch = "main") {
   });
 
   const localPackageJson = path.join(localDir, "package.json");
-  const tempPackageJson = path.join(tempDir, "package.json");
-
   let version = "unknown_version";
   if (fs.existsSync(localPackageJson)) {
     const pkg = JSON.parse(fs.readFileSync(localPackageJson, "utf-8"));
@@ -46,20 +43,17 @@ function createUpdater(repoUrl = defaultUrl, branch = "main") {
   }
 
   const backupVersionDir = path.join(backupDir, version);
+  const changes = getFileChanges(tempDir, localDir, updatedIgnore);
 
-  const changes = getFileChanges(tempDir, localDir);
-
-  function update(options = {}) {
-    const { ignore = [], dontReplace = [] } = options;
-    const updatedIgnore = [...ignore, ".git"];
-
+  function update() {
     console.log(`Backing up current files to ${backupVersionDir}...`);
-    backupFiles(localDir, backupVersionDir);
+    backupFiles(localDir, backupVersionDir, changes);
 
     console.log("Applying updates...");
     applyChanges(tempDir, localDir, changes, {
       ignore: updatedIgnore,
       dontReplace,
+      dontDelete,
     });
 
     console.log("Cleaning up package.json...");
@@ -69,43 +63,46 @@ function createUpdater(repoUrl = defaultUrl, branch = "main") {
   }
 
   update.changes = changes;
-
   return update;
 }
 
 /**
- * Get file changes between two directories
- * @param {string} tempDir - The downloaded repository path
- * @param {string} localDir - The current local project path
- * @returns {{ added: Array<string>, modified: Array<string>, removed: Array<string> }} - Added, modified, removed file lists
+ * Determines file changes between two directories.
+ * @param {string} tempDir - The temporary directory containing new files.
+ * @param {string} localDir - The local directory.
+ * @param {string[]} ignore - Files or directories to ignore.
+ * @returns {Changes} Added, modified, and removed files.
  */
-function getFileChanges(tempDir, localDir) {
-  const localFiles = listFiles(localDir);
-  const tempFiles = listFiles(tempDir);
+function getFileChanges(tempDir, localDir, ignore) {
+  const localFiles = listFiles(localDir, ignore);
+  const tempFiles = listFiles(tempDir, ignore);
 
-  const added = tempFiles.filter((file) => !localFiles.includes(file));
-  const removed = localFiles.filter((file) => !tempFiles.includes(file));
-  const modified = tempFiles.filter(
-    (file) =>
-      localFiles.includes(file) &&
-      !filesAreEqual(path.join(tempDir, file), path.join(localDir, file))
-  );
-
-  return { added, modified, removed };
+  return {
+    added: tempFiles.filter((file) => !localFiles.includes(file)),
+    removed: localFiles.filter((file) => !tempFiles.includes(file)),
+    modified: tempFiles.filter(
+      (file) =>
+        localFiles.includes(file) &&
+        !filesAreEqual(path.join(tempDir, file), path.join(localDir, file))
+    ),
+  };
 }
 
 /**
- * List all files recursively in a directory
- * @param {string} dir - The directory to scan
- * @returns {string[]} - List of relative file paths
+ * Recursively lists files in a directory, ignoring specified paths.
+ * @param {string} dir - The base directory.
+ * @param {string[]} ignore - Files or directories to ignore.
+ * @param {string} [base=dir] - Base path for relative paths.
+ * @returns {string[]} List of file paths.
  */
-function listFiles(dir, base = dir) {
+function listFiles(dir, ignore, base = dir) {
   let fileList = [];
   for (const file of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, file);
     const relativePath = path.relative(base, fullPath);
+    if (ignore.some((pattern) => relativePath.startsWith(pattern))) continue;
     if (fs.statSync(fullPath).isDirectory()) {
-      fileList = fileList.concat(listFiles(fullPath, base));
+      fileList = fileList.concat(listFiles(fullPath, ignore, base));
     } else {
       fileList.push(relativePath);
     }
@@ -114,53 +111,22 @@ function listFiles(dir, base = dir) {
 }
 
 /**
- * Check if two files are identical
- * @param {string} file1 - First file path
- * @param {string} file2 - Second file path
- * @returns {boolean} - True if files are identical, false otherwise
- */
-function filesAreEqual(file1, file2) {
-  if (!fs.existsSync(file1) || !fs.existsSync(file2)) return false;
-  return (
-    fs.readFileSync(file1).toString() === fs.readFileSync(file2).toString()
-  );
-}
-
-/**
- * Backup local files before updating
- * @param {string} source - Source directory
- * @param {string} destination - Backup directory
- */
-function backupFiles(source, destination) {
-  if (!fs.existsSync(destination)) {
-    fs.mkdirSync(destination, { recursive: true });
-  }
-  const files = listFiles(source);
-  files.forEach((file) => {
-    const srcPath = path.join(source, file);
-    const destPath = path.join(destination, file);
-    if (!fs.existsSync(path.dirname(destPath))) {
-      fs.mkdirSync(path.dirname(destPath), { recursive: true });
-    }
-    fs.copyFileSync(srcPath, destPath);
-  });
-}
-
-/**
- * Apply file changes based on the update
- * @param {string} tempDir - Downloaded repository directory
- * @param {string} localDir - Local project directory
- * @param {Object} changes - Contains added, modified, removed files
- * @param {Object} options - Ignore or don't replace settings
+ * Applies file changes from the temporary directory to the local directory.
+ * @param {string} tempDir - The source directory.
+ * @param {string} localDir - The target directory.
+ * @param {object} changes - File changes.
+ * @param {object} options - Update options.
  */
 function applyChanges(tempDir, localDir, changes, options) {
-  const { ignore, dontReplace } = options;
+  const { ignore, dontReplace, dontDelete } = options;
 
-  changes.removed.forEach((file) => {
-    if (!ignore.includes(file)) {
-      fs.unlinkSync(path.join(localDir, file));
-    }
-  });
+  if (!dontDelete) {
+    changes.removed.forEach((file) => {
+      if (!ignore.includes(file)) {
+        fs.unlinkSync(path.join(localDir, file));
+      }
+    });
+  }
 
   [...changes.added, ...changes.modified].forEach((file) => {
     if (!ignore.includes(file) && !dontReplace.includes(file)) {
@@ -175,8 +141,45 @@ function applyChanges(tempDir, localDir, changes, options) {
 }
 
 /**
- * Remove "repository.url" from package.json
- * @param {string} packageJsonPath - Path to package.json
+ * Checks if two files are identical.
+ * @param {string} file1 - First file path.
+ * @param {string} file2 - Second file path.
+ * @returns {boolean} True if files are equal, otherwise false.
+ */
+function filesAreEqual(file1, file2) {
+  if (!fs.existsSync(file1) || !fs.existsSync(file2)) return false;
+  return (
+    fs.readFileSync(file1).toString() === fs.readFileSync(file2).toString()
+  );
+}
+
+/**
+ * Backs up only modified and deleted files from one directory to another.
+ * @param {string} source - The source directory.
+ * @param {string} destination - The backup destination.
+ * @param {Changes} changes - The changes to back up.
+ */
+function backupFiles(source, destination, changes) {
+  if (!fs.existsSync(destination)) {
+    fs.mkdirSync(destination, { recursive: true });
+  }
+
+  [...changes.modified, ...changes.removed].forEach((file) => {
+    const srcPath = path.join(source, file);
+    const destPath = path.join(destination, file);
+
+    if (fs.existsSync(srcPath)) {
+      if (!fs.existsSync(path.dirname(destPath))) {
+        fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      }
+      fs.copyFileSync(srcPath, destPath);
+    }
+  });
+}
+
+/**
+ * Cleans up the repository URL from package.json.
+ * @param {string} packageJsonPath - Path to package.json.
  */
 function cleanupPackageJson(packageJsonPath) {
   if (fs.existsSync(packageJsonPath)) {
@@ -193,9 +196,6 @@ module.exports = {
   applyChanges,
   backupFiles,
   cleanupPackageJson,
-  createUpdater,
-  defaultUrl,
-  filesAreEqual,
   getFileChanges,
   listFiles,
 };
