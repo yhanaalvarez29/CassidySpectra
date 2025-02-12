@@ -10,11 +10,10 @@ const defaultUrl = "https://github.com/lianecagara/CassidyRedux";
  *
  * @param {string} repoUrl - The repository URL to clone from.
  * @param {string} [branch="main"] - The branch name to fetch updates from.
- * @returns {function(Object): void} Returns an update function.
  * The update function applies changes from the repository.
  *
  * The update function accepts an options object:
- * @returns {(options: { dontReplace?: string[]; ignore?: string[] }) => void}
+ *  @returns {((options: { dontReplace?: string[]; ignore?: string[] }) => void) & { changes: { added: string[]; modified: string[]; removed: string[] } }}
  * - `dontReplace` {string[]} - List of files that should not be replaced.
  * - `ignore` {string[]} - List of files that should be ignored.
  *  Usage:
@@ -50,7 +49,7 @@ function createUpdater(repoUrl = defaultUrl, branch = "main") {
 
   const changes = getFileChanges(tempDir, localDir);
 
-  return function update(options = {}) {
+  function update(options = {}) {
     const { ignore = [], dontReplace = [] } = options;
     const updatedIgnore = [...ignore, ".git"];
 
@@ -67,14 +66,18 @@ function createUpdater(repoUrl = defaultUrl, branch = "main") {
     cleanupPackageJson(localPackageJson);
 
     console.log("Update complete.");
-  };
+  }
+
+  update.changes = changes;
+
+  return update;
 }
 
 /**
  * Get file changes between two directories
  * @param {string} tempDir - The downloaded repository path
  * @param {string} localDir - The current local project path
- * @returns {Object} - Added, modified, removed file lists
+ * @returns {{ added: Array<string>, modified: Array<string>, removed: Array<string> }} - Added, modified, removed file lists
  */
 function getFileChanges(tempDir, localDir) {
   const localFiles = listFiles(localDir);
