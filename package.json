@@ -1,11 +1,14 @@
 {
   "name": "cassidy-redux",
   "author": "Liane Cagara",
-  "version": "2.6.0",
+  "version": "2.6.5",
   "description": "Reworked Versatile Facebook Bot framework that provides many features.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "[ ! -d ./dist-commandfiles ] && (command -v npx >/dev/null 2>&1 && npx tsc || tsc) || echo 'dist-commandfiles exists, skipping compilation'",
+    "dev": "node dist-commandfiles/index.js",
+    "clean": "rm -rf ./dist-commandfiles"
   },
   "keywords": [],
   "type": "commonjs",
