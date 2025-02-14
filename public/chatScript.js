@@ -83,19 +83,11 @@ window.onload = async () => {
         break;
       case "message":
         handleMessage(data);
-        if (data.botSend) {
-          scrollA(ccc);
-        } else {
-          smoothScroll2(ccc);
-        }
+        smoothScroll2(ccc);
         break;
       case "message_reply":
         handleMessage(data);
-        if (data.botSend) {
-          scrollA(ccc);
-        } else {
-          smoothScroll2(ccc);
-        }
+        smoothScroll2(ccc);
         break;
       case "message_edit":
         handleMessageEdit(data);

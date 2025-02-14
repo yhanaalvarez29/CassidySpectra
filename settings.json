@@ -38,5 +38,6 @@
   "MODERATORBOT": ["wss:moderator"],
   "exitOnError": false,
   "WEB_PASSWORD": "lialiaXCR",
-  "maintenanceMode": false
+  "maintenanceMode": false,
+  "noLevelUI": false
 }

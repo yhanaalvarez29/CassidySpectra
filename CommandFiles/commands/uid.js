@@ -9,7 +9,9 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 10,
   requirement: "2.5.0",
+  otherNames: ["uid"],
   icon: "🎮",
+  noLevelUI: true,
 };
 
 export async function entry({ input, output }) {

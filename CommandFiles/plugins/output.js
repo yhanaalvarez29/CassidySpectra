@@ -148,7 +148,11 @@ export function use(obj) {
           ...options.style,
         });
       }*/
-      if (!options.noUI && obj.money) {
+      if (
+        command?.meta?.noLevelUI !== true &&
+        global.Cassidy.config.noLevelUI !== true &&
+        obj.money
+      ) {
         const {
           cassEXP,
           name,

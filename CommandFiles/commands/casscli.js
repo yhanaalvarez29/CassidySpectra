@@ -17,6 +17,7 @@ export const meta = {
   requirement: "2.5.0",
   icon: ">_",
   category: "Utilities",
+  noLevelUI: true,
 };
 
 import util from "util";
@@ -29,10 +30,30 @@ export const style = {
   contentFont: "none",
 };
 
+/**
+ * @type {CommandEntry}
+ */
 export async function entry({ input, output, money }) {
   const parser = new CLIParser();
   const userData = await money.get(input.senderID);
   const vf = new VirtualFiles(userData.virtualFiles ?? []);
+
+  async function onlyAdmin() {
+    if (!input.isAdmin) {
+      await output.reply("error: no permission.");
+      return true;
+    }
+    return false;
+  }
+
+  parser.registerCommand({
+    command: "moneyset",
+    usage: "moneyset <uid | 'self'> <money>",
+    description: "Modifies user balance.",
+    async handler({ args, flags }) {
+      if (await onlyAdmin()) return;
+    },
+  });
 
   parser.registerCommand({
     command: "stateget",
