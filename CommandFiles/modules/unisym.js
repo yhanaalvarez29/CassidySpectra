@@ -92,6 +92,13 @@ export class UNIRedux {
   static charm = "✦";
   static disc = "⦿";
 
+  static arrow = "➤";
+  static arrowBW = "➣";
+  static arrowFromT = "➥";
+  static arrowFromB = "➦";
+  static restart = "⟳";
+  static arrowOutline = "➩";
+
   static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] **2.5** ${this.charm}\n[font=fancy_italic]Not React, Just Smart Chat![:font=fancy_italic]`;
   static redux = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] ${this.charm}`;
 }
