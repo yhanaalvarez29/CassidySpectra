@@ -785,6 +785,9 @@ export async function use(obj) {
                  * @param {CommandContext} ctx2
                  */
                 async callback(ctx2) {
+                  if (ctx2.input.senderID !== input.senderID) {
+                    return;
+                  }
                   const nums = ctx2.input.words
                     .map((i) => parseInt(i))
                     .map((i) => sortedItems.at(i - 1))
@@ -842,7 +845,7 @@ export async function use(obj) {
                   });
 
                   return output.replyStyled(
-                    `✅ Tuning success! Please take your time waiting to **collect** the items! These 3 items below will be **prioritized!**\n\n${r2}`,
+                    `✅ Tuning successful!\nPlease wait patiently to **collect** your items.\n\nThe following **3 items** will be **prioritized**:\n\n${r2}\n\n⚠️ **Warning:** Tuning **resets the waiting time** for all items.\nAvoid tuning while having many items waiting, or you may lose the opportunity to collect them.`,
                     style
                   );
                 },
@@ -855,6 +858,25 @@ export async function use(obj) {
             aliases: ["-c"],
             async handler() {
               const currentTimestamp = Date.now();
+              function formatDuration(ms) {
+                const seconds = Math.floor(ms / 1000) % 60;
+                const minutes = Math.floor(ms / (1000 * 60)) % 60;
+                const hours = Math.floor(ms / (1000 * 60 * 60)) % 24;
+                const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+                const parts = [];
+                if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+                if (hours > 0)
+                  parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+                if (minutes > 0)
+                  parts.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
+                if (seconds > 0)
+                  parts.push(`${seconds} second${seconds > 1 ? "s" : ""}`);
+
+                return parts.length > 1
+                  ? parts.slice(0, -1).join(", ") + " and " + parts.slice(-1)
+                  : parts[0] || "0 seconds";
+              }
 
               const {
                 money: userMoney,
@@ -993,7 +1015,13 @@ export async function use(obj) {
                 text += `\n\n✨ **Total Earnings**: $**${(
                   newMoney - userMoney
                 ).toLocaleString()}💵**\n💰 **Your Balance**: $**${newMoney.toLocaleString()}**💵`;
-                text += `\n\n${self.actionEmoji} To start another ${self.verbing} cycle, use the **${prefix}${self.key}-tune** command to set your priorities before collecting.`;
+                text += `\n⌛ **Time Took**: ${formatDuration(
+                  currentTimestamp - actionStamp
+                )}\n\n${self.actionEmoji} To start another ${
+                  self.verbing
+                } cycle, use the **${prefix}${
+                  self.key
+                }-tune** command to set your priorities before collecting.`;
                 // text += `\n\n`;
               }
 
