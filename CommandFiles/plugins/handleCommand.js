@@ -229,19 +229,19 @@ export async function use(obj) {
 
     const cassEXP = new CassEXP(userDataCache.cassEXP);
 
-    if (typeof meta.requiredLevel === "number") {
-      if (isNaN(meta.requiredLevel)) {
-        return output.wentWrong();
-      }
-      if (!hasPrefix) {
-        return;
-      }
-      if (!cassEXP.levelReached(meta.requiredLevel)) {
-        return reply(
-          `🧪🔒 | To use this command, you need to be at least level **${meta.requiredLevel}**. You are currently at level **${cassEXP.level}**.`
-        );
-      }
-    }
+    // if (typeof meta.requiredLevel === "number") {
+    //   if (isNaN(meta.requiredLevel)) {
+    //     return output.wentWrong();
+    //   }
+    //   if (!hasPrefix) {
+    //     return;
+    //   }
+    //   if (!cassEXP.levelReached(meta.requiredLevel)) {
+    //     return reply(
+    //       `🧪🔒 | To use this command, you need to be at least level **${meta.requiredLevel}**. You are currently at level **${cassEXP.level}**.`
+    //     );
+    //   }
+    // }
 
     // if (hasAwaitStack(input.senderID, meta.name)) {
     //   if (isFn(awaiting)) {
