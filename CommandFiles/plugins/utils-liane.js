@@ -720,6 +720,136 @@ export async function use(obj) {
             },
           },
           {
+            key: "tune",
+            description:
+              "Tune at least 3 items before collecting—your choices shape the outcome, but you can't repeat the same order!",
+            aliases: ["-tu"],
+            async handler() {
+              const {
+                money: userMoney,
+                [self.key + "Stamp"]: actionStamp,
+                [self.key + "MaxZ"]: actionMax = self.storage,
+                [self.key + "Total"]: totalItems = {},
+                [self.key + "Tune"]: actionTune = [],
+                cassEXP: cxp,
+                name,
+              } = await money.get(input.senderID);
+
+              let sortedItems = Object.entries(totalItems).sort(
+                () => Math.random() - 0.5
+              );
+              self.itemData.forEach((i) => {
+                const total = Object.keys(totalItems).find((j) => j === i.name);
+
+                if (!total) {
+                  sortedItems.unshift([i.name, 0]);
+                }
+              });
+              sortedItems = sortedItems.slice(0, 5);
+
+              const genR = () =>
+                Math.floor(
+                  Math.random() * (Object.entries(totalItems).length - 1 + 1)
+                ) + 1;
+
+              let result = `🚀 Choose at least **3 items** to tune. Reply with the corresponding **numbers**.\n\n***Example***: ${prefix}${
+                self.key
+              }-tune ${genR()} ${genR()} ${genR()}\n\n`;
+
+              sortedItems.forEach(([itemName, itemCount], ind) => {
+                const data = self.itemData.find(
+                  (item) => item.name === itemName
+                );
+                result += `**${ind + 1}**. ${
+                  data.icon
+                } **${itemName}**\nSold Amount: ${itemCount}\nRarity: ${
+                  100 - data.chance * 100
+                }%\nProcessing Time: ${
+                  data.delay
+                } minutes.\nPrice Range:\nBetween ${data.priceA} and ${
+                  data.priceB
+                }.\n\n`;
+              });
+
+              const style = {
+                title: "🚀 Item Tuner",
+                titleFont: "bold",
+                contentFont: "fancy",
+              };
+
+              const inf = await output.replyStyled(result, style);
+
+              input.setReply(inf.messageID, {
+                /**
+                 *
+                 * @param {CommandContext} ctx2
+                 */
+                async callback(ctx2) {
+                  const nums = ctx2.input.words
+                    .map((i) => parseInt(i))
+                    .map((i) => sortedItems.at(i - 1))
+                    .map((i) => i?.[0])
+                    .slice(0, 3);
+
+                  if (nums.length < 3) {
+                    return output.replyStyled(
+                      `❌ You need to provide at least three numbers! You provided only ${nums.length}.`,
+                      style
+                    );
+                  }
+
+                  const invalidNums = nums.filter(
+                    (i) => i === null || i === undefined
+                  );
+
+                  if (invalidNums.length > 0) {
+                    return output.replyStyled(
+                      `❌ Invalid input detected! The following values are missing: ${invalidNums.join(
+                        ", "
+                      )}.`,
+                      style
+                    );
+                  }
+                  const uniqueNums = new Set(nums);
+                  if (uniqueNums.size !== nums.length) {
+                    return output.replyStyled(
+                      `❌ Duplicate numbers are not allowed! Your input contains duplicates.`,
+                      style
+                    );
+                  }
+
+                  await money.set(input.senderID, {
+                    [self.key + "Tune"]: nums,
+                    [self.key + "Stamp"]: Date.now(),
+                  });
+
+                  let r2 = "";
+
+                  nums.forEach((itemName) => {
+                    const ind = sortedItems.findIndex((i) => i[0] === itemName);
+                    const data = self.itemData.find(
+                      (item) => item.name === itemName
+                    );
+                    r2 += `**${ind + 1}**. ${
+                      data.icon
+                    } **${itemName}**\nRarity: ${
+                      100 - data.chance * 100
+                    }%\nProcessing Time: ${
+                      data.delay
+                    } minutes.\nPrice Range:\nBetween ${data.priceA} and ${
+                      data.priceB
+                    }.\n\n`;
+                  });
+
+                  return output.replyStyled(
+                    `✅ Tuning success! Please take your time waiting to **collect** the items! These 3 items below will be **prioritized!**\n\n${r2}`,
+                    style
+                  );
+                },
+              });
+            },
+          },
+          {
             key: "collect",
             description: "Collect items that have finished processing.",
             aliases: ["-c"],
@@ -731,6 +861,7 @@ export async function use(obj) {
                 [self.key + "Stamp"]: actionStamp,
                 [self.key + "MaxZ"]: actionMax = self.storage,
                 [self.key + "Total"]: totalItems = {},
+                [self.key + "Tune"]: actionTune = [],
                 cassEXP: cxp,
                 name,
               } = await money.get(input.senderID);
@@ -741,19 +872,39 @@ export async function use(obj) {
                 );
               }
 
+              const randTune = () =>
+                self.itemData.map((i) => i.name)[
+                  Math.floor(Math.random() * self.itemData.length)
+                ];
+
+              while (actionTune.length < 3) {
+                actionTune.push(randTune());
+              }
+
+              const tuneBasedData = [...self.itemData].sort((a, b) => {
+                const indexA = actionTune.indexOf(a.name);
+                const indexB = actionTune.indexOf(b.name);
+
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                if (indexA !== -1) return -1;
+                if (indexB !== -1) return 1;
+
+                return Math.random() - 0.5;
+              });
+
               let text = "";
               let newMoney = userMoney;
               let totalYield = 0;
               let failYield = 0;
 
               if (!actionStamp) {
-                text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no ${self.verb} is in progress. Starting ${self.verbing} ${self.verb} now, come back later!`;
+                text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no items have been tuned yet. Use the **${prefix}${self.key}-tune** command to set your priorities before collecting!`;
               } else {
                 const elapsedTime =
                   (currentTimestamp - actionStamp) / 1000 / 60;
 
                 let harvestedItems = [];
-                for (const item of self.itemData) {
+                for (const item of tuneBasedData) {
                   let yieldAmount = Math.max(
                     0,
                     Math.floor(elapsedTime / item.delay)
@@ -806,7 +957,18 @@ export async function use(obj) {
                   if (item.yieldAmount < 1) {
                     return;
                   }
-                  text += `${self.checkIcon} ${item.icon} **x${item.yieldAmount}** **${item.name}(s)** sold for **${item.price}$** each, total: **${item.total}$**\n`;
+                  const tunedOrder = actionTune.indexOf(item.name);
+                  text += `${
+                    tunedOrder !== -1
+                      ? `🚀**#${tunedOrder + 1}**`
+                      : self.checkIcon
+                  } ${item.icon} ${
+                    tunedOrder !== -1
+                      ? `**x${item.yieldAmount}** **${item.name}(s)**`
+                      : `x${item.yieldAmount} ${item.name}(s)`
+                  } sold for **${item.price}$** each, total: **${
+                    item.total
+                  }$**\n`;
                   types++;
                 });
                 if (failYield > 0) {
@@ -831,17 +993,13 @@ export async function use(obj) {
                 text += `\n\n✨ **Total Earnings**: $**${(
                   newMoney - userMoney
                 ).toLocaleString()}💵**\n💰 **Your Balance**: $**${newMoney.toLocaleString()}**💵`;
-                text += `\n\n${self.actionEmoji} Starting another ${
-                  self.verbing
-                } cycle, please come back after ${Math.floor(
-                  (currentTimestamp - actionStamp) / 1000 / 60
-                )} minutes if you want to get the same amount of earnings.`;
+                text += `\n\n${self.actionEmoji} To start another ${self.verbing} cycle, use the **${prefix}${self.key}-tune** command to set your priorities before collecting.`;
                 // text += `\n\n`;
               }
 
               await money.set(input.senderID, {
                 money: newMoney,
-                [self.key + "Stamp"]: currentTimestamp,
+                [self.key + "Stamp"]: null,
                 [self.key + "MaxZ"]: actionMax,
                 [self.key + "Total"]: totalItems,
                 cassEXP: cassEXP.raw(),
