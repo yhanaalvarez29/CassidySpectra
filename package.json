@@ -1,7 +1,7 @@
 {
   "name": "cassidy-redux",
   "author": "Liane Cagara",
-  "version": "2.6.5",
+  "version": "2.6.6",
   "description": "Reworked Versatile Facebook Bot framework that provides many features.",
   "main": "index.js",
   "scripts": {

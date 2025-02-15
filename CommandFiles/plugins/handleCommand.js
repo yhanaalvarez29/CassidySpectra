@@ -217,6 +217,10 @@ export async function use(obj) {
     obj.shopCache = shop;
 
     if (!userDataCache.name && meta.name !== "identity") {
+      if (!hasPrefix) {
+        return;
+      }
+
       return output.replyStyled(
         `🎀 | Welcome! Please register first using the **${prefix}id-setname** command.\n\n***Copy this Example***: ${prefix}id-setname Liane`,
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
@@ -228,6 +232,9 @@ export async function use(obj) {
     if (typeof meta.requiredLevel === "number") {
       if (isNaN(meta.requiredLevel)) {
         return output.wentWrong();
+      }
+      if (!hasPrefix) {
+        return;
       }
       if (!cassEXP.levelReached(meta.requiredLevel)) {
         return reply(
@@ -246,6 +253,10 @@ export async function use(obj) {
     // }
     const isShopUnlocked = await shop.isUnlocked(meta.name);
     if (!isShopUnlocked) {
+      if (!hasPrefix) {
+        return;
+      }
+
       const price = await shop.getPrice(meta.name);
       shopLabel: {
         if (price <= 0) {
