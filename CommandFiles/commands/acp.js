@@ -65,7 +65,7 @@ export async function onReply({
   } else {
     return message.replyStyled(
       'Please select <add | del > <target number | or "all">',
-      this.style
+      style
     );
   }
 
@@ -122,13 +122,13 @@ export async function onReply({
             } people encountered errors: ${failed.join("\n")}`
           : ""
       }`,
-      this.style
+      style
     );
   } else {
     api.unsendMessage(messageID);
     return message.replyStyled(
       "Invalid response. Please provide a valid response.",
-      this.style
+      style
     );
   }
 
@@ -171,6 +171,6 @@ export async function entry({ event, api, commandName, output, input }) {
     unsendTimeout: setTimeout(() => {
       api.unsendMessage(info.messageID);
     }, 60 * 1000),
-    callback: this.onReply,
+    callback: onReply,
   });
 }
