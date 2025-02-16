@@ -65,7 +65,7 @@ export async function onReply({
   } else {
     return message.replyStyled(
       'Please select <add | del > <target number | or "all">',
-      this.style,
+      this.style
     );
   }
 
@@ -90,7 +90,7 @@ export async function onReply({
     form.variables = JSON.stringify(form.variables);
     newTargetIDs.push(u);
     promiseFriends.push(
-      api.httpPost("https://www.facebook.com/api/graphql/", form),
+      api.httpPost("https://www.facebook.com/api/graphql/", form)
     );
     form.variables = JSON.parse(form.variables);
   }
@@ -114,7 +114,7 @@ export async function onReply({
       `» The ${
         args[0] === "add" ? "friend request" : "friend request deletion"
       } has been processed for ${success.length} people:\n\n${success.join(
-        "\n",
+        "\n"
       )}${
         failed.length > 0
           ? `\n» The following ${
@@ -122,13 +122,13 @@ export async function onReply({
             } people encountered errors: ${failed.join("\n")}`
           : ""
       }`,
-      this.style,
+      this.style
     );
   } else {
     api.unsendMessage(messageID);
     return message.replyStyled(
       "Invalid response. Please provide a valid response.",
-      this.style,
+      this.style
     );
   }
 
@@ -138,7 +138,7 @@ export async function onReply({
  *
  * @param {CommandContext} param0
  */
-export async function entry({ event, api, commandName, output }) {
+export async function entry({ event, api, commandName, output, input }) {
   const form = {
     av: api.getCurrentUserID(),
     fb_api_req_friendly_name:
@@ -148,7 +148,7 @@ export async function entry({ event, api, commandName, output }) {
     variables: JSON.stringify({ input: { scale: 3 } }),
   };
   const listRequest = JSON.parse(
-    await api.httpPost("https://www.facebook.com/api/graphql/", form),
+    await api.httpPost("https://www.facebook.com/api/graphql/", form)
   ).data.viewer.friending_possibilities.edges;
   let msg = "";
   let i = 0;
@@ -162,7 +162,7 @@ export async function entry({ event, api, commandName, output }) {
           .format("DD/MM/YYYY HH:mm:ss")}\n`;
   }
   const info = await output.reply(
-    `${msg}\nReply to this message with content: <add | del> <comparison | or "all"> to take action`,
+    `${msg}\nReply to this message with content: <add | del> <comparison | or "all"> to take action`
   );
   input.setReply(info.messageID, {
     messageID: info.messageID,
