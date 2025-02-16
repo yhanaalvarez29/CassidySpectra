@@ -675,8 +675,16 @@ export async function use(obj) {
      */
     async simulateAction(context = obj) {
       try {
-        const { input, output, money, args, prefix, CassExpress, Inventory } =
-          context;
+        const {
+          input,
+          output,
+          money,
+          args,
+          prefix,
+          CassExpress,
+          Inventory,
+          commandName,
+        } = context;
         const self = this;
         const home = new ReduxCMDHome({ isHypen: true }, [
           {
@@ -720,6 +728,67 @@ export async function use(obj) {
             },
           },
           {
+            key: "check",
+            description:
+              "Checks the progress of your tuned items and their remaining collection time.",
+            async handler() {
+              const {
+                money: userMoney,
+                [self.key + "Stamp"]: actionStamp,
+                [self.key + "MaxZ"]: actionMax = self.storage,
+                [self.key + "Total"]: totalItems = {},
+                [self.key + "Tune"]: actionTune = [],
+                cassEXP: cxp,
+                name,
+              } = await money.get(input.senderID);
+
+              function formatDuration(ms) {
+                const seconds = Math.floor(ms / 1000) % 60;
+                const minutes = Math.floor(ms / (1000 * 60)) % 60;
+                const hours = Math.floor(ms / (1000 * 60 * 60)) % 24;
+                const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+                const parts = [];
+                if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+                if (hours > 0)
+                  parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+                if (minutes > 0)
+                  parts.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
+                if (seconds > 0)
+                  parts.push(`${seconds} second${seconds > 1 ? "s" : ""}`);
+
+                return parts.length > 1
+                  ? parts.slice(0, -1).join(", ") + " and " + parts.slice(-1)
+                  : parts[0] || "0 seconds";
+              }
+
+              const mapped = actionTune.map((itemName, ind) => {
+                const data = self.itemData.find(
+                  (item) => item.name === itemName
+                );
+                return `**${ind + 1}**. ${data.icon} **${itemName}**\nRarity: ${
+                  100 - data.chance * 100
+                }%\nProcessing Time: ${
+                  data.delay
+                } minutes.\nPrice Range:\nBetween ${data.priceA} and ${
+                  data.priceB
+                }.`;
+              });
+
+              const timeElapsed = actionStamp
+                ? formatDuration(Date.now() - actionStamp)
+                : "❌ Not yet tuned.";
+
+              return output.reply(
+                `🗃️ **Max Storage**:\n${Number(
+                  actionMax
+                ).toLocaleString()}\n\n⌛ **Time Since Tuning**:\n${timeElapsed}\n\n🚀 **Tuned Items:**\n\n${
+                  mapped.length > 0 ? mapped.join("\n\n") : "[ No Tuned Items ]"
+                }\n\nUse +${commandName}-collect to claim your yield or profit at the right time.\n⚠️ Collecting too early will **reduce your earnings** and **require retuning**, while collecting too late may cause **storage overflow**, leading to lost profits.`
+              );
+            },
+          },
+          {
             key: "tune",
             description:
               "Tune at least 3 items before collecting—your choices shape the outcome, but you can't repeat the same order!",
@@ -747,14 +816,17 @@ export async function use(obj) {
               });
               sortedItems = sortedItems.slice(0, 5);
 
-              const genR = () =>
-                Math.floor(
-                  Math.random() * (Object.entries(totalItems).length - 1 + 1)
-                ) + 1;
+              const genR = () => Math.floor(Math.random() * 5) + 1;
+              // const genR = () =>
+              //   Math.floor(
+              //     Math.random() * (Object.entries(totalItems).length - 1 + 1)
+              //   ) + 1;
 
-              let result = `🚀 Choose at least **3 items** to tune. Reply with the corresponding **numbers**.\n\n***Example***: ${prefix}${
-                self.key
-              }-tune ${genR()} ${genR()} ${genR()}\n\n`;
+              let warn = actionStamp
+                ? `⚠️ **You have already tuned your items!**\n\nTuning again will **reset the timer** and you may **lose your opportunity to collect.**\n\n`
+                : "";
+
+              let result = `${warn}🚀 Choose at least **3 items** to tune. Reply with the corresponding **numbers**.\n\n***Example***: ${genR()} ${genR()} ${genR()}\n\n`;
 
               sortedItems.forEach(([itemName, itemCount], ind) => {
                 const data = self.itemData.find(
@@ -795,8 +867,14 @@ export async function use(obj) {
                     .slice(0, 3);
 
                   if (nums.length < 3) {
-                    return output.replyStyled(
+                    return ctx2.output.replyStyled(
                       `❌ You need to provide at least three numbers! You provided only ${nums.length}.`,
+                      style
+                    );
+                  }
+                  if (nums.length > 3) {
+                    return ctx2.output.replyStyled(
+                      `❌ You only need to provide three numbers! You provided too much.`,
                       style
                     );
                   }
@@ -806,7 +884,7 @@ export async function use(obj) {
                   );
 
                   if (invalidNums.length > 0) {
-                    return output.replyStyled(
+                    return ctx2.output.replyStyled(
                       `❌ Invalid input detected! The following values are missing: ${invalidNums.join(
                         ", "
                       )}.`,
@@ -815,13 +893,13 @@ export async function use(obj) {
                   }
                   const uniqueNums = new Set(nums);
                   if (uniqueNums.size !== nums.length) {
-                    return output.replyStyled(
+                    return ctx2.output.replyStyled(
                       `❌ Duplicate numbers are not allowed! Your input contains duplicates.`,
                       style
                     );
                   }
 
-                  await money.set(input.senderID, {
+                  await money.set(ctx2.input.senderID, {
                     [self.key + "Tune"]: nums,
                     [self.key + "Stamp"]: Date.now(),
                   });
@@ -845,7 +923,7 @@ export async function use(obj) {
                   });
 
                   return output.replyStyled(
-                    `✅ Tuning successful!\nPlease wait patiently to **collect** your items.\n\nThe following **3 items** will be **prioritized**:\n\n${r2}\n\n⚠️ **Warning:** Tuning **resets the waiting time** for all items.\nAvoid tuning while having many items waiting, or you may lose the opportunity to collect them.`,
+                    `✅ Tuning successful!\nPlease wait patiently to **collect** your items.\n\nThe following **3 items** will be **prioritized**:\n\n${r2}\n\n⚠️ **Warning:** Tuning **resets the waiting time** for all items.\nAvoid tuning while having many items waiting, or you may lose the opportunity to collect them.`.trim(),
                     style
                   );
                 },
@@ -920,7 +998,7 @@ export async function use(obj) {
               let failYield = 0;
 
               if (!actionStamp) {
-                text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no items have been tuned yet. Use the **${prefix}${self.key}-tune** command to set your priorities before collecting!`;
+                text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no items have been tuned yet. Use the **${prefix}${commandName}-tune** command to set your priorities before collecting!`;
               } else {
                 const elapsedTime =
                   (currentTimestamp - actionStamp) / 1000 / 60;
@@ -1019,9 +1097,7 @@ export async function use(obj) {
                   currentTimestamp - actionStamp
                 )}\n\n${self.actionEmoji} To start another ${
                   self.verbing
-                } cycle, use the **${prefix}${
-                  self.key
-                }-tune** command to set your priorities before collecting.`;
+                } cycle, use the **${prefix}${commandName}-tune** command to set your priorities before collecting.`;
                 // text += `\n\n`;
               }
 
@@ -1030,6 +1106,7 @@ export async function use(obj) {
                 [self.key + "Stamp"]: null,
                 [self.key + "MaxZ"]: actionMax,
                 [self.key + "Total"]: totalItems,
+                [self.key + "Tune"]: [],
                 cassEXP: cassEXP.raw(),
               });
 
