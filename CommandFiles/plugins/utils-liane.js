@@ -996,6 +996,7 @@ export async function use(obj) {
               let newMoney = userMoney;
               let totalYield = 0;
               let failYield = 0;
+              let failData = [];
 
               if (!actionStamp) {
                 text = `${self.actionEmoji} Cannot perform ${self.verbing} action since no items have been tuned yet. Use the **${prefix}${commandName}-tune** command to set your priorities before collecting!`;
@@ -1005,17 +1006,28 @@ export async function use(obj) {
 
                 let harvestedItems = [];
                 for (const item of tuneBasedData) {
+                  let tuneIndex = [...actionTune].indexOf(item.name);
+                  let isTune = tuneIndex !== -1;
+                  const chanceMod = [0.5, 0.3, 0.2];
                   let yieldAmount = Math.max(
                     0,
                     Math.floor(elapsedTime / item.delay)
                   );
+                  const addChanceMod = (chance) =>
+                    chance - chance * (chanceMod[tuneIndex] ?? -0.3);
                   const yieldArray = Array(yieldAmount).fill();
                   yieldAmount = yieldArray.reduce(
-                    (acc) => acc + (Math.random() < item.chance ? 1 : 0),
+                    (acc) =>
+                      acc + (addChanceMod(Math.random()) < item.chance ? 1 : 0),
                     0
                   );
                   if (totalYield + yieldAmount > actionMax) {
                     failYield += totalYield + yieldAmount - actionMax;
+                    failData.push({
+                      ...item,
+                      yieldAmount: totalYield + yieldAmount - actionMax,
+                    });
+
                     yieldAmount = actionMax - totalYield;
                   }
 
@@ -1023,7 +1035,8 @@ export async function use(obj) {
                     continue;
                   }
                   let price = Math.floor(
-                    Math.random() * (item.priceB - item.priceA + 1) +
+                    addChanceMod(Math.random()) *
+                      (item.priceB - item.priceA + 1) +
                       item.priceA
                   );
                   price = CassExpress.farmUP(price, totalItems);
@@ -1071,8 +1084,22 @@ export async function use(obj) {
                   }$**\n`;
                   types++;
                 });
+                failData.forEach((item) => {
+                  if (item.yieldAmount < 1) {
+                    return;
+                  }
+                  const tunedOrder = actionTune.indexOf(item.name);
+                  text += `${
+                    tunedOrder !== -1 ? `❌**#${tunedOrder + 1}**` : "❌"
+                  } ${item.icon} ${
+                    tunedOrder !== -1
+                      ? `**x${item.yieldAmount}** **${item.name}(s)**`
+                      : `x${item.yieldAmount} ${item.name}(s)`
+                  } failed.\n`;
+                  types++;
+                });
                 if (failYield > 0) {
-                  text += `🥲 **Failed** ${self.verbing} ${failYield} **item(s)** due to full storage.\n`;
+                  text += `\n🥲 **Failed** ${self.verbing} ${failYield} **item(s)** due to full storage.\n`;
                 }
                 if (types === 0) {
                   text += `\n🥲 No items ${self.pastTense}, you should wait for the next action!\n`;
