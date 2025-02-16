@@ -170,7 +170,7 @@ export async function entry({ event, api, commandName, output, input }) {
     author: event.senderID,
     unsendTimeout: setTimeout(() => {
       api.unsendMessage(info.messageID);
-    }, this.config.countDown * 1000),
+    }, 60),
     callback: this.onReply,
   });
 }
