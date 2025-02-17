@@ -1,12 +1,12 @@
-import { isNaN } from "mathjs";
 import { UNIRedux } from "../modules/unisym.js";
+import { Slicer } from "../plugins/utils-liane.js";
 
 export const meta = {
   name: "nicadrive",
   description:
     "A personal storage system for extra items. Store, retrieve, and manage inventory beyond your main limit. Upgrade for more space!",
   author: "JenicaDev",
-  version: "1.0.0",
+  version: "1.1.0",
   usage: "{prefix}ndrive <action> [arguments]",
   category: "Inventory",
   permissions: [0],
@@ -20,7 +20,7 @@ export const meta = {
 const { invLimit } = global.Cassidy;
 
 const ndriveLimit = 100;
-const proLimit = 400;
+const proLimit = 1000;
 
 export const style = {
   title: "NicaDrive™ 💾",
@@ -62,6 +62,7 @@ export async function entry({
   Inventory,
   money,
   args,
+  commandName,
 }) {
   let [sub, ...subArgs] = args;
   subArgs = normalizeArgAmount(subArgs);
@@ -81,7 +82,7 @@ export async function entry({
     };
     const ii = await output.replyStyled(
       `Before we begin, let’s set up your **NicaDrive™ Account**.\nPlease answer a few questions to personalize your experience!\n${UNIRedux.standardLine}\n🏷️ **What name should we use for your NicaDrive™ account?**\n(Example: “Nica’s Storage” or just your name.)\n\n***Reply with your name now!***`,
-      style
+      style,
     );
 
     input.setReply(ii.messageID, {
@@ -89,7 +90,7 @@ export async function entry({
        * @param {CommandContext} repCtx
        */
       async callback(repCtx) {
-        const name = repCtx.input.body.split(" ")[0].slice(0, 20);
+        const name = String(repCtx.input.body).slice(0, 20);
 
         if (!name) {
           return;
@@ -101,7 +102,7 @@ export async function entry({
 
         const ii2 = await output.replyStyled(
           `✅ Great! Your NicaDrive™ account is now named **"${name}"**\n${UNIRedux.standardLine}\n📦 **How many items would you like to store?**\n\n***Reply with a number.***`,
-          style
+          style,
         );
 
         ndrive.name = name.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -119,10 +120,10 @@ export async function entry({
             let res = isNaNReq
               ? `💾 It looks like you're not quite ready to decide. That’s okay! We’ll handle it for you. ✅`
               : storageRequested > 0 && storageRequested <= 100
-              ? `💾 All set! Your items are safely stored. Thanks for using NicaDrive™. 📦`
-              : storageRequested > 0
-              ? `💾 That’s quite a lot! No worries, we’ll handle it as best as we can. 🏗️`
-              : `💾 An unconventional choice! Don’t worry, we’ve taken care of everything. 🌱`;
+                ? `💾 All set! Your items are safely stored. Thanks for using NicaDrive™. 📦`
+                : storageRequested > 0
+                  ? `💾 That’s quite a lot! No worries, we’ll handle it as best as we can. 🏗️`
+                  : `💾 An unconventional choice! Don’t worry, we’ve taken care of everything. 🌱`;
 
             ndrive.storageRequested = storageRequested;
 
@@ -151,7 +152,7 @@ export async function entry({
   /**
    * @param {Inventory}
    */
-  async function createItemMenu(items = nicaItems) {
+  async function createItemMenuOld(items = nicaItems) {
     const ndriveItemsList = items.getAll();
     let pushedKeys = [];
     let ndriveItemList = ndriveItemsList
@@ -185,6 +186,11 @@ export async function entry({
       arrayInv.push("");
     }
     let result = [];
+    arrayInv.forEach((val) => {
+      if (!val) {
+        result.push("_".repeat(15));
+      }
+    });
 
     if (result) {
       invItemList += `\n`;
@@ -197,19 +203,80 @@ export async function entry({
       arrayndrive.push("");
     }
     let result2 = [];
+    arrayndrive.forEach((val) => {
+      if (!val) {
+        result2.push("_".repeat(15));
+      }
+    });
 
     if (result2) {
       ndriveItemList += `\n`;
     }
     ndriveItemList += result2.join("\n");
 
-    return `***👤 ${ndrive.name}*** ${userInventory.size()}/${invLimit}\n\n${
+    return `***👤 ${userData.name}*** ${userInventory.size()}/${invLimit}\n\n${
       userInventory.size() > 0 ? invItemList.trim() : "Empty"
-    }\n\n***💾 NicaDrive™*** ${items.size()}/100\n\n${
+    }\n\n***💾 ${ndrive.name}*** ${items.size()}/100\n\n${
       items.size() > 0
         ? ndriveItemList.trim()
         : "No items stored. Start storing now!"
     }`;
+  }
+
+  async function createItemMenu(page = 1) {
+    page = Slicer.parseNum(page);
+
+    const ndriveItemsList = nicaItems.getAll();
+    const invItemsList = userInventory.getAll();
+
+    /**
+     * @param {import("cassidy-userData").InventoryItem[]} items
+     */
+    function group(items) {
+      /**
+       * @type {Array<(import("cassidy-userData").InventoryItem) & { count: number }>}
+       */
+      const groupedItems = [];
+      const seenKeys = new Set();
+
+      items.forEach((item) => {
+        if (!seenKeys.has(item.key)) {
+          const count = items.filter((i) => i.key === item.key).length;
+          groupedItems.push({ ...item, count });
+          seenKeys.add(item.key);
+        }
+      });
+      return groupedItems;
+    }
+
+    /**
+     * @param {Array<(import("cassidy-userData").InventoryItem) & { count: number }>} items
+     */
+    function render(items) {
+      const groupedItems = items.reduce((acc, item) => {
+        if (!acc[item.key]) {
+          acc[item.key] = { ...item, count: 1 };
+        } else {
+          acc[item.key].count += 1;
+        }
+        return acc;
+      }, {});
+
+      const result = Object.values(groupedItems).map(
+        (item) =>
+          `${item.icon} **${item.name}** (x${item.count}) [${item.key}]`,
+      );
+      while (result.length < 8) {
+        result.push("_".repeat(15));
+      }
+
+      return result.join("\n");
+    }
+
+    const ndriveSlicer = new Slicer(group(ndriveItemsList), 8);
+    const invSlicer = new Slicer(group(invItemsList), 8);
+    const more = `\n[...Type **${prefix}ndrive view ${page + 1}** to see more items]`;
+    return `${UNIRedux.arrow} Page ${page} of ${Math.max(ndriveSlicer.pagesLength, invSlicer.pagesLength)}\n\n***👤 ${userData.name}*** (${userInventory.size()}/${invLimit})\n\n${render(invSlicer.getPage(page))}${page < invSlicer.pagesLength ? more : ""}\n${UNIRedux.standardLine}\n***💾 ${ndrive.name}*** (${nicaItems.size()}/${limit})\n\n${render(ndriveSlicer.getPage(page))}${page < ndriveSlicer.pagesLength ? more : ""}`;
   }
 
   const opts = [
@@ -218,7 +285,7 @@ export async function entry({
       icon: "📦",
       desc: "View Stored Items",
       async callback() {
-        return output.replyStyled(await createItemMenu(), style);
+        return output.replyStyled(await createItemMenu(subArgs[0]), style);
       },
     },
     {
@@ -230,7 +297,7 @@ export async function entry({
 
         if (keysToStore.length < 1) {
           return output.reply(
-            `❌ Please specify an item key to store in the NicaDrive.`
+            `❌ Please specify an item key to store in the NicaDrive.`,
           );
         }
         let str = ``;
@@ -238,7 +305,7 @@ export async function entry({
           const itemToStore = userInventory.getOne(keyToStore);
           if (!itemToStore) {
             return output.reply(
-              `❌ Item with key "${keyToStore}" not found in your inventory.`
+              `❌ Item with key "${keyToStore}" not found in your inventory.`,
             );
           }
           if (nicaItems.getAll().length >= limit) {
@@ -246,7 +313,7 @@ export async function entry({
           }
           if (itemToStore.cannotvault === true) {
             return output.reply(
-              `❌ Item with key "${keyToStore}" cannot be stored in the NicaDrive.`
+              `❌ Item with key "${keyToStore}" cannot be stored in the NicaDrive.`,
             );
           }
           userInventory.deleteOne(keyToStore);
@@ -260,7 +327,9 @@ export async function entry({
           ndrive,
         });
 
-        return output.reply(`${str.trim()}\n\n${await createItemMenu()}`);
+        return output.reply(
+          `${str.trim()}\n\n💾 Your NicaDrive™ Account is now updated.`,
+        );
       },
     },
     {
@@ -271,7 +340,7 @@ export async function entry({
         const keysToRetrieve = subArgs;
         if (keysToRetrieve.length < 1) {
           return output.reply(
-            `❌ Please specify an item key to retrieve from the NicaDrive.`
+            `❌ Please specify an item key to retrieve from the NicaDrive.`,
           );
         }
         let str2 = ``;
@@ -279,7 +348,7 @@ export async function entry({
           const itemToRetrieve = nicaItems.getOne(keyToRetrieve);
           if (!itemToRetrieve) {
             return output.reply(
-              `❌ Item with key "${keyToRetrieve}" not found in the NicaDrive.`
+              `❌ Item with key "${keyToRetrieve}" not found in the NicaDrive.`,
             );
           }
           if (userInventory.getAll().length >= invLimit) {
@@ -296,7 +365,9 @@ export async function entry({
           inventory: Array.from(userInventory),
         });
 
-        return output.reply(`${str2.trim()}\n\n${await createItemMenu()}`);
+        return output.reply(
+          `${str2.trim()}\n\n💾 Your NicaDrive™ Account is now updated.`,
+        );
       },
     },
     {
@@ -315,7 +386,7 @@ export async function entry({
 
   if (!handler) {
     const items = opts
-      .map((i) => `${prefix}${i.name}\n[${i.icon} ${i.desc}]`)
+      .map((i) => `${prefix}${commandName} ${i.name}\n[${i.icon} ${i.desc}]`)
       .join("\n");
     const res = `📂 Welcome to NicaDrive™!\nName: **${
       ndrive.name
@@ -326,7 +397,7 @@ export async function entry({
 
   if (!handler.callback) {
     return output.reply(
-      `🏗️🚧 Sorry, this feature is still a **work in progress.**`
+      `🏗️🚧 Sorry, this feature is still a **work in progress.**`,
     );
   }
 
