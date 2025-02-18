@@ -641,7 +641,9 @@ export async function use(obj) {
   obj.MessageEditor = MessageEditor;
   obj.MsgEditor = MessageEditor;
   obj.Editor = MessageEditor;
+
   class GameSimulator {
+    static instances = {};
     constructor({
       key,
       verb = key.charAt(0).toUpperCase() + key.slice(1),
@@ -653,6 +655,7 @@ export async function use(obj) {
       actionEmoji = "🔖",
       stoData,
     }) {
+      GameSimulator.instances[key] = this;
       this.key = key;
       this.verb = verb;
       this.verbing = verbing;
