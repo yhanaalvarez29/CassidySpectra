@@ -1,3 +1,7 @@
+import path from "path";
+import { fetchFileContents } from "./github";
+import fs from "fs";
+import { pathToFileURL } from "url";
 export type ExtensionTypes = keyof ExtensionTypeMap;
 
 export interface BaseExtensionType {
@@ -128,6 +132,61 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
   push(...items: T[]): number {
     this.registerExtensions(...items);
     return this.length;
+  }
+
+  async downloadRemoteExtensions() {
+    const folder = "/";
+    const repo = "lianecagara/CassReduxExtensions";
+
+    console.log(`📥 Fetching extensions from ${repo}${folder}...`);
+
+    try {
+      const files = (await fetchFileContents(folder, repo)).filter((i) =>
+        i.name.endsWith(".js")
+      );
+
+      console.log(`🔍 Found ${files.length} JavaScript files.`);
+
+      for (const file of files) {
+        try {
+          console.log(`📄 Downloading: ${file.name}`);
+          const content = await file.download();
+
+          const pathh = path.join(process.cwd(), "CommandFiles", "extensions");
+
+          if (!fs.existsSync(pathh)) {
+            console.log(`📂 Creating directory: ${pathh}`);
+            fs.mkdirSync(pathh, { recursive: true });
+          }
+
+          const filePath = path.join(pathh, file.name);
+          if (fs.existsSync(filePath)) {
+            console.warn(`⚠️ File already exists: ${filePath}, skipping.`);
+          } else {
+            console.log(`💾 Saving file: ${filePath}`);
+            await fs.promises.writeFile(filePath, content);
+          }
+
+          // const mURL = pathToFileURL(filePath);
+          // mURL.searchParams.set("timestamp", Date.now().toString());
+
+          console.log(`🚀 Importing module: ${filePath}`);
+          const moduleData: { default: T } =
+            require("../extensions/" + file.name) ?? {};
+
+          if (moduleData.default) {
+            console.log(`✅ Successfully imported ${file.name}`);
+            this.push(moduleData.default);
+          } else {
+            console.warn(`⚠️ No default export found in ${file.name}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error processing ${file.name}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error fetching extensions:", error);
+    }
   }
 }
 

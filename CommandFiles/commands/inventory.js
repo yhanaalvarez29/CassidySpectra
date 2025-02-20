@@ -251,6 +251,8 @@ export async function entry({ ...ctx }) {
             cllMap,
             itemList,
             cllList,
+            invLimit,
+            UNIRedux,
             sortedCategories: sorted,
             sortedCollectibles: sorted2,
             otherTarget,
