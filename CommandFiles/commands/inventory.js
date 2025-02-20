@@ -239,7 +239,7 @@ export async function entry({ ...ctx }) {
            * @type {typeof extensions}
            */
           const purposed = sortExtensions(
-            extensions.find((i) => i.info.purpose === "item_list_result")
+            extensions.filter((i) => i.info.purpose === "item_list_result")
           );
           const ctxEXT = {
             userData,
@@ -258,7 +258,7 @@ export async function entry({ ...ctx }) {
             invPercentage: Math.floor((inventory.size() / invLimit) * 100),
             finalRes,
             extensions: sortExtensions(
-              extensions.find((i) => i.info.purpose === "item_list_result")
+              extensions.filter((i) => i.info.purpose === "item_list_result")
             ),
           };
 

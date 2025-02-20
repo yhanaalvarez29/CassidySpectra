@@ -36,8 +36,12 @@ export type ExtensionTypeMap = {
 export type AutoExtensionType = ExtensionTypeMap[keyof ExtensionTypeMap];
 
 export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
-  constructor(array = []) {
-    super(...array);
+  constructor(array: any[] = [], ...etc: any[]) {
+    if (Array.isArray(array)) {
+      super(...array);
+    } else {
+      super(array, ...etc);
+    }
     this.normalizeExtensions();
   }
 
@@ -63,7 +67,7 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
         item.info = {};
       }
     }
-    const nullIDs = all.filter((i) => !i.id);
+    const nullIDs = new Array(...this).filter((i) => !i.id);
     this.removeExtensions(...nullIDs);
   }
 
