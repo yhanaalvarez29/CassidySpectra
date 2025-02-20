@@ -3,7 +3,11 @@ import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
 import { UNIRedux } from "../modules/unisym.js";
 import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
 import { Collectibles, Inventory } from "../plugins/ut-shop.js";
-import { registeredExtensions } from "../modules/cassXTensions.js";
+import {
+  registeredExtensions,
+  getEnabledExtensions,
+  sortExtensions,
+} from "../modules/cassXTensions.ts";
 
 export const meta = {
   name: "inventory",
@@ -53,6 +57,7 @@ export async function entry({ ...ctx }) {
   } = ctx;
   let userData = await money.get(input.senderID);
   const { inventory, petsData, gearsData, collectibles } = getDatas(userData);
+  const extensions = getEnabledExtensions(userData).getCategorized("inventory");
 
   const userDataCopy = userData;
   function getDatas({ ...data }) {
@@ -219,19 +224,58 @@ export async function entry({ ...ctx }) {
               .join("\n");
             cllList += "\n\n";
           }
-
-          return output.reply(
+          const finalRes =
             (otherTarget
               ? `✅ Checking ${otherTarget.name ?? "Unregistered"}\n\n`
               : "") +
-              `💼 **Classic Items** ✦ **${
-                inventory.getAll().length
-              }/${invLimit}** (${Math.floor(
-                (inventory.size() / invLimit) * 100
-              )}%)\n\n${itemList.trim() || "No items available."}\n\n${
-                UNIRedux.standardLine
-              }\n🗝️ **Collectibles** ✦ Unlimited (UNLI%)\n\n${cllList.trim()}`
+            `💼 **Classic Items** ✦ **${
+              inventory.getAll().length
+            }/${invLimit}** (${Math.floor(
+              (inventory.size() / invLimit) * 100
+            )}%)\n\n${itemList.trim() || "No items available."}\n\n${
+              UNIRedux.standardLine
+            }\n🗝️ **Collectibles** ✦ Unlimited (UNLI%)\n\n${cllList.trim()}`;
+          /**
+           * @type {typeof extensions}
+           */
+          const purposed = sortExtensions(
+            extensions.find((i) => i.info.purpose === "item_list_result")
           );
+          const ctxEXT = {
+            userData,
+            inventory,
+            petsData,
+            gearsData,
+            collectibles,
+            categoryMap,
+            cllMap,
+            itemList,
+            cllList,
+            sortedCategories: sorted,
+            sortedCollectibles: sorted2,
+            otherTarget,
+            invUsage: inventory.size(),
+            invPercentage: Math.floor((inventory.size() / invLimit) * 100),
+            finalRes,
+            extensions: sortExtensions(
+              extensions.find((i) => i.info.purpose === "item_list_result")
+            ),
+          };
+
+          let newRes = finalRes;
+
+          for (const extension of purposed) {
+            try {
+              const res2 = await extension.info.hook(ctx, ctxEXT);
+              if (res2) {
+                newRes = res2;
+              }
+            } catch (error) {
+              return output.error(error);
+            }
+          }
+
+          return output.reply(newRes);
         },
       },
       {

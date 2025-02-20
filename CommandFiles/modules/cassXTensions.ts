@@ -7,6 +7,7 @@ export interface BaseExtensionType {
   packageName: string;
   packageDesc: string;
   packagePermissions: string[];
+  importance: number;
 }
 
 export interface GenericExtension extends BaseExtensionType {
@@ -17,7 +18,7 @@ export interface InventoryExtension extends BaseExtensionType {
   category: "inventory";
   info: {
     purpose: string;
-    hook(ctx: CommandContext): any | Promise<any>;
+    hook(ctx: CommandContext, extra: Record<string, any>): any | Promise<any>;
   };
 }
 
@@ -68,9 +69,11 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
 
   getCategorized<C extends T["category"]>(
     category: C
-  ): Extract<T, { category: C }>[] {
-    return this.filter(
-      (i): i is Extract<T, { category: C }> => i.category === category
+  ): CassExtensions<Extract<T, { category: C }>> {
+    return new CassExtensions(
+      this.filter(
+        (i): i is Extract<T, { category: C }> => i.category === category
+      )
     );
   }
 
@@ -126,12 +129,12 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
 
 export const registeredExtensions = new CassExtensions<AutoExtensionType>([]);
 
-export function getEnabledExtensions(userData: UserData): AutoExtensionType[] {
+export function getEnabledExtensions(userData: UserData) {
   const { extensionIDs = [] } = userData;
   const extensions = extensionIDs
     .filter((i) => typeof i === "string")
     .map((i) => registeredExtensions.getID(i));
-  return extensions;
+  return new CassExtensions(extensions);
 }
 
 export function type(
@@ -172,4 +175,12 @@ export function type(
     | "function"
 ): string | boolean {
   return target !== undefined ? typeof value === target : typeof value;
+}
+
+export function sortExtensions(
+  items: CassExtensions<AutoExtensionType> | AutoExtensionType[]
+): CassExtensions<AutoExtensionType> {
+  return new CassExtensions(
+    [...items].sort((a, b) => b.importance - a.importance)
+  );
 }
