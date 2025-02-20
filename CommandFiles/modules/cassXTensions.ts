@@ -1,5 +1,7 @@
+export type ExtensionTypes = keyof ExtensionTypeMap;
+
 export interface BaseExtensionType {
-  category: string;
+  category: ExtensionTypes;
   info: Record<string, any>;
   id: string;
   packageName: string;
@@ -7,7 +9,30 @@ export interface BaseExtensionType {
   packagePermissions: string[];
 }
 
-export type AutoExtensionType = BaseExtensionType;
+export interface GenericExtension extends BaseExtensionType {
+  category: "generic";
+}
+
+export interface InventoryExtension extends BaseExtensionType {
+  category: "inventory";
+  info: {
+    purpose: string;
+    hook(ctx: CommandContext): any | Promise<any>;
+  };
+}
+
+export interface CustomExtension extends BaseExtensionType {
+  category: `custom_${string}`;
+}
+
+export type ExtensionTypeMap = {
+  inventory: InventoryExtension;
+  generic: GenericExtension;
+} & {
+  [key: `custom_${string}`]: CustomExtension;
+};
+
+export type AutoExtensionType = ExtensionTypeMap[keyof ExtensionTypeMap];
 
 export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
   constructor(array = []) {
@@ -18,8 +43,10 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
   normalizeExtensions(): void {
     const all = this;
     for (const item of all) {
-      item.category ??= "Generic";
-      item.category = String(item.category);
+      item.category ??= "generic";
+      item.category = String(item.category).startsWith("custom_")
+        ? item.category
+        : `custom_${item.category}`;
       item.info ??= {};
       item.packageName ??= "No Name";
       item.packageDesc = String(item.packageName);
@@ -39,15 +66,19 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
     this.removeExtensions(...nullIDs);
   }
 
-  getCategorized(category: string): T[] {
-    return this.filter((i) => i.category === category);
+  getCategorized<C extends T["category"]>(
+    category: C
+  ): Extract<T, { category: C }>[] {
+    return this.filter(
+      (i): i is Extract<T, { category: C }> => i.category === category
+    );
   }
 
-  hasCategorized(category: string): boolean {
+  hasCategorized(category: ExtensionTypes): boolean {
     return this.getCategorized(category).length > 0;
   }
 
-  getCategory(item: T): string {
+  getCategory(item: T): ExtensionTypes {
     return item.category;
   }
 

@@ -3,6 +3,7 @@ import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
 import { UNIRedux } from "../modules/unisym.js";
 import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
 import { Collectibles, Inventory } from "../plugins/ut-shop.js";
+import { registeredExtensions } from "../modules/cassXTensions.js";
 
 export const meta = {
   name: "inventory",
