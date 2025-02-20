@@ -125,3 +125,51 @@ export class CassExtensions<T extends AutoExtensionType> extends Array<T> {
 }
 
 export const registeredExtensions = new CassExtensions<AutoExtensionType>([]);
+
+export function getEnabledExtensions(userData: UserData): AutoExtensionType[] {
+  const { extensionIDs = [] } = userData;
+  const extensions = extensionIDs
+    .filter((i) => typeof i === "string")
+    .map((i) => registeredExtensions.getID(i));
+  return extensions;
+}
+
+export function type(
+  value: unknown
+):
+  | "string"
+  | "number"
+  | "bigint"
+  | "boolean"
+  | "symbol"
+  | "undefined"
+  | "object"
+  | "function";
+
+export function type(
+  value: unknown,
+  target:
+    | "string"
+    | "number"
+    | "bigint"
+    | "boolean"
+    | "symbol"
+    | "undefined"
+    | "object"
+    | "function"
+): boolean;
+
+export function type(
+  value: unknown,
+  target?:
+    | "string"
+    | "number"
+    | "bigint"
+    | "boolean"
+    | "symbol"
+    | "undefined"
+    | "object"
+    | "function"
+): string | boolean {
+  return target !== undefined ? typeof value === target : typeof value;
+}
