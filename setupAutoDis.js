@@ -1,6 +1,7 @@
+// @ts-check
 const fs = require("fs");
-const { Client, GatewayIntentBits } = require("discord.js");
-const axios = require("axios");
+const { Client, GatewayIntentBits, Message } = require("discord.js");
+const axios = require("axios").default;
 
 const settings = JSON.parse(fs.readFileSync("settings.json", "utf8"));
 const { discordBotToken, discordClientID } = settings;
@@ -23,7 +24,7 @@ function convertDiscordEvent(discordMessage) {
       isDiscord: true,
       body: body,
       threadID:
-        type === "GUILD_TEXT" && discordMessage.channel.parent
+        discordMessage.type === "GUILD_TEXT" && discordMessage.channel.parent
           ? encodeDCID(discordMessage.channel.parentId)
           : encodeDCID(discordMessage.channel.id),
       getDiscordInfo() {
@@ -126,7 +127,6 @@ const client = new Client({
   ],
 });
 
-const PREFIX = "#";
 let activeReplies = new Map();
 
 client.once("ready", () => {
@@ -146,6 +146,7 @@ client.on("messageCreate", async (message) => {
     const params = {
       ...convertDiscordEvent(message),
       // prefixes: [PREFIX],
+      messageReply: null,
     };
 
     if (isReply) {
@@ -166,12 +167,19 @@ client.on("messageCreate", async (message) => {
       return;
     }
     const replyMessages = splitMessage(result.body);
+
+    /**
+     * @type {Array<import("discord.js").OmitPartialGroupDMChannel<Message<boolean>>>}
+     */
+    const messages = [];
     for (const msg of replyMessages) {
-      await message.reply(msg);
+      messages.push(await message.reply(msg));
       log(`💬 Sent message: "${msg}"`);
     }
 
-    activeReplies.set(replyMsg.id, result);
+    for (const msg of messages) {
+      activeReplies.set(msg.id, result);
+    }
   } catch (error) {
     log(`🚨 Error fetching API response: ${error.message}`);
   }
@@ -184,6 +192,12 @@ client
 
 const MAX_MESSAGE_LENGTH = 2000;
 
+/**
+ *
+ * @param {string} message
+ * @param {number} maxLength
+ * @returns
+ */
 function splitMessage(message, maxLength = MAX_MESSAGE_LENGTH) {
   const parts = [];
   while (message.length > maxLength) {
