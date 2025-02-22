@@ -1,7 +1,6 @@
 import path from "path";
 import { fetchFileContents } from "./github";
 import fs from "fs";
-import { pathToFileURL } from "url";
 export type ExtensionTypes = keyof ExtensionTypeMap;
 
 export interface BaseExtensionType {

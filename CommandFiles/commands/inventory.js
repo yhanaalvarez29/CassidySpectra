@@ -7,6 +7,7 @@ import {
   registeredExtensions,
   getEnabledExtensions,
   sortExtensions,
+  CassExtensions,
 } from "../modules/cassXTensions.ts";
 
 export const meta = {
@@ -335,6 +336,13 @@ export async function entry({ ...ctx }) {
         args: ["<item_id | index>"],
         async handler() {
           const [key] = actionArgs;
+
+          /**
+           * @type {CassExtensions<import("../modules/cassXTensions.ts").InventoryExtension>}
+           */
+          const purposed = sortExtensions(
+            extensions.filter((i) => i.info.purpose.startsWith("item_use_"))
+          );
           if (!key) {
             return output.reply(`❌ Please specify an item key to use.`);
           }
@@ -348,6 +356,30 @@ export async function entry({ ...ctx }) {
 
           item ??= {};
           item.type ??= "generic";
+          const targets = purposed.filter((i) =>
+            i.info.purpose.endsWith(item.type)
+          );
+
+          if (targets.length > 0) {
+            /**
+             * @type {string}
+             */
+            const replyString = "";
+
+            for (const ext of targets) {
+              try {
+                const strRes = await ext.info.hook(ctx, item);
+                if (typeof strRes === "string") {
+                  replyString = strRes;
+                }
+              } catch (error) {
+                console.error(error);
+              }
+            }
+
+            return replyString ? output.reply(replyString) : null;
+          }
+
           if (item?.type === "food") {
             return output.reply(
               `${item.icon} **${item.name}** is a general food item that can be used to **feed your pet**. 
