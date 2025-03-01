@@ -67,9 +67,37 @@ window.onload = async () => {
     }
   }
 
+  // Get the chatPad, I don't want to type it every time lmao
+  const chatPad = document.getElementById("chatPad");
+  // remember the loadConvo function?
+  const convo = loadConvo();
+  const ccc = document.querySelector("#ccc");
+
+  // convo.forEach((c) => {
+  //   if (c.message) {
+  //     // Just iterate the shit
+  //     return appendSend({ message: c.message, chatPad });
+  //   }
+  //   // if the message is from bot..
+  //   return appendRep({ body: c.body, messageID: c.messageID, chatPad });
+  // });
+  for (const c of convo) {
+    if (c.message) {
+      // Just iterate the shit
+      appendSend({ message: c.message, chatPad });
+      smoothScroll2(ccc);
+      continue;
+    }
+    // if the message is from bot..
+    await appendRep({ body: c.body, messageID: c.messageID, chatPad });
+    smoothScroll2(ccc);
+  }
+
+  // After a lot of appending, we gonna scroll the entire page.
+  smoothScroll2(ccc);
+
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
-  const ccc = document.querySelector("#ccc");
   // You can freely customize this ws.onopen, just make sure it doesn't do stuffs that may break the page :)
 
   ws.onopen = () => {
@@ -101,24 +129,11 @@ window.onload = async () => {
         break;
     }
   };
+
   ws.onclose = () => {
     window.location.href = window.location.href;
     // Lmao refresh
   };
-  // Get the chatPad, I don't want to type it every time lmao
-  const chatPad = document.getElementById("chatPad");
-  // remember the loadConvo function?
-  const convo = loadConvo();
-  convo.forEach((c) => {
-    if (c.message) {
-      // Just iterate the shit
-      return appendSend({ message: c.message, chatPad });
-    }
-    // if the message is from bot..
-    return appendRep({ body: c.body, messageID: c.messageID, chatPad });
-  });
-  // After a lot of appending, we gonna scroll the entire page.
-  smoothScroll2(ccc);
 };
 function pushConvo(data) {
   const convo = loadConvo();
@@ -163,23 +178,55 @@ function appendRepOld({ body, messageID, chatPad }) {
   animateSend(elem);
 }
 
-function appendRep({ body, messageID, chatPad }) {
+async function appendRep({ body, messageID, chatPad }) {
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
     const info = infos[messageID] ?? {};
     info.senderID ??= "unknown";
-
-    const messageContainer =
+    // let everyWrapper = Array.from(chatPad.children)
+    //   .reverse()
+    //   .find((everyW) => {
+    //     return everyW.getAttribute("senderid") === info.senderID;
+    //   });
+    let everyWrapper =
       chatPad.lastElementChild &&
       chatPad.lastElementChild &&
-      chatPad.lastElementChild.classList.contains(
-        "response-message-container"
-      ) &&
+      chatPad.lastElementChild.classList.contains("every-wrapper") &&
       chatPad.lastElementChild.getAttribute("senderID") === info.senderID
         ? chatPad.lastElementChild
         : document.createElement("div");
+
+    everyWrapper ??= document.createElement("div");
+    everyWrapper.classList.add("every-wrapper");
+    chatPad.append(everyWrapper);
+    const messageContainer =
+      everyWrapper.querySelector(".response-message-container") ??
+      document.createElement("div");
+    everyWrapper.append(messageContainer);
+
+    // const messageContainer =
+    //   chatPad.lastElementChild &&
+    //   chatPad.lastElementChild &&
+    //   chatPad.lastElementChild.classList.contains(
+    //     "response-message-container"
+    //   ) &&
+    //   chatPad.lastElementChild.getAttribute("senderID") === info.senderID
+    //     ? chatPad.lastElementChild
+    //     : document.createElement("div");
     messageContainer.classList.add("response-message-container");
-    messageContainer.setAttribute("senderID", info.senderID);
+    everyWrapper.setAttribute("senderid", info.senderID);
+
+    const userInfo = await fetchUserCache(info.senderID);
+
+    if (!everyWrapper.querySelector(".msg-label")) {
+      const label = document.createElement("span");
+      label.classList.add("msg-label");
+      label.textContent = info.botSend
+        ? "Cassidy"
+        : userInfo.name ?? "Unregistered";
+
+      everyWrapper.prepend(label);
+    }
 
     if (messageContainer instanceof HTMLElement) {
       const userMessage = document.createElement("div");
@@ -193,17 +240,11 @@ function appendRep({ body, messageID, chatPad }) {
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
       }
-      // if (!messageContainer.querySelector(".msg-label")) {
-      //   const label = document.createElement("span");
-      //   label.classList.add("msg-label");
-      //   label.textContent = info.senderID;
 
-      //   messageContainer.append(label);
-      // }
       wrapper.append(userMessage);
       messageContainer.append(wrapper);
 
-      chatPad.appendChild(messageContainer);
+      // chatPad.appendChild(messageContainer);
       animateSend(userMessage);
       chatPad.addEventListener("scroll", () => {
         ctxmenu.hide();
@@ -511,6 +552,7 @@ async function send(isReply, mid, extra = {}) {
 
   messageDoc.value = "";
   adjustRows();
+  await fetchUserCache(panelID, true);
 }
 function chooseReaction(messageID) {
   const reactOpt = document.querySelector("#reactOpt");
@@ -993,4 +1035,21 @@ class ContextMenu {
       c.hide();
     }
   }
+}
+
+let allUserCache = [];
+
+async function fetchUserInfo(uid) {
+  const res = await fetch(`/api/usercache?uid=${encodeURIComponent(uid)}`).then(
+    (i) => i.json()
+  );
+  return res;
+}
+
+async function fetchUserCache(uid, refresh = false) {
+  if (!allUserCache[uid] || !refresh) {
+    allUserCache[uid] = await fetchUserInfo(uid);
+  }
+
+  return allUserCache[uid];
 }

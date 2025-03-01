@@ -526,6 +526,21 @@ hr {
   border-bottom-right-radius: 18px;
 }
 
+.msg-label {
+  user-select: none;
+  font-size: 14px;
+  opacity: 0.8;
+  color: var(--chat-incoming-message-text-color);
+  padding-left: 8px;
+}
+
+.every-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
 /* 
 .response-message:first-of-type {
   border-top-left-radius: 18px; 
@@ -643,7 +658,7 @@ hr {
 }
 
 #chatPad {
-  gap: 10px;
+  gap: 24px;
   display: flex;
   flex-direction: column;
 }

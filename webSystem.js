@@ -362,15 +362,61 @@ export class WssAPI {
  * @param {string} userID
  * @param {WebSocket} socket
  */
-export function recordUser(userID = "wss:user", socket) {
+export async function recordUser(userID = "wss:user", socket) {
   if (typeof userID !== "string" || !userID) {
     return console.error(`malformed: ${userID}`);
   }
+  if (!wssUsers.has(userID)) {
+    wssUsers.set(userID, socket);
+    socket.panelID = userID;
 
-  wssUsers.set(userID, socket);
-  socket.panelID = userID;
+    console.log(`New USER: ${userID}`);
+    const data = await global.handleStat.getCache(formatIP(userID));
 
-  console.log(`New USER: ${userID}`);
+    sendAllWS({
+      body: `✅ ${data.name ?? "Unregistered person"} joined the chat.`,
+      botSend: true,
+    });
+  } else {
+    console.log(`User already: ${userID}`);
+  }
+}
+
+/**
+ * Deletes a user from wssUsers, ensuring proper cleanup.
+ *
+ * @param {string} userID
+ */
+export async function deleteUser(userID) {
+  if (typeof userID !== "string" || !userID) {
+    return console.error(`Malformed userID: ${userID}`);
+  }
+
+  if (wssUsers.has(userID)) {
+    const socket = wssUsers.get(userID);
+
+    if (socket && typeof socket.close === "function") {
+      if (
+        socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING
+      ) {
+        socket.close();
+        console.log(`Closed WebSocket for user: ${userID}`);
+      } else {
+        console.log(`WebSocket already closed for user: ${userID}`);
+      }
+    }
+    const data = await global.handleStat.getCache(formatIP(userID));
+
+    wssUsers.delete(userID);
+    sendAllWS({
+      body: `❌ ${data.name ?? "Unregistered person"} left the chat.`,
+      botSend: true,
+    });
+    console.log(`Deleted USER: ${userID}`);
+  } else {
+    console.log(`User not found: ${userID}`);
+  }
 }
 
 export function sendAllWS(data) {
@@ -443,6 +489,9 @@ export function handleWebSocket(ws, funcListen) {
         case "message_reaction":
           handleReaction(socket, data, listenCall, api);
       }
+    });
+    socket.on("close", () => {
+      deleteUser(socket.panelID);
     });
   });
 }
