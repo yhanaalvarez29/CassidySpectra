@@ -89,7 +89,7 @@ window.onload = async () => {
       continue;
     }
     // if the message is from bot..
-    await appendRep({ body: c.body, messageID: c.messageID, chatPad });
+    appendRep({ body: c.body, messageID: c.messageID, chatPad });
     smoothScroll2(ccc);
   }
 
@@ -178,7 +178,7 @@ function appendRepOld({ body, messageID, chatPad }) {
   animateSend(elem);
 }
 
-async function appendRep({ body, messageID, chatPad }) {
+function appendRep({ body, messageID, chatPad }) {
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
     const info = infos[messageID] ?? {};
@@ -216,14 +216,19 @@ async function appendRep({ body, messageID, chatPad }) {
     messageContainer.classList.add("response-message-container");
     everyWrapper.setAttribute("senderid", info.senderID);
 
-    const userInfo = await fetchUserCache(info.senderID);
-
     if (!everyWrapper.querySelector(".msg-label")) {
       const label = document.createElement("span");
       label.classList.add("msg-label");
-      label.textContent = info.botSend
-        ? "Cassidy"
-        : userInfo.name ?? "Unregistered";
+      // label.textContent = info.botSend
+      //   ? "Cassidy"
+      //   : userInfo.name ?? "Unregistered";
+      label.textContent = "Loading...";
+      (async () => {
+        const userInfo = await fetchUserCache(info.senderID);
+        label.textContent = info.botSend
+          ? "Cassidy"
+          : userInfo.name ?? "Unregistered";
+      })();
 
       everyWrapper.prepend(label);
     }
