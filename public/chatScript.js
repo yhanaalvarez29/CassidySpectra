@@ -234,7 +234,7 @@ function appendRep({ body, messageID, chatPad }) {
         const userInfo = await fetchUserCache(info.senderID);
         label.textContent = info.botSend
           ? "Cassidy"
-          : userInfo.name ?? "Unregistered";
+          : userInfo.name ?? userInfo.userMeta?.name ?? "Unregistered";
 
         imgPFP.src = userInfo.userMeta.image ?? imgPFP.src;
       })();
