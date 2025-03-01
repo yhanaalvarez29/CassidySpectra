@@ -372,10 +372,13 @@ export async function recordUser(userID = "wss:user", socket) {
     socket.panelID = userID;
 
     console.log(`New USER: ${userID}`);
+    const meta = await fetchMeta(userID);
     const data = await global.handleStat.getCache(formatIP(userID));
 
     sendAllWS({
-      body: `✅ ${data.name ?? "Unregistered person"} joined the chat.`,
+      body: `✅ ${
+        data.name ?? meta.name ?? "Unregistered person"
+      } joined the chat.`,
       botSend: true,
     });
   } else {
@@ -408,10 +411,13 @@ export async function deleteUser(userID) {
       }
     }
     const data = await global.handleStat.getCache(formatIP(userID));
+    const meta = await fetchMeta(userID);
 
     wssUsers.delete(userID);
     sendAllWS({
-      body: `❌ ${data.name ?? "Unregistered person"} left the chat.`,
+      body: `❌ ${
+        data.name ?? meta.name ?? "Unregistered person"
+      } left the chat.`,
       botSend: true,
     });
     console.log(`Deleted USER: ${userID}`);
@@ -514,7 +520,6 @@ export function handleReaction(
   });
   listenCall(payload);
 }
-
 
 /**
  *
