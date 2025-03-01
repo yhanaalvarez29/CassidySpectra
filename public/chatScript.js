@@ -5,6 +5,11 @@ if (!password) {
   password = prompt("Enter your cassidy password.");
   localStorage.setItem("password", password);
 }
+let panelID = localStorage.getItem("panelID");
+if (!panelID) {
+  panelID = prompt("Enter your user ID.");
+  localStorage.setItem("panelID", panelID);
+}
 
 const emojis = ["💜", "😆", "😮", "🥲", "😭", "👍"];
 /* create MAX_PROPERTIES variable.
@@ -72,6 +77,7 @@ window.onload = async () => {
       JSON.stringify({
         type: "login",
         password,
+        panelID,
       })
     );
   };
@@ -96,7 +102,7 @@ window.onload = async () => {
     }
   };
   ws.onclose = () => {
-    //window.location.href = window.location.href;
+    window.location.href = window.location.href;
     // Lmao refresh
   };
   // Get the chatPad, I don't want to type it every time lmao
@@ -160,13 +166,20 @@ function appendRepOld({ body, messageID, chatPad }) {
 function appendRep({ body, messageID, chatPad }) {
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
+    const info = infos[messageID] ?? {};
+    info.senderID ??= "unknown";
+
     const messageContainer =
       chatPad.lastElementChild &&
       chatPad.lastElementChild &&
-      chatPad.lastElementChild.classList.contains("response-message-container")
+      chatPad.lastElementChild.classList.contains(
+        "response-message-container"
+      ) &&
+      chatPad.lastElementChild.getAttribute("senderID") === info.senderID
         ? chatPad.lastElementChild
         : document.createElement("div");
     messageContainer.classList.add("response-message-container");
+    messageContainer.setAttribute("senderID", info.senderID);
 
     if (messageContainer instanceof HTMLElement) {
       const userMessage = document.createElement("div");
@@ -180,6 +193,13 @@ function appendRep({ body, messageID, chatPad }) {
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
       }
+      // if (!messageContainer.querySelector(".msg-label")) {
+      //   const label = document.createElement("span");
+      //   label.classList.add("msg-label");
+      //   label.textContent = info.senderID;
+
+      //   messageContainer.append(label);
+      // }
       wrapper.append(userMessage);
       messageContainer.append(wrapper);
 
@@ -434,11 +454,12 @@ function appendSend({ message, chatPad }) {
 
 // this handles messages sent by user/bot
 function handleMessage(data) {
+  console.log(data);
   const chatPad = document.getElementById("chatPad");
   if (data.messageID) {
     infos[data.messageID] = data;
   }
-  if (data.botSend) {
+  if (data.botSend || !data.isYou) {
     appendRep({ body: data.body, messageID: data.messageID, chatPad });
   } else {
     let appended = data.body;
@@ -506,11 +527,14 @@ function chooseReaction(messageID) {
   reactBG.disabled = false;
 }
 function sendReact(reaction, messageID) {
+  const { senderID } = infos[messageID] ?? {};
   ws.send(
     JSON.stringify({
       type: "message_reaction",
       reaction,
       messageID,
+      userID: panelID,
+      senderID,
     })
   );
 }
@@ -551,7 +575,7 @@ ${message}`;
           type: "message_reaction",
           messageID,
           reaction: message,
-          userID: 1,
+          userID: panelID,
           ...extra,
         },
       };
@@ -630,12 +654,12 @@ function isScrolledBottom(element, allowance) {
     const scrollPosition = element.scrollTop + element.clientHeight;
     const scrollHeight = element.scrollHeight;
 
-    console.log(
-      `${scrollPosition} >= ${scrollHeight} - ${allowance} (${
-        scrollHeight - allowance
-      })`,
-      scrollPosition >= scrollHeight - allowance
-    );
+    // console.log(
+    //   `${scrollPosition} >= ${scrollHeight} - ${allowance} (${
+    //     scrollHeight - allowance
+    //   })`,
+    //   scrollPosition >= scrollHeight - allowance
+    // );
 
     return scrollPosition >= scrollHeight - allowance;
   }

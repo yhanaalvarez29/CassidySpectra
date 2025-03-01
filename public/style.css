@@ -441,9 +441,9 @@ hr {
 }
 
 .emoji-only {
-  font-size: 25px;
-  background-color: transparent;
-  padding: 0;
+  font-size: 25px !important;
+  background-color: transparent !important;
+  padding: 0 !important;
 }
 
 .user-message:first-of-type {
@@ -479,8 +479,8 @@ hr {
   color: var(--chat-incoming-message-text-color);
   padding: 10px;
   font-size: 16px;
-  /* border-radius: 4px; */
-  border-radius: 18px;
+  border-radius: 4px;
+  /* border-radius: 18px; */
   word-wrap: break-word;
   transition: background-color 0.3s ease, max-height 0.3s ease;
   white-space: pre-wrap;
@@ -488,7 +488,7 @@ hr {
   max-width: min(70%, 564px);
 }
 
-.response-message:first-of-type {
+/* .response-message:first-of-type {
   border-top-right-radius: 18px;
   border-top-left-radius: 18px;
   border-bottom-right-radius: 18px;
@@ -505,6 +505,25 @@ hr {
   ) {
   border-top-right-radius: 18px;
   border-bottom-left-radius: 18px;
+} */
+
+.response-message:first-of-type {
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+.response-message:last-of-type {
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.response-message:not(.response-message:last-of-type):not(
+    .response-message:first-of-type
+  ) {
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
 }
 
 /* 
