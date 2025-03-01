@@ -19,6 +19,11 @@
   src: url("fonts/SFPRODISPLAYBOLD.OTF");
 }
 
+@font-face {
+  font-family: "EMOJI";
+  src: url("NotoColorEmoji.ttf");
+}
+
 :root {
   --chat-admin-text-color: #ffffff;
   --chat-composer-background-color: #8c6962;
@@ -120,7 +125,7 @@ body {
 }
 
 * {
-  font-family: "SF", sans-serif;
+  font-family: "SF", "EMOJI", sans-serif;
   box-sizing: border-box;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
