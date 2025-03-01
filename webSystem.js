@@ -198,6 +198,7 @@ export class Event {
   }
 }
 import fs from "fs";
+import fetchMeta from "./CommandFiles/modules/fetchMeta.js";
 export function genericPage(...replacer) {
   return pageParse("public/generic.html", ...replacer);
 }
@@ -513,6 +514,7 @@ export function handleReaction(
   });
   listenCall(payload);
 }
+
 
 /**
  *

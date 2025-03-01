@@ -459,6 +459,7 @@ import rateLimit from "express-rate-limit";
 import { postState } from "./handlers/appstate/handleGetState.js";
 import requestIp from "request-ip";
 import bodyParser from "body-parser";
+import fetchMeta from "./CommandFiles/modules/fetchMeta.js";
 
 const limit = {
   windowMs: 60 * 1000,
@@ -501,7 +502,9 @@ function web(api, funcListen, settings) {
       format === "yes" ? formatIP(uid) : uid
     );
 
-    res.json(cache);
+    const userMeta = await fetchMeta(uid);
+
+    res.json({ ...cache, userMeta });
   });
   app.get("/api/stat", async (req, res) => {
     const { UTYPlayer } = global.utils;

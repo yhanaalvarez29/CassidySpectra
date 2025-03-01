@@ -216,6 +216,13 @@ function appendRep({ body, messageID, chatPad }) {
     messageContainer.classList.add("response-message-container");
     everyWrapper.setAttribute("senderid", info.senderID);
 
+    const imgPFP = document.createElement("img");
+    imgPFP.src = "https://www.facebook.com/images/fb_icon_325x325.png";
+    imgPFP.classList.add("pfp");
+    if (!messageContainer.querySelector(".pfp")) {
+      messageContainer.appendChild(imgPFP);
+    }
+
     if (!everyWrapper.querySelector(".msg-label")) {
       const label = document.createElement("span");
       label.classList.add("msg-label");
@@ -228,6 +235,8 @@ function appendRep({ body, messageID, chatPad }) {
         label.textContent = info.botSend
           ? "Cassidy"
           : userInfo.name ?? "Unregistered";
+
+        imgPFP.src = userInfo.userMeta.image ?? imgPFP.src;
       })();
 
       everyWrapper.prepend(label);
