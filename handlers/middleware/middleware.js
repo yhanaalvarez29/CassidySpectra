@@ -3,12 +3,17 @@
   Any unauthorized modifications or attempts to tamper with this code 
   can result in severe consequences, including a global ban from my server.
   Proceed with extreme caution and refrain from any unauthorized actions.
+  DO NOT MODIFY.
 */
 import fs from "fs";
 import axios from "axios";
 const recentCMD = {};
 const popularCMD = {};
 let queue = [];
+global.loadSymbols ??= new Map();
+
+const { loadSymbols } = global;
+
 const { CassidyResponseStylerControl } = global.utils.StylerGlobal;
 
 const awaitStack = new Proxy(

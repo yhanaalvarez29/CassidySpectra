@@ -3,8 +3,10 @@
   Any unauthorized modifications or attempts to tamper with this code 
   can result in severe consequences, including a global ban from my server.
   Proceed with extreme caution and refrain from any unauthorized actions.
+  DO NOT MODIFY.
 */
-//import importModule from './controlledEval.js';
+
+global.loadSymbols ??= new Map();
 
 import { cassWatchJob } from "./casswatch.js";
 import fs from "fs/promises";
