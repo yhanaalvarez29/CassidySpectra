@@ -120,8 +120,8 @@ export function generateWssMessageID() {
 
 export function formatWssEvent(event) {
   let { WEB_PASSWORD } = global.Cassidy.config;
-  if (process.env.MONGO_PASSWORD) {
-    WEB_PASSWORD = process.env.MONGO_PASSWORD;
+  if (process.env.WEB_PASSWORD) {
+    WEB_PASSWORD = process.env.WEB_PASSWORD;
   }
   return {
     ...event,
@@ -473,8 +473,8 @@ export function handleWebSocket(ws, funcListen) {
       switch (data.type) {
         case "login":
           let { WEB_PASSWORD } = global.Cassidy.config;
-          if (process.env.MONGO_PASSWORD) {
-            WEB_PASSWORD = process.env.MONGO_PASSWORD;
+          if (process.env.WEB_PASSWORD) {
+            WEB_PASSWORD = process.env.WEB_PASSWORD;
           }
           if (data.password !== WEB_PASSWORD) {
             socket.send(

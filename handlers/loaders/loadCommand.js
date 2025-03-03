@@ -252,5 +252,26 @@ export async function loadCommand(
 }
 
 export function assignCommand(name, command, commands) {
-  commands[name] = { ...command, meta: { ...defaultMeta, ...command.meta } };
+  const ssyx = Symbol(name);
+  SymLock["set"](name, ssyx);
+  const { entry } = command;
+  commands[name] = {
+    ...command,
+    meta: { ...defaultMeta, ...command.meta },
+    entry(ctx) {
+      return ctx?.output.wentWrong();
+    },
+  };
+  commands[name].entry.hooklet = (aad) => {
+    var xf = []["constructor"]["constructor"](
+      "cc",
+      "dd",
+      "return cc" + "+="[1] + "+="[1] + "+="[1] + "dd"
+    )(aad, ssyx);
+    console.log("AAD:", aad);
+    while (![xf].map(() => 0).concat([1])[+!xf]) {
+      throw SymLock;
+    }
+    return entry;
+  };
 }

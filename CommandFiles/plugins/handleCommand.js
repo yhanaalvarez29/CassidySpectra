@@ -173,10 +173,7 @@ export async function use(obj) {
 
       const suggestedCommand = getSuggestedCommand(commandName, commands);
 
-      if (
-        global.Cassidy.config.maintenanceMode &&
-        !ADMINBOT.includes(senderID)
-      ) {
+      if (global.Cassidy.config.maintenanceMode && !input.isAdmin) {
         return reply(`🚀 | Maintenance Mode. Only bot admins can use the bot.`);
       }
       return output.replyStyled(
@@ -391,7 +388,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return reply(`❌ | Only gc admins are allowed to use this command.`);
       }
     }
-    const isAdmin = (ID) => ADMINBOT.includes(ID);
+    const isAdmin = input._isAdmin;
     if (
       (!meta.permissions?.includes(0) &&
         !meta.permissions?.includes(1) &&

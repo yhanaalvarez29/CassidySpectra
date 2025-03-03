@@ -27,8 +27,8 @@ export const meta = {
 export function use(obj) {
   const { ADMINBOT, MODERATORBOT, forceWebUID = false } = global.Cassidy.config;
   let { WEB_PASSWORD } = global.Cassidy.config;
-  if (process.env.MONGO_PASSWORD) {
-    WEB_PASSWORD = process.env.MONGO_PASSWORD;
+  if (process.env.WEB_PASSWORD) {
+    WEB_PASSWORD = process.env.WEB_PASSWORD;
   }
   let xxa = obj.event.password === WEB_PASSWORD;
 
@@ -148,16 +148,15 @@ export function use(obj) {
       },
       get isModerator() {
         return (
-          xxa ||
-          (MODERATORBOT.includes(event.senderID) &&
-            !ADMINBOT.includes(event.senderID))
+          MODERATORBOT.includes(event.senderID) &&
+          !ADMINBOT.includes(event.senderID)
         );
       },
       _isAdmin(uid) {
         return xxa || ADMINBOT.includes(uid);
       },
       _isModerator(uid) {
-        return xxa || (MODERATORBOT.includes(uid) && !ADMINBOT.includes(uid));
+        return MODERATORBOT.includes(uid) && !ADMINBOT.includes(uid);
       },
       userInfo() {
         return new Promise(async (resolve) => {
