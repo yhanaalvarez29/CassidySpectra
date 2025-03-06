@@ -89,6 +89,13 @@ export class CassEXP {
     return lim;
   }
 
+  getNextEXPCurrentLv() {
+    const currentLevel = this.getLevel();
+    const nextEXP = this.getNextEXP();
+    const levelEXP = CassEXP.getEXPFromLevel(currentLevel - 1);
+    return nextEXP - levelEXP;
+  }
+
   getEXPCurrentLv() {
     const lim = CassEXP.getEXPFromLevel(this.getLevel() - 1);
     return this.getEXP() - lim;
@@ -113,7 +120,7 @@ export class CassEXP {
   }
 
   static getEXPFromLevel(level) {
-    if (level === 1) {
+    if (level <= 1) {
       return 0;
     } else {
       return 10 * Math.pow(2, level - 1);
