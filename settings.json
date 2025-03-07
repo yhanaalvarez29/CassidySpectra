@@ -39,5 +39,5 @@
   "exitOnError": false,
   "WEB_PASSWORD": "x64",
   "maintenanceMode": false,
-  "noLevelUI": false
+  "noLevelUI": true
 }
