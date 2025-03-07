@@ -1,23 +1,6 @@
 const axios = require("axios");
 let status = true;
 
-const style = {
-  titleStyle: {
-    text_font: "typewriter",
-    line_bottom: "none",
-    line_bottom_akhiro: "13chars",
-  },
-  contentStyle: {
-    text_font: "none",
-    line_bottom: "none",
-    line_bottom_inside_x: "none",
-  },
-};
-
-const defStyle = {
-  title: "Cassidy Bot",
-};
-
 const mappings = new Map();
 
 module.exports = {
@@ -28,16 +11,16 @@ module.exports = {
     role: 0,
     category: "Ai-Chat",
     shortDescription: {
-      en: ``,
+      en: "",
     },
     longDescription: {
-      en: ``,
+      en: "",
     },
     guide: {
       en: "{pn} [query]",
     },
   },
-  onStart({ message, event, api, args }) {
+  onStart({ message, event, args }) {
     let choice =
       args[0] === "on"
         ? true

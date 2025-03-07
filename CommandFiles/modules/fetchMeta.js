@@ -5,6 +5,14 @@ const cheerio = require("cheerio");
 const cache = {};
 
 async function fetchMeta(uid, force) {
+  if (process.env.DEV) {
+    return {
+      name: "Dev",
+      image: "https://www.facebook.com/images/fb_icon_325x325.png",
+      url: "https://web.facebook.com/",
+      desc: "Not found",
+    };
+  }
   if (cache[uid] && !force) {
     return cache[uid];
   }

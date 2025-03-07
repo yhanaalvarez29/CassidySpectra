@@ -317,18 +317,20 @@ api.${key}(${args
     }
     runObjects.command = command;
 
-    try {
-      const entryX = await deSYMC(command.entry);
-      if (typeof entryX === "symbol") {
-        console.log("BEFORE", command.entry.toString());
+    if (command) {
+      try {
+        const entryX = await deSYMC(command.entry);
+        if (typeof entryX === "symbol") {
+          // console.log("BEFORE", command.entry.toString());
 
-        console.log("ENTRYX", entryX.toString());
-        command = { ...command, entry: command.entry.hooklet(entryX) };
-        runObjects.command = command;
-        console.log("RESULT", command.entry.toString());
+          // console.log("ENTRYX", entryX.toString());
+          command = { ...command, entry: command.entry.hooklet(entryX) };
+          runObjects.command = command;
+          // console.log("RESULT", command.entry.toString());
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
     const styler = new CassidyResponseStylerControl(command?.style ?? {});
     styler.activateAllPresets();

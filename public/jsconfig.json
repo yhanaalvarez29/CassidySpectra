@@ -9,5 +9,5 @@
     "types": [null],
     "lib": ["dom", "es6"]
   },
-  "include": ["**/*.js", "**/*.mjs"]
+  "include": ["**/*.js", "**/*.mjs", "../CommandFiles/commands/autocassidy.js"]
 }
