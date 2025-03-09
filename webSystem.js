@@ -11,9 +11,14 @@ const wssUsers = new Map();
 const http = require("http");
 const WebSocket = require("ws");
 export class Listener {
+  /**
+   *
+   * @param {{ app: import("express").Express }} param0
+   */
   constructor({ api, app }) {
     this.api = api;
     this.app = app;
+
     this.callback = () => {};
     if (api?.sendMessage) {
       const e = api?.listenMqtt?.((err, event) => {
@@ -31,10 +36,7 @@ export class Listener {
         });
       }
     });
-    const { handleEvents, handleGetEvents, pageApi } = creatorX(this.callback);
-    app.post("/webhook", handleEvents);
-    app.get("/webhook", handleGetEvents);
-    this.pageApi = pageApi;
+
     const httpServer = http.createServer(app);
 
     const wss = new WebSocket.Server({
@@ -56,6 +58,12 @@ export class Listener {
       handleWebSocket(this.wss, this.callback);
       // await createDiscordListener(this.callback);
       // await tphHandler(this.callback);
+      const { handleEvents, handleGetEvents, pageApi } = creatorX(
+        this.callback
+      );
+      this.app.post("/webhook", handleEvents);
+      this.app.get("/webhook", handleGetEvents);
+      this.pageApi = pageApi;
     } catch (error) {
       console.log(error);
     }
