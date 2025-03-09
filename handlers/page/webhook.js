@@ -51,6 +51,10 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
         global.logger("Invalid mode or token", "Webhook Failed");
         res.sendStatus(403);
       }
+    } else {
+      global.logger("WEBHOOK_VERIFIED", "NO VERIFY TOKEN");
+      console.log("WEBHOOK_VERIFIED");
+      res.status(200).send(challenge);
     }
   }
 
@@ -59,10 +63,7 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
     global.logger(JSON.stringify(body), "Incoming Event");
 
     if (body.object === "page") {
-      global.logger(
-        `Processing ${body.entry.length} entries`,
-        "Page Event"
-      );
+      global.logger(`Processing ${body.entry.length} entries`, "Page Event");
 
       body.entry.forEach((entry, index) => {
         global.logger(
@@ -84,17 +85,11 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
 
           if (event.message || event.reaction) {
             const convertedEvent = convertEvent(event);
-            global.logger(
-              JSON.stringify(convertedEvent),
-              "Handling Message"
-            );
+            global.logger(JSON.stringify(convertedEvent), "Handling Message");
             handleMessage(null, convertedEvent, { pageApi: api });
           } else if (event.postback) {
             const convertedEvent = convertEvent(event);
-            global.logger(
-              JSON.stringify(convertedEvent),
-              "Handling Postback"
-            );
+            global.logger(JSON.stringify(convertedEvent), "Handling Postback");
             handlePostback(null, convertedEvent, { pageApi: api });
           }
         });
