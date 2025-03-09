@@ -1,5 +1,26 @@
+// const reference = {
+//   object: "page",
+//   entry: [
+//     {
+//       time: ,
+//       id: "",
+//       messaging: [
+//         {
+//           sender: { id: "" },
+//           recipient: { id: "" },
+//           timestamp: 1741508398163,
+//           message: {
+//             mid: "m_Tg9sZpJJW81uLfqDuEoWF5Q8lp_O9nzvFABhZGXb2gWfkSbAf6mMX1XOWYH9bU4bLMqPvAYPhLU8D-0XQokvqw",
+//             text: "+",
+//           },
+//         },
+//       ],
+//     },
+//   ],
+// };
+
 export function convertEvent(pageObject) {
-  const pageEvent = pageObject.entry[0];
+  const pageEvent = pageObject;
   const { message } = pageEvent;
   const { reaction } = message;
   const event = {
@@ -7,8 +28,8 @@ export function convertEvent(pageObject) {
     type: reaction
       ? "message_reaction"
       : message.reply_to
-        ? "message_reply"
-        : "message",
+      ? "message_reply"
+      : "message",
     senderID: reaction ? pageEvent.recipient.id : pageEvent.sender.id,
     timestamp: pageEvent.time || pageEvent.timestamp,
     body: reaction ? "" : message.text,
