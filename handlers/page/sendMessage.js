@@ -29,8 +29,13 @@ export class APIPage {
     console.log(conf);
 
     const promise = new Promise((resolve, reject) => {
-      request(conf, (error, response, responseBody) => {
-        console.log(responseBody);
+      request(conf, (error, response, responseBodyX) => {
+        console.log(responseBodyX);
+        const responseBody = {
+          timestamp: Date.now().toString(),
+          messageID: responseBodyX.message_id,
+          senderID: responseBodyX.recipient_id,
+        };
 
         if (error) {
           if (callback) callback(error, null);
