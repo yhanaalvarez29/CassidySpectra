@@ -4,6 +4,7 @@ import request from "request";
 export class APIPage {
   constructor(pageAccessToken) {
     this.token = pageAccessToken;
+    this.num_edit = 0;
   }
 
   sendMessage(content, senderID, callback) {
@@ -16,36 +17,39 @@ export class APIPage {
         body.attachment = content.attachment;
       }
     }
+    const conf = {
+      url: "https://graph.facebook.com/v20.0/me/messages",
+      qs: { access_token: this.token },
+      method: "POST",
+      json: {
+        recipient: { id: senderID },
+        message: body,
+      },
+    };
+    console.log(conf);
 
     const promise = new Promise((resolve, reject) => {
-      request(
-        {
-          url: "https://graph.facebook.com/v20.0/me/messages",
-          qs: { access_token: this.token },
-          method: "POST",
-          json: {
-            recipient: { id: senderID },
-            message: body,
-          },
-        },
-        (error, response, responseBody) => {
-          if (error) {
-            if (callback) callback(error, null);
-            reject(error);
-          } else if (responseBody.error) {
-            const err = new Error(responseBody.error.message);
-            if (callback) callback(err, null);
-            reject(err);
-          } else {
-            if (callback) callback(null, responseBody);
-            resolve(responseBody);
-          }
-        },
-      );
+      request(conf, (error, response, responseBody) => {
+        console.log(responseBody);
+
+        if (error) {
+          if (callback) callback(error, null);
+          reject(error);
+        } else if (responseBody.error) {
+          const err = new Error(responseBody.error.message);
+          if (callback) callback(err, null);
+          reject(err);
+        } else {
+          if (callback) callback(null, responseBody);
+          resolve(responseBody);
+        }
+      });
     });
 
     return promise;
   }
+
+  editMessage = null;
 
   getMessage(messageID, callback) {
     const promise = new Promise((resolve, reject) => {
@@ -68,7 +72,7 @@ export class APIPage {
             if (callback) callback(null, data);
             resolve(data);
           }
-        },
+        }
       );
     });
 
@@ -101,7 +105,7 @@ export class APIPage {
             if (callback) callback(null, responseBody);
             resolve(responseBody);
           }
-        },
+        }
       );
     });
 
@@ -134,7 +138,7 @@ export class APIPage {
             if (callback) callback(null, responseBody);
             resolve(responseBody);
           }
-        },
+        }
       );
     });
 
@@ -162,7 +166,7 @@ export class APIPage {
             if (callback) callback(null, responseBody);
             resolve(responseBody);
           }
-        },
+        }
       );
     });
 

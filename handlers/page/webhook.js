@@ -70,24 +70,30 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
           `Processing ${entry.messaging.length} messaging events`,
           `Entry ${index}`
         );
+        const event = entry;
 
-        entry.messaging.forEach((event, msgIndex) => {
+        entry.messaging.forEach((eventX, msgIndex) => {
           global.logger(
             `Event type: ${
-              event.message
+              eventX.message
                 ? "message"
-                : event.reaction
+                : eventX.reaction
                 ? "reaction"
                 : "postback"
             }`,
             `Message ${msgIndex}`
           );
+          api.editMessage = (text, mid) => {
+            const convertedEvent = convertEvent(event);
+            const senderID = convertedEvent.senderID;
+            return api.sendMessage(text, senderID);
+          };
 
-          if (event.message || event.reaction) {
+          if (eventX.message || eventX.reaction) {
             const convertedEvent = convertEvent(event);
             global.logger(JSON.stringify(convertedEvent), "Handling Message");
             handleMessage(null, convertedEvent, { pageApi: api });
-          } else if (event.postback) {
+          } else if (eventX.postback) {
             const convertedEvent = convertEvent(event);
             global.logger(JSON.stringify(convertedEvent), "Handling Postback");
             handlePostback(null, convertedEvent, { pageApi: api });
