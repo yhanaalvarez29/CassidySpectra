@@ -108,7 +108,10 @@ const allPlugins = {};
 
 import extend from "./extends.js";
 extend();
-import { UNIRedux } from "./CommandFiles/modules/unisym.js";
+import {
+  removeCommandAliases,
+  UNIRedux,
+} from "./CommandFiles/modules/unisym.js";
 
 /**
  * @global
@@ -442,6 +445,52 @@ async function main() {
 
   willAccept = true;
   logger("Listener Started!", "LISTEN");
+  setupCommands();
+}
+import request from "request";
+
+async function setupCommands() {
+  const pageAccessToken = global.Cassidy.config.pageAccessToken;
+  if (!pageAccessToken) return;
+
+  const commandsData = {
+    commands: [
+      {
+        locale: "default",
+        commands: Array.from(
+          Object.values(removeCommandAliases(global.Cassidy.commands))
+        ).map((command) => ({
+          name: String(command.meta.name).slice(0, 32),
+          description:
+            `${command.meta.description} (by ${command.meta.author})`.slice(
+              0,
+              64
+            ),
+        })),
+      },
+    ],
+  };
+  console.log(JSON.stringify(commandsData, null, 2));
+
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        uri: `https://graph.facebook.com/v21.0/me/messenger_profile`,
+        qs: { access_token: pageAccessToken },
+        method: "POST",
+        json: commandsData,
+      },
+      (error, response, body) => {
+        if (!error && response.statusCode === 200) {
+          console.log("Commands set successfully:", body);
+          resolve(body);
+        } else {
+          console.error("Error setting commands:", error || body.error);
+          reject(error || body.error);
+        }
+      }
+    );
+  });
 }
 import {
   Listener,
