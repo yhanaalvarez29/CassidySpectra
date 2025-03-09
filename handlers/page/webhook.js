@@ -10,7 +10,7 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
         return api[key];
       } else {
         return function (...args) {
-          global.log(
+          global.logger(
             "API Warning",
             `api.${key} called with args: ${JSON.stringify(args)} - no effect!`
           );
@@ -19,7 +19,7 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
       }
     },
     set(api, key, value) {
-      global.log("API Set", `Setting api.${key} to: ${JSON.stringify(value)}`);
+      global.logger("API Set", `Setting api.${key} to: ${JSON.stringify(value)}`);
       api[key] = value;
       return true;
     },
@@ -30,7 +30,7 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    global.log("Webhook Verification", {
+    global.logger("Webhook Verification", {
       mode,
       token: token ? "[present]" : "[missing]",
       challenge,
@@ -38,11 +38,11 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
 
     if (mode && token && VERIFY_TOKEN) {
       if (mode === "subscribe" && token === VERIFY_TOKEN) {
-        global.log("Webhook Success", "WEBHOOK_VERIFIED");
+        global.logger("Webhook Success", "WEBHOOK_VERIFIED");
         console.log("WEBHOOK_VERIFIED");
         res.status(200).send(challenge);
       } else {
-        global.log("Webhook Failed", "Invalid mode or token");
+        global.logger("Webhook Failed", "Invalid mode or token");
         res.sendStatus(403);
       }
     }
@@ -50,19 +50,19 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
 
   function handleEvents(req, res) {
     const body = req.body;
-    global.log("Incoming Event", { body: JSON.stringify(body) });
+    global.logger("Incoming Event", { body: JSON.stringify(body) });
 
     if (body.object === "page") {
-      global.log("Page Event", `Processing ${body.entry.length} entries`);
+      global.logger("Page Event", `Processing ${body.entry.length} entries`);
 
       body.entry.forEach((entry, index) => {
-        global.log(
+        global.logger(
           `Entry ${index}`,
           `Processing ${entry.messaging.length} messaging events`
         );
 
         entry.messaging.forEach((event, msgIndex) => {
-          global.log(
+          global.logger(
             `Message ${msgIndex}`,
             `Event type: ${
               event.message
@@ -75,20 +75,20 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
 
           if (event.message || event.reaction) {
             const convertedEvent = convertEvent(event);
-            global.log("Handling Message", { convertedEvent });
+            global.logger("Handling Message", { convertedEvent });
             handleMessage(null, convertedEvent, { pageApi: api });
           } else if (event.postback) {
             const convertedEvent = convertEvent(event);
-            global.log("Handling Postback", { convertedEvent });
+            global.logger("Handling Postback", { convertedEvent });
             handlePostback(null, convertedEvent, { pageApi: api });
           }
         });
       });
 
-      global.log("Event Processed", "Sending EVENT_RECEIVED response");
+      global.logger("Event Processed", "Sending EVENT_RECEIVED response");
       res.status(200).send("EVENT_RECEIVED");
     } else {
-      global.log("Invalid Event", "Not a page object");
+      global.logger("Invalid Event", "Not a page object");
       res.sendStatus(404);
     }
   }
