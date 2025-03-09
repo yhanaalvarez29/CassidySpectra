@@ -477,6 +477,8 @@ function web(api, funcListen, settings) {
   let passKey = `${Math.random().toString(36).substring(2, 15)}`;
   const app = express();
   app.use(cors());
+  app.use(express.json({ limit: "200mb" }));
+
   const listener = new Listener({ api, app });
   listener.startListen(funcListen);
   //app.use(fake502);
@@ -493,7 +495,6 @@ function web(api, funcListen, settings) {
     });
     res.send(page);
   });
-  app.use(express.json({ limit: "200mb" }));
   app.post("/postcred", postState);
   app.use(express.static("public"));
   app.get("/api/usercache", async (req, res) => {
