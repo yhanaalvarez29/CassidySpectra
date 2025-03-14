@@ -15,6 +15,7 @@ export const meta = {
   icon: "💻",
   waitingTime: 0.01,
   category: "Utilities",
+  noLevelUI: true,
 };
 
 export async function entry(context) {

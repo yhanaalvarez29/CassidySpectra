@@ -151,7 +151,8 @@ export function use(obj) {
       if (
         command?.meta?.noLevelUI !== true &&
         global.Cassidy.config.noLevelUI !== true &&
-        obj.money
+        obj.money &&
+        options.noLevelUI !== true
       ) {
         const {
           cassEXP,

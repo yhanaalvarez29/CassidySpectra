@@ -103,7 +103,7 @@ export async function event({ input, event, output }) {
     if (estatus === "fail") {
       return null;
     }
-    const info = await output.reply({ body: result.body });
+    const info = await output.reply({ body: result.body, noLevelUI: true });
     global.Cassidy.replies[info.messageID] = {
       repObj: {
         callback(ctx) {
