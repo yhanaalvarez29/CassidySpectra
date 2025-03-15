@@ -667,7 +667,7 @@ export function styledForHTML(text = "", StyleClass) {
       }
 
       if (key === "title") {
-        html += `<h2>${output}</h2>`;
+        html += `<h3>${output}</h3>`;
       } else if (key === "content") {
         html += `<p>${output}</p>`;
       } else {

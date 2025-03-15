@@ -172,7 +172,9 @@ export function use(obj) {
           : options.body;
       }
       if (!options.noStyle) {
-        options.body = stylerShallow.text(options.body);
+        options.body = input.isWss
+          ? stylerShallow.html(resultInfo.originalOptionsBody)
+          : stylerShallow.text(options.body);
         resultInfo.html = stylerShallow.html(resultInfo.originalOptionsBody);
         resultInfo.styleFields = styler.getFields();
       } else {
@@ -419,7 +421,9 @@ export function use(obj) {
       /*if (Object.keys(refStyle).length > 0) {
         result = await styled(result, refStyle);
       }*/
-      result = stylerShallow.text(text);
+      result = input.isWss
+        ? stylerShallow.html(text)
+        : stylerShallow.text(text);
       return new Promise((res) => {
         const aa = api.editMessage(result, mid, () => res(true));
         if (aa instanceof Promise) {

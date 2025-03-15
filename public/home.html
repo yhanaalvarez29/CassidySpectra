@@ -68,7 +68,9 @@
     sendBtn.textContent = "Submit";
     sendBtn.addEventListener("click", async () => {
       const argsJoined = area.value;
-      const body = `/${cmd.meta.name} ${argsJoined}`;
+      const body = `/${cmd.meta.name}${
+        argsJoined.startsWith("-") ? argsJoined : ` ${argsJoined}`
+      }`;
       const payload = {
         body,
         senderID: localStorage.getItem("panelID"),

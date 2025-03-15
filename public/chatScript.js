@@ -164,7 +164,9 @@ function handleMessageEdit({ messageID, body }) {
   if (!doc) {
     return;
   }
-  doc.innerText = body;
+  const info = infos[messageID] ?? {};
+  const botSend = info.botSend;
+  doc[botSend ? "innerHTML" : "innerText"] = body;
   localEdit(body, messageID);
 }
 // This one is responsible for appending replies from bot
@@ -178,10 +180,11 @@ function appendRepOld({ body, messageID, chatPad }) {
   animateSend(elem);
 }
 
-function appendRep({ body, messageID, chatPad }) {
+function appendRep({ body, messageID, chatPad, botSend }) {
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
     const info = infos[messageID] ?? {};
+    botSend ??= info.botSend;
     info.senderID ??= "unknown";
     // let everyWrapper = Array.from(chatPad.children)
     //   .reverse()
@@ -249,7 +252,7 @@ function appendRep({ body, messageID, chatPad }) {
         ? messageContainer.querySelector(".col-response-message")
         : document.createElement("div");
       wrapper.classList.add("col-response-message");
-      userMessage.textContent = body;
+      userMessage[botSend ? "innerHTML" : "textContent"] = body;
       userMessage.id = `${messageID}_text`;
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
@@ -515,7 +518,12 @@ function handleMessage(data) {
     infos[data.messageID] = data;
   }
   if (data.botSend || !data.isYou) {
-    appendRep({ body: data.body, messageID: data.messageID, chatPad });
+    appendRep({
+      body: data.body,
+      messageID: data.messageID,
+      chatPad,
+      botSend: data.botSend,
+    });
   } else {
     let appended = data.body;
     if (data.messageReply) {
