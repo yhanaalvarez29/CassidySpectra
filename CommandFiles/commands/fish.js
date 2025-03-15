@@ -102,6 +102,11 @@ export const style = {
 
 const { invLimit } = global.Cassidy;
 
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({ input, output, money, Inventory, Collectibles }) {
   const { inventory = [], fishStamp } = await money.get(input.senderID);
   let updatedInventory = new Inventory(inventory);

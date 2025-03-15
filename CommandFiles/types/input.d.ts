@@ -1,5 +1,5 @@
 declare module "input-cassidy" {
-  interface InputProps {
+  export interface InputProps {
     body: string;
     senderID: string;
     type: string;
@@ -46,6 +46,52 @@ declare module "input-cassidy" {
     detectUID: string | undefined;
     detectID: string | undefined;
     censor: (text: string) => string;
+    setReply?: ReplySystem["set"];
+    delReply?: ReplySystem["delete"];
+    setReact?: ReactSystem["set"];
+    delReact?: ReactSystem["delete"];
+  }
+
+  export interface RepliesObj<T> {
+    repObj: T;
+    commandKey: T["key"];
+    detectID: string;
+  }
+
+  export interface ReactObj<T> {
+    reactObj: T;
+    commandKey: T["key"];
+    detectID: string;
+  }
+
+  export interface StandardReplyArg {
+    key?: string | undefined;
+    callback?: CommandEntry | undefined;
+    [key: string]: any;
+  }
+
+  export interface StandardReactArg {
+    key?: string | undefined;
+    callback?: CommandEntry | undefined;
+    [key: string]: any;
+  }
+
+  export interface ReplySystem {
+    set<T extends StandardReplyArg>(
+      detectID: string,
+      repObj?: T
+    ): RepliesObj<T>;
+    delete<T extends StandardReplyArg>(detectID: string): RepliesObj<T> | null;
+    get<T extends StandardReplyArg>(detectID: string): RepliesObj<T> | null;
+  }
+
+  export interface ReactSystem {
+    set<T extends StandardReactArg>(
+      detectID: string,
+      reactObj?: T
+    ): ReactObj<T>;
+    delete<T extends StandardReactArg>(detectID: string): ReactObj<T> | null;
+    get<T extends StandardReactArg>(detectID: string): ReactsObj<T> | null;
   }
 
   export default InputProps;

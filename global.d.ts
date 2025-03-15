@@ -4,8 +4,9 @@ import type {
   Collectibles,
 } from "./CommandFiles/plugins/ut-shop.js";
 
-import type InputX from "input-cassidy";
-import type OutputX from "output-cassidy";
+import type InputX, { ReplySystem, ReactSystem } from "input-cassidy";
+
+import type OutputX, { OutputProps } from "output-cassidy";
 import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 import type {
   GameSimulator,
@@ -15,7 +16,6 @@ import type {
 import GlobalUtilsX from "./utils-type";
 
 export {};
-
 declare global {
   interface FactoryConfig {
     title: string;
@@ -57,7 +57,7 @@ declare global {
     Inventory: typeof Inventory;
     Collectibles: typeof Collectibles;
     input: InputX;
-    output: OutputX;
+    output: OutputProps;
     args: string[];
     cancelCooldown?: Function;
     commandName?: string;
@@ -67,6 +67,8 @@ declare global {
     CassEXP: typeof CassEXP;
     userDataCache: UserData;
     GameSimulator: typeof GameSimulator;
+    replyStystem?: ReplySystem;
+    reactSystem?: ReactSystem;
   }
 
   interface RecipeResult extends Cass.InventoryItem {}

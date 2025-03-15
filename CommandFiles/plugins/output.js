@@ -338,8 +338,8 @@ export function use(obj) {
                   `❌ Invalid response, please go back and reply either **yes** or **no**.`
                 );
               }
-              done?.(repCtx);
-              resolve(repCtx);
+              done?.(newCtx);
+              resolve(newCtx);
               input.delReply(info.messageID);
             },
           });
