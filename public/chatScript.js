@@ -533,10 +533,12 @@ document.addEventListener("keydown", (event) => {
   if (event.ctrlKey) {
     return;
   }
-  const messageDoc = document.querySelector("#userText");
-  messageDoc.focus();
-});
 
+  const messageBox = document.querySelector("#userText");
+  if (!document.activeElement || document.activeElement === document.body) {
+    messageBox.focus();
+  }
+});
 document.addEventListener("keydown", function (event) {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();

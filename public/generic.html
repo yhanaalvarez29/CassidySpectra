@@ -35,6 +35,34 @@
         </div>
       </div>
     </div>
+    <style>
+      .container.pass {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        padding: 20px;
+      }
+
+      .container.pass input[type="password"] {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+        font-family: inherit;
+        padding: 10px;
+        font-size: inherit;
+        color: transparent;
+        opacity: 0.5;
+      }
+
+      .container.pass input[type="password"]:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.2);
+        color: black;
+        opacity: 1;
+      }
+    </style>
     <div class="menu-options" id="menuOptions">
       <a href="#" onclick="handleOptionClick('/')"><strong>Home</strong></a>
       <a href="#" onclick="handleOptionClick('/f:chatv2')"
@@ -43,20 +71,87 @@
       <a href="#" onclick="handleOptionClick('/f:underfight')"
         ><strong>Underfight</strong></a
       >
-      <!-- <a href="#" onclick="handleOptionClick('/f:password')"
-        ><strong>Login</strong></a
-      > -->
-      <!-- <a href="#" onclick="handleOptionClick('/f:stater')"
-        ><strong>State Extractor</strong></a
+      <div class="container pass">
+        <h3>Panel ID</h3>
+        <input
+          type="password"
+          placeholder="Enter your userID..."
+          id="panel-uid-t"
+        />
+      </div>
+      <div class="container pass">
+        <h3>Panel Password</h3>
+        <input
+          type="password"
+          placeholder="Enter your cassidy password."
+          id="panel-pass-t"
+        />
+      </div>
+      <div
+        class="container pass"
+        id="ref-warn"
+        style="display: none; color: red"
       >
-      <a
-        href="#"
-        onclick="handleOptionClick('https://liaspark.chatbotcommunity.ltd')"
-        ><strong>API</strong></a
-      > -->
+        <p>You need to refresh to apply these changes!</p>
+      </div>
     </div>
 
     {{ content }}
     <script src="genscript.js"></script>
+    <script>
+      function updatePanelFields() {
+        const uidField = document.querySelector("#panel-uid-t");
+        const passField = document.querySelector("#panel-pass-t");
+        const savedUid = localStorage.getItem("panelID");
+
+        if (savedUid) {
+          uidField.value = savedUid;
+          if (typeof panelID !== "undefined") {
+            panelID = savedUid;
+          }
+        }
+
+        const savedPass = localStorage.getItem("password");
+        if (savedPass) {
+          passField.value = savedPass;
+        }
+        if (typeof password !== "undefined") {
+          password = savedPass;
+        }
+      }
+
+      function savePanelFields() {
+        const uidField = document.querySelector("#panel-uid-t");
+        const passField = document.querySelector("#panel-pass-t");
+        localStorage.setItem("panelID", uidField.value);
+        localStorage.setItem("password", passField.value);
+      }
+
+      const uidBox = document.querySelector("#panel-uid-t");
+      const passBox = document.querySelector("#panel-pass-t");
+
+      uidBox.addEventListener("input", () => {
+        savePanelFields();
+      });
+
+      passBox.addEventListener("input", () => {
+        savePanelFields();
+      });
+
+      uidBox.addEventListener("focus", () => {
+        updatePanelFields();
+      });
+
+      passBox.addEventListener("focus", () => {
+        updatePanelFields();
+      });
+      uidBox.addEventListener("blur", () => {
+        document.querySelector("#ref-warn").style.display = "block";
+      });
+
+      passBox.addEventListener("blur", () => {
+        document.querySelector("#ref-warn").style.display = "block";
+      });
+    </script>
   </body>
 </html>
