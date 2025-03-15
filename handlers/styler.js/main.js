@@ -34,7 +34,6 @@ whiteline - its just \n
 
 */
 
-
 export function convertLegacyStyling(style) {
   return {
     ...style,
@@ -224,6 +223,17 @@ export class CassidyResponseStylerControl {
     }
     //console.log("[Sent Style]", this.#fields);
     return styled(text ?? "", this.#fields);
+  }
+  getFields() {
+    return this.#fields;
+  }
+  html(text, keyContent) {
+    if (keyContent) {
+      const clone = this.cloneAll();
+      return clone.changeContents(keyContent).html(text);
+    }
+    //console.log("[Sent Style]", this.#fields);
+    return styledForHTML(text ?? "", this.#fields);
   }
   appendField(key, field) {
     if (!(field instanceof CassidyResponseStyler)) {
@@ -570,4 +580,105 @@ export function deepMerge(target, ...sources) {
   }
 
   return target;
+}
+
+export function styledForHTML(text = "", StyleClass) {
+  text = String(text).replace(/</g, "<").replace(/>/g, ">");
+
+  try {
+    let styling = StyleClass;
+    if (typeof styling === "function" && styling.prototype) {
+      styling = new StyleClass();
+    } else if (
+      typeof styling === "string" ||
+      (styling &&
+        (typeof styling.titleFont === "string" ||
+          typeof styling.contentFont === "string" ||
+          typeof styling.title === "string"))
+    ) {
+      styling = convertLegacyStyling(JSON.parse(JSON.stringify(styling)));
+    } else if (!styling || Object.keys(styling).length === 0) {
+      styling = { content: {} };
+    } else {
+      styling = JSON.parse(JSON.stringify(styling));
+    }
+
+    styling.title = styling.title || { content: "" };
+    styling.content = styling.content || {};
+
+    let html = "";
+
+    function autoBoldHTML(txt) {
+      txt = String(txt);
+      txt = txt.replace(/\*\*\*(.*?)\*\*\*/g, "<b><i>$1</i></b>");
+      txt = txt.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+      return txt;
+    }
+
+    function autoFontHTML(txt) {
+      txt = String(txt);
+      txt = txt.replace(
+        /\[font=(.*?)\]\s*(.*?)\s*\[:font=(.*?)\]/g,
+        (_, font, content, font2) =>
+          font === font2 && font === "bold" ? `<b>${content}</b>` : content
+      );
+      return txt;
+    }
+
+    for (const key in styling) {
+      const ownStyling = styling[key];
+      if (typeof ownStyling !== "object" || !ownStyling) continue;
+
+      let value = ownStyling.content ?? text;
+
+      if (Array.isArray(ownStyling.content_template)) {
+        value = parseTemplate(value, ...ownStyling.content_template);
+      }
+
+      let styledText = value;
+      const font = ownStyling.text_font || "none";
+      if (styling && font === "bold") {
+        styledText = `<b>${styledText}</b>`;
+      } else if (styling && font === "fancy_italic") {
+        styledText = `<i>${styledText}</i>`;
+      } else if (styling && font === "bold_italic") {
+        styledText = `<b><i>${styledText}</i></b>`;
+      }
+
+      styledText = styling ? autoFontHTML(styledText) : styledText;
+      styledText = styling ? autoBoldHTML(styledText) : styledText;
+
+      const topLine = ownStyling.line_top || "hidden";
+      const bottomLine = ownStyling.line_bottom || "hidden";
+      let output = "";
+
+      if (styling && topLine !== "hidden" && topLine !== "whiteline") {
+        output += "<hr>";
+      } else if (styling && topLine === "whiteline") {
+        output += "<br>";
+      }
+
+      output += styledText;
+
+      if (styling && bottomLine !== "hidden" && bottomLine !== "whiteline") {
+        output += "<hr>";
+      } else if (styling && bottomLine === "whiteline") {
+        output += "<br>";
+      }
+
+      if (key === "title") {
+        html += `<h2>${output}</h2>`;
+      } else if (key === "content") {
+        html += `<p>${output}</p>`;
+      } else {
+        html += `<div>${output}</div>`;
+      }
+    }
+    html = html.replaceAll("\n", "<br>");
+
+    return html.trim();
+  } catch (error) {
+    console.error("[HTML Styler]", error);
+    return `<p>${text.replaceAll("\n", "<br>")}</p>`;
+  }
 }

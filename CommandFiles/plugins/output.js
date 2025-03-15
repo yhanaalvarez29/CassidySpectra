@@ -115,6 +115,7 @@ export function use(obj) {
           body: text,
         });
       }
+      let resultInfo = {};
 
       const { UserStatsLocal, money, CassEncoder } = obj;
       const { replies = {} } = global.Cassidy;
@@ -133,6 +134,7 @@ export function use(obj) {
         Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
         Object.assign({}, options.style ?? {}, input.style ?? {})
       );
+      resultInfo.originalOptionsBody = options.body;
       /*if (
         (command &&
           command.style &&
@@ -171,11 +173,30 @@ export function use(obj) {
       }
       if (!options.noStyle) {
         options.body = stylerShallow.text(options.body);
+        resultInfo.html = stylerShallow.html(resultInfo.originalOptionsBody);
+        resultInfo.styleFields = styler.getFields();
+      } else {
+        resultInfo.html = options.body;
       }
       if (options.noStyle) {
         delete options.noStyle;
       }
       options.body = options.body.trim();
+      for (const key in options) {
+        if (
+          ![
+            "attachment",
+            "attachments",
+            "body",
+            "location",
+            "mentions",
+          ].includes(key)
+        ) {
+          resultInfo[key] = options[key];
+          delete options[key];
+        }
+      }
+
       //console.log(options);
       for (const kk of [input.webQ]) {
         if (!global.webQuery[kk]) {
@@ -187,7 +208,7 @@ export function use(obj) {
         }
         global.webQuery[kk].resolve({
           status: "success",
-          result: { ...options, messageID: newMid },
+          result: { ...options, ...resultInfo, messageID: newMid },
           newMid,
           modifiedData,
         });
@@ -199,6 +220,7 @@ export function use(obj) {
         return new Promise((r) => {
           r({
             ...options,
+            ...resultInfo,
             messageID: newMid,
           });
         });
@@ -221,6 +243,7 @@ export function use(obj) {
             const resu = {
               ...options,
               ...info,
+              ...resultInfo,
               senderID: api?.getCurrentUserID() || "",
               body: options.body,
             };

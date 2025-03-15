@@ -20,21 +20,13 @@
       icon.textContent = (meta.icon ?? "").trim() || "📄";
       icon.classList.add("cmd-icon");
       container.appendChild(icon);
+
       const h3 = document.createElement("h3");
       h3.textContent = toTitleCase(meta.name ?? "Unnamed");
-      container.appendChild(h3);
       h3.classList.add("cmd-name");
+      container.appendChild(h3);
 
-      // const br = document.createElement("br");
-      // container.appendChild(br);
-
-      // const button = document.createElement("button");
-      // button.textContent = "View Properties";
-      // button.className = "prop-button";
-      // button.onclick = () => showModal(meta);
-      // container.appendChild(button);
-      container.onclick = () => showModal(meta);
-
+      container.onclick = () => showModal(cmd);
       cmds.appendChild(container);
     }
 
@@ -42,11 +34,11 @@
     modalWrapper.id = "modal-wrapper";
     modalWrapper.className = "modal-wrapper";
     modalWrapper.innerHTML = `
-      <div class="modal-content">
-        <span class="close">×</span>
-        <div id="modal-properties"></div>
-      </div>
-    `;
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div id="modal-properties"></div>
+    </div>
+  `;
     document.body.appendChild(modalWrapper);
 
     const closeBtn = modalWrapper.querySelector(".close");
@@ -58,18 +50,44 @@
     };
   };
 
-  function showModal(meta) {
+  function showModal(cmd) {
     const modalWrapper = document.getElementById("modal-wrapper");
     const modalProperties = document.getElementById("modal-properties");
+    modalProperties.innerHTML = "";
 
-    const properties = mapKey(meta);
-    if (typeof properties === "string") {
-      modalProperties.innerHTML = properties;
-    } else {
-      modalProperties.innerHTML = "";
-      modalProperties.appendChild(properties);
-    }
+    const area = document.createElement("textarea");
+    area.className = "textarea";
+    area.placeholder = "Enter arguments...";
+    area.rows = 1;
 
+    const resultBox = document.createElement("div");
+    resultBox.classList.add("container");
+
+    const sendBtn = document.createElement("button");
+    sendBtn.classList.add("vanillaButton");
+    sendBtn.textContent = "Submit";
+    sendBtn.addEventListener("click", async () => {
+      const argsJoined = area.value;
+      const body = `/${cmd.meta.name} ${argsJoined}`;
+      const payload = {
+        body,
+        senderID: localStorage.getItem("panelID"),
+        type: "message",
+        threadID: localStorage.getItem("panelID"),
+      };
+      const res = await fetch("/postNew", {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+
+      if (data.status === "success" && data.result.html) {
+        resultBox.innerHTML = data.result.html;
+      }
+    });
+
+    modalProperties.append(resultBox, area, sendBtn);
     modalWrapper.style.display = "flex";
   }
 
@@ -181,13 +199,28 @@
     max-height: 60vh;
     overflow-y: auto;
     display: flex;
-    flex-direction: column;
-    border-radius: 9px;
+    flex-direction: row-reverse;
+    border-radius: 18px;
     background-color: #1f1f1fc2;
     color: white;
-    justify-content: flex-start;
+    gap: 10px;
+    justify-content: center;
     align-items: flex-start;
     animation: openApp 0.2s ease-out forwards;
+  }
+
+  #modal-properties {
+    gap: 10px;
+    justify-content: flex-start;
+    align-items: flex-end;
+    animation: openApp 0.2s ease-out forwards;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  #modal-properties .container {
+    width: 100%;
   }
 
   .close {
@@ -196,9 +229,6 @@
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    position: absolute;
-    right: 15px;
-    top: 10px;
   }
 
   .close:hover,
