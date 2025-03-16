@@ -173,7 +173,9 @@ export function use(obj) {
       }
       if (!options.noStyle) {
         options.body = input.isWss
-          ? stylerShallow.html(resultInfo.originalOptionsBody)
+          ? stylerShallow.html(resultInfo.originalOptionsBody) +
+            "==========>" +
+            stylerShallow.text(resultInfo.originalOptionsBody)
           : stylerShallow.text(options.body);
         resultInfo.html = stylerShallow.html(resultInfo.originalOptionsBody);
         resultInfo.styleFields = styler.getFields();
@@ -184,6 +186,7 @@ export function use(obj) {
         delete options.noStyle;
       }
       options.body = options.body.trim();
+      const optionsCopy = { ...options };
       for (const key in options) {
         if (
           ![
@@ -230,11 +233,11 @@ export function use(obj) {
       //console.log(options);
       return new Promise((res, rej) => {
         api.sendMessage(
-          options.body,
-          options.threadID || event.threadID,
+          options,
+          optionsCopy.threadID || event.threadID,
           async (err, info) => {
-            if (typeof options.callback === "function") {
-              await options.callback(info);
+            if (typeof optionsCopy.callback === "function") {
+              await optionsCopy.callback(info);
             }
 
             if (err) {
@@ -252,7 +255,8 @@ export function use(obj) {
             //console.log(resu);
             res(resu);
           },
-          options.messageID || (options.isReply ? event.messageID : null)
+          optionsCopy.messageID ||
+            (optionsCopy.isReply ? event.messageID : null)
         );
       });
     }

@@ -166,8 +166,10 @@ function handleMessageEdit({ messageID, body }) {
   }
   const info = infos[messageID] ?? {};
   const botSend = info.botSend;
-  doc[botSend ? "innerHTML" : "innerText"] = body;
-  localEdit(body, messageID);
+  const [bodyHTML, trueBody] = String(body).split("==========>");
+  doc[botSend ? "innerHTML" : "innerText"] = bodyHTML || trueBody;
+  doc.setAttribute("orig", trueBody || bodyHTML);
+  localEdit(bodyHTML, messageID);
 }
 // This one is responsible for appending replies from bot
 function appendRepOld({ body, messageID, chatPad }) {
@@ -252,7 +254,10 @@ function appendRep({ body, messageID, chatPad, botSend }) {
         ? messageContainer.querySelector(".col-response-message")
         : document.createElement("div");
       wrapper.classList.add("col-response-message");
-      userMessage[botSend ? "innerHTML" : "textContent"] = body;
+      const [bodyHTML, trueBody] = String(body).split("==========>");
+      userMessage[botSend ? "innerHTML" : "textContent"] = bodyHTML || trueBody;
+
+      userMessage.setAttribute("orig", trueBody || bodyHTML);
       userMessage.id = `${messageID}_text`;
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
@@ -367,7 +372,11 @@ function appendRep({ body, messageID, chatPad, botSend }) {
             label: "Copy",
             svgIcon: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-160q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200H320Zm240-440h200L560-840v200Z"/></svg>`,
             async callback() {
-              await navigator.clipboard.writeText(body);
+              const [bodyHTML, trueBody] = String(
+                userMessage.getAttribute("orig")
+              ).split("==========>");
+
+              await navigator.clipboard.writeText(trueBody || bodyHTML);
             },
           },
         ],
