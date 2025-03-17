@@ -583,7 +583,7 @@ export function deepMerge(target, ...sources) {
 }
 
 export function styledForHTML(text = "", StyleClass) {
-  text = String(text).replace(/</g, "<").replace(/>/g, ">");
+  text = String(text).replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   try {
     let styling = StyleClass;

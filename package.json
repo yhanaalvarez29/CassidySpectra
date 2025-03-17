@@ -48,6 +48,7 @@
     "readline-sync": "^1.4.10",
     "request": "^2.88.2",
     "request-ip": "^3.3.0",
+    "source-map-support": "^0.5.21",
     "string-similarity": "^4.0.4",
     "ts-node": "^10.9.2",
     "ws": "^8.17.1",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/source-map-support": "^0.5.10",
     "git-cliff": "^2.8.0",
     "typescript": "^5.7.3"
   },
