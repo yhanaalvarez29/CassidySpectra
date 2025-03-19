@@ -10,7 +10,7 @@
     "strict": false,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": false,
@@ -20,12 +20,14 @@
     "moduleResolution": "Node",
     "target": "ES2024",
     "lib": ["ES2024"],
-    "types": ["node"],
+    "types": ["node", "global-override"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true,
     "declarationMap": true,
-    "allowJs": true
+    "allowJs": true,
+    "checkJs": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "include": ["**/*"]
 }

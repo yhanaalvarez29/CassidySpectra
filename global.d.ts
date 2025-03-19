@@ -4,9 +4,11 @@ import type {
   Collectibles,
 } from "./CommandFiles/plugins/ut-shop.js";
 
-import type InputX, { ReplySystem, ReactSystem } from "input-cassidy";
+import type InputX from "input-cassidy";
+import type { ReplySystem, ReactSystem } from "input-cassidy";
 
-import type OutputX, { OutputProps } from "output-cassidy";
+import type OutputX from "output-cassidy";
+import type { OutputProps } from "output-cassidy";
 import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 import type {
   GameSimulator,
@@ -15,7 +17,6 @@ import type {
 } from "./CommandFiles/types/gamesimu.d.ts";
 import GlobalUtilsX from "./utils-type";
 
-export {};
 declare global {
   interface FactoryConfig {
     title: string;
@@ -37,7 +38,7 @@ declare global {
     levelRequirement: number;
     waitingTime: number;
     ingr: IngredientGroup[];
-    result: RecipeResult;
+    result: any;
   }
 
   type IngredientGroup = Ingredient | Ingredient[];
@@ -51,7 +52,7 @@ declare global {
   interface InventoryConstructor extends Inventory {}
   interface GameSimulatorConstructor extends GameSimulator {}
 
-  interface CommandContext {
+  interface CommandContextOG {
     [key: string]: any;
     money: Cass.UserStatsManager;
     Inventory: typeof Inventory;
@@ -71,7 +72,8 @@ declare global {
     reactSystem?: ReactSystem;
   }
 
-  interface RecipeResult extends Cass.InventoryItem {}
+  type CommandContext = Partial<CommandContextOG>;
+
   type CommandEntry = (ctx: CommandContext) => any | Promise<any>;
 
   type UserData = Cass.UserData;
@@ -79,4 +81,42 @@ declare global {
   var utils: typeof GlobalUtilsX;
 
   var loadSymbols: Map<string, symbol>;
+}
+
+import type { UserStatsManager } from "cassidy-userData";
+
+export namespace CassidySpectra {
+  export interface GlobalCassidy {
+    config: {
+      get: () => any;
+      set: (data: any) => void;
+    };
+    uptime: number;
+    plugins: any[];
+    commands: any[];
+    invLimit: number;
+    presets: Map<any, any>;
+    loadCommand: Function;
+    loadPlugins: Function;
+    loadAllCommands: Function;
+    readonly logo: any;
+    oldLogo: string;
+    accessToken: string | null;
+    readonly redux: boolean;
+    readonly highRoll: 10_000_000;
+  }
+
+  export type Output = OutputX;
+  export type Input = InputX;
+  export type InventoryConstructor = typeof Inventory;
+  export type CollectiblesConstructor = typeof Collectibles;
+}
+
+declare global {
+  var Cassidy: CassidySpectra.GlobalCassidy;
+  var handleStat: UserStatsManager;
+
+  const require: NodeRequire & {
+    url(url: string): Promise<any>;
+  };
 }

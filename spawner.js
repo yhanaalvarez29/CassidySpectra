@@ -12,9 +12,9 @@ originalRequire.extensions = { ...originalExt };
 global.originalRequire = originalRequire;
 // imma modify some require extensions :)
 const fs = require("fs-extra");
-const axios = require("axios");
 const { execSync } = require("child_process");
 const path = require("path");
+const axios = require("axios").default;
 
 require.extensions[".txt"] = function (module, filename) {
   if (!fs.existsSync(filename)) {
@@ -23,6 +23,7 @@ require.extensions[".txt"] = function (module, filename) {
   const file = fs.readFileSync(filename, "utf8");
   module.exports = file;
 };
+
 require.url = async function (url) {
   try {
     if (typeof url !== "string") {
