@@ -1,6 +1,6 @@
-# CassidyRedux
+# CassidySpectra
 
-CassidyRedux is a revamped version of CassidyBoT with enhanced features and improved performance created by Liane Cagara (lianecagara in github). This project aims to provide a robust and flexible bot framework with a variety of commands and functionalities.
+CassidySpectra is a fork of CassidyRedux which is a revamped version of CassidyBoT with enhanced features and improved performance created by Liane Cagara (lianecagara in github). This project aims to provide a robust and flexible bot framework with a variety of commands and functionalities.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ CassidyRedux is a revamped version of CassidyBoT with enhanced features and impr
 
 ## Introduction
 
-CassidyRedux is designed to be a powerful and extensible bot framework that allows developers to create and manage a wide range of commands and functionalities. It leverages modern JavaScript features and provides a structured approach to command creation and management.
+CassidySpectra is designed to be a powerful and extensible bot framework that allows developers to create and manage a wide range of commands and functionalities. It leverages modern JavaScript features and provides a structured approach to command creation and management.
 
 ## Features
 
@@ -138,8 +138,8 @@ All notable changes to this project will be documented in this file.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/lianecagara/CassidyRedux.git
-   cd CassidyRedux
+   git clone https://github.com/lianecagara/CassidySpectra.git
+   cd CassidySpectra
    ```
 
 2. Install the dependencies:
