@@ -20,7 +20,7 @@
     "moduleResolution": "Node",
     "target": "ES2024",
     "lib": ["ES2024"],
-    "types": ["node", "global-override"],
+    "types": ["node"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true,

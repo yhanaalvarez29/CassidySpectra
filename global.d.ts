@@ -116,7 +116,7 @@ declare global {
   var Cassidy: CassidySpectra.GlobalCassidy;
   var handleStat: UserStatsManager;
 
-  const require: NodeRequire & {
+  var require: NodeRequire & {
     url(url: string): Promise<any>;
   };
 }
