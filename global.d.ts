@@ -87,10 +87,7 @@ import type { UserStatsManager } from "cassidy-userData";
 
 export namespace CassidySpectra {
   export interface GlobalCassidy {
-    config: {
-      get: () => any;
-      set: (data: any) => void;
-    };
+    config: typeof import("./settings.json");
     uptime: number;
     plugins: any[];
     commands: any[];
