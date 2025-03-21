@@ -5,17 +5,34 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
+// SpectraRework !
+
 import { UNIRedux } from "./unisym.js";
-/**
- * @typedef {{ key: string; handler: (ctx: CommandContext, extra: any) => any | Promise<any>, description?: string | null, args?: string[] | null, aliases?: string[] | null }} Config
- */
+
+export type Config = {
+  key: string;
+  handler: (
+    ctx: CommandContext,
+    extra: {
+      targets: Config[];
+      key: string;
+      itemList?: string | undefined;
+    } & Record<string, unknown>
+  ) => any | Promise<any>;
+  description?: string | null;
+  args?: string[] | null;
+  aliases?: string[] | null;
+};
 
 export class ReduxCMDHome {
-  /**
-   *
-   * @param {{ home?: Function, isHypen?: boolean, argIndex?: number, setup?: Function, entryConfig?: {}; entryInfo?: { [key: string] : null | Config } }} options
-   * @param {Config[]} configs
-   */
+  configs: Config[];
+  options: {
+    home?: Config["handler"];
+    isHypen?: boolean;
+    argIndex?: number;
+    setup?: Config["handler"];
+  };
+
   constructor(
     {
       home,
@@ -24,11 +41,17 @@ export class ReduxCMDHome {
       setup = () => {},
       entryConfig,
       entryInfo,
+    }: {
+      home?: Config["handler"];
+      isHypen?: boolean;
+      argIndex?: number;
+      setup?: Config["handler"];
+      entryConfig?: Record<string, Config["handler"]>;
+      entryInfo?: { [key: string]: null | Config };
     },
-    configs
+    configs: Config[]
   ) {
     if (entryConfig) {
-      // @ts-ignore
       configs = Object.entries(entryConfig).map(([key, handler]) => ({
         key,
         handler,
@@ -45,9 +68,9 @@ export class ReduxCMDHome {
   /**
    * @param {Partial<CommandContextOG>} ctx
    */
-  async runInContext(ctx) {
+  async runInContext(ctx: Partial<CommandContextOG>) {
     const { input, output } = ctx;
-    const key =
+    const key: string =
       this.options.isHypen && "propertyArray" in input
         ? input.propertyArray[this.options.argIndex]
         : input.arguments[this.options.argIndex];
@@ -70,7 +93,11 @@ export class ReduxCMDHome {
       }
     });
 
-    const extraCTX = {};
+    const extraCTX: Parameters<Config["handler"]>["1"] = {
+      targets,
+      key,
+      itemList: null,
+    };
 
     try {
       await this.options.setup(ctx, extraCTX);
@@ -125,7 +152,11 @@ export class ReduxCMDHome {
    * @param {Config} config
    * @param {string} commandName
    */
-  createItemList(config, commandName, prefix = global.Cassidy.config.PREFIX) {
+  createItemList(
+    config: Config,
+    commandName: string,
+    prefix = global.Cassidy.config.PREFIX
+  ) {
     console.log(
       `Creating item list for command: ${commandName} with prefix: ${prefix}`
     );
@@ -151,7 +182,11 @@ export class ReduxCMDHome {
    * @param {Config[]} configs
    * @param {string} commandName
    */
-  createItemLists(configs, commandName, prefix = global.Cassidy.config.PREFIX) {
+  createItemLists(
+    configs: Config[],
+    commandName: string,
+    prefix = global.Cassidy.config.PREFIX
+  ) {
     return configs
       .map((i) => this.createItemList(i, commandName, prefix))
       .join("\n\n");

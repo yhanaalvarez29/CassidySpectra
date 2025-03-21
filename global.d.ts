@@ -100,6 +100,7 @@ export namespace CassidySpectra {
     oldLogo: string;
     accessToken: string | null;
     readonly redux: boolean;
+    readonly spectra: boolean;
     readonly highRoll: 10_000_000;
   }
 
