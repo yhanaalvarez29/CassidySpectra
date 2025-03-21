@@ -1,5 +1,209 @@
 // making ws variable available in the top level scope
 let ws;
+
+class IndexedDBMap {
+  /**
+   * @param {any} instanceId
+   */
+  constructor(instanceId, dbName = "IndexedDBMapDB", storeName = "mapStore") {
+    this.instanceId = instanceId;
+    this.dbName = dbName;
+    this.storeName = storeName;
+    this.db = null;
+    this.ready = this.initDB();
+  }
+
+  async initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, 1);
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        db.createObjectStore(this.storeName, { keyPath: "key" });
+      };
+
+      request.onsuccess = (event) => {
+        this.db = event.target.result;
+        resolve();
+      };
+
+      request.onerror = (event) => {
+        reject(new Error("Failed to open IndexedDB: " + event.target.error));
+      };
+    });
+  }
+
+  /**
+   * @param {any} key
+   */
+  #getInstanceKey(key) {
+    return `${this.instanceId}:${key}`;
+  }
+
+  /**
+   * @param {(arg0: any) => any} fn
+   */
+  async #withDB(fn) {
+    await this.ready;
+    return fn(this.db);
+  }
+
+  /**
+   * @param {any} key
+   * @param {any} value
+   */
+  async set(key, value) {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readwrite");
+          const store = transaction.objectStore(this.storeName);
+          const instanceKey = this.#getInstanceKey(key);
+          const request = store.put({ key: instanceKey, value });
+
+          request.onsuccess = () => resolve(this);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  /**
+   * @param {any} key
+   */
+  async get(key) {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readonly");
+          const store = transaction.objectStore(this.storeName);
+          const instanceKey = this.#getInstanceKey(key);
+          const request = store.get(instanceKey);
+
+          request.onsuccess = () => resolve(request.result?.value);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  /**
+   * @param {any} key
+   */
+  async has(key) {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readonly");
+          const store = transaction.objectStore(this.storeName);
+          const instanceKey = this.#getInstanceKey(key);
+          const request = store.count(instanceKey);
+
+          request.onsuccess = () => resolve(request.result > 0);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  /**
+   * @param {any} key
+   */
+  async delete(key) {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readwrite");
+          const store = transaction.objectStore(this.storeName);
+          const instanceKey = this.#getInstanceKey(key);
+          const request = store.delete(instanceKey);
+
+          request.onsuccess = () => resolve(true);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  async clear() {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readwrite");
+          const store = transaction.objectStore(this.storeName);
+          const request = store.clear();
+
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  async entries() {
+    return this.#withDB(
+      (
+        /** @type {{ transaction: (arg0: string[], arg1: string) => any; }} */ db
+      ) => {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction([this.storeName], "readonly");
+          const store = transaction.objectStore(this.storeName);
+          const request = store.getAll();
+          const prefix = `${this.instanceId}:`;
+
+          request.onsuccess = () => {
+            const entries = request.result
+              .filter((/** @type {{ key: string; }} */ item) =>
+                item.key.startsWith(prefix)
+              )
+              .map(
+                (/** @type {{ key: string | any[]; value: any; }} */ item) => [
+                  item.key.slice(prefix.length),
+                  item.value,
+                ]
+              );
+            resolve(entries);
+          };
+          request.onerror = () => reject(request.error);
+        });
+      }
+    );
+  }
+
+  async keys() {
+    const entries = await this.entries();
+    return entries.map(([key]) => key);
+  }
+
+  async values() {
+    const entries = await this.entries();
+    return entries.map(([, value]) => value);
+  }
+
+  async size() {
+    const entries = await this.entries();
+    return entries.length;
+  }
+
+  async *[Symbol.iterator]() {
+    const entries = await this.entries();
+    for (const entry of entries) {
+      yield entry;
+    }
+  }
+}
+
+const imageMap = new IndexedDBMap("Images");
 let password = localStorage.getItem("password");
 if (!password) {
   password = prompt("Enter your cassidy password.");
@@ -36,7 +240,7 @@ const infos = new Proxy(
         delete storedInfos[oldestProp];
       }
 
-      storedInfos[prop] = value;
+      storedInfos[prop] = { ...value, attachment: null };
       localStorage.setItem("infos", JSON.stringify(storedInfos));
       return true;
     },
@@ -61,6 +265,9 @@ window.onload = async () => {
     data: { url },
   } = await axios.get("/ws-url");*/
 
+  /**
+   * @param {Element} e
+   */
   function scrollA(e) {
     if (isScrolledBottom(e, 20)) {
       smoothScroll2(e);
@@ -89,7 +296,7 @@ window.onload = async () => {
       continue;
     }
     // if the message is from bot..
-    appendRep({ body: c.body, messageID: c.messageID, chatPad });
+    appendRep({ ...c, body: c.body, messageID: c.messageID, chatPad });
     smoothScroll2(ccc);
   }
 
@@ -135,6 +342,7 @@ window.onload = async () => {
     // Lmao refresh
   };
 };
+
 function pushConvo(data) {
   const convo = loadConvo();
 
@@ -147,6 +355,10 @@ function pushConvo(data) {
 
   localStorage.setItem("convo", JSON.stringify(convo));
 }
+/**
+ * @param {string} message
+ * @param {any} messageID
+ */
 function localEdit(message, messageID) {
   // Self explanatory, save edit changes to your browser
   let convo = loadConvo();
@@ -182,9 +394,19 @@ function appendRepOld({ body, messageID, chatPad }) {
   animateSend(elem);
 }
 
-function appendRep({ body, messageID, chatPad, botSend }) {
+function appendRep({ body, messageID, chatPad, botSend, attachment, ...etc }) {
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
+    if (!Array.isArray(attachment) && attachment) {
+      attachment = [attachment];
+    }
+
+    (async () => {
+      if (attachment) {
+        await imageMap.set(messageID, attachment);
+      }
+    })();
+
     const info = infos[messageID] ?? {};
     botSend ??= info.botSend;
     info.senderID ??= "unknown";
@@ -275,6 +497,9 @@ function appendRep({ body, messageID, chatPad, botSend }) {
       let blurS = null;
       let reS = null;
       const ctxmenu = new ContextMenu(userMessage, {
+        /**
+         * @param {{ clientY: number; }} event
+         */
         onOpen(event) {
           userMessage.style.pointerEvents = "none";
           const rect1 = userMessage.getBoundingClientRect();
@@ -390,6 +615,9 @@ function appendRep({ body, messageID, chatPad, botSend }) {
 }
 
 // some stuffs don't need to be documented
+/**
+ * @param {any} messageID
+ */
 function togOpt(messageID) {
   const elem = document.querySelector(`#${messageID}_options`);
   if (elem.style.display !== "none") {
@@ -398,6 +626,9 @@ function togOpt(messageID) {
     elem.style.display = "block";
   }
 }
+/**
+ * @param {any} id
+ */
 function xCopy(id) {
   copyToClipboard(document.querySelector(`#${id}_text`).innerText);
 }
@@ -520,6 +751,9 @@ function appendSend({ message, chatPad }) {
 }
 
 // this handles messages sent by user/bot
+/**
+ * @param {{ messageID: string | number; botSend: any; isYou: any; body: any; messageReply: { messageID: string | number; }; }} data
+ */
 function handleMessage(data) {
   console.log(data);
   const chatPad = document.getElementById("chatPad");
@@ -564,6 +798,10 @@ document.addEventListener("keydown", function (event) {
 });
 
 // this one is for sending messages..
+/**
+ * @param {boolean} [isReply]
+ * @param {string | number} [mid]
+ */
 async function send(isReply, mid, extra = {}) {
   const messageDoc = document.querySelector("#userText");
 
@@ -587,6 +825,9 @@ async function send(isReply, mid, extra = {}) {
   adjustRows();
   await fetchUserCache(panelID, true);
 }
+/**
+ * @param {any} messageID
+ */
 function chooseReaction(messageID) {
   const reactOpt = document.querySelector("#reactOpt");
   const reactBG = document.querySelector("#reactBG");
@@ -601,6 +842,10 @@ function chooseReaction(messageID) {
   reactBG.style.display = "block";
   reactBG.disabled = false;
 }
+/**
+ * @param {any} reaction
+ * @param {string | number} messageID
+ */
 function sendReact(reaction, messageID) {
   const { senderID } = infos[messageID] ?? {};
   ws.send(
@@ -614,6 +859,10 @@ function sendReact(reaction, messageID) {
   );
 }
 // this one is the oldest cassidy send function, and it sucks but t faster
+/**
+ * @param {any} isReply
+ * @param {string | number} mid
+ */
 async function sendOld(isReply, mid, extra = {}) {
   const message = document.getElementById("userText").value?.trim();
   if (!message) {
@@ -670,10 +919,16 @@ ${message}`;
   }
 }
 // Liane ain't documenting these all
+/**
+ * @param {any} mid
+ */
 async function reply(mid) {
   await send(true, mid);
 }
 // self explanatory, avoid xss even tho not needed very much since nobody else can chat together..
+/**
+ * @param {string} input
+ */
 function sanitize(input) {
   const sanitizedInput = input
     .replace(/&/g, "&amp;")
@@ -699,6 +954,9 @@ function adjustRows() {
   }
 }
 
+/**
+ * @param {HTMLSpanElement} element
+ */
 function animateSend(element) {
   if (element instanceof HTMLElement) {
     element.animate(
@@ -722,6 +980,10 @@ function animateSend(element) {
 
 textarea.addEventListener("input", adjustRows);
 
+/**
+ * @param {Element} element
+ * @param {number} allowance
+ */
 function isScrolledBottom(element, allowance) {
   if (!element) return false;
 
@@ -742,6 +1004,9 @@ function isScrolledBottom(element, allowance) {
   return false;
 }
 
+/**
+ * @param {string} str
+ */
 function isEmojiAll(str) {
   const regex = /^\p{Emoji}+$/u;
   return regex.test(str.replace(/\n/g, "").replace(" ", ""));
@@ -753,6 +1018,9 @@ function isEmojiAll(str) {
  * @author Liane Cagara
  */
 class ContextMenu {
+  /**
+   * @type {this[]}
+   */
   static cache = [];
   /**
    * Creates a new ContextMenu instance.
@@ -887,7 +1155,7 @@ class ContextMenu {
     for (const item of items) {
       if (item.textContent === oldLabel) {
         item.textContent = label;
-        item.onclick = (e) => callback(e, this.target);
+        item.onclick = (/** @type {any} */ e) => callback(e, this.target);
         Object.assign(item, etc);
         break;
       }
@@ -1072,6 +1340,9 @@ class ContextMenu {
 
 let allUserCache = [];
 
+/**
+ * @param {string | number | boolean} uid
+ */
 async function fetchUserInfo(uid) {
   const res = await fetch(`/api/usercache?uid=${encodeURIComponent(uid)}`).then(
     (i) => i.json()
@@ -1079,6 +1350,9 @@ async function fetchUserInfo(uid) {
   return res;
 }
 
+/**
+ * @param {string} uid
+ */
 async function fetchUserCache(uid, refresh = false) {
   if (!allUserCache[uid] || !refresh) {
     allUserCache[uid] = await fetchUserInfo(uid);
