@@ -7,7 +7,7 @@
 
 import { UNIRedux } from "./unisym.js";
 /**
- * @typedef {{ key: string; handler: (ctx: CommandContext, extra: any) => any | Promise<any>, description: string | null, args: string[] | null, aliases: string[] | null }} Config
+ * @typedef {{ key: string; handler: (ctx: CommandContext, extra: any) => any | Promise<any>, description?: string | null, args?: string[] | null, aliases?: string[] | null }} Config
  */
 
 export class ReduxCMDHome {
