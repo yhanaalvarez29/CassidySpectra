@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
@@ -25,7 +25,7 @@ function isValidAmount(amount) {
 }
 
 /**
- * @type {import("../modules/reduxCMDHome.js").Config[]}
+ * @type {import("../modules/reduxCMDHome").Config[]}
  */
 const configs = [
   {

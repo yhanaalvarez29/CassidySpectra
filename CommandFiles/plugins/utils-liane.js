@@ -10,7 +10,7 @@ export const meta = {
 };
 import axios from "axios";
 import fs from "fs";
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { stoData } from "../modules/stoData.js";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp } from "../modules/unisym.js";

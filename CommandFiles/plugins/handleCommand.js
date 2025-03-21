@@ -9,7 +9,7 @@ import { LianeAPI } from "fca-liane-utils";
 import axios from "axios";
 import stringSimilarity from "string-similarity";
 import { CassEXP } from "../modules/cassEXP.js";
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 
 function getSuggestedCommand(input, commands) {
   const commandNames = Object.keys(commands);

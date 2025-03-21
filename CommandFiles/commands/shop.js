@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { stoData } from "../modules/stoData.js";
 import { toTitleCase, UNIRedux } from "../modules/unisym.js";
 import { ShopClass } from "../plugins/shopV2.js";

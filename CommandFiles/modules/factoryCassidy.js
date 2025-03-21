@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "./reduxCMDHome.js";
+import { ReduxCMDHome } from "./reduxCMDHome";
 
 /**
  * @type {FactoryConfig}

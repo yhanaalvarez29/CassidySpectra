@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { UNIRedux } from "../modules/unisym.js";
 
 export const meta = {

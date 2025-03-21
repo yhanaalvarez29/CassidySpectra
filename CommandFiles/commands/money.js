@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
 
 export const meta = {
@@ -113,7 +113,7 @@ function totalReducer(totalObj) {
 const { parseCurrency: pCy } = global.utils;
 
 /**
- * @type {Array<import("../modules/reduxCMDHome.js").Config>}
+ * @type {Array<import("../modules/reduxCMDHome").Config>}
  */
 const configs = [
   {

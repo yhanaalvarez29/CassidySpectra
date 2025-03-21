@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 
 export const meta = {
   name: "api",

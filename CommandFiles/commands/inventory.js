@@ -1,5 +1,5 @@
 import { inv } from "mathjs";
-import { ReduxCMDHome } from "../modules/reduxCMDHome.js";
+import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { UNIRedux } from "../modules/unisym.js";
 import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
 import { Collectibles, Inventory } from "../plugins/ut-shop.js";
