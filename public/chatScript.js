@@ -538,14 +538,13 @@ function appendRep({
             const photoBox = document.createElement("img");
             photoBox.classList.add("photo-box", "response-message");
             photoBox.src = `data:image/png;base64,${attachment}`;
-            wrapper.append(userMessage);
-            wrapper.append(photoBox);
+            userMessage.after(photoBox);
           }
         }
       })();
 
+      userMessage.after(photoBox);
       wrapper.append(userMessage);
-      wrapper.append(photoBox);
       messageContainer.append(wrapper);
 
       // chatPad.appendChild(messageContainer);
