@@ -511,12 +511,14 @@ function appendRep({
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
       }
-      const photoBox = document.createElement("img");
-      photoBox.classList.add("photo-box", "response-message");
+      // const photoBox = document.createElement("img");
+      // photoBox.classList.add("photo-box", "response-message");
 
-      photoBox.alt = "Loading...";
-      photoBox.src =
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAW/AAwAAAAAAAA+fASK7JIQZAAAAAElFTkSuQmCC";
+      // photoBox.alt = "Loading...";
+      // photoBox.src =
+      //   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAW/AAwAAAAAAAA+fASK7JIQZAAAAAElFTkSuQmCC";
+      wrapper.append(userMessage);
+
       (async () => {
         /**
          * @type {unknown[] | undefined}
@@ -525,7 +527,6 @@ function appendRep({
         if (!Array.isArray(attachmentres) && attachmentres) {
           attachmentres = [attachmentres];
         }
-        photoBox.remove();
 
         if (!attachmentres) {
           console.log("NOAT");
@@ -538,13 +539,12 @@ function appendRep({
             const photoBox = document.createElement("img");
             photoBox.classList.add("photo-box", "response-message");
             photoBox.src = `data:image/png;base64,${attachment}`;
+            enhanceImage(photoBox);
             userMessage.after(photoBox);
           }
         }
       })();
 
-      userMessage.after(photoBox);
-      wrapper.append(userMessage);
       messageContainer.append(wrapper);
 
       // chatPad.appendChild(messageContainer);
@@ -1419,4 +1419,87 @@ async function fetchUserCache(uid, refresh = false) {
   }
 
   return allUserCache[uid];
+}
+
+function enhanceImage(imgElement) {
+  if (!(imgElement instanceof HTMLImageElement)) {
+    throw new Error("Parameter must be an HTML image element");
+  }
+
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0);
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+  `;
+
+  const enlargedImg = imgElement.cloneNode();
+  enlargedImg.style.cssText = `
+      position: fixed;
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      z-index: 1001;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s ease;
+  `;
+
+  function centerImage() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const imgWidth = enlargedImg.width;
+    const imgHeight = enlargedImg.height;
+
+    enlargedImg.style.left = `${(windowWidth - imgWidth) / 2}px`;
+    enlargedImg.style.top = `${(windowHeight - imgHeight) / 2}px`;
+  }
+
+  function closeImage() {
+    enlargedImg.style.opacity = "0";
+    enlargedImg.style.transform = "scale(0.8)";
+    overlay.style.opacity = "0";
+
+    setTimeout(() => {
+      if (enlargedImg.parentNode) {
+        enlargedImg.parentNode.removeChild(enlargedImg);
+      }
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    }, 300);
+  }
+
+  imgElement.style.cursor = "pointer";
+  imgElement.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    document.body.appendChild(overlay);
+    document.body.appendChild(enlargedImg);
+
+    enlargedImg.offsetWidth;
+
+    centerImage();
+    overlay.style.background = "rgba(0, 0, 0, 0.8)";
+    overlay.style.opacity = "1";
+    enlargedImg.style.opacity = "1";
+    enlargedImg.style.transform = "scale(1)";
+    overlay.style.pointerEvents = "auto";
+  });
+  window.addEventListener("click", (e) => {
+    closeImage();
+  });
+
+  window.addEventListener("resize", () => {
+    if (enlargedImg.parentNode) {
+      centerImage();
+    }
+  });
 }

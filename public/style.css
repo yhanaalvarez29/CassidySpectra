@@ -805,3 +805,7 @@ hr {
   background-color: var(--text-highlight);
   color: #fff;
 }
+
+.photo-box {
+  padding: 0;
+}
