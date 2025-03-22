@@ -298,12 +298,21 @@ export async function takeScreenshot(id, url, facebook) {
   }
 }
 
+export const streamToBase64 = async (stream) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks).toString("base64")));
+    stream.on("error", reject);
+  });
+};
+
 export class WssAPI {
   constructor(socket) {
     this._socket = socket;
     this._queue = [];
   }
-  sendMessage(message, _, ...args) {
+  async sendMessage(message, _, ...args) {
     let body;
     if (typeof message === "string") {
       body = {
@@ -328,6 +337,32 @@ export class WssAPI {
         senderID: "wss:main",
       };
     }
+    let resAt = null;
+    if (!Array.isArray(message.attachment) && message.attachment) {
+      message.attachment = [message.attachment];
+    }
+    if (Array.isArray(message.attachment)) {
+      resAt = await Promise.all(
+        [...message.attachment]
+          .filter((i) => i !== null && i !== undefined)
+          .map(async (item) => {
+            if (item && typeof item.on === "function") {
+              return await streamToBase64(item);
+            }
+            if (typeof item === "string") {
+              if (/^[A-Za-z0-9+/=]+$/.test(item) && item.length % 4 === 0) {
+                try {
+                  Buffer.from(item, "base64").toString("base64");
+                  return item;
+                } catch (e) {}
+              }
+              return Buffer.from(item).toString("base64");
+            }
+            return null;
+          })
+          .filter(Boolean)
+      );
+    }
     const self = this;
     return new Promise((resolve) => {
       self._queue.push({
@@ -348,6 +383,12 @@ export class WssAPI {
           body: body.body,
           botSend: true,
           messageReply,
+          ...(resAt
+            ? {
+                attachment: resAt,
+              }
+            : {}),
+          timestamp: Date.now().toString(),
         },
         null,
         self

@@ -288,7 +288,11 @@ window.onload = async () => {
   //   // if the message is from bot..
   //   return appendRep({ body: c.body, messageID: c.messageID, chatPad });
   // });
-  for (const c of convo) {
+  for (const c of [...convo].sort(
+    (a, b) =>
+      Number(infos[a.messageID]?.timestamp ?? Date.now()) -
+      Number(infos[b.messageID]?.timestamp - Date.now())
+  )) {
     if (c.message) {
       // Just iterate the shit
       appendSend({ message: c.message, chatPad });
@@ -296,7 +300,13 @@ window.onload = async () => {
       continue;
     }
     // if the message is from bot..
-    appendRep({ ...c, body: c.body, messageID: c.messageID, chatPad });
+    appendRep({
+      ...c,
+      body: c.body,
+      messageID: c.messageID,
+      chatPad,
+      attachmentPromise: imageMap.get(c.messageID),
+    });
     smoothScroll2(ccc);
   }
 
@@ -394,18 +404,35 @@ function appendRepOld({ body, messageID, chatPad }) {
   animateSend(elem);
 }
 
-function appendRep({ body, messageID, chatPad, botSend, attachment, ...etc }) {
+function appendRep({
+  body,
+  messageID,
+  chatPad,
+  botSend,
+  attachmentPromise,
+  attachment,
+  ...etc
+}) {
+  console.log("APPEND REP", {
+    body,
+    messageID,
+    chatPad,
+    botSend,
+    attachmentPromise,
+    attachment,
+    ...etc,
+  });
   if (chatPad instanceof HTMLElement) {
     pushConvo({ body, messageID, chatPad });
-    if (!Array.isArray(attachment) && attachment) {
-      attachment = [attachment];
-    }
-
-    (async () => {
-      if (attachment) {
+    // if (!Array.isArray(attachment) && attachment) {
+    //   attachment = [attachment];
+    // }
+    if (attachment) {
+      attachmentPromise = Promise.resolve(attachment);
+      (async () => {
         await imageMap.set(messageID, attachment);
-      }
-    })();
+      })();
+    }
 
     const info = infos[messageID] ?? {};
     botSend ??= info.botSend;
@@ -484,8 +511,41 @@ function appendRep({ body, messageID, chatPad, botSend, attachment, ...etc }) {
       if (isEmojiAll(body)) {
         userMessage.classList.add("emoji-only");
       }
+      const photoBox = document.createElement("img");
+      photoBox.classList.add("photo-box", "response-message");
+
+      photoBox.alt = "Loading...";
+      photoBox.src =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAW/AAwAAAAAAAA+fASK7JIQZAAAAAElFTkSuQmCC";
+      (async () => {
+        /**
+         * @type {unknown[] | undefined}
+         */
+        let attachmentres = attachment ?? (await attachmentPromise);
+        if (!Array.isArray(attachmentres) && attachmentres) {
+          attachmentres = [attachmentres];
+        }
+        photoBox.remove();
+
+        if (!attachmentres) {
+          console.log("NOAT");
+          return;
+        }
+
+        for (const attachment of attachmentres) {
+          console.log("ATT RES", attachment, attachmentres);
+          if (typeof attachment === "string") {
+            const photoBox = document.createElement("img");
+            photoBox.classList.add("photo-box", "response-message");
+            photoBox.src = `data:image/png;base64,${attachment}`;
+            wrapper.append(userMessage);
+            wrapper.append(photoBox);
+          }
+        }
+      })();
 
       wrapper.append(userMessage);
+      wrapper.append(photoBox);
       messageContainer.append(wrapper);
 
       // chatPad.appendChild(messageContainer);
@@ -766,6 +826,7 @@ function handleMessage(data) {
       messageID: data.messageID,
       chatPad,
       botSend: data.botSend,
+      attachment: data.attachment,
     });
   } else {
     let appended = data.body;
