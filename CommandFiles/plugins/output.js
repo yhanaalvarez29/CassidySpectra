@@ -118,6 +118,7 @@ export function use(obj) {
       let resultInfo = {};
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
+        console.log(options);
         const { UserStatsLocal, money, CassEncoder } = obj;
         const { replies = {} } = global.Cassidy;
         // @ts-ignore

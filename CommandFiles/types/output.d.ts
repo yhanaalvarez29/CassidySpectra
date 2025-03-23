@@ -42,7 +42,7 @@ declare module "output-cassidy" {
   export type OutputForm = string | StrictOutputForm;
   export interface OutputProps {
     reply(
-      body: string,
+      body: OutputForm,
       callback?: (info: OutputResult) => void
     ): Promise<OutputResult>;
     contact(text: string, id?: string, destination?: string): Promise<boolean>;
@@ -51,7 +51,7 @@ declare module "output-cassidy" {
       callback?: (info: any) => void
     ): Promise<any>;
     send(
-      body: string,
+      body: OutputForm,
       id?: string,
       callback?: (info: OutputResult) => void
     ): Promise<OutputResult>;

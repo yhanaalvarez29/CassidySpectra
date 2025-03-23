@@ -1,3 +1,4 @@
+import axios from "axios";
 import { ReduxCMDHome } from "../modules/reduxCMDHome";
 
 export const meta = {
@@ -372,5 +373,89 @@ ${item.flavorText ?? "Not Configured"}
       callback: handleInput,
     });
   },
-  async btest({ input, output, api }) {},
+  async test({ input, output, api, args }) {
+    const [url, ...pArgs] = args;
+    const [method = "GET"] = input.propertyArray;
+
+    const paramsJSON = pArgs.join(" ");
+
+    let params = null;
+
+    if (pArgs.length > 0) {
+      try {
+        params = JSON.parse(paramsJSON);
+      } catch (error) {
+        return output.error(error);
+      }
+    }
+
+    if (!url) {
+      return output.reply("Enter a URL.");
+    }
+
+    try {
+      const res = await axios({
+        method: String(method).toLowerCase(),
+        url,
+        responseType: "stream",
+        params,
+      });
+
+      const contentType = res.headers["content-type"]?.toLowerCase();
+      const stream = res.data;
+
+      if (
+        contentType?.startsWith("image/") ||
+        contentType?.startsWith("video/") ||
+        contentType?.startsWith("audio/")
+      ) {
+        if (!input.isAdmin) {
+          return output.reply("❌ Only admins can send attachment.");
+        }
+        return output.reply({ body: "✅ Media Content:", attachment: stream });
+      }
+      let dataBuffer = "";
+
+      stream.on("data", (chunk) => {
+        dataBuffer += chunk.toString();
+      });
+
+      stream.on("end", () => {
+        if (
+          contentType?.includes("application/json") ||
+          contentType?.includes("text/plain") ||
+          contentType?.includes("text/html")
+        ) {
+          if (contentType?.includes("application/json")) {
+            try {
+              const jsonData = JSON.parse(dataBuffer);
+              output.reply({
+                body: `✅ API Response:\n\n${JSON.stringify(
+                  jsonData,
+                  null,
+                  2
+                )}`,
+              });
+            } catch (error) {
+              output.error(error);
+            }
+          } else {
+            output.reply({
+              body: `✅ API Response:\n\n${dataBuffer.slice(0, 1500)}`,
+            });
+          }
+        } else {
+          output.reply({
+            body: "❌ Unrecognized content type",
+          });
+        }
+      });
+
+      stream.on("error", (error) => {
+        output.error(error);
+      });
+    } catch (error) {
+      return output.error(error);
+    }
+  },
 };
