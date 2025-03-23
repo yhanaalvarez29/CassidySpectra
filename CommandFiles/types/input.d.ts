@@ -1,4 +1,7 @@
 declare module "input-cassidy" {
+  interface InpProperty {
+    [key: string]: boolean | InpProperty;
+  }
   export interface InputProps {
     body: string;
     senderID: string;
@@ -19,6 +22,8 @@ declare module "input-cassidy" {
     argArrow: string[];
     argArrowArgs: string[][];
     wordCount: number;
+    property: InpProperty;
+    propertyArray: string[];
     charCount: number;
     allCharCount: number;
     links: string[] | null;
@@ -50,15 +55,18 @@ declare module "input-cassidy" {
     delReply?: ReplySystem["delete"];
     setReact?: ReactSystem["set"];
     delReact?: ReactSystem["delete"];
+    webQ?: string;
+    defStyle?: import("output-cassidy").StrictOutputForm["defStyle"];
+    style?: import("output-cassidy").StrictOutputForm["style"];
   }
 
-  export interface RepliesObj<T> {
+  export interface RepliesObj<T extends Record<string, any>> {
     repObj: T;
     commandKey: T["key"];
     detectID: string;
   }
 
-  export interface ReactObj<T> {
+  export interface ReactObj<T extends Record<string, any>> {
     reactObj: T;
     commandKey: T["key"];
     detectID: string;
@@ -91,7 +99,7 @@ declare module "input-cassidy" {
       reactObj?: T
     ): ReactObj<T>;
     delete<T extends StandardReactArg>(detectID: string): ReactObj<T> | null;
-    get<T extends StandardReactArg>(detectID: string): ReactsObj<T> | null;
+    get<T extends StandardReactArg>(detectID: string): ReactObj<T> | null;
   }
 
   export default InputProps;

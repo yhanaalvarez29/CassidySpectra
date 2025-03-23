@@ -18,7 +18,7 @@ export const meta = {
   IMPORTANT: true,
   type: "plugin",
 };
-const { fonts, delay } = global.utils;
+const { delay } = global.utils;
 
 export const style = {
   title: "🦋 Example Title",
@@ -26,23 +26,25 @@ export const style = {
   titleFont: "bold",
 };
 
-const { styled: oldStyler } = global.require("./handlers/middleware/styler");
-function getFontKey(key) {
-  const keyMaps = {
-    bold: "bold",
-    fancy: "sans",
-    none: "none",
-  };
-  return keyMaps[key] || "bold";
-}
+export class CassidyIO {
+  input;
+  output;
 
-class CassidyIO {
+  /**
+   * @param {import("input-cassidy").InputProps} input
+   * @param {import("output-cassidy").OutputProps} output
+   * @param {any} style
+   */
   constructor(input, output, style) {
     this.input = input;
     this.output = output;
     this.lastMessageID = null;
     this.style = style;
   }
+  /**
+   * @param {string} text
+   * @param {string} sendID
+   */
   async out(text, sendID) {
     text = String(text.body ?? text);
     let info;
@@ -86,14 +88,6 @@ class CassidyIO {
   }
 }
 
-async function styled(text, options = style) {
-  const styleKey = getFontKey(options.contentFont);
-  return `${fonts.bold(String(options.title).trim())}
-${options.lineStart ? options.lineStart : "━━━━━━━━━━━━━━━"}
-${styleKey === "none" ? String(text).trim() : fonts.sans(String(text).trim())}
-${options.lineEnd ? options.lineEnd : "━━━━━━━━━━━━━━━"}`.trim();
-}
-
 /**
  *
  * @type {CommandEntry}
@@ -101,11 +95,17 @@ ${options.lineEnd ? options.lineEnd : "━━━━━━━━━━━━━�
 export function use(obj) {
   try {
     obj.CassidyIO = CassidyIO;
-    obj.styled = styled;
     const { api, event, command: cmd, commands, input } = obj;
     let append = "";
     let prepend = "";
-    async function output(text, options = {}) {
+
+    /**
+     *
+     * @param {import("output-cassidy").OutputForm} text
+     * @param {import("output-cassidy").OutputForm} options
+     * @returns {Promise<import("output-cassidy").OutputResult>}
+     */
+    async function output(text, options = { body: "" }) {
       const { styler } = obj;
       const newMid = `web:mid-${Date.now()}`;
       if (typeof text === "object") {
@@ -116,150 +116,154 @@ export function use(obj) {
         });
       }
       let resultInfo = {};
+      let isStr = (str) => typeof str === "string";
+      if (!isStr(options)) {
+        const { UserStatsLocal, money, CassEncoder } = obj;
+        const { replies = {} } = global.Cassidy;
+        // @ts-ignore
+        const { currData } = global;
+        let repCommand;
+        if (input.replier && replies[input.replier.messageID]) {
+          const { commandKey } = replies[input.replier.messageID];
+          repCommand =
+            commands[commandKey] || commands[commandKey.toLowerCase()];
+        }
 
-      const { UserStatsLocal, money, CassEncoder } = obj;
-      const { replies = {} } = global.Cassidy;
-      const { currData } = global;
-      let repCommand;
-      if (input.replier && replies[input.replier.messageID]) {
-        const { commandKey } = replies[input.replier.messageID];
-        repCommand = commands[commandKey] || commands[commandKey.toLowerCase()];
-      }
+        let command = cmd || repCommand || currData;
+        options.body = `${prepend}\n${options.body}\n${append}`;
+        options.body = options.body.trim();
+        const stylerShallow = styler.shallowMake(
+          Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
+          Object.assign({}, options.style ?? {}, input.style ?? {})
+        );
+        resultInfo.originalOptionsBody = options.body;
 
-      let command = cmd || repCommand || currData;
-      options.body = `${prepend}\n${options.body}\n${append}`;
-      options.body = options.body.trim();
-      //options.body = fonts.auto(options.body);
-      const stylerShallow = styler.shallowMake(
-        Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
-        Object.assign({}, options.style ?? {}, input.style ?? {})
-      );
-      resultInfo.originalOptionsBody = options.body;
-      /*if (
-        (command &&
-          command.style &&
-          typeof command.style === "object" &&
-          !options.noStyle) ||
-        options.defStyle
-      ) {
-        options.defStyle ??= {};
-        options.style ??= {};
-        options.body = await styled(options.body, {
-          ...options.defStyle,
-          ...(command.style || {}),
-          ...options.style,
-        });
-      }*/
-      if (
-        command?.meta?.noLevelUI !== true &&
-        global.Cassidy.config.noLevelUI !== true &&
-        obj.money &&
-        options.noLevelUI !== true
-      ) {
-        const {
-          cassEXP,
-          name,
-          money: userMoney,
-          inventory = [],
-          boxItems = [],
-        } = await obj.money.getCache(options.threadID ?? input.senderID);
-        const inst = new CassEXP(cassEXP);
-
-        options.body = name
-          ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
-              UNIRedux.charm
-            } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
-          : options.body;
-      }
-      if (!options.noStyle) {
-        options.body = input.isWss
-          ? stylerShallow.html(resultInfo.originalOptionsBody) +
-            "==========>" +
-            stylerShallow.text(resultInfo.originalOptionsBody)
-          : stylerShallow.text(options.body);
-        resultInfo.html = stylerShallow.html(resultInfo.originalOptionsBody);
-        resultInfo.styleFields = styler.getFields();
-      } else {
-        resultInfo.html = options.body;
-      }
-      if (options.noStyle) {
-        delete options.noStyle;
-      }
-      options.body = options.body.trim();
-      const optionsCopy = { ...options };
-      for (const key in options) {
         if (
-          ![
-            "attachment",
-            "attachments",
-            "body",
-            "location",
-            "mentions",
-          ].includes(key)
+          command?.meta?.noLevelUI !== true &&
+          global.Cassidy.config.noLevelUI !== true &&
+          obj.money &&
+          options.noLevelUI !== true
         ) {
-          resultInfo[key] = options[key];
-          delete options[key];
-        }
-      }
+          const {
+            cassEXP,
+            name,
+            money: userMoney,
+            inventory = [],
+            boxItems = [],
+          } = await obj.money.getCache(options.threadID ?? input.senderID);
+          const inst = new CassEXP(cassEXP);
 
-      //console.log(options);
-      for (const kk of [input.webQ]) {
-        if (!global.webQuery[kk]) {
-          continue;
+          options.body = name
+            ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
+                UNIRedux.charm
+              } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
+            : options.body;
         }
-        let modifiedData = null;
-        if (money instanceof UserStatsLocal) {
-          modifiedData = money.modifiedProperties;
+        if (!options.noStyle) {
+          options.body = input.isWss
+            ? stylerShallow.html(resultInfo.originalOptionsBody) +
+              "==========>" +
+              stylerShallow.text(resultInfo.originalOptionsBody)
+            : stylerShallow.text(options.body);
+          resultInfo.html = stylerShallow.html(resultInfo.originalOptionsBody);
+          resultInfo.styleFields = styler.getFields();
+        } else {
+          resultInfo.html = options.body;
         }
-        global.webQuery[kk].resolve({
-          status: "success",
-          result: { ...options, ...resultInfo, messageID: newMid },
-          newMid,
-          modifiedData,
-        });
-        //console.log(`Resolved message to ${input.webQ} with mid: ${newMid}`);
-      }
-      if (options.referenceQ === input.webQ) {
-      }
-      if (input.isWeb) {
-        return new Promise((r) => {
-          r({
+        if (options.noStyle) {
+          delete options.noStyle;
+        }
+        options.body = options.body.trim();
+        const optionsCopy = { ...options };
+        for (const key in options) {
+          if (
+            ![
+              "attachment",
+              "attachments",
+              "body",
+              "location",
+              "mentions",
+            ].includes(key)
+          ) {
+            resultInfo[key] = options[key];
+            delete options[key];
+          }
+        }
+        if (!options.body) {
+          delete options.body;
+        }
+
+        //console.log(options);
+        for (const kk of [input.webQ]) {
+          if (!kk || !global.webQuery[kk]) {
+            continue;
+          }
+          let modifiedData = null;
+
+          global.webQuery[kk].resolve({
+            status: "success",
+            result: { ...options, ...resultInfo, messageID: newMid },
+            newMid,
+            modifiedData,
+          });
+          //console.log(`Resolved message to ${input.webQ} with mid: ${newMid}`);
+        }
+        if (options.referenceQ === input.webQ) {
+        }
+        if (input.isWeb) {
+          /**
+           * @type {import("output-cassidy").OutputResult}
+           */
+          const toR = {
             ...options,
             ...resultInfo,
             messageID: newMid,
+            timestamp: Date.now(),
+            senderID: api.getCurrentUserID(),
+            threadID: options.threadID || event.threadID,
+          };
+          return new Promise((r) => {
+            r(toR);
           });
+        }
+        return new Promise((res) => {
+          api.sendMessage(
+            options,
+            optionsCopy.threadID || event.threadID,
+            async (err, info) => {
+              if (typeof optionsCopy.callback === "function") {
+                await optionsCopy.callback(info);
+              }
+
+              if (err) {
+                console.log(err);
+                //return rej(err);
+              }
+
+              /**
+               * @type {import("output-cassidy").OutputResult}
+               */
+              const resu = {
+                ...options,
+                ...info,
+                ...resultInfo,
+                senderID: api.getCurrentUserID() || "",
+                body: options.body,
+              };
+              res(resu);
+            },
+            optionsCopy.messageID ||
+              (optionsCopy.isReply ? event.messageID : null)
+          );
         });
+      } else {
+        throw new Error("Something is wrong.");
       }
-      //console.log(options);
-      return new Promise((res, rej) => {
-        api.sendMessage(
-          options,
-          optionsCopy.threadID || event.threadID,
-          async (err, info) => {
-            if (typeof optionsCopy.callback === "function") {
-              await optionsCopy.callback(info);
-            }
-
-            if (err) {
-              console.log(err);
-              //return rej(err);
-            }
-
-            const resu = {
-              ...options,
-              ...info,
-              ...resultInfo,
-              senderID: api?.getCurrentUserID() || "",
-              body: options.body,
-            };
-            //console.log(resu);
-            res(resu);
-          },
-          optionsCopy.messageID ||
-            (optionsCopy.isReply ? event.messageID : null)
-        );
-      });
     }
+
+    /**
+     * @type {Partial<import("output-cassidy").OutputProps>}
+     */
     const outputProps = {
       async reply(body, callback) {
         return await output(body, { callback, isReply: true });
@@ -418,9 +422,6 @@ export function use(obj) {
       const { styler } = obj;
       const stylerShallow = styler.shallowMake({}, style);
 
-      if (!isNaN(parseInt(delay))) {
-        await delay(parseInt(delay));
-      }
       let result = prepend + "\n" + text + "\n" + append;
       /*if (Object.keys(refStyle).length > 0) {
         result = await styled(result, refStyle);
@@ -433,7 +434,7 @@ export function use(obj) {
         if (aa instanceof Promise) {
           aa.then(res);
         } else {
-          res();
+          res(false);
         }
       });
     };
@@ -472,6 +473,8 @@ export function use(obj) {
       }
     });*/
     outputProps.react = outputProps.reaction;
+
+    // @ts-ignore
     obj.output = outputProps;
     obj.outputOld = output;
     obj.output.formatError = formatError;

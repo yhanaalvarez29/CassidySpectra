@@ -49,7 +49,7 @@ export class ReduxCMDHome {
       entryConfig?: Record<string, Config["handler"]>;
       entryInfo?: { [key: string]: null | Config };
     },
-    configs: Config[]
+    configs?: Config[]
   ) {
     if (entryConfig) {
       configs = Object.entries(entryConfig).map(([key, handler]) => ({
@@ -65,10 +65,7 @@ export class ReduxCMDHome {
     this.options = { home, isHypen, argIndex, setup };
   }
 
-  /**
-   * @param {Partial<CommandContextOG>} ctx
-   */
-  async runInContext(ctx: Partial<CommandContextOG>) {
+  async runInContext(ctx: CommandContext) {
     const { input, output } = ctx;
     const key: string =
       this.options.isHypen && "propertyArray" in input
@@ -148,10 +145,6 @@ export class ReduxCMDHome {
     }
   }
 
-  /**
-   * @param {Config} config
-   * @param {string} commandName
-   */
   createItemList(
     config: Config,
     commandName: string,
@@ -178,10 +171,6 @@ export class ReduxCMDHome {
     );
   }
 
-  /**
-   * @param {Config[]} configs
-   * @param {string} commandName
-   */
   createItemLists(
     configs: Config[],
     commandName: string,

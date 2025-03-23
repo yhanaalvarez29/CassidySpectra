@@ -5,20 +5,51 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
+type Readable = import("stream").Readable;
+
 declare module "output-cassidy" {
-  export interface OutputResult {
-    messageID: string;
-    timestamp: string;
-    threadID: string;
-    [key: string]: any;
+  export interface StrictOutputForm {
+    body?: string;
+    attachment?: Readable | Readable[] | any[] | any;
+    threadID?: string;
+    style?: Record<string, any>;
+    defStyle?: Record<string, any>;
+    noStyle?: boolean;
+    referenceQ?: string;
+    mentions?: {
+      tag: string;
+      id: string;
+    }[];
+    location?: {
+      latitude: number;
+      longitude: number;
+    };
+    callback?: (info: OutputResult) => void | Promise<void>;
+    isReply?: boolean;
+    messageID?: string;
+    noLevelUI?: boolean;
   }
+  export interface OutputResult extends StrictOutputForm {
+    messageID: string;
+    timestamp: number;
+    threadID: string;
+    senderID: string;
+    html?: string;
+    styleFields?: Record<string, any>;
+    originalOptionsBody?: string;
+  }
+
+  export type OutputForm = string | StrictOutputForm;
   export interface OutputProps {
     reply(
       body: string,
       callback?: (info: OutputResult) => void
     ): Promise<OutputResult>;
     contact(text: string, id?: string, destination?: string): Promise<boolean>;
-    error(err: string | Error, callback?: (info: any) => void): Promise<any>;
+    error(
+      err: unknown | string | Error,
+      callback?: (info: any) => void
+    ): Promise<any>;
     send(
       body: string,
       id?: string,
@@ -74,7 +105,7 @@ declare module "output-cassidy" {
         }
       ) => any | Promise<any>
     ) => Promise<T>;
-    waitForReply?: (
+    waitForReply?: <T>(
       body: string,
       callback?:
         | ((
@@ -84,7 +115,7 @@ declare module "output-cassidy" {
           ) => any | Promise<any>)
         | undefined
     ) => Promise<CommandContext["input"]>;
-    waitForReaction?: (
+    waitForReaction?: <T>(
       body: string,
       callback?:
         | ((

@@ -72,7 +72,7 @@ declare global {
     reactSystem?: ReactSystem;
   }
 
-  type CommandContext = Partial<CommandContextOG>;
+  type CommandContext = CommandContextOG;
 
   type CommandEntry = (ctx: CommandContext) => any | Promise<any>;
 
@@ -89,9 +89,15 @@ export namespace CassidySpectra {
   export interface GlobalCassidy {
     config: typeof import("./settings.json");
     uptime: number;
-    plugins: any[];
-    commands: any[];
+    plugins: Record<string, any>;
+    commands: Record<string, any>;
     invLimit: number;
+    replies: Record<
+      string,
+      import("input-cassidy").RepliesObj<
+        import("input-cassidy").StandardReplyArg
+      >
+    >;
     presets: Map<any, any>;
     loadCommand: Function;
     loadPlugins: Function;

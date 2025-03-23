@@ -1,4 +1,3 @@
-import { inv } from "mathjs";
 import { ReduxCMDHome } from "../modules/reduxCMDHome";
 import { UNIRedux } from "../modules/unisym.js";
 import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
@@ -8,7 +7,7 @@ import {
   getEnabledExtensions,
   sortExtensions,
   CassExtensions,
-} from "../modules/cassXTensions.ts";
+} from "../modules/cassXTensions";
 
 export const meta = {
   name: "inventory",

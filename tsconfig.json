@@ -7,9 +7,9 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": false,
+    "strict": true,
     "noImplicitAny": false,
-    "noImplicitThis": false,
+    "noImplicitThis": true,
     "skipLibCheck": false,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
@@ -26,7 +26,8 @@
     "declaration": true,
     "declarationMap": true,
     "allowJs": true,
-    "checkJs": true
+    "checkJs": false,
+    "strictNullChecks": false
   },
   "exclude": ["node_modules"],
   "include": ["**/*"]

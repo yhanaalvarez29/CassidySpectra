@@ -8,7 +8,7 @@ require("dotenv").config();
 
 const MEMORY_THRESHOLD = 500;
 const WARNING_THRESHOLD = MEMORY_THRESHOLD * 0.75;
-import { registeredExtensions } from "./CommandFiles/modules/cassXTensions.ts";
+import { registeredExtensions } from "./CommandFiles/modules/cassXTensions";
 
 import cors from "cors";
 

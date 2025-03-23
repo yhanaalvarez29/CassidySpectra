@@ -1,4 +1,4 @@
-// making ws variable available in the top level scope
+// @ts-nocheck
 let ws;
 
 class IndexedDBMap {
