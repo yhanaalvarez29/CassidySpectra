@@ -5,7 +5,7 @@ export const meta = {
   version: "1.0.1",
   usage: "{prefix}{name}",
   category: "Utilities",
-  permissions: [0],
+  permissions: [2],
   noPrefix: "both",
   waitingTime: 0,
   requirement: "2.5.0",
