@@ -409,8 +409,10 @@ ${item.flavorText ?? "Not Configured"}
         contentType?.startsWith("video/") ||
         contentType?.startsWith("audio/")
       ) {
-        if (!input.isAdmin) {
-          return output.reply("❌ Only admins can send attachment.");
+        if (!input.isAdmin && !input.isWss) {
+          return output.reply(
+            "❌ Only admins and ws users can send attachment."
+          );
         }
         return output.reply({ body: "✅ Media Content:", attachment: stream });
       }
