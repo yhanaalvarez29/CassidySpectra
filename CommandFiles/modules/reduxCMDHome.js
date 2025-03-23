@@ -1,1 +1,1 @@
-export * from "./reduxCMDHome";
+export * from "./reduxCMDHomeV2";

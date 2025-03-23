@@ -267,7 +267,7 @@ async function loadAllCommands(callback = async () => {}) {
   Object.keys(require.cache).forEach((i) => {
     delete require.cache[i];
   });
-  await registeredExtensions.downloadRemoteExtensions();
+  // await registeredExtensions.downloadRemoteExtensions();
 
   const commandPromises = fileNames.map(async (fileName) => {
     try {
