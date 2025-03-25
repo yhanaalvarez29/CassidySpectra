@@ -8,6 +8,8 @@ export type Config = {
       targets: Config[];
       key: string;
       itemList?: string | undefined;
+      cancelCooldown?: () => void;
+      spectralArgs?: string[];
     } & Record<string, unknown>
   ) => any | Promise<any>;
   description?: string | null;
@@ -216,7 +218,7 @@ export class SpectralCMDHome {
       description: "Shows commands",
       icon: "📖",
       category: "Utility",
-      usage: "help [command/category] [page]",
+      usage: "help [command] [page]",
     });
   }
 
@@ -240,68 +242,45 @@ export class SpectralCMDHome {
     );
   }
 
-  async helpHandler(ctx: CommandContext) {
-    const args = ctx.input.arguments.slice(this.options.argIndex + 1);
-    const filter = args[0]?.toLowerCase();
+  async helpHandler(
+    ctx: CommandContext,
+    { spectralArgs }: Parameters<Config["handler"]>[1]
+  ) {
+    const { args } = ctx;
+    const filter = spectralArgs[0]?.toLowerCase();
     const page = Math.max(1, Number(args[1]) || 1);
     const perPage = 5;
 
-    if (!filter) {
-      const categories = [
-        ...new Set(
-          this.configs
-            .filter((c) => !c.hidden)
-            .map((c) => c.category || this.options.defaultCategory)
-        ),
-      ];
+    const visibleCommands = this.configs.filter((c) => !c.hidden);
+    let commandsToShow = visibleCommands;
 
-      const output = [
-        `${UNIRedux.arrow} ***Categories***\n\n`,
-        ...categories.map(
-          (cat) =>
-            `${ctx.prefix}${ctx.commandName}${
-              this.options.isHypen ? "-" : " "
-            }help ${cat.toLowerCase()}`
-        ),
-        `\nUse **${ctx.prefix}${ctx.commandName}${
-          this.options.isHypen ? "-" : " "
-        }help <command>** for details ${UNIRedux.charm}`,
-      ].join("\n");
-
-      return ctx.output.reply(output);
+    if (filter) {
+      const command = this.getCommand(filter);
+      if (command) {
+        return ctx.output.reply(
+          this.createDetailedHelp(command, ctx.commandName, ctx.prefix)
+        );
+      }
     }
 
-    const command = this.getCommand(filter);
-    if (command) {
-      return ctx.output.reply(
-        this.createDetailedHelp(command, ctx.commandName, ctx.prefix)
-      );
-    }
-
-    const categoryCommands = this.configs.filter(
-      (c) =>
-        !c.hidden &&
-        (c.category || this.options.defaultCategory).toLowerCase() === filter
-    );
-
-    if (categoryCommands.length === 0) {
-      return ctx.output.reply(
-        `❌ No commands in **${filter}** ${UNIRedux.charm}`
-      );
-    }
-
-    const totalPages = Math.ceil(categoryCommands.length / perPage);
+    const totalPages = Math.ceil(visibleCommands.length / perPage);
     const start = (page - 1) * perPage;
     const end = start + perPage;
-    const paginated = categoryCommands.slice(start, end);
+    const paginated = commandsToShow.slice(start, end);
+
+    const detailedList = paginated
+      .map((command) =>
+        this.createDetailedHelp(command, ctx.commandName, ctx.prefix)
+      )
+      .join("\n\n" + UNIRedux.standardLine + "\n\n");
 
     const output = [
-      `${UNIRedux.arrow} ***${filter} Commands (Page ${page}/${totalPages})***\n\n`,
-      this.createItemLists(paginated, ctx.commandName, ctx.prefix),
+      `${UNIRedux.arrow} ***Commands (Page ${page}/${totalPages})***\n\n`,
+      detailedList,
       UNIRedux.standardLine,
       `Page **${page}/${totalPages}** - Use **${ctx.prefix}${ctx.commandName}${
         this.options.isHypen ? "-" : " "
-      }help ${filter} <page>** ${UNIRedux.charm}`,
+      }help [command] <page>** ${UNIRedux.charm}`,
     ].join("\n");
 
     return ctx.output.reply(output);
@@ -309,6 +288,7 @@ export class SpectralCMDHome {
 
   async runInContext(ctx: CommandContext) {
     const { input, output } = ctx;
+    ctx.cancelCooldown?.();
     const key =
       this.options.isHypen && "propertyArray" in input
         ? input.propertyArray[this.options.argIndex]
@@ -319,17 +299,32 @@ export class SpectralCMDHome {
     }
 
     const targets = this.findTargets(key);
+    const spectralArgs = this.options.isHypen
+      ? ctx.args
+      : ctx.args.slice(this.options.argIndex + 1);
+
     const extraCTX: Parameters<Config["handler"]>["1"] = {
       targets,
       key,
       itemList: null,
+      spectralArgs,
+      cancelCooldown: () => {
+        const userId = ctx.input.senderID;
+        const userCooldowns = this.cooldowns.get(userId);
+        if (userCooldowns) {
+          userCooldowns.delete(key);
+          if (userCooldowns.size === 0) {
+            this.cooldowns.delete(userId);
+          }
+        }
+      },
     };
 
     try {
       await this.options.setup(ctx, extraCTX);
 
       if (this.options.validator) {
-        const validation = this.options.validator.validateArgs(ctx.args);
+        const validation = this.options.validator.validateArgs(spectralArgs);
         if (!validation.valid) {
           return output.reply(
             `❌ Oops!\n${validation.errors.join("\n")}${UNIRedux.charm}`
@@ -351,7 +346,7 @@ export class SpectralCMDHome {
               : null;
 
           if (validator) {
-            const validation = validator.validateArgs(ctx.args);
+            const validation = validator.validateArgs(spectralArgs);
             if (!validation.valid) {
               return output.reply(
                 `❌ Bad args:\n${validation.errors.join("\n")}${UNIRedux.charm}`
@@ -413,9 +408,9 @@ export class SpectralCMDHome {
   }
 
   createItemList(config: Config, commandName: string, prefix: string): string {
-    return `${config.icon || "✨"} ${prefix}${commandName}${
+    return `${UNIRedux.arrow} ${config.icon || "✨"} ${prefix}${commandName}${
       this.options.isHypen ? "-" : " "
-    }${config.key}`;
+    }**${config.key}**`;
   }
 
   createDetailedHelp(
@@ -424,7 +419,7 @@ export class SpectralCMDHome {
     prefix: string
   ): string {
     return [
-      `${UNIRedux.arrow} ***${config.key} Info***\n\n`,
+      // `${UNIRedux.arrow} ***${config.key} Info***\n\n`,
       `${config.icon || "✨"} **${prefix}${commandName}${
         this.options.isHypen ? "-" : " "
       }${config.key}**`,

@@ -14,6 +14,7 @@ declare module "input-cassidy" {
     attachments: Array<any>;
     timestamp: string;
     isGroup: boolean;
+    participantIDs?: string[];
     isWeb: boolean;
     isWss: boolean;
     arguments: string[];
