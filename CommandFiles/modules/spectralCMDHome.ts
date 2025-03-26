@@ -231,7 +231,11 @@ export class SpectralCMDHome {
         (c) =>
           `${c.icon || "✨"} ${UNIRedux.charm} ${ctx.prefix}${ctx.commandName}${
             this.options.isHypen ? "-" : " "
-          }**${c.key}**`
+          }**${c.key}** ${
+            this.checkCooldown(ctx, c.key)
+              ? ""
+              : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
+          }`
       )
       .join("\n");
 
@@ -296,15 +300,6 @@ export class SpectralCMDHome {
       this.options.isHypen && "propertyArray" in input
         ? input.propertyArray[this.options.argIndex]
         : input.arguments[this.options.argIndex] || "";
-
-    if (!this.checkCooldown(ctx, key)) {
-      return output.reply(
-        `⏳ Wait a bit for ${
-          this.getCooldown(ctx, key) / 1000
-        }s before using this subcommand again.`
-      );
-    }
-
     const targets = this.findTargets(key);
     const spectralArgs = this.options.isHypen
       ? ctx.args
@@ -326,6 +321,15 @@ export class SpectralCMDHome {
         }
       },
     };
+
+    if (!this.checkCooldown(ctx, key)) {
+      // return output.reply(
+      //   `⏳ Wait a bit for ${
+      //     this.getCooldown(ctx, key) / 1000
+      //   }s before using this subcommand again.`
+      // );
+      return await this.options.home!(ctx, extraCTX);
+    }
 
     try {
       await this.options.setup(ctx, extraCTX);
