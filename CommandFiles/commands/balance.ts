@@ -80,14 +80,10 @@ const configs: Config[] = [
     validator: new CassCheckly([
       { index: 0, type: "string", required: false, name: "userID" },
     ]),
-    async handler({
-      money,
-      input,
-      output,
-      prefix,
-      clearCurrStack,
-      Collectibles,
-    }) {
+    async handler(
+      { money, input, output, prefix, clearCurrStack, Collectibles },
+      { itemList }
+    ) {
       let senderID = input.senderID;
       if (input.replier) senderID = input.replier.senderID;
       if (input.hasMentions) senderID = input.firstMention.senderID;
@@ -106,7 +102,7 @@ const configs: Config[] = [
         .filter(({ amount }) => amount > 0)
         .map(
           ({ metadata, amount }) =>
-            `${metadata.icon} **x${pCy(amount)}** ${metadata.name}`
+            `${metadata.icon} **${metadata.name}** (x**${pCy(amount)}**)`
         )
         .join("\n");
       const otherMoney = money.extractMoney(playerMoney);
@@ -119,21 +115,22 @@ const configs: Config[] = [
       const has = name === "You" ? "have" : "has";
 
       const outputText = [
-        `${UNIRedux.arrow} ***${name}’s Money***\n\n`,
-        `💰 **${playerMoney.name}**`,
-        `💵 **x${pCy(playerMoney.money)}** Cash`,
-        `⚔️ **x${pCy(playerMoney.battlePoints || 0)}** Battle Points`,
-        `🏦 **x${pCy(otherMoney.bank || 0)}** Bank`,
-        `🎒 **x${pCy(otherMoney.cheques || 0)}** Cheques`,
-        items ? `\n${items}` : "",
-        warn,
-        `\n${top <= 10 ? `🏅 **#${top}**` : `🌱 **Rising**`}`,
+        `💵 **Cash** (x**${pCy(playerMoney.money)}**)`,
+        `⚔️ **Battle Points** (x**${pCy(playerMoney.battlePoints || 0)}**)`,
+        `🏦 **Bank** (x**${pCy(otherMoney.bank || 0)}**)`,
+        `🎒 **Cheques** (x**${pCy(otherMoney.cheques || 0)}**)`,
+        (items ? `${items}` : "") + warn,
+        `${UNIRedux.arrowFromT} **Rank**: ${
+          top <= 10 ? `🏅 **#${top}**` : `🌱 **Rising**`
+        }`,
         `${UNIRedux.standardLine}`,
-        `🏆 ${name} ${has} ${ahead.length} ahead, ${behind.length} behind`,
-        `\n⚠️ **Virtual cash only** ${UNIRedux.charm}`,
-      ]
-        .filter(Boolean)
-        .join("\n");
+        `🏆 ${name} ${has} **${ahead.length}** ahead, **${behind.length}** behind`,
+        `⚠️ This is a **virtual** cash only.`,
+        `${UNIRedux.standardLine}`,
+        `${UNIRedux.arrow} ***All Options***`,
+        ``,
+        itemList,
+      ].join("\n");
 
       const i = input.isWeb ? null : await output.reply(`🔧 Loading...`);
       i
@@ -233,6 +230,7 @@ const home = new SpectralCMDHome(
     argIndex: 0,
     isHypen: true,
     globalCooldown: 5,
+    defaultKey: "check",
     errorHandler: (error, ctx) => {
       ctx.output.error(error);
     },

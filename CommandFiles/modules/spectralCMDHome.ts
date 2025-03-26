@@ -154,6 +154,7 @@ export class SpectralCMDHome {
     errorHandler?: (error: any, ctx: CommandContext) => void;
     validator?: CassCheckly;
     defaultCategory?: string;
+    defaultKey?: string | null;
   };
   cooldowns: Map<string, Map<string, number>>;
 
@@ -165,6 +166,7 @@ export class SpectralCMDHome {
       setup = () => {},
       entryConfig,
       entryInfo,
+      defaultKey = null,
       globalCooldown = 1,
       errorHandler,
       validator,
@@ -180,6 +182,7 @@ export class SpectralCMDHome {
       errorHandler?: (error: any, ctx: CommandContext) => void;
       validator?: CassCheckly;
       defaultCategory?: string;
+      defaultKey?: string | null;
     },
     configs?: Config[]
   ) {
@@ -201,7 +204,10 @@ export class SpectralCMDHome {
     }
 
     this.options = {
-      home: home ?? this.defaultHome.bind(this),
+      home:
+        this.configs.find((i) => i.key === defaultKey)?.handler ??
+        home ??
+        this.defaultHome.bind(this),
       isHypen,
       argIndex,
       setup,
@@ -209,6 +215,7 @@ export class SpectralCMDHome {
       errorHandler,
       validator,
       defaultCategory,
+      defaultKey,
     };
     this.cooldowns = new Map();
   }
@@ -224,24 +231,13 @@ export class SpectralCMDHome {
     });
   }
 
-  async defaultHome(ctx: CommandContext) {
-    const commandList = this.configs
-      .filter((c) => !c.hidden)
-      .map(
-        (c) =>
-          `${c.icon || "✨"} ${UNIRedux.charm} ${ctx.prefix}${ctx.commandName}${
-            this.options.isHypen ? "-" : " "
-          }**${c.key}** ${
-            this.checkCooldown(ctx, c.key)
-              ? ""
-              : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
-          }`
-      )
-      .join("\n");
-
+  async defaultHome(
+    ctx: CommandContext,
+    extra: Parameters<Config["handler"]>["1"]
+  ) {
     await ctx.output.reply(
       `${UNIRedux.arrow} ***Sub Commands***\n\n` +
-        commandList +
+        extra.itemList +
         `\n\nTry **${ctx.prefix}${ctx.commandName}${
           this.options.isHypen ? "-" : " "
         }help** ${UNIRedux.charm}`
@@ -308,7 +304,19 @@ export class SpectralCMDHome {
     const extraCTX: Parameters<Config["handler"]>["1"] = {
       targets,
       key,
-      itemList: null,
+      itemList: this.configs
+        .filter((c) => !c.hidden)
+        .map(
+          (c) =>
+            `${c.icon || "✨"} ${UNIRedux.charm} ${ctx.prefix}${
+              ctx.commandName
+            }${this.options.isHypen ? "-" : " "}**${c.key}** ${
+              this.checkCooldown(ctx, c.key)
+                ? ""
+                : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
+            }`
+        )
+        .join("\n"),
       spectralArgs,
       cancelCooldown: () => {
         const userId = ctx.input.senderID;
