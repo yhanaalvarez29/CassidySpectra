@@ -143,6 +143,7 @@ const configs: Config[] = [
   },
   {
     key: "top",
+    cooldown: 5,
     description: "See the Top 10 richest",
     aliases: ["-t", "leaders"],
     icon: "🏆",
@@ -231,7 +232,7 @@ const home = new SpectralCMDHome(
   {
     argIndex: 0,
     isHypen: true,
-    globalCooldown: 2000,
+    globalCooldown: 5,
     errorHandler: (error, ctx) => {
       ctx.output.error(error);
     },

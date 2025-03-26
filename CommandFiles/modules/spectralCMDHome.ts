@@ -165,7 +165,7 @@ export class SpectralCMDHome {
       setup = () => {},
       entryConfig,
       entryInfo,
-      globalCooldown = 1000,
+      globalCooldown = 1,
       errorHandler,
       validator,
       defaultCategory = "General",
@@ -196,7 +196,9 @@ export class SpectralCMDHome {
     }
 
     this.configs = configs || [];
-    this.addHelpCommand();
+    if (!this.configs.some((i) => i.key === "help")) {
+      this.addHelpCommand();
+    }
 
     this.options = {
       home: home ?? this.defaultHome.bind(this),
@@ -227,14 +229,14 @@ export class SpectralCMDHome {
       .filter((c) => !c.hidden)
       .map(
         (c) =>
-          `${c.icon || "✨"} ${ctx.prefix}${ctx.commandName}${
+          `${c.icon || "✨"} ${UNIRedux.charm} ${ctx.prefix}${ctx.commandName}${
             this.options.isHypen ? "-" : " "
-          }${c.key}`
+          }**${c.key}**`
       )
       .join("\n");
 
     await ctx.output.reply(
-      `${UNIRedux.arrow} ***Commands***\n\n` +
+      `${UNIRedux.arrow} ***Sub Commands***\n\n` +
         commandList +
         `\n\nTry **${ctx.prefix}${ctx.commandName}${
           this.options.isHypen ? "-" : " "
@@ -272,11 +274,12 @@ export class SpectralCMDHome {
       .map((command) =>
         this.createDetailedHelp(command, ctx.commandName, ctx.prefix)
       )
-      .join("\n\n" + UNIRedux.standardLine + "\n\n");
+      .join("\n\n");
 
     const output = [
       `${UNIRedux.arrow} ***Commands (Page ${page}/${totalPages})***\n\n`,
       detailedList,
+      "\n",
       UNIRedux.standardLine,
       `Page **${page}/${totalPages}** - Use **${ctx.prefix}${ctx.commandName}${
         this.options.isHypen ? "-" : " "
@@ -295,7 +298,11 @@ export class SpectralCMDHome {
         : input.arguments[this.options.argIndex] || "";
 
     if (!this.checkCooldown(ctx, key)) {
-      return output.reply(`❌ Wait a bit ${UNIRedux.charm}`);
+      return output.reply(
+        `⏳ Wait a bit for ${
+          this.getCooldown(ctx, key) / 1000
+        }s before using this subcommand again.`
+      );
     }
 
     const targets = this.findTargets(key);
@@ -381,18 +388,32 @@ export class SpectralCMDHome {
   }
 
   checkCooldown(ctx: CommandContext, key: string): boolean {
-    const userId = ctx.input.senderID;
-    const userCooldowns = this.cooldowns.get(userId) || new Map();
-    const now = Date.now();
-    const cooldownTime = userCooldowns.get(key) || 0;
-    return now >= cooldownTime;
+    return -this.getCooldown(ctx, key) >= 0;
   }
+
+  getCooldown(ctx: CommandContext, key: string): number {
+    const userId = ctx.input.senderID;
+    const userCooldowns =
+      this.cooldowns.get(userId) || new Map<string, number>();
+    const now = Date.now();
+
+    const cooldownTime = userCooldowns.get(key) || Date.now();
+
+    return -(now - cooldownTime);
+  }
+  // now = cooldownTime
+  // now - cooldownTime = 0;
 
   setCooldown(ctx: CommandContext, key: string, customCooldown?: number) {
     const userId = ctx.input.senderID;
-    const cooldown = customCooldown || this.options.globalCooldown || 0;
+    const cooldown: number =
+      (customCooldown ||
+        this.options.globalCooldown ||
+        ctx.commands[ctx.commandName]?.meta?.waitingTime ||
+        0) * 1000;
     if (cooldown > 0) {
-      const userCooldowns = this.cooldowns.get(userId) || new Map();
+      const userCooldowns =
+        this.cooldowns.get(userId) || new Map<string, number>();
       userCooldowns.set(key, Date.now() + cooldown);
       this.cooldowns.set(userId, userCooldowns);
     }
@@ -419,7 +440,6 @@ export class SpectralCMDHome {
     prefix: string
   ): string {
     return [
-      // `${UNIRedux.arrow} ***${config.key} Info***\n\n`,
       `${config.icon || "✨"} **${prefix}${commandName}${
         this.options.isHypen ? "-" : " "
       }${config.key}**`,
@@ -430,7 +450,13 @@ export class SpectralCMDHome {
       config.aliases?.length
         ? `\nAliases: **${config.aliases.join(", ")}**`
         : "",
-      config.cooldown ? `\nWait: **${config.cooldown / 1000}s**` : "",
+      config.cooldown
+        ? `\nWait: **${
+            config.cooldown ||
+            this.options.globalCooldown ||
+            "(Depends on command)"
+          }s**`
+        : "",
       config.category ? `\nCategory: **${config.category}**` : "",
       config.permissions?.length
         ? `\nNeeds: **${config.permissions.join(", ")}**`
