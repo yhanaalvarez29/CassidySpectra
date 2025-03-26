@@ -68,7 +68,7 @@ function getTop(id: string, users: any, money: any) {
   return Object.keys(sortUsers(users, undefined, money)).indexOf(id) + 1;
 }
 
-const { parseCurrency: pCy } = global.utils;
+const { parseCurrency: pCy, delay } = global.utils;
 
 const configs: Config[] = [
   {
@@ -84,6 +84,8 @@ const configs: Config[] = [
       { money, input, output, prefix, clearCurrStack, Collectibles },
       { itemList }
     ) {
+      const i = input.isWeb ? null : await output.reply(`🔧 Loading...`);
+
       let senderID = input.senderID;
       if (input.replier) senderID = input.replier.senderID;
       if (input.hasMentions) senderID = input.firstMention.senderID;
@@ -132,7 +134,6 @@ const configs: Config[] = [
         itemList,
       ].join("\n");
 
-      const i = input.isWeb ? null : await output.reply(`🔧 Loading...`);
       i
         ? output.edit(outputText, i.messageID) && clearCurrStack()
         : output.reply(outputText);

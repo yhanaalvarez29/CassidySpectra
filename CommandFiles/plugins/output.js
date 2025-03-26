@@ -101,6 +101,54 @@ export function use(obj) {
 
     /**
      *
+     * @param {import("output-cassidy").StrictOutputForm} options     */
+    async function processOutput({ ...options }) {
+      const { UserStatsLocal, money, CassEncoder } = obj;
+      const command = cmd;
+      if (
+        command?.meta?.noRibbonUI !== true &&
+        global.Cassidy.config.noRibbonUI !== true &&
+        obj.money &&
+        options.noRibbonUI !== true
+      ) {
+        const { name } = await obj.money.getCache(
+          options.threadID ?? input.senderID
+        );
+
+        options.body = name
+          ? `👤 **${name}**${
+              obj.command ? ` (${obj.input.words[0]})` : ""
+            }\n\n${options.body}`
+          : `🍃 Register with **${obj.prefix}id-setname** now!\n\n${options.body}`;
+      }
+
+      if (
+        command?.meta?.noLevelUI !== true &&
+        global.Cassidy.config.noLevelUI !== true &&
+        obj.money &&
+        options.noLevelUI !== true
+      ) {
+        const {
+          cassEXP,
+          name,
+          money: userMoney,
+          inventory = [],
+          boxItems = [],
+        } = await obj.money.getCache(options.threadID ?? input.senderID);
+        const inst = new CassEXP(cassEXP);
+
+        options.body = name
+          ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
+              UNIRedux.charm
+            } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
+          : options.body;
+      }
+
+      return options.body;
+    }
+
+    /**
+     *
      * @param {import("output-cassidy").OutputForm} text
      * @param {import("output-cassidy").OutputForm} options
      * @returns {Promise<import("output-cassidy").OutputResult>}
@@ -137,29 +185,11 @@ export function use(obj) {
           Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
           Object.assign({}, options.style ?? {}, input.style ?? {})
         );
+
+        options.body = await processOutput(options);
+
         resultInfo.originalOptionsBody = options.body;
 
-        if (
-          command?.meta?.noLevelUI !== true &&
-          global.Cassidy.config.noLevelUI !== true &&
-          obj.money &&
-          options.noLevelUI !== true
-        ) {
-          const {
-            cassEXP,
-            name,
-            money: userMoney,
-            inventory = [],
-            boxItems = [],
-          } = await obj.money.getCache(options.threadID ?? input.senderID);
-          const inst = new CassEXP(cassEXP);
-
-          options.body = name
-            ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
-                UNIRedux.charm
-              } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
-            : options.body;
-        }
         if (!options.noStyle) {
           options.body = input.isWss
             ? stylerShallow.html(resultInfo.originalOptionsBody) +
@@ -418,18 +448,20 @@ export function use(obj) {
       );
     };
     //Only works to Fca of NicaBoT:
-    outputProps.edit = async (text, mid, delay, style = {}) => {
+    outputProps.edit = async (text, mid, delay, style = {}, options = {}) => {
       //const refStyle = { ...(cmd && cmd.style ? cmd.style : {}), ...style };
       const { styler } = obj;
       const stylerShallow = styler.shallowMake({}, style);
 
       let result = prepend + "\n" + text + "\n" + append;
+      result = result.trim();
       /*if (Object.keys(refStyle).length > 0) {
         result = await styled(result, refStyle);
       }*/
+      result = await processOutput({ ...options, body: result });
       result = input.isWss
-        ? stylerShallow.html(text)
-        : stylerShallow.text(text);
+        ? stylerShallow.html(result)
+        : stylerShallow.text(result);
       return new Promise((res) => {
         const aa = api.editMessage(result, mid, () => res(true));
         if (aa instanceof Promise) {
