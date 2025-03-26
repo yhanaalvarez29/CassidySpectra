@@ -10,6 +10,7 @@ import axios from "axios";
 import stringSimilarity from "string-similarity";
 import { CassEXP } from "../modules/cassEXP.js";
 import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { SpectralCMDHome } from "../modules/spectralCMDHome";
 
 function getSuggestedCommand(input, commands) {
   const commandNames = Object.keys(commands);
@@ -592,9 +593,10 @@ ${prefix}${commandName}.${prop} ${args
           });
         }
       } else {
-        const home = new ReduxCMDHome({
+        const home = new SpectralCMDHome({
           entryConfig: entry,
           isHypen: true,
+
           entryInfo: Object.keys(entry).map((i) => {
             return {
               key: i,

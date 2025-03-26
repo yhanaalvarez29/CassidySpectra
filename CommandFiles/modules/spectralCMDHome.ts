@@ -250,13 +250,13 @@ export class SpectralCMDHome {
   ) {
     const { args } = ctx;
     const filter = spectralArgs[0]?.toLowerCase();
-    const page = Math.max(1, Number(args[1]) || 1);
+    const page = Math.max(1, Number(spectralArgs[0]) || 1);
     const perPage = 5;
 
     const visibleCommands = this.configs.filter((c) => !c.hidden);
     let commandsToShow = visibleCommands;
 
-    if (filter) {
+    if (isNaN(page) && filter) {
       const command = this.getCommand(filter);
       if (command) {
         return ctx.output.reply(
@@ -283,7 +283,7 @@ export class SpectralCMDHome {
       UNIRedux.standardLine,
       `Page **${page}/${totalPages}** - Use **${ctx.prefix}${ctx.commandName}${
         this.options.isHypen ? "-" : " "
-      }help [command] <page>** ${UNIRedux.charm}`,
+      }help [command|page]** ${UNIRedux.charm}`,
     ].join("\n");
 
     return ctx.output.reply(output);
