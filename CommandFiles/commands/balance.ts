@@ -1,4 +1,3 @@
-// @ts-check
 import {
   SpectralCMDHome,
   CassCheckly,
@@ -6,7 +5,7 @@ import {
 } from "../modules/spectralCMDHome";
 import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
 
-export const meta = {
+export const meta: CassidySpectra.CommandMeta = {
   name: "balance",
   description: "Check your virtual cash",
   otherNames: ["bal", "money"],
@@ -14,7 +13,7 @@ export const meta = {
   usage: "{prefix}{name}",
   category: "Finance",
   author: "Liane Cagara",
-  permissions: [0],
+  permissions: 0,
   noPrefix: "both",
   waitingTime: 0,
   requirement: "3.0.0",
@@ -68,7 +67,7 @@ function getTop(id: string, users: any, money: any) {
   return Object.keys(sortUsers(users, undefined, money)).indexOf(id) + 1;
 }
 
-const { parseCurrency: pCy, delay } = global.utils;
+const { parseCurrency: pCy } = global.utils;
 
 const configs: Config[] = [
   {
