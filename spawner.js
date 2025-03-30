@@ -117,77 +117,96 @@ Math.random = secureRandom;
 
 const genericErrReg = [
   {
-    regex: /^(?!null|undefined)(.*) is not a function$/,
+    regex: /TypeError: (?!null|undefined)(.*) is not a function$/,
     callback: (match) =>
-      `EXC: TYPE_MISMATCH - '${match[1]}' not callable (expected void(*)())`,
+      `ERROR: '${match[1]}' is not a function.\n\nPossible Fix:\n- Ensure '${match[1]}' is correctly defined.\n- Check if it's assigned to a function before calling.\n`,
   },
   {
-    regex: /(undefined|null) is not a function/,
+    regex: /TypeError: (undefined|null) is not a function/,
     callback: (match) =>
-      `EXC: SIGILL - Illegal Function Call (${
-        match[1] == "undefined" ? "void*" : "nullptr"
-      } deref)`,
+      `ERROR: Cannot call a non-existent function (${match[1]} found instead).\n\nPossible Fix:\n- Verify the variable is a function before calling.\n- Check for missing imports or typos.\n`,
   },
   {
     regex: /cannot read propert(y|ies) '.*' of (undefined|null)/,
     callback: (match) =>
-      `EXC: SEGFAULT - Invalid Memory Access (${
-        match[2] == "undefined" ? "uninit ptr" : "nullptr"
-      })`,
+      `ERROR: Tried to access a property on ${match[2]} (which has no properties).\n\nPossible Fix:\n- Ensure the object is initialized before use.\n- Use optional chaining (?.) to avoid crashes.\n`,
   },
   {
-    regex: /TypeError: (.*) is not a (function|object|.*)/,
+    regex: /TypeError: (.*) is not a (function|object|constructor|.*)/,
     callback: (match) =>
-      `TYPERR: Invalid Typeid - '${match[1]}' mismatches '${match[2]}*'`,
+      `ERROR: Type mismatch - '${match[1]}' is not a valid ${match[2]}.\n\nPossible Fix:\n- Ensure '${match[1]}' is correctly assigned.\n- Use 'typeof' to debug its type.\n`,
   },
   {
     regex: /ReferenceError: (.*) is not defined/,
     callback: (match) =>
-      `LD_ERR: Unresolved Symbol '${match[1]}' - Missing Definition`,
+      `ERROR: '${match[1]}' is not defined.\n\nPossible Fix:\n- Check for typos in variable names.\n- Ensure '${match[1]}' is declared before use.\n`,
+  },
+  {
+    regex: /is not a constructor/,
+    callback: (match) =>
+      `ERROR: Attempted to use a non-constructor as a class.\n\nPossible Fix:\n- Ensure the function is a class before using 'new'.\n- Check if '${
+        match[0].split(" ")[0]
+      }' is correctly defined as a class.\n`,
+  },
+  {
+    regex: /Assignment to constant variable/,
+    callback: (match) =>
+      `ERROR: Cannot modify a constant variable.\n\nPossible Fix:\n- Declare the variable with 'let' or 'var' if it needs reassignment.\n- Ensure you are modifying the correct variable.\n`,
+  },
+  {
+    regex: /Unexpected token (.*)/,
+    callback: (match) =>
+      `ERROR: Syntax issue - Unexpected token '${match[1]}'.\n\nPossible Fix:\n- Check for missing brackets, parentheses, or commas.\n- Look for typos in the affected code section.\n`,
   },
 ];
+
+const getFilePreview = (filePath, lineNo, context = 1) => {
+  try {
+    if (!fs.existsSync(filePath)) return "[File not found]\n";
+
+    const fileLines = fs.readFileSync(filePath, "utf-8").split("\n");
+    const start = Math.max(0, lineNo - 1 - context);
+    const end = Math.min(fileLines.length, lineNo + context);
+
+    return (
+      `\n[Code Preview]:\n` +
+      fileLines
+        .slice(start, end)
+        .map((line, i) => {
+          const currentLine = start + i + 1;
+          return currentLine === lineNo
+            ? `> ${currentLine}: ${line}`
+            : `  ${currentLine}: ${line}`;
+        })
+        .join("\n") +
+      "\n"
+    );
+  } catch {
+    return "[Unable to read file]\n";
+  }
+};
 
 const stackFrameReg = [
   {
     regex: /^\s*at\s+(?:(.+?)\s+)?(?:\(([^)]*?)(?::(\d+))?(?::(\d+))?\))?$/i,
     callback: (match, index) => {
       let funcName = match[1] || "<anonymous>";
-      if (funcName === "<anonymous>" || !funcName) {
-        funcName = "0xCAFEBABE";
-      } else if (funcName.startsWith("async")) {
-        funcName = `Future<${funcName.replace("async", "").trim()}>`;
-      }
+      let fileName = match[2] || "<unknown file>";
+      let lineNo = parseInt(match[3], 10) || "???";
+      let colNo = parseInt(match[4], 10) || "???";
 
-      const fileName = match[2] || "<INVALID_MEM>";
-      const lineNo = match[3] || "ERR";
-      const colNo = match[4] || "FF";
-      const addr = `0x${(0xdead0000 + index * 0x1000)
-        .toString(16)
-        .toUpperCase()}`;
-      return `#${index}  ${addr}  ${funcName}()  ${fileName}  [${lineNo}:${colNo}]`;
-    },
-  },
-  {
-    regex: /^\s*at\s+([^\s]+)\s+([^:]+)$/,
-    callback: (match, index) => {
-      const funcName = match[1] === "<anonymous>" ? "0xCAFEBABE" : match[1];
-      const fileName = match[2] || "<INVALID_MEM>";
-      const addr = `0x${(0xdead0000 + index * 0x1000)
-        .toString(16)
-        .toUpperCase()}`;
-      return `#${index}  ${addr}  ${funcName}()  ${fileName}  [ERR:FF]`;
-    },
-  },
-  {
-    regex: /^\s*at\s+<anonymous>$/,
-    callback: (match, index) => {
-      const addr = `0x${(0xdead0000 + index * 0x1000)
-        .toString(16)
-        .toUpperCase()}`;
-      return `#${index}  ${addr}  0xCAFEBABE()  <INVALID_MEM>  [ERR:FF]`;
+      let filePreview =
+        !isNaN(lineNo) && fileName !== "<unknown file>"
+          ? getFilePreview(fileName, lineNo)
+          : "[No preview available]\n";
+
+      return `#${
+        index + 1
+      }  ${funcName}()  ${fileName} [${lineNo}:${colNo}]${filePreview}`;
     },
   },
 ];
+
 let origStack = Error.prepareStackTrace;
 
 Error.prepareStackTrace = (error, structuredStack) => {
@@ -215,9 +234,9 @@ Error.prepareStackTrace = (error, structuredStack) => {
     return transformed;
   });
 
-  return `${errMsg}\n[STACK TRACE] Runtime Environment:\n${transformedStack.join(
+  return `${errMsg}\n[STACK TRACE] (Most Recent Call First):\n\n${transformedStack.join(
     "\n"
-  )}\n[TRACE TERMINATED]`;
+  )}\n[TRACE END]`;
 };
 
 require("./Cassidy");

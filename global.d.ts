@@ -133,7 +133,7 @@ declare global {
       usage?: string;
       category: string;
       version: string;
-      permissions?: number[] | number;
+      permissions?: number[];
       author?: string;
       otherNames?: string[];
       ext_plugins?: Record<string, string>;

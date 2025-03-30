@@ -9,7 +9,7 @@ require("dotenv").config();
 const MEMORY_THRESHOLD = 500;
 const WARNING_THRESHOLD = MEMORY_THRESHOLD * 0.75;
 import { registeredExtensions } from "./CommandFiles/modules/cassXTensions";
-
+import { fontTag } from "./handlers/styler.js/main";
 import cors from "cors";
 
 const checkMemoryUsage = (normal) => {
@@ -111,6 +111,7 @@ extend();
 import {
   removeCommandAliases,
   UNIRedux,
+  UNISpectra,
 } from "./CommandFiles/modules/unisym.js";
 
 /**
@@ -154,7 +155,8 @@ global.Cassidy = {
   loadCommand,
   loadPlugins,
   loadAllCommands,
-  logo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
+  reduxlogo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
+  logo: fontTag(UNISpectra.spectra),
   oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
   accessToken: null,
   redux: true,
