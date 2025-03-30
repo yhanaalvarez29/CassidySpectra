@@ -11,7 +11,7 @@ class CassMongo {
   collection: string;
   ignoreError: boolean;
   allowClear: boolean;
-  uri: string;
+  #uri: string;
   KeyValue;
 
   constructor({
@@ -29,12 +29,12 @@ class CassMongo {
   }) {
     if (isOwnHost) {
       const hostname = os.hostname();
-      this.uri = `mongodb://${hostname}:27017/${uri.replace(
+      this.#uri = `mongodb://${hostname}:27017/${uri.replace(
         /^mongodb:\/\/[^\/]+\//,
         ""
       )}`;
     } else {
-      this.uri = uri;
+      this.#uri = uri;
     }
     this.collection = collection;
     this.ignoreError = ignoreError;
@@ -57,8 +57,8 @@ class CassMongo {
       }
 
       mongoose.set("strictQuery", true);
-      await mongoose.connect(this.uri);
-      connectedURI = this.uri;
+      await mongoose.connect(this.#uri);
+      connectedURI = this.#uri;
       console.log("MongoDB connection established");
     } catch (error) {
       if (this.ignoreError) console.error("MongoDB connection error:", error);
