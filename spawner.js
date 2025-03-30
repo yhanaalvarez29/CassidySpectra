@@ -132,31 +132,9 @@ const genericErrReg = [
       `ERROR: Tried to access a property on ${match[2]} (which has no properties).\n\nPossible Fix:\n- Ensure the object is initialized before use.\n- Use optional chaining (?.) to avoid crashes.\n`,
   },
   {
-    regex: /TypeError: (.*) is not a (function|object|constructor|.*)/,
-    callback: (match) =>
-      `ERROR: Type mismatch - '${match[1]}' is not a valid ${match[2]}.\n\nPossible Fix:\n- Ensure '${match[1]}' is correctly assigned.\n- Use 'typeof' to debug its type.\n`,
-  },
-  {
     regex: /ReferenceError: (.*) is not defined/,
     callback: (match) =>
       `ERROR: '${match[1]}' is not defined.\n\nPossible Fix:\n- Check for typos in variable names.\n- Ensure '${match[1]}' is declared before use.\n`,
-  },
-  {
-    regex: /is not a constructor/,
-    callback: (match) =>
-      `ERROR: Attempted to use a non-constructor as a class.\n\nPossible Fix:\n- Ensure the function is a class before using 'new'.\n- Check if '${
-        match[0].split(" ")[0]
-      }' is correctly defined as a class.\n`,
-  },
-  {
-    regex: /Assignment to constant variable/,
-    callback: (match) =>
-      `ERROR: Cannot modify a constant variable.\n\nPossible Fix:\n- Declare the variable with 'let' or 'var' if it needs reassignment.\n- Ensure you are modifying the correct variable.\n`,
-  },
-  {
-    regex: /Unexpected token (.*)/,
-    callback: (match) =>
-      `ERROR: Syntax issue - Unexpected token '${match[1]}'.\n\nPossible Fix:\n- Check for missing brackets, parentheses, or commas.\n- Look for typos in the affected code section.\n`,
   },
 ];
 
@@ -195,6 +173,12 @@ const stackFrameReg = [
       let lineNo = parseInt(match[3], 10) || "???";
       let colNo = parseInt(match[4], 10) || "???";
 
+      if (fileName.startsWith("node:internal")) {
+        return `#${
+          index + 1
+        }  ${funcName}()  [Node.js Internal] [${lineNo}:${colNo}] [No preview available]`;
+      }
+
       let filePreview =
         !isNaN(lineNo) && fileName !== "<unknown file>"
           ? getFilePreview(fileName, lineNo)
@@ -203,6 +187,22 @@ const stackFrameReg = [
       return `#${
         index + 1
       }  ${funcName}()  ${fileName} [${lineNo}:${colNo}]${filePreview}`;
+    },
+  },
+  {
+    regex:
+      /^\s*at eval \(eval at (.+?) \(([^)]+):(\d+):(\d+)\), <anonymous>:(\d+):(\d+)\)$/,
+    callback: (match, index) => {
+      let entryFunc = match[1];
+      let entryFile = match[2];
+      let entryLine = parseInt(match[3], 10);
+      let entryCol = parseInt(match[4], 10);
+      let evalLine = parseInt(match[5], 10);
+      let evalCol = parseInt(match[6], 10);
+
+      return `#${
+        index + 1
+      }  eval()  [Evaluated Code] at ${entryFunc} (${entryFile} [${entryLine}:${entryCol}]), <anonymous> [${evalLine}:${evalCol}]`;
     },
   },
 ];
@@ -234,9 +234,11 @@ Error.prepareStackTrace = (error, structuredStack) => {
     return transformed;
   });
 
-  return `${errMsg}\n[STACK TRACE] (Most Recent Call First):\n\n${transformedStack.join(
-    "\n"
-  )}\n[TRACE END]`;
+  return `${errMsg}\n[STACK TRACE] (Most Recent Call First):\n\n${transformedStack
+    .map((i) => String(i).trimStart().trimEnd())
+    .join("\n\n")}\n[TRACE END]\n\nCassidySpectra v${
+    require("./package.json").version
+  }`;
 };
 
 require("./Cassidy");
