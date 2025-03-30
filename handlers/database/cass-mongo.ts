@@ -291,9 +291,9 @@ class CassMongo {
 }
 
 class CassMongoManager {
-  instances;
+  #instances;
   constructor() {
-    this.instances = new Map();
+    this.#instances = new Map<string, CassMongo>();
   }
 
   getInstance({
@@ -305,14 +305,18 @@ class CassMongoManager {
     collection: string;
   }) {
     const key = `${uri}-${collection}`;
-    if (!this.instances.has(key)) {
-      this.instances.set(key, new CassMongo({ uri, collection, ...options }));
+    if (!this.#instances.has(key)) {
+      this.#instances.set(key, new CassMongo({ uri, collection, ...options }));
     }
-    return this.instances.get(key);
+    return this.#instances.get(key);
+  }
+
+  getAll() {
+    return Object.fromEntries(this.#instances);
   }
 
   listInstances() {
-    return Array.from(this.instances.keys());
+    return Array.from(this.#instances.keys());
   }
 }
 

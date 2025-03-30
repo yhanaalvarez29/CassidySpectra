@@ -56,6 +56,7 @@ export async function entry({ ...ctx }) {
     // Collectibles,
   } = ctx;
   let userData = await money.get(input.senderID);
+
   const { inventory, petsData, gearsData, collectibles } = getDatas(userData);
   const extensions = getEnabledExtensions(userData).getCategorized("inventory");
 

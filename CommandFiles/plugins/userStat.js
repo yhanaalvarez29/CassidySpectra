@@ -170,7 +170,7 @@ import BankHandler from "../resources/bank/utils.js";
 
 import GenericInfo from "../resources/generic/utils.js";
 let handleStat;
-let UserStatsManager;
+import { init } from "../../handlers/database/handleStat";
 
 import GenericOnline from "../resources/genericOnline/utils.js";
 const userState = new GenericInfo({
@@ -218,10 +218,10 @@ const threadState = new GenericInfo({
 let userInfos;
 
 export async function load() {
-  UserStatsManager = (
-    await global.requireEsm("./handlers/database/handleStat.ts")
-  ).default;
-  handleStat = new UserStatsManager("handlers/database/userStat.json");
+  // UserStatsManager = (
+  //   await global.requireEsm("./handlers/database/handleStat.ts")
+  // ).default;
+  handleStat = init();
   global.handleStat = handleStat;
   await handleStat.connect();
   //await userInfos.connectMongo();

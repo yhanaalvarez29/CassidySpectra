@@ -192,5 +192,5 @@ declare global {
     url(url: string): Promise<any>;
   };
 
-  var cassMongoManager: CassMongoManager
+  var cassMongoManager: CassMongoManager | undefined;
 }

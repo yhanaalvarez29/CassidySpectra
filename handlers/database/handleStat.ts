@@ -11,7 +11,28 @@ global.cassMongoManager = cassMongoManager;
 
 import type { InventoryItem } from "cassidy-userData";
 
-export function init() {}
+export function init(
+  this: unknown,
+  {
+    collection,
+    uri,
+    filepath,
+  }: {
+    collection?: string;
+    uri?: string;
+
+    filepath?: string;
+  } = {}
+) {
+  const manager = new UserStatsManager(
+    filepath ?? "handlers/database/userStat.json",
+    {
+      uri: uri ?? global.Cassidy.config.MongoConfig?.uri,
+      collection,
+    }
+  );
+  return manager;
+}
 
 /**
  * Handles database related tasks for CassidySpectra, uses mongodb.
@@ -23,25 +44,38 @@ export default class UserStatsManager {
   isMongo: boolean;
   cache: Record<string, UserData>;
   kv;
+  collection;
 
   constructor(
     filePath: string,
-    { uri = global.Cassidy.config.MongoConfig?.uri } = {}
+    {
+      uri = global.Cassidy.config.MongoConfig?.uri,
+      collection = "reduxcassstats",
+    } = {}
   ) {
     this.filePath = filePath;
 
     this.#mongo = null;
+    this.collection = collection;
     this.#uri = process.env[uri];
     this.isMongo = !!global.Cassidy.config.MongoConfig?.status;
     if (this.isMongo) {
       this.#mongo = cassMongoManager.getInstance({
         uri: this.#uri,
-        collection: "reduxcassstats",
+        collection,
       });
       this.kv = this.#mongo.KeyValue;
     }
 
     this.cache = {};
+  }
+
+  setMongo(mongo: CassMongo) {
+    this.#mongo = mongo;
+  }
+
+  getMongo() {
+    return this.#mongo;
   }
 
   /**
