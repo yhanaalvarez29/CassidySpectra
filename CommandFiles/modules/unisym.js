@@ -24,12 +24,17 @@ export function emojiEnd(str) {
     .trim()
     .replaceAll("|", "");
 
-  const resOld =
-    nonEmojis + " " + UNISpectra.nextArrow + "" + (emojis ? " " + emojis : "");
-
+  const resIdk =
+    nonEmojis +
+    " " +
+    UNISpectra.nextArrow.repeat(2) +
+    "" +
+    (emojis ? " " + emojis : "");
   const res =
-    (emojis ? " " + emojis : "") + UNISpectra.nextArrow + " " + nonEmojis;
-
+    UNISpectra.nextArrow.repeat(2) +
+    " " +
+    (emojis ? emojis + " " : "") +
+    nonEmojis;
   console.log(str, " => ", res);
   return res;
 }
