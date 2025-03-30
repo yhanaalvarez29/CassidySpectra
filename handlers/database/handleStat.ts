@@ -51,7 +51,7 @@ export default class UserStatsManager {
     this.cache[key] = value;
   }
 
-  process(data: UserData) {
+  process(data: UserData, userID: string | number) {
     data ??= this.defaults;
     data.money ??= 0;
     data.money = data.money <= 0 ? 0 : parseInt(String(data.money));
@@ -74,6 +74,8 @@ export default class UserStatsManager {
     if (isNaN(data.battlePoints)) {
       data.battlePoints = 0;
     }
+
+    data.userID = String(userID);
 
     return data;
   }
@@ -167,14 +169,16 @@ export default class UserStatsManager {
         (await this.#mongo.get(key)) || {
           ...this.defaults,
           lastModified: Date.now(),
-        }
+        },
+        key
       );
       this.updateCache(key, data);
       return data;
     } else {
       const data = this.readMoneyFile();
       const p = this.process(
-        data[key] || { ...this.defaults, lastModified: Date.now() }
+        data[key] || { ...this.defaults, lastModified: Date.now() },
+        key
       );
       this.updateCache(key, p);
       return p;
@@ -184,18 +188,23 @@ export default class UserStatsManager {
   async getUsers<K extends readonly string[]>(
     ...keys: K
   ): Promise<Record<K[number], UserData>> {
+    let allData: [string, UserData][];
     if (this.isMongo) {
-      const allData = await this.#mongo.bulkGet(...keys);
-      this.updateCache(key, data);
-      return data;
+      allData = await this.#mongo.bulkGet(...keys);
     } else {
-      const data = this.readMoneyFile();
-      const p = this.process(
-        data[key] || { ...this.defaults, lastModified: Date.now() }
+      allData = Object.entries(this.readMoneyFile()).filter(([k]) =>
+        keys.includes(k)
       );
-      this.updateCache(key, p);
-      return p;
     }
+    return Object.fromEntries(
+      allData.map(([key, userData]) => {
+        const clean = this.process(
+          userData || { ...this.defaults, lastModified: Date.now() },
+          key
+        );
+        return [key, clean];
+      })
+    ) as Record<K[number], UserData>;
   }
 
   async deleteUser(key: string) {
@@ -282,12 +291,15 @@ export default class UserStatsManager {
   async getAll(): Promise<Record<string, UserData>> {
     const allData = await this.getAllOld();
 
-    const result: Record<string, UserData> = {};
-    for (const key in allData) {
-      result[key] = this.process(allData[key]);
-      this.cache[key] = result[key];
-    }
-    return result;
+    return Object.fromEntries(
+      Object.entries(allData).map(([key, userData]) => {
+        const clean = this.process(
+          userData || { ...this.defaults, lastModified: Date.now() },
+          key
+        );
+        return [key, clean];
+      })
+    );
   }
 
   query(filter: Parameters<typeof this.kv.find>) {
