@@ -305,12 +305,8 @@ api.${key}(${args
       try {
         const entryX = await deSYMC(command.entry);
         if (typeof entryX === "symbol") {
-          // console.log("BEFORE", command.entry.toString());
-
-          // console.log("ENTRYX", entryX.toString());
           command = { ...command, entry: command.entry.hooklet(entryX) };
           runObjects.command = command;
-          // console.log("RESULT", command.entry.toString());
         }
       } catch (error) {
         console.error(error);
@@ -320,88 +316,10 @@ api.${key}(${args
     styler.activateAllPresets();
     runObjects.styler = styler;
 
-    /*console.log({ ...event, participantIDs: "Hidden" });*/
-
-    //     let allDataKeys = [];
-    //     async function next() {
-    //       pluginCount++;
-    //       const currentOrder = queue.findIndex(
-    //         (order) => order && order.length > 0
-    //       );
-    //       if (currentOrder !== -1) {
-    //         const currentPlugin = queue[currentOrder].shift();
-    //         try {
-    //           const { use, meta } = currentPlugin;
-    //           if (meta.name === "handleCommand") {
-    //             return next();
-    //           }
-    //           global.runner = runObjects;
-    //           let copyDataKeys = Object.keys({ ...runObjects });
-    //           await use(runObjects);
-    //           let dataKeys = Object.keys({ ...runObjects });
-
-    //           if (dataKeys.length !== copyDataKeys.length) {
-    //             const added = dataKeys.filter((key) => !copyDataKeys.includes(key));
-    //             allDataKeys.push(...added);
-
-    //             const removed = allDataKeys.filter(
-    //               (key) => !dataKeys.includes(key)
-    //             );
-
-    //             allDataKeys = allDataKeys.filter((key) => !removed.includes(key));
-
-    //             console.log(`[${meta.name} changed:]`, { added, removed });
-    //           }
-    //           return;
-    //         } catch (error) {
-    //           const { failSafe = [], meta } = currentPlugin ?? {};
-    //           for (const key of failSafe) {
-    //             runObjects[key] = new Proxy(() => {}, {
-    //               get(_, key) {
-    //                 return (...args) => {
-    //                   global.logger(
-    //                     `Warn: the ${key}(${args
-    //                       .map(
-    //                         (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
-    //                       )
-    //                       .join(",")}) has no effect!`
-    //                   );
-    //                 };
-    //               },
-    //               set() {
-    //                 return true;
-    //               },
-    //             });
-    //           }
-    //           console.log(error);
-    //           return next();
-    //         }
-    //       } else {
-    //         try {
-    //           const { use } = allPlugins.handleCommand;
-    //           await use({ ...runObjects, next: undefined });
-    //         } catch (error) {
-    //           console.log(error);
-    //         }
-    //       }
-    //     }
-    //     await runObjects.next();
-    //     const currentOrder = queue.findIndex((order) => order && order.length > 0);
-    //     if (currentOrder !== -1 && runObjects.safeCalls < 1) {
-    //       const { meta } = queue[currentOrder].shift();
-    //       /*console.warn(`⚠️ There are still plugins in the queue but t no response made!
-
-    // Suspicious Plugin: ${meta.name}
-    // Plugin Count: ${pluginCount}
-
-    // Remaining: ${queue.reduce((a, b) => a + b.length, 0)}
-    // Please check this plugin immediately!`);*/
-    //     }
-
     // [new] Spectra Plugin Handling
+    let allDataKeys = [];
     for (const order of queue) {
       if (!order) continue;
-      console.log("ORDER", order);
       for (const currentPlugin of order) {
         await new Promise(async (resolve) => {
           const next = () => resolve(true);
