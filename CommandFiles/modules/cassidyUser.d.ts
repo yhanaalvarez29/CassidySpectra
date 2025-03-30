@@ -12,12 +12,11 @@ declare module "cassidy-userData" {
     | "cheque"
     | `${string}_food`;
 
-  interface UserStatsManager {
+  interface UserStatsManagerOld {
     filePath: string;
     defaults: { money: number; exp: number };
-    bb: Record<string, unknown>;
+
     isMongo: boolean;
-    mongo?: any;
 
     process(data: Partial<UserData>): UserData;
 
@@ -33,13 +32,10 @@ declare module "cassidy-userData" {
       cheques: number;
     };
 
-    handleBitBros(gameID: string, userData: UserData): Promise<void>;
-
     get(key: string): Promise<UserData>;
     getCache(key: string): Promise<UserData>;
-    // getTyped(key: string): Promise<TypedUserData>;
 
-    deleteUser(key: string): Promise<Record<string, UserData>>;
+    deleteUser(key: string): Promise<void>;
 
     remove(
       key: string,
@@ -124,15 +120,15 @@ declare module "cassidy-userData" {
     lastModified?: number;
     cassEXP?: any;
     tilesKeys?: string[];
-    shopInv: { [key: string]: boolean };
-    boxItems: InventoryItem[];
+    shopInv?: { [key: string]: boolean };
+    boxItems?: InventoryItem[];
     battlePoints: number;
     extensionIDs?: string[];
     [key: string]: any;
   };
 
   type NullableUserData = {
-    [K in keyof UserData]: UserData[K] | null;
+    [K in keyof UserData]?: UserData[K] | null;
   };
 
   // type TypedUserData = UserData & {
@@ -141,6 +137,8 @@ declare module "cassidy-userData" {
   //   cassEXP: CassEXP;
   //   petsData: Inventory;
   // };
+
+  type UserStatsManager = import("../../handlers/database/handleStat").default;
 
   export {
     UserData,

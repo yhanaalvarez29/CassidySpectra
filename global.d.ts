@@ -182,6 +182,7 @@ declare global {
 }
 
 import type { UserStatsManager } from "cassidy-userData";
+import { CassMongoManager } from "./handlers/database/cass-mongo.js";
 
 declare global {
   var Cassidy: CassidySpectra.GlobalCassidy;
@@ -190,4 +191,6 @@ declare global {
   var require: NodeRequire & {
     url(url: string): Promise<any>;
   };
+
+  var cassMongoManager: CassMongoManager
 }

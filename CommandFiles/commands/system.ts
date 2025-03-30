@@ -1,3 +1,4 @@
+// @ts-nocheck
 import fs from "fs";
 import axios from "axios";
 import { PasteClient } from "pastebin-api";

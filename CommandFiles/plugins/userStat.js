@@ -219,7 +219,7 @@ let userInfos;
 
 export async function load() {
   UserStatsManager = (
-    await global.requireEsm("./handlers/database/handleStat.mjs")
+    await global.requireEsm("./handlers/database/handleStat.ts")
   ).default;
   handleStat = new UserStatsManager("handlers/database/userStat.json");
   global.handleStat = handleStat;

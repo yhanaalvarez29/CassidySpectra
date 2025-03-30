@@ -102,6 +102,7 @@ export function composeFunctions<
   const composed = (...args: any[]) => {
     return fns.reduceRight(
       (result, fn) => [
+        // @ts-ignore
         fn.apply(null, Array.isArray(result) ? result : [result]),
       ],
       args

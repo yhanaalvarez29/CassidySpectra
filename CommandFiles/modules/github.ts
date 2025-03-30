@@ -43,6 +43,7 @@ export class GithubFileClass implements GithubFile {
   public download(): Promise<string>;
   public async download(key?: unknown): Promise<string> {
     if (typeof key === "string") {
+      // @ts-ignore
       const res = await axios.get(this[key], { responseType: "text" });
       return res.data;
     }

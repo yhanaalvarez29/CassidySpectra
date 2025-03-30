@@ -248,7 +248,6 @@ export class SpectralCMDHome {
     ctx: CommandContext,
     { spectralArgs }: Parameters<Config["handler"]>[1]
   ) {
-    const { args } = ctx;
     const filter = spectralArgs[0]?.toLowerCase();
     const page = Math.max(1, Number(spectralArgs[0]) || 1);
     const perPage = 5;

@@ -1,63 +1,67 @@
 import fs from "fs";
-import { createRequire } from "module";
-// import { CassEXP } from "../../CommandFiles/modules/cassEXP.js";
-// import { BitBrosAPI } from "../../CommandFiles/modules/bitbrosapi.js";
-const require = createRequire(import.meta.url);
-const LiaMongo = require("lia-mongo");
-// import { LiaMongo } from "lia-mongo";
-const { BitBrosAPI } = require("../../CommandFiles/modules/bitbrosapi");
+import { CassMongo, CassMongoManager } from "./cass-mongo";
 
-/**
- * @typedef {import("cassidy-userData").UserData} UserData;
- */
+type UserData = import("cassidy-userData").UserData;
 
-/**
- *  @typedef {import("cassidy-userData").NullableUserData} Nullable;
- */
+type Nullable = import("cassidy-userData").NullableUserData;
+
+const cassMongoManager = new CassMongoManager();
+
+global.cassMongoManager = cassMongoManager;
+
+import type { InventoryItem } from "cassidy-userData";
+
+export function init() {}
 
 export default class UserStatsManager {
   #uri;
+  filePath: string;
+  defaults: { money: number; exp: number; battlePoints: number };
+  #mongo: CassMongo;
+  isMongo: boolean;
+  cache: Record<string, UserData>;
+  kv;
 
-  constructor(filePath, { uri = global.Cassidy.config.MongoConfig?.uri } = {}) {
+  constructor(
+    filePath: string,
+    { uri = global.Cassidy.config.MongoConfig?.uri } = {}
+  ) {
     this.filePath = filePath;
     this.defaults = {
       money: 0,
       exp: 0,
+      battlePoints: 0,
     };
-    this.bb = {};
 
-    /**
-     * @type {LiaMongo}
-     */
-    this.mongo = null;
+    this.#mongo = null;
     this.#uri = process.env[uri];
     this.isMongo = !!global.Cassidy.config.MongoConfig?.status;
     if (this.isMongo) {
-      this.mongo = new LiaMongo({
+      this.#mongo = cassMongoManager.getInstance({
         uri: this.#uri,
-        //collection: "cassidyuserstats",
         collection: "reduxcassstats",
       });
+      this.kv = this.#mongo.KeyValue;
     }
 
     this.cache = {};
   }
 
-  updateCache(key, value) {
+  updateCache(key: string, value: any) {
     this.cache[key] = value;
   }
 
-  process(data) {
-    data ??= {};
+  process(data: UserData) {
+    data ??= this.defaults;
     data.money ??= 0;
-    data.money = data.money <= 0 ? 0 : parseInt(data.money);
+    data.money = data.money <= 0 ? 0 : parseInt(String(data.money));
 
     if (data.money > Number.MAX_SAFE_INTEGER) {
       data.money = Number.MAX_SAFE_INTEGER;
     }
     data.battlePoints ??= 0;
     data.battlePoints =
-      data.battlePoints <= 0 ? 0 : parseInt(data.battlePoints);
+      data.battlePoints <= 0 ? 0 : parseInt(String(data.battlePoints));
     data.exp ??= 0;
     data.inventory ??= [];
     if (isNaN(data.exp)) {
@@ -73,13 +77,13 @@ export default class UserStatsManager {
 
     return data;
   }
-  calcMaxBalance(users, specificID) {
+  calcMaxBalance(users: Record<string, UserData>, specificID: string) {
     const balances = Object.keys(users)
       .filter((id) => id !== specificID)
       .map((id) => users[id].money);
 
     const totalBalance = balances.reduce(
-      (sum, balance) => parseInt(sum) + balance,
+      (sum, balance) => parseInt(String(sum)) + balance,
       0
     );
     const averageBalance = totalBalance / balances.length;
@@ -97,8 +101,8 @@ export default class UserStatsManager {
             "Missing MongoDB URI while the status is true, please check your settings.json"
           );
         }
-        await this.mongo.start();
-        await this.mongo.put("test", this.defaults);
+        await this.#mongo.start();
+        await this.#mongo.put("test", this.defaults);
       } catch (error) {
         console.error("MONGODB Error, Activating OFFLINE JSON!", error);
         this.isMongo = false;
@@ -107,28 +111,7 @@ export default class UserStatsManager {
     }
   }
 
-  async handleBitBros(gameID, userData) {
-    // try {
-    //   const bitbros = new BitBrosAPI({
-    //     username: userData.name,
-    //     password: `cassidy-${gameID}`,
-    //     token: userData.bitbrosToken,
-    //   });
-    //   await bitbros.init(true, false);
-    //   await bitbros.setMoney(userData.money);
-    //   this.bb[gameID] = bitbros;
-    // } catch (error) {
-    //   console.error("BITBROS SYNC", gameID, error);
-    // }
-  }
-
-  /**
-   *
-   * @async
-   * @param {string} key
-   * @returns {UserData}
-   */
-  async getCache(key) {
+  async getCache(key: string): Promise<UserData> {
     if (!this.cache[key]) {
       await this.get(key);
     }
@@ -136,25 +119,27 @@ export default class UserStatsManager {
     return JSON.parse(JSON.stringify(this.cache[key]));
   }
 
-  /**
-   *
-   * @param {UserData} obj
-   * @returns {{ money: number, total: number, bank: number, lendAmount: number, cheques: number,}}
-   */
-  extractMoney(userData) {
-    const safeNumber = (value) =>
+  extractMoney(userData: UserData): {
+    money: number;
+    total: number;
+    bank: number;
+    lendAmount: number;
+    cheques: number;
+  } {
+    const safeNumber = (value: any) =>
       typeof value === "number" && !isNaN(value) ? value : 0;
 
     const money = safeNumber(userData?.money);
     const bank = safeNumber(userData?.bankData?.bank);
     const lendAmount = safeNumber(userData?.lendAmount);
 
-    const getChequeAmount = (items) =>
+    const getChequeAmount = (items: InventoryItem[]) =>
       Array.isArray(items)
         ? items.reduce(
             (acc, item) =>
               item.type === "cheque"
-                ? acc + safeNumber(item.chequeAmount)
+                ? // @ts-ignore
+                  acc + safeNumber(item.chequeAmount)
                 : acc,
             0
           )
@@ -176,37 +161,46 @@ export default class UserStatsManager {
     };
   }
 
-  /**
-   *
-   * @async
-   * @param {string} key
-   * @returns {Promise<UserData>}
-   */
-  async get(key) {
+  async get(key: string): Promise<UserData> {
     if (this.isMongo) {
-      const data = await this.process(
-        (await this.mongo.get(key)) || {
+      const data = this.process(
+        (await this.#mongo.get(key)) || {
           ...this.defaults,
           lastModified: Date.now(),
         }
       );
-      this.handleBitBros(key, data);
       this.updateCache(key, data);
       return data;
     } else {
       const data = this.readMoneyFile();
-      const p = await this.process(
+      const p = this.process(
         data[key] || { ...this.defaults, lastModified: Date.now() }
       );
-      this.handleBitBros(key, p);
       this.updateCache(key, p);
       return p;
     }
   }
 
-  async deleteUser(key) {
+  async getUsers<K extends readonly string[]>(
+    ...keys: K
+  ): Promise<Record<K[number], UserData>> {
     if (this.isMongo) {
-      await this.mongo.remove(key);
+      const allData = await this.#mongo.bulkGet(...keys);
+      this.updateCache(key, data);
+      return data;
+    } else {
+      const data = this.readMoneyFile();
+      const p = this.process(
+        data[key] || { ...this.defaults, lastModified: Date.now() }
+      );
+      this.updateCache(key, p);
+      return p;
+    }
+  }
+
+  async deleteUser(key: string) {
+    if (this.isMongo) {
+      await this.#mongo.remove(key);
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -214,18 +208,21 @@ export default class UserStatsManager {
         this.writeMoneyFile(data);
       }
     }
-    return this.getAll();
+    delete this.cache[key];
   }
 
-  async remove(key, removedProperties = []) {
+  async remove(
+    key: string,
+    removedProperties: string[] = []
+  ): Promise<UserData> {
     if (this.isMongo) {
       const user = await this.get(key);
       for (const item of removedProperties) {
         delete user[item];
       }
-      await this.mongo.put(key, user);
-      this.handleBitBros(key, user);
+      await this.#mongo.put(key, user);
       this.updateCache(key, user);
+      return user;
     } else {
       const data = this.readMoneyFile();
       if (data[key]) {
@@ -238,18 +235,11 @@ export default class UserStatsManager {
         this.writeMoneyFile(data);
       }
       this.updateCache(key, data[key]);
+      return data[key];
     }
-    return this.getAll();
   }
 
-  /**
-   *
-   * @async
-   * @returns {Promise<void>}
-   * @param {string} key
-   * @param {Nullable} updatedProperties
-   */
-  async set(key, updatedProperties = {}) {
+  async set(key: string, updatedProperties: Nullable = {}) {
     if (this.isMongo) {
       const user = await this.get(key);
       const updatedUser = {
@@ -257,11 +247,9 @@ export default class UserStatsManager {
         ...updatedProperties,
         lastModified: Date.now(),
       };
-      //await this.mongo.put(key, updatedUser);
-      await this.mongo.bulkPut({
+      await this.#mongo.bulkPut({
         [key]: updatedUser,
       });
-      this.handleBitBros(key, updatedUser);
       this.updateCache(key, updatedUser);
     } else {
       const data = this.readMoneyFile();
@@ -279,37 +267,34 @@ export default class UserStatsManager {
         };
       }
       this.writeMoneyFile(data);
-      this.handleBitBros(key, data[key]);
       this.updateCache(key, data[key]);
     }
   }
 
-  async getAllOld() {
+  async getAllOld(): Promise<Record<string, UserData>> {
     if (this.isMongo) {
-      return await this.mongo.toObject();
+      return await this.#mongo.toObject();
     } else {
       return this.readMoneyFile();
     }
   }
 
-  /**
-   *
-   * @async
-   * @returns {Promise<{ [key: string]: UserData }>}
-   */
-  async getAll() {
+  async getAll(): Promise<Record<string, UserData>> {
     const allData = await this.getAllOld();
 
-    const result = {};
+    const result: Record<string, UserData> = {};
     for (const key in allData) {
       result[key] = this.process(allData[key]);
       this.cache[key] = result[key];
-      this.handleBitBros(key, result[key]);
     }
     return result;
   }
 
-  readMoneyFile() {
+  query(filter: Parameters<typeof this.kv.find>) {
+    return this.#mongo.query(filter);
+  }
+
+  readMoneyFile(): Record<string, UserData> {
     try {
       const jsonData = fs.readFileSync(this.filePath, "utf8");
       return JSON.parse(jsonData);
@@ -319,7 +304,7 @@ export default class UserStatsManager {
     }
   }
 
-  writeMoneyFile(data) {
+  writeMoneyFile(data: Record<string, UserData>) {
     try {
       const jsonData = JSON.stringify(data, null, 2);
       fs.writeFileSync(this.filePath, jsonData);
@@ -328,26 +313,21 @@ export default class UserStatsManager {
     }
   }
 
-  /**
-   *
-   * @async
-   * @returns {Promise<{ [key: string]: UserData }>}
-   */
   async toLeanObject() {
-    if (!this.mongo) {
+    if (!this.#mongo) {
       return this.getAll();
     }
     try {
-      const results = await this.mongo.KeyValue.find({}, "key value").lean();
+      const results = await this.#mongo.KeyValue.find({}, "key value").lean();
 
-      const resultObj = {};
+      const resultObj: Record<string, UserData> = {};
       results.forEach((doc) => {
         resultObj[doc.key] = doc.value;
       });
 
       return resultObj;
     } catch (error) {
-      if (this.mongo.ignoreError) {
+      if (this.#mongo.ignoreError) {
         console.error("Error getting entries:", error);
         return {};
       } else {

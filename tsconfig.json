@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "skipLibCheck": false,
     "forceConsistentCasingInFileNames": true,
@@ -27,7 +27,8 @@
     "declarationMap": true,
     "allowJs": true,
     "checkJs": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "strictPropertyInitialization": true
   },
   "exclude": ["node_modules"],
   "include": ["**/*"]
