@@ -27,8 +27,7 @@
     "declarationMap": true,
     "allowJs": true,
     "checkJs": false,
-    "strictNullChecks": false,
-    "strictPropertyInitialization": true
+    "strictNullChecks": false
   },
   "exclude": ["node_modules"],
   "include": ["**/*"]
