@@ -13,10 +13,12 @@ import type { InventoryItem } from "cassidy-userData";
 
 export function init() {}
 
+/**
+ * Handles database related tasks for CassidySpectra, uses mongodb.
+ */
 export default class UserStatsManager {
   #uri;
   filePath: string;
-  defaults: { money: number; exp: number; battlePoints: number };
   #mongo: CassMongo;
   isMongo: boolean;
   cache: Record<string, UserData>;
@@ -27,11 +29,6 @@ export default class UserStatsManager {
     { uri = global.Cassidy.config.MongoConfig?.uri } = {}
   ) {
     this.filePath = filePath;
-    this.defaults = {
-      money: 0,
-      exp: 0,
-      battlePoints: 0,
-    };
 
     this.#mongo = null;
     this.#uri = process.env[uri];
@@ -47,10 +44,29 @@ export default class UserStatsManager {
     this.cache = {};
   }
 
+  /**
+   * Immutable default user data.
+   * @readonly
+   */
+  get defaults() {
+    return {
+      money: 0,
+      exp: 0,
+      battlePoints: 0,
+      lastModified: Date.now(),
+    };
+  }
+
+  /**
+   * Updates the cache, self explanatory.
+   */
   updateCache(key: string, value: any) {
     this.cache[key] = value;
   }
 
+  /**
+   * Ensures uniform data.
+   */
   process(data: UserData, userID: string | number) {
     data ??= this.defaults;
     data.money ??= 0;
@@ -79,6 +95,10 @@ export default class UserStatsManager {
 
     return data;
   }
+
+  /**
+   * @deprecated - not useful anymore.
+   */
   calcMaxBalance(users: Record<string, UserData>, specificID: string) {
     const balances = Object.keys(users)
       .filter((id) => id !== specificID)
@@ -95,6 +115,9 @@ export default class UserStatsManager {
     return maxBalance;
   }
 
+  /**
+   * We need this
+   */
   async connect() {
     if (this.isMongo) {
       try {
@@ -113,6 +136,9 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Gets the cache of a user.
+   */
   async getCache(key: string): Promise<UserData> {
     if (!this.cache[key]) {
       await this.get(key);
@@ -121,6 +147,9 @@ export default class UserStatsManager {
     return JSON.parse(JSON.stringify(this.cache[key]));
   }
 
+  /**
+   * Calculates their money based on other factors (e.g. bank, lend amount, cheques, inventory cheques)
+   */
   extractMoney(userData: UserData): {
     money: number;
     total: number;
@@ -163,6 +192,9 @@ export default class UserStatsManager {
     };
   }
 
+  /**
+   * @deprecated - use getUser or getUsers
+   */
   async get(key: string): Promise<UserData> {
     if (this.isMongo) {
       const data = this.process(
@@ -185,6 +217,16 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Gets a single user data but does not change the fact that it uses the bulk one.
+   */
+  async getUser(key: string) {
+    return (await this.getUsers(key))[key];
+  }
+
+  /**
+   * Gets more than one user data (bulk)
+   */
   async getUsers<K extends readonly string[]>(
     ...keys: K
   ): Promise<Record<K[number], UserData>> {
@@ -207,6 +249,9 @@ export default class UserStatsManager {
     ) as Record<K[number], UserData>;
   }
 
+  /**
+   * Bye bye user.
+   */
   async deleteUser(key: string) {
     if (this.isMongo) {
       await this.#mongo.remove(key);
@@ -220,6 +265,9 @@ export default class UserStatsManager {
     delete this.cache[key];
   }
 
+  /**
+   * @deprecated - just do it yourself manually to save bandwidth
+   */
   async remove(
     key: string,
     removedProperties: string[] = []
@@ -248,6 +296,55 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Sets a user data based on a key value record, key is the user id. Returns a record too.
+   */
+  async setUsers(updatedUsers: Record<string, Nullable>) {
+    if (this.isMongo) {
+      const users = await this.getUsers(...Object.keys(updatedUsers));
+
+      const updatedData = Object.fromEntries(
+        Object.entries(updatedUsers).map(([key, updatedProperties]) => {
+          const updatedUser = {
+            ...(users[key] || this.defaults),
+            ...updatedProperties,
+            lastModified: Date.now(),
+          };
+          return [key, updatedUser];
+        })
+      );
+
+      await this.#mongo.bulkPut(updatedData);
+      Object.entries(updatedData).forEach(([key, user]) =>
+        this.updateCache(key, user)
+      );
+    } else {
+      const data = this.readMoneyFile();
+
+      for (const [key, updatedProperties] of Object.entries(updatedUsers)) {
+        if (data[key]) {
+          data[key] = {
+            ...data[key],
+            ...updatedProperties,
+            lastModified: Date.now(),
+          };
+        } else {
+          data[key] = {
+            ...this.defaults,
+            ...updatedProperties,
+            lastModified: Date.now(),
+          };
+        }
+        this.updateCache(key, data[key]);
+      }
+
+      this.writeMoneyFile(data);
+    }
+  }
+
+  /**
+   * @deprecated - use setUsers instead (it is also Object based, different syntax.)
+   */
   async set(key: string, updatedProperties: Nullable = {}) {
     if (this.isMongo) {
       const user = await this.get(key);
@@ -280,6 +377,9 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * @deprecated - use getAll
+   */
   async getAllOld(): Promise<Record<string, UserData>> {
     if (this.isMongo) {
       return await this.#mongo.toObject();
@@ -288,6 +388,9 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Gets the user data of all users as record. Use with caution, too large data and bandwidth, you can use getUsers if you only need some users.
+   */
   async getAll(): Promise<Record<string, UserData>> {
     const allData = await this.getAllOld();
 
@@ -302,10 +405,16 @@ export default class UserStatsManager {
     );
   }
 
+  /**
+   * Wrapper of KeyValue.find of mongoose schema, more precise and saves bandwidth
+   */
   query(filter: Parameters<typeof this.kv.find>) {
     return this.#mongo.query(filter);
   }
 
+  /**
+   * @deprecated - use mongodb
+   */
   readMoneyFile(): Record<string, UserData> {
     try {
       const jsonData = fs.readFileSync(this.filePath, "utf8");
@@ -316,6 +425,16 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Know if a user id exists without wasting so much bandwidth
+   */
+  exists(key: string) {
+    return this.#mongo.containsKey(key);
+  }
+
+  /**
+   * @deprecated - use mongodb
+   */
   writeMoneyFile(data: Record<string, UserData>) {
     try {
       const jsonData = JSON.stringify(data, null, 2);
@@ -325,6 +444,9 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * @deprecated - idk
+   */
   async toLeanObject() {
     if (!this.#mongo) {
       return this.getAll();
