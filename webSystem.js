@@ -422,6 +422,7 @@ export async function recordUser(userID = "wss:user", socket) {
 
     console.log(`New USER: ${userID}`);
     const meta = await fetchMeta(userID);
+    if (!global.handleStat) socket.close();
     const data = await global.handleStat.getCache(formatIP(userID));
 
     sendAllWS({
@@ -459,6 +460,7 @@ export async function deleteUser(userID) {
         console.log(`WebSocket already closed for user: ${userID}`);
       }
     }
+    if (!global.handleStat) return;
     const data = await global.handleStat.getCache(formatIP(userID));
     const meta = await fetchMeta(userID);
 

@@ -66,6 +66,9 @@ export default class UserStatsManager {
       });
       this.kv = this.#mongo.KeyValue;
     }
+    this.setUsers({ test: {} }).then(() => {
+      this.deleteUser("test");
+    });
 
     this.cache = {};
   }
@@ -266,11 +269,13 @@ export default class UserStatsManager {
   ): Promise<Record<K[number], UserData>> {
     let allData: [string, UserData][];
     if (this.isMongo) {
-      allData = await this.#mongo.bulkGet(...keys);
+      let s = await this.#mongo.bulkGetEntries(...keys);
+      allData = s;
     } else {
-      allData = Object.entries(this.readMoneyFile()).filter(([k]) =>
+      let s = Object.entries(this.readMoneyFile()).filter(([k]) =>
         keys.includes(k)
       );
+      allData = s;
     }
     return Object.fromEntries(
       allData.map(([key, userData]) => {
@@ -451,7 +456,10 @@ export default class UserStatsManager {
    */
   readMoneyFile(): Record<string, UserData> {
     try {
-      const jsonData = fs.readFileSync(this.filePath, "utf8");
+      const jsonData = fs.readFileSync(
+        process.cwd() + "/" + this.filePath,
+        "utf8"
+      );
       return JSON.parse(jsonData);
     } catch (error) {
       console.error("Error reading money data:", error);
@@ -472,7 +480,7 @@ export default class UserStatsManager {
   writeMoneyFile(data: Record<string, UserData>) {
     try {
       const jsonData = JSON.stringify(data, null, 2);
-      fs.writeFileSync(this.filePath, jsonData);
+      fs.writeFileSync(process.cwd() + "/" + this.filePath, jsonData);
     } catch (error) {
       console.error("Error writing money data:", error);
     }

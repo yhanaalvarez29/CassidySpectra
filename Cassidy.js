@@ -400,19 +400,18 @@ async function main() {
   } catch (err) {
     console.log(err);
   }
+  let awaitedMiddleware;
   const funcListen = async (err, event, extra = {}) => {
-    if (!willAccept) {
+    if (!willAccept || !awaitedMiddleware) {
       return;
     }
     if (err || !event) {
       logger(err, "FCA");
       return;
     }
+
     try {
-      const botMw = middleware({ allPlugins });
-      await (
-        await botMw
-      )({
+      awaitedMiddleware({
         api,
         event,
         commands,
@@ -439,6 +438,8 @@ async function main() {
   const pPro = loadPlugins(allPlugins);
 
   await pPro;
+  awaitedMiddleware = await middleware({ allPlugins });
+
   logger("Loading commands");
   const cPro = loadAllCommands();
   await cPro;

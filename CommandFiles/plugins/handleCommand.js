@@ -80,7 +80,6 @@ export async function use(obj) {
       command,
       invTime,
       GenericInfo,
-      moreAlias,
       Shop,
       popularCMD,
       recentCMD,
@@ -318,7 +317,7 @@ export async function use(obj) {
     if (handleArgs()) {
       return;
     }
-    const user = userState.get(senderID) || {};
+    const user = money.getCache(senderID) || {};
     if (user.isBanned) {
       if (isFn(banned)) {
         return await banned(obj);

@@ -72,6 +72,8 @@ declare global {
     GameSimulator: typeof GameSimulator;
     replyStystem?: ReplySystem;
     reactSystem?: ReactSystem;
+    threadsDB: UserStatsManager;
+    usersDB: UserStatsManager;
   }
 
   type CommandContext = CommandContextOG;

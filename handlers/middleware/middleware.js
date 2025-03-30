@@ -6,11 +6,22 @@
   DO NOT MODIFY.
 */
 import fs from "fs";
+import UserStatsManager, { init } from "../../handlers/database/handleStat";
 import axios from "axios";
 import { SymLock } from "../loaders/loadCommand.js";
 const recentCMD = {};
 const popularCMD = {};
-let queue = [];
+export let queue = [];
+
+/**
+ * @type {UserStatsManager}
+ */
+let handleStat;
+/**
+ * @type {UserStatsManager}
+ */
+let threadsDB;
+
 global.loadSymbols ??= new Map();
 
 const { loadSymbols } = global;
@@ -43,7 +54,7 @@ function delAwaitStack(id, key) {
 }
 
 function sortPlugin(allPlugins) {
-  queue = [];
+  queue.length = 0;
   for (const pluginName in allPlugins) {
     const plugin = allPlugins[pluginName];
     const { meta } = plugin;
@@ -55,49 +66,16 @@ function sortPlugin(allPlugins) {
   }
 }
 export async function middleware({ allPlugins }) {
-  /*const url =
-    "https://raw.githubusercontent.com/lianecagara/Cassidy-Public/main";
-  while (true) {
-    try {
-      const getSimilarity = (a, b) => similarity.compareTwoStrings(a, b);
-      const read = (fp, en = "utf-8", ...args) => {
-        try {
-          return fs.readFileSync(fp, en, ...args);
-        } catch {
-          return null;
-        }
-      };
-      const files = [
-        "Cassidy.js",
-        "index.js",
-        "spawner.js",
-        "utils.js",
-        "webSystem.js",
-        "CommandFiles/commands/system.ts",
-        "handlers/middleware/middleware.js",
-      ];
-      let problems = [];
-      for (const file of files) {
-        try {
-          const raw = await axios.get(`${url}/${file}`);
-          const current = read(file);
-          const rate = getSimilarity(raw.data, current);
-          if (rate < 0.9) {
-            throw `File ${file} has been inappropriately modified, please revert it back to original: ${url}/${file}`;
-          }
-        } catch (error) {
-          problems.push(typeof error === "object" ? error.message : error);
-        }
-      }
-      if (problems.length > 0) {
-        throw problems.join("\n");
-      }
-      break;
-    } catch (error) {
-      console.log(error);
-    }
-  }*/
+  handleStat = init();
+  threadsDB = init({
+    collection: "spectrathreads",
+    filepath: "handlers/database/threadsDB.json",
+  });
+  console.log(handleStat);
+  global.handleStat = handleStat;
+  await handleStat.connect();
   sortPlugin(allPlugins);
+  // console.log("PLUGIN QUEUE", queue);
   return handleMiddleWare;
 }
 
@@ -238,6 +216,9 @@ async function handleMiddleWare({
       }
     }
 
+    /**
+     * @type {CommandContext}
+     */
     const runObjects = {
       api: new Proxy(api || {}, {
         get(target, key) {
@@ -277,7 +258,6 @@ api.${key}(${args
       prefixes,
       allPlugins,
       queue,
-      next,
       command,
       origAPI: api,
       commandName,
@@ -299,6 +279,10 @@ api.${key}(${args
       },
       popularCMD,
       recentCMD,
+      usersDB: handleStat,
+      threadsDB,
+      money: handleStat,
+      userStat: handleStat,
     };
     runObjects.allObj = runObjects;
     let command2 =
@@ -337,64 +321,148 @@ api.${key}(${args
     runObjects.styler = styler;
 
     /*console.log({ ...event, participantIDs: "Hidden" });*/
-    async function next() {
-      pluginCount++;
-      const currentOrder = queue.findIndex(
-        (order) => order && order.length > 0
-      );
-      if (currentOrder !== -1) {
-        const currentPlugin = queue[currentOrder].shift();
-        try {
-          const { use, meta } = currentPlugin;
-          if (meta.name === "handleCommand") {
+
+    //     let allDataKeys = [];
+    //     async function next() {
+    //       pluginCount++;
+    //       const currentOrder = queue.findIndex(
+    //         (order) => order && order.length > 0
+    //       );
+    //       if (currentOrder !== -1) {
+    //         const currentPlugin = queue[currentOrder].shift();
+    //         try {
+    //           const { use, meta } = currentPlugin;
+    //           if (meta.name === "handleCommand") {
+    //             return next();
+    //           }
+    //           global.runner = runObjects;
+    //           let copyDataKeys = Object.keys({ ...runObjects });
+    //           await use(runObjects);
+    //           let dataKeys = Object.keys({ ...runObjects });
+
+    //           if (dataKeys.length !== copyDataKeys.length) {
+    //             const added = dataKeys.filter((key) => !copyDataKeys.includes(key));
+    //             allDataKeys.push(...added);
+
+    //             const removed = allDataKeys.filter(
+    //               (key) => !dataKeys.includes(key)
+    //             );
+
+    //             allDataKeys = allDataKeys.filter((key) => !removed.includes(key));
+
+    //             console.log(`[${meta.name} changed:]`, { added, removed });
+    //           }
+    //           return;
+    //         } catch (error) {
+    //           const { failSafe = [], meta } = currentPlugin ?? {};
+    //           for (const key of failSafe) {
+    //             runObjects[key] = new Proxy(() => {}, {
+    //               get(_, key) {
+    //                 return (...args) => {
+    //                   global.logger(
+    //                     `Warn: the ${key}(${args
+    //                       .map(
+    //                         (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
+    //                       )
+    //                       .join(",")}) has no effect!`
+    //                   );
+    //                 };
+    //               },
+    //               set() {
+    //                 return true;
+    //               },
+    //             });
+    //           }
+    //           console.log(error);
+    //           return next();
+    //         }
+    //       } else {
+    //         try {
+    //           const { use } = allPlugins.handleCommand;
+    //           await use({ ...runObjects, next: undefined });
+    //         } catch (error) {
+    //           console.log(error);
+    //         }
+    //       }
+    //     }
+    //     await runObjects.next();
+    //     const currentOrder = queue.findIndex((order) => order && order.length > 0);
+    //     if (currentOrder !== -1 && runObjects.safeCalls < 1) {
+    //       const { meta } = queue[currentOrder].shift();
+    //       /*console.warn(`⚠️ There are still plugins in the queue but t no response made!
+
+    // Suspicious Plugin: ${meta.name}
+    // Plugin Count: ${pluginCount}
+
+    // Remaining: ${queue.reduce((a, b) => a + b.length, 0)}
+    // Please check this plugin immediately!`);*/
+    //     }
+
+    // [new] Spectra Plugin Handling
+    for (const order of queue) {
+      if (!order) continue;
+      console.log("ORDER", order);
+      for (const currentPlugin of order) {
+        await new Promise(async (resolve) => {
+          const next = () => resolve(true);
+          runObjects.next = next;
+
+          try {
+            const { use, meta } = currentPlugin;
+            if (meta.name === "handleCommand") {
+              return next();
+            }
+            global.runner = runObjects;
+            let copyDataKeys = Object.keys({ ...runObjects });
+            await use(runObjects);
+            let dataKeys = Object.keys({ ...runObjects });
+
+            if (dataKeys.length !== copyDataKeys.length) {
+              const added = dataKeys.filter(
+                (key) => !copyDataKeys.includes(key)
+              );
+              allDataKeys.push(...added);
+
+              const removed = allDataKeys.filter(
+                (key) => !dataKeys.includes(key)
+              );
+
+              allDataKeys = allDataKeys.filter((key) => !removed.includes(key));
+
+              console.log(`[${meta.name} changed:]`, { added, removed });
+            }
+            return;
+          } catch (error) {
+            const { failSafe = [], meta } = currentPlugin ?? {};
+            for (const key of failSafe) {
+              runObjects[key] = new Proxy(() => {}, {
+                get(_, key) {
+                  return (...args) => {
+                    global.logger(
+                      `Warn: the ${key}(${args
+                        .map(
+                          (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
+                        )
+                        .join(",")}) has no effect!`
+                    );
+                  };
+                },
+                set() {
+                  return true;
+                },
+              });
+            }
+            console.log(error);
             return next();
           }
-          global.runner = runObjects;
-          await use(runObjects);
-          return;
-        } catch (error) {
-          const { failSafe = [], meta } = currentPlugin ?? {};
-          for (const key of failSafe) {
-            runObjects[key] = new Proxy(() => {}, {
-              get(_, key) {
-                return (...args) => {
-                  global.logger(
-                    `Warn: the ${key}(${args
-                      .map(
-                        (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
-                      )
-                      .join(",")}) has no effect!`
-                  );
-                };
-              },
-              set() {
-                return true;
-              },
-            });
-          }
-          console.log(error);
-          return next();
-        }
-      } else {
-        try {
-          const { use } = allPlugins.handleCommand;
-          await use({ ...runObjects, next: undefined });
-        } catch (error) {
-          console.log(error);
-        }
+        });
       }
     }
-    await runObjects.next();
-    const currentOrder = queue.findIndex((order) => order && order.length > 0);
-    if (currentOrder !== -1 && runObjects.safeCalls < 1) {
-      const { meta } = queue[currentOrder].shift();
-      /*console.warn(`⚠️ There are still plugins in the queue but t no response made!
-
-Suspicious Plugin: ${meta.name}
-Plugin Count: ${pluginCount}
-
-Remaining: ${queue.reduce((a, b) => a + b.length, 0)}
-Please check this plugin immediately!`);*/
+    try {
+      const { use } = allPlugins.handleCommand;
+      await use({ ...runObjects, next: undefined });
+    } catch (error) {
+      console.log(error);
     }
     global.logger(`All ${pluginCount} plugins have been handled!`);
   } catch (error) {

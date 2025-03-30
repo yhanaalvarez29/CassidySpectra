@@ -1,3 +1,4 @@
+// EVERYTHING HERE IS DEPRECATED!
 export const meta = {
   name: "userStat",
   author: "Liane Cagara",
@@ -169,8 +170,6 @@ import CurrencyHandler from "../resources/balance/utils.js";
 import BankHandler from "../resources/bank/utils.js";
 
 import GenericInfo from "../resources/generic/utils.js";
-let handleStat;
-import { init } from "../../handlers/database/handleStat";
 
 import GenericOnline from "../resources/genericOnline/utils.js";
 const userState = new GenericInfo({
@@ -217,19 +216,7 @@ const threadState = new GenericInfo({
 });
 let userInfos;
 
-export async function load() {
-  // UserStatsManager = (
-  //   await global.requireEsm("./handlers/database/handleStat.ts")
-  // ).default;
-  handleStat = init();
-  global.handleStat = handleStat;
-  await handleStat.connect();
-  //await userInfos.connectMongo();
-}
-
 export async function use(obj) {
-  //await threadState.connect();
-  //await userState.connect();
   obj.CassEncoder = CassEncoder;
   userInfos = new UserInfo({
     filepath: "CommandFiles/resources/userInfo/userInfo.json",
@@ -265,5 +252,6 @@ export async function use(obj) {
   });
 
   obj.userStat = obj.money;
+
   obj.next();
 }
