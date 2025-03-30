@@ -24,8 +24,11 @@ export function emojiEnd(str) {
     .trim()
     .replaceAll("|", "");
 
+  const resOld =
+    nonEmojis + " " + UNISpectra.nextArrow + "" + (emojis ? " " + emojis : "");
+
   const res =
-    nonEmojis + " " + UNIRedux.charm + "" + (emojis ? " " + emojis : "");
+    (emojis ? " " + emojis : "") + UNISpectra.nextArrow + " " + nonEmojis;
 
   console.log(str, " => ", res);
   return res;
