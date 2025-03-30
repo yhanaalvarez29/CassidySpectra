@@ -258,7 +258,9 @@ export default class UserStatsManager {
    * Gets a single user data but does not change the fact that it uses the bulk one.
    */
   async getUser(key: string) {
-    return (await this.getUsers(key))[key];
+    const users = await this.getUsers(key);
+
+    return users[key];
   }
 
   /**
@@ -278,7 +280,11 @@ export default class UserStatsManager {
       allData = s;
     }
     return Object.fromEntries(
-      allData.map(([key, userData]) => {
+      keys.map((keyx: string) => {
+        const [key, userData] = allData.find((i) => i[0] === keyx) ?? [
+          keyx,
+          { ...this.defaults },
+        ];
         const clean = this.process(
           userData || { ...this.defaults, lastModified: Date.now() },
           key
@@ -382,7 +388,7 @@ export default class UserStatsManager {
   }
 
   /**
-   * @deprecated - use setUsers instead (it is also Object based, different syntax.)
+   * Sets or overrides new properties of a user data
    */
   async set(key: string, updatedProperties: Nullable = {}) {
     if (this.isMongo) {
