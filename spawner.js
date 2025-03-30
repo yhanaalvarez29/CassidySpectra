@@ -184,9 +184,10 @@ const stackFrameReg = [
           ? getFilePreview(fileName, lineNo)
           : "[No preview available]\n";
 
-      return `#${
-        index + 1
-      }  ${funcName}()  ${fileName} [${lineNo}:${colNo}]${filePreview}`;
+      return `#${index + 1}  ${funcName}()  ${fileName.replace(
+        process.cwd(),
+        "."
+      )} [${lineNo}:${colNo}]${filePreview}`;
     },
   },
   {
@@ -202,7 +203,10 @@ const stackFrameReg = [
 
       return `#${
         index + 1
-      }  eval()  [Evaluated Code] at ${entryFunc} (${entryFile} [${entryLine}:${entryCol}]), <anonymous> [${evalLine}:${evalCol}]`;
+      }  eval()  [Evaluated Code] at ${entryFunc} (${entryFile.replace(
+        process.cwd(),
+        "."
+      )} [${entryLine}:${entryCol}]), <anonymous> [${evalLine}:${evalCol}]`;
     },
   },
 ];
