@@ -6,7 +6,7 @@
  */
 import { Box } from "fca-liane-utils";
 export { Box };
-import Liane from 'fca-liane-utils';
+import Liane from "fca-liane-utils";
 
 export const meta = {
   name: "liane-box",
@@ -17,6 +17,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 1,
   type: "plugin",
+  expect: ["Box", "Liane", "box"],
 };
 
 export async function use(obj) {
@@ -25,5 +26,3 @@ export async function use(obj) {
   obj.box = new Box(obj.api, obj.event);
   obj.next();
 }
-
-

@@ -6,6 +6,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 2,
   type: "plugin",
+  expect: ["ShopClass"],
 };
 
 export class ShopClass {

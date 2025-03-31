@@ -18,6 +18,7 @@ export const meta = {
   order: 1,
   IMPORTANT: true,
   type: "plugin",
+  expect: ["censor", "args", "input"],
 };
 
 /**

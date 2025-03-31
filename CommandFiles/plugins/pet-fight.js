@@ -6,6 +6,17 @@ export const meta = {
   supported: "^1.0.0",
   order: 1,
   type: "plugin",
+  extra: [
+    "PetPlayer",
+    "GearsManage",
+    "GearData",
+    "WildPlayer",
+    "Quest",
+    "elementalMapping",
+    "ElementalChild",
+    "ElementalChilds",
+    "elementalPets",
+  ],
 };
 const elementalMapping = {
   Fire: {

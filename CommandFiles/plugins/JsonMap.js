@@ -9,6 +9,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 1,
   type: "plugin",
+  expect: ["JsonMap"],
 };
 export class JsonMap extends Map {
   constructor(filepath) {
@@ -61,4 +62,3 @@ export async function use(obj) {
   obj.JsonMap = JsonMap;
   obj.next();
 }
-

@@ -7,6 +7,21 @@ export const meta = {
   supported: "^1.0.0",
   order: 1,
   type: "plugin",
+  expect: [
+    "TagParser",
+    "Slicer",
+    "ArgsHelper",
+    "CommandProperty",
+    "Attachment",
+    "MessageEditor",
+    "MsgEditor",
+    "Editor",
+    "ItemPrompt",
+    "GameSimulator",
+    "isTimeAvailable",
+    "BulkUpdater",
+    "ItemLister",
+  ],
 };
 import axios from "axios";
 import fs from "fs";

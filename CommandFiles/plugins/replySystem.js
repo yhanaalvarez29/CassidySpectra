@@ -7,6 +7,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 10,
   type: "plugin",
+  expect: ["replySystem"],
 };
 global.currData = {};
 
@@ -79,7 +80,7 @@ export async function use(obj) {
         console.log(keys);
       }
     });
-  }
+  };
   obj.output.waitForReply = async (body, callback) => {
     return new Promise(async (resolve, reject) => {
       const { replySystem } = obj;

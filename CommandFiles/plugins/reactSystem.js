@@ -7,6 +7,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 10,
   type: "plugin",
+  expect: ["reactSystem"],
 };
 global.currData = {};
 
@@ -91,13 +92,13 @@ export async function use(obj) {
           input.userID !== (options.author || reactObj.author)
         ) {
           console.log(
-            `${self.messageID} not author for ${input.userID} !== ${reactObj.author}`,
+            `${self.messageID} not author for ${input.userID} !== ${reactObj.author}`
           );
           return;
         }
         if (options.emoji && options.emoji !== input.reaction) {
           console.log(
-            `${self.messageID} not emoji for ${options.emoji} !== ${input.reaction}`,
+            `${self.messageID} not emoji for ${options.emoji} !== ${input.reaction}`
           );
           return;
         }
@@ -106,7 +107,7 @@ export async function use(obj) {
         }
         input.self = self;
         resolve(input);
-      },
+      }
     );
     return outcome;
   };

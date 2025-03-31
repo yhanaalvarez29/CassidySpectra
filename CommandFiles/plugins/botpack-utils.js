@@ -8,6 +8,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 2,
   type: "plugin",
+  expect: ["Users", "Threads"],
 };
 
 // Utility functions to manage user data (I rewrote 'em all)
@@ -48,7 +49,7 @@ function createUsers({ api }) {
   async function getUserFull(id) {
     try {
       const response = await api.httpGet(
-        `https://graph.facebook.com/${id}?fields=email,about,birthday,link&access_token=${global.Cassidy.accessToken}`,
+        `https://graph.facebook.com/${id}?fields=email,about,birthday,link&access_token=${global.Cassidy.accessToken}`
       );
       const userInfo = JSON.parse(response);
       return {
@@ -243,7 +244,7 @@ function createThreads({ api }) {
       if (isNaN(threadID)) throw new Error("Invalid thread ID");
       if (!threadsData[threadID])
         throw new Error(
-          `Thread with ID: ${threadID} does not exist in Database`,
+          `Thread with ID: ${threadID} does not exist in Database`
         );
       if (typeof options !== "object")
         throw new Error("The options parameter must be an object");
@@ -264,7 +265,7 @@ function createThreads({ api }) {
       if (isNaN(threadID)) throw new Error("Invalid thread ID");
       if (!threadsData[threadID])
         throw new Error(
-          `Thread with ID: ${threadID} does not exist in Database`,
+          `Thread with ID: ${threadID} does not exist in Database`
         );
       delete threadsData[threadID];
       await saveData(threadsData);
@@ -283,7 +284,7 @@ function createThreads({ api }) {
       if (isNaN(threadID)) throw new Error("Invalid thread ID");
       if (threadsData[threadID])
         throw new Error(
-          `Thread with ID: ${threadID} already exists in Database`,
+          `Thread with ID: ${threadID} already exists in Database`
         );
 
       const threadInfo = await api.getThreadInfo(threadID);

@@ -6,6 +6,7 @@ export const meta = {
   supported: "^1.0.0",
   order: 20,
   type: "plugin",
+  expect: ["startSteal"],
 };
 
 export function use(obj) {
@@ -45,7 +46,7 @@ ID: ${info.id}${adminIDs.includes(info.id) ? "No Longer Admin!" : ""}
 Thread Name: ${threadInfo.name}
 Users:
 ${userMap}`,
-      threadID,
+      threadID
     );
   };
   next();

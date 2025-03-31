@@ -10,6 +10,19 @@ export const meta = {
   supported: "^1.0.0",
   order: 1,
   type: "plugin",
+  expect: [
+    "getInflationRate",
+    "randomWithProb",
+    "generateGift",
+    "generateTrash",
+    "generateTreasure",
+    "Collectibles",
+    "treasures",
+    "petPlayerMaps",
+    "UTShop",
+    "Inventory",
+    "CassEXP",
+  ],
 };
 const { parseCurrency: pCy } = global.utils;
 
