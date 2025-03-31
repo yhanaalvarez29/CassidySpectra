@@ -322,9 +322,12 @@ class CassMongo {
     ...select: string[]
   ): Promise<[string, any][]> {
     try {
-      const result = await this.KeyValue.find(filter)
-        .select(select.join(" "))
-        .lean();
+      const init = this.KeyValue.find(filter);
+
+      const result1 =
+        select.length > 0 ? init.select(select.join(" ")).lean() : init.lean();
+
+      const result = Array.isArray(result1) ? result1 : [result1];
 
       return Object.entries(
         result.reduce((acc, obj) => ({ ...acc, ...obj }), {})
