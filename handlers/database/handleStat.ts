@@ -328,6 +328,7 @@ export default class UserStatsManager {
           userData || { ...this.defaults, lastModified: Date.now() },
           key
         );
+        this.updateCache(key, clean);
         return [key, clean];
       })
     ) as Record<K[number], UserData>;
