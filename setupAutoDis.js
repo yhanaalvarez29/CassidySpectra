@@ -6,6 +6,10 @@ const axios = require("axios").default;
 const settings = JSON.parse(fs.readFileSync("settings.json", "utf8"));
 const { discordBotToken, discordClientID } = settings;
 
+if (!discordBotToken || !discordClientID) {
+  process.exit(69);
+}
+
 function convertDiscordEvent(discordMessage) {
   let event = {};
 

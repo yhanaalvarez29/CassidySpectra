@@ -26,6 +26,9 @@ function runChildProcess() {
   });
 
   child.on("close", (code) => {
+    if (code === 69) {
+      return;
+    }
     console.log(`Cassidy exited with code ${code}`);
     if (code === 3 || code === 134) {
       console.log("Recalling Cassidy...");
@@ -51,6 +54,9 @@ function runChildProcess2() {
   });
 
   child.on("close", (code) => {
+    if (code === 69) {
+      return;
+    }
     console.log(`Discord exited with code ${code}`);
     if (code === 3 || code === 134) {
       console.log("Recalling Discord...");
