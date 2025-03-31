@@ -107,8 +107,8 @@ export class UNIRedux {
   static restart = "⟳";
   static arrowOutline = "➩";
 
-  static reduxMark = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] **2.5** ${this.charm}\n[font=fancy_italic]Not React, Just Smart Chat![:font=fancy_italic]`;
-  static redux = `🌌 **Cassidy**[font=double_struck]Redux[:font=double_struck] ${this.charm}`;
+  static reduxMark = `🌌 [OLD] **Cassidy**[font=double_struck]Redux[:font=double_struck]  ${this.charm}\n[font=fancy_italic]Not React, Just Smart Chat![:font=fancy_italic]`;
+  static redux = `🌌 [OLD] **Cassidy**[font=double_struck]Redux[:font=double_struck] ${this.charm}`;
 }
 
 export class UNISpectra {
@@ -182,7 +182,7 @@ export class UNISpectra {
   static arrowOutline = "➩";
 
   static spectraMark = `${this.spectra} ${this.charm}\n[font=fancy_italic]Simplicity, and Innovation.[:font=fancy_italic]`;
-  static spectra = `☄️🪐 [font=fancy]Cass${this.nextArrow}dy[font=fancy][font=bold]Spectra[:font=bold]`;
+  static spectra = `☄️🪐 [font=redux]Cass${this.nextArrow}dy[:font=redux][font=bold]Spectra[:font=bold]`;
 }
 
 export const fontMarkups = new Proxy(

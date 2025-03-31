@@ -64,7 +64,7 @@ export async function use(obj) {
     // console.log(cutLatest);
 
     const myRecent = recentCMD[input.senderID] ?? [];
-    output.reply(`${UNIRedux.redux}
+    output.reply(`${global.Cassidy.logo}
 ${UNIRedux.standardLine}
 ✨ | **System Prefix:** [ ${prefix} ]
 🌠 | **Other Prefixes:** [ ${prefixes.slice(1).join(", ")} ]
