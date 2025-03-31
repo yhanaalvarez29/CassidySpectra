@@ -347,6 +347,7 @@ api.${key}(${args
 
     // [new] Spectra Plugin Handling
     let allDataKeys = [];
+    const symbolSkip = Symbol("skip");
     for (const order of queue) {
       if (!order) continue;
       for (const currentPlugin of order) {
