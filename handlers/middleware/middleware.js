@@ -364,6 +364,7 @@ api.${key}(${args
             let copyDataKeys = Object.keys({ ...runObjects });
             await use(runObjects);
             let dataKeys = Object.keys({ ...runObjects });
+            pluginCount++;
 
             if (dataKeys.length !== copyDataKeys.length) {
               const added = dataKeys.filter(
