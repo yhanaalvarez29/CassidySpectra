@@ -32,18 +32,22 @@ const configs: Config[] = [
     description: "View the current prefix",
     aliases: ["-v", "show"],
     icon: "👀",
-    async handler({ output, prefix, prefixes, threadsDB, input, commandName }) {
+    async handler(
+      { output, prefix, prefixes, threadsDB, input, commandName },
+      { itemList }
+    ) {
       const currentPrefix = prefix;
       const { threadPrefix } = await threadsDB.getUser(input.threadID);
 
       output.reply(
-        `${UNIRedux.arrow} ***Current Prefix***:\n${currentPrefix}\n\n` +
-          `${UNIRedux.arrowFromT} ***Extra Prefixes***:\n[ ${prefixes.join(
+        `${UNIRedux.charm} **Current Prefix**:\n${currentPrefix}\n\n` +
+          `${UNIRedux.arrowFromT} **Extra Prefixes**:\n[ ${prefixes.join(
             ", "
           )} ]\n\n` +
           (threadPrefix
-            ? `${UNIRedux.arrowFromT} ***Custom Prefix***:\n${threadPrefix}\n\n`
+            ? `${UNIRedux.arrowFromT} **Custom Prefix**:\n${threadPrefix}\n\n`
             : "") +
+          `${UNIRedux.arrow} ***All Options***:\n\n${itemList}\n\n` +
           `Use **${currentPrefix}${commandName}-set [newPrefix]** to set a custom prefix.`
       );
     },
