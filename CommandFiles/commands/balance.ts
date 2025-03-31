@@ -1,6 +1,5 @@
 import { SpectralCMDHome, CassCheckly, Config } from "@cassidy/spectral-home";
 import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
-
 import utils from "@cassidy/utils";
 
 export const meta: CassidySpectra.CommandMeta = {

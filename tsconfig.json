@@ -33,7 +33,11 @@
       "@cassidy/spectral-home": ["./CommandFiles/modules/spectralCMDHome"],
       "@cassidy/redux-home": ["./CommandFiles/modules/reduxCMDHome"],
       "@cassidy/ut-shop": ["./CommandFiles/plugins/ut-shop.js"],
-      "@cassidy/utils": ["./utils-path"]
+      "@cassidy/utils": ["./utils-path"],
+      "@cass-modules/*": ["./CommandFiles/modules/*"],
+      "@cass-plugins/*": ["./CommandFiles/plugins/*"],
+      "@cass-commands/*": ["./CommandFiles/commands/*"],
+      "@cassidy/styler": ["./handlers/styler.js/main.js"]
     }
   },
   "exclude": ["node_modules"],
