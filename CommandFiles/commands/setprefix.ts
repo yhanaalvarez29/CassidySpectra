@@ -67,8 +67,8 @@ const configs: Config[] = [
         regex: /^[^\s]{1,5}$/,
       },
     ]),
-    async handler({ input, output, prefix, threadsDB }) {
-      const newPrefix = input.arguments[0];
+    async handler({ input, output, prefix, threadsDB }, { spectralArgs }) {
+      const newPrefix = spectralArgs[0];
 
       try {
         await threadsDB.set(input.threadID, { threadPrefix: newPrefix });
