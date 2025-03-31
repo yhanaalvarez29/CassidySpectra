@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { ReduxCMDHome } from "@cassidy/redux-home";
 
 export const meta = {
   name: "cheque",
@@ -10,7 +10,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   waitingTime: 1,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💰",
 };
 

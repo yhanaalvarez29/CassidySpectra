@@ -12,7 +12,7 @@ export const meta = {
   whiteList: null,
   noWeb: true,
   ext_plugins: {},
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💗",
 };
 

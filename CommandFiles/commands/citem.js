@@ -10,7 +10,7 @@ export const meta = {
   waitingTime: 1,
   otherNames: ["customitem"],
   shopPrice: 200000,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🛠️",
 };
 

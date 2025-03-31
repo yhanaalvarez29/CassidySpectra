@@ -7,7 +7,7 @@ export const meta = {
   category: "Finance",
   noPrefix: "both",
   otherNames: ["cexpress", "cbank", "bank"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💵",
   requiredLevel: 5,
 };

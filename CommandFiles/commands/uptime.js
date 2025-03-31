@@ -9,7 +9,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 5,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🌏",
 };
 import os from "os";

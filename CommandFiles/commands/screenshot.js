@@ -8,7 +8,7 @@ export const meta = {
   permissions: [2],
   noPrefix: "both",
   waitingTime: 0,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   otherNames: ["ss"],
   icon: "📸",
   noLevelUI: true,

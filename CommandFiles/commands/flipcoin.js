@@ -11,7 +11,7 @@ module.exports = {
     waitingTime: 55,
     noPrefix: "both",
     shopPrice: 2500,
-    requirement: "2.5.0",
+    requirement: "3.0.0",
     icon: "🪙",
     category: "Gambling Games",
   },

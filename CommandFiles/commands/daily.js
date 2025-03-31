@@ -1,4 +1,4 @@
-import { UNIRedux } from "../modules/unisym.js";
+import { UNIRedux } from "@cassidy/unispectra";
 
 export const meta = {
   name: "daily",
@@ -8,7 +8,7 @@ export const meta = {
   category: "Rewards",
   permissions: [0],
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💎",
 };
 export const style = {

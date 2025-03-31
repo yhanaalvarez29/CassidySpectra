@@ -8,7 +8,7 @@ export const meta = {
   version: "1.0.1",
   params: [["gen", "inbox"]],
   shopPrice: 100,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "📩",
   category: "Utilities",
 };

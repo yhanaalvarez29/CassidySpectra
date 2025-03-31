@@ -9,7 +9,7 @@ export const meta = {
   permissions: [0],
   cooldown: 10,
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "📝",
 };
 const prize = 70;

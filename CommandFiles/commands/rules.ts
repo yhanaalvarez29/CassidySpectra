@@ -1,5 +1,5 @@
 import { SpectralCMDHome, Config } from "../modules/spectralCMDHome";
-import { UNIRedux, UNISpectra } from "../modules/unisym.js";
+import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "rules",

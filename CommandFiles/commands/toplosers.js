@@ -6,7 +6,7 @@ export const meta = {
   noPrefix: "both",
   permissions: [0, 1, 2],
   waitingTime: 3,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🤣",
   category: "Utilities",
 };

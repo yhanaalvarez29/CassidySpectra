@@ -5,7 +5,7 @@ import {
   ObjectX,
   removeCommandAliases,
   UNIRedux,
-} from "../modules/unisym.js";
+} from "@cassidy/unispectra";
 
 export const meta = {
   name: "prefix",

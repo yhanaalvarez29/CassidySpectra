@@ -1,5 +1,5 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
-import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
+import { ReduxCMDHome } from "@cassidy/redux-home";
+import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
 
 export const meta = {
   name: "donate",
@@ -25,7 +25,7 @@ function isValidAmount(amount) {
 }
 
 /**
- * @type {import("../modules/reduxCMDHome").Config[]}
+ * @type {import("@cassidy/redux-home").Config[]}
  */
 const configs = [
   {

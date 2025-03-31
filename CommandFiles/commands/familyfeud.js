@@ -1,7 +1,7 @@
 import fs from "fs";
 import stringSimilarity from "string-similarity";
 import { translate } from "@vitalets/google-translate-api";
-import { clamp, UNIRedux } from "../modules/unisym.js";
+import { clamp, UNIRedux } from "@cassidy/unispectra";
 
 export const meta = {
   name: "familyfeud",
@@ -12,7 +12,7 @@ export const meta = {
   category: "Puzzle Games",
   usage: "{prefix}{name}",
   otherNames: ["ff", "feud"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🔎",
 };
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { ReduxCMDHome } from "@cassidy/redux-home";
 
 export const meta = {
   name: "api",
@@ -12,7 +12,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["devapi", "cassapi"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💻",
 };
 

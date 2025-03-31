@@ -13,7 +13,7 @@ export const meta = {
   icon: "🌪️",
   shopPrice: 2500,
   requiredLevel: 10,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
 };
 
 const outcomes = [

@@ -10,7 +10,7 @@ const originalRequire = createRequire(__filename);
 originalRequire.extensions = { ...originalExt };
 
 global.originalRequire = originalRequire;
-// imma modify some require extensions :)
+
 const fs = require("fs-extra");
 const { execSync } = require("child_process");
 const path = require("path");
@@ -55,7 +55,6 @@ require.url = async function (url) {
   }
 };
 
-// Function to check if a package is installed
 function isPackageInstalled(packageName) {
   try {
     const packagePath = path.join("node_modules", packageName);
@@ -88,27 +87,10 @@ require.ensure = function (moduleName) {
     return ensureNPM(moduleName);
   }
 };
-/*
-const originalRequire = require;
-const requireProxy = {
-  apply(target, thisArg, argumentsList) {
-    if (argumentsList[0] && !argumentsList[0].startsWith(".")) {
-      ensureNPM(argumentsList[0]);
-    }
-    console.log("Module required:", argumentsList[0]);
 
-    const requiredModule = Reflect.apply(target, thisArg, argumentsList);
-
-    return requiredModule;
-  },
-};
-
-require = new Proxy(originalRequire, requireProxy);
-*/
-// console.log(Error.prepareStackTrace.toString());
-
-// finally execute main file :)
 require("ts-node").register();
+
+require("tsconfig-paths").register();
 
 const { secureRandom } = require("./CommandFiles/modules/unisym");
 

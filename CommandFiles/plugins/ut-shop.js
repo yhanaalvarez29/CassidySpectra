@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { CassEXP } from "../modules/cassEXP.js";
-import { clamp } from "../modules/unisym.js";
+import { clamp } from "@cassidy/unispectra";
 
 export const meta = {
   name: "ut-shop",

@@ -1,5 +1,5 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
-import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
+import { ReduxCMDHome } from "@cassidy/redux-home";
+import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
 
 export const meta = {
   name: "cash",
@@ -21,8 +21,8 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 0,
-  requirement: "2.5.0",
-  requirement: "2.5.0",
+  requirement: "3.0.0",
+  requirement: "3.0.0",
   icon: "💵",
 };
 
@@ -113,7 +113,7 @@ function totalReducer(totalObj) {
 const { parseCurrency: pCy } = global.utils;
 
 /**
- * @type {Array<import("../modules/reduxCMDHome").Config>}
+ * @type {Array<import("@cassidy/redux-home").Config>}
  */
 const configs = [
   {

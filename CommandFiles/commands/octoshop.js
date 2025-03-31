@@ -9,7 +9,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["krakenshop", "deepstore"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🐙",
 };
 export async function entry({ UTShop }) {

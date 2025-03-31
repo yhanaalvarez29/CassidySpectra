@@ -5,7 +5,7 @@ import {
   removeCommandAliases,
   toTitleCase,
   UNIRedux,
-} from "../modules/unisym.js";
+} from "@cassidy/unispectra";
 import { ShopClass } from "../plugins/shopV2.js";
 
 export const meta = {
@@ -17,8 +17,8 @@ export const meta = {
   usage: "{prefix}{name} [commandName]",
   category: "System",
   permissions: [0],
-  requirement: "2.5.0",
-  requirement: "2.5.0",
+  requirement: "3.0.0",
+  requirement: "3.0.0",
   icon: "🧰",
 };
 export async function entry({

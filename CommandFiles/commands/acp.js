@@ -10,7 +10,7 @@ export const meta = {
   description: "accept users",
   category: "Utilities",
   allowModerators: true,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   noPrefix: false,
   icon: "💗",
 };

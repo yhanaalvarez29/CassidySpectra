@@ -1,4 +1,4 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { ReduxCMDHome } from "@cassidy/redux-home";
 
 export const meta = {
   name: "admin",
@@ -8,7 +8,7 @@ export const meta = {
   description: "Manage admins.",
   usage: "admin[prop] [command]",
   permissions: [0, 1, 2],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "",
   category: "User Management",
 };

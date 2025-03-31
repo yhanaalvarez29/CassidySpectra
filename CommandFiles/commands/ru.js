@@ -6,7 +6,7 @@ export const meta = {
   description: "Russian Roulette game with betting mechanics!",
   category: "Risk Games",
   usage: "{prefix}{name} <bet>",
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🎲",
   otherNames: ["ru"],
 };

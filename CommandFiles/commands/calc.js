@@ -10,7 +10,7 @@ export const meta = {
   category: "Utilities",
   usage: "{p}calc 20*20",
   params: [true],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💻",
 };
 export const style = {

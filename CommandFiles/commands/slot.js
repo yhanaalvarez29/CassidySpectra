@@ -11,7 +11,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 30,
   shopPrice: 1000,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🍒",
 };
 const { randArrValue } = global.utils;

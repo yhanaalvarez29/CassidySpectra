@@ -6,7 +6,7 @@
 */
 
 import { CassEXP } from "../modules/cassEXP.js";
-import { UNIRedux } from "../modules/unisym.js";
+import { UNIRedux } from "@cassidy/unispectra";
 
 export const meta = {
   name: "output",

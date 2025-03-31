@@ -87,7 +87,7 @@ export const meta = {
   waitingTime: 1,
   noPrefix: false,
   otherNames: ["fishing", "catch"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🎣",
   requiredLevel: 3,
 };

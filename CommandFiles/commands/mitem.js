@@ -9,7 +9,7 @@ export const meta = {
   waitingTime: 1,
   otherNames: ["makeitem"],
   botAdmin: true,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🛠️",
 };
 

@@ -10,7 +10,7 @@ export const meta = {
   otherNames: ["doubleorlose", "riskitall", "doubleornothing", "don"],
   waitingTime: 30,
   shopPrice: 50000,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💥",
 };
 

@@ -9,7 +9,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["temshop", "temstore", "temmie"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🍣",
 };
 

@@ -11,7 +11,7 @@ export const meta = {
   permissions: [2],
   botAdmin: true,
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💻",
   waitingTime: 0.01,
   category: "Utilities",

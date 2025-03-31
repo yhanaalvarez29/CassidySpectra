@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: false,
   otherNames: [],
   shopPrice: 40,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🍽️",
 };
 

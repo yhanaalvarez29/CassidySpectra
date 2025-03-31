@@ -1,5 +1,5 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
-import { UNIRedux } from "../modules/unisym.js";
+import { ReduxCMDHome } from "@cassidy/redux-home";
+import { UNIRedux } from "@cassidy/unispectra";
 import { GearsManage, PetPlayer } from "../plugins/pet-fight.js";
 import { Collectibles, Inventory } from "../plugins/ut-shop.js";
 import {
@@ -20,7 +20,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["inv", "items"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🎒",
 };
 

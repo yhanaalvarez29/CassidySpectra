@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: false,
   otherNames: ["skeletonshop", "funnystore"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🕊️",
   requiredLevel: 7,
 };

@@ -1,4 +1,4 @@
-import { UNIRedux } from "../modules/unisym.js";
+import { UNIRedux } from "@cassidy/unispectra";
 import { Slicer } from "../plugins/utils-liane.js";
 export const meta = {
   name: "intellnica",
@@ -11,7 +11,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["intell", "nicaint"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "✨",
   shopPrice: 1_000_000,
 };

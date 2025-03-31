@@ -8,7 +8,7 @@ export const meta = {
   category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🪄",
   otherNames: ["wizardf"],
   shopPrice: 1000000,

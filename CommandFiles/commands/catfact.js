@@ -7,7 +7,7 @@ export const meta = {
   version: "1.0.1",
   permissions: [0],
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🐱",
 };
 

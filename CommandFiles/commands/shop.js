@@ -1,6 +1,6 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { ReduxCMDHome } from "@cassidy/redux-home";
 import { stoData } from "../modules/stoData.js";
-import { toTitleCase, UNIRedux } from "../modules/unisym.js";
+import { toTitleCase, UNIRedux } from "@cassidy/unispectra";
 import { ShopClass } from "../plugins/shopV2.js";
 
 export const meta = {
@@ -13,7 +13,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   otherNames: [],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🛒",
   requiredLevel: 3,
 };

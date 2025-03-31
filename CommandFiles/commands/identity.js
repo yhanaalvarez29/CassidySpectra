@@ -1,5 +1,5 @@
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
-import { UNIRedux } from "../modules/unisym.js";
+import { ReduxCMDHome } from "@cassidy/redux-home";
+import { UNIRedux } from "@cassidy/unispectra";
 import { PasteClient } from "pastebin-api";
 
 export const meta = {
@@ -15,7 +15,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 5,
   otherNames: ["id", "users"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💬",
 };
 

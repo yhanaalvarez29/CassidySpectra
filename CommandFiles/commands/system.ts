@@ -16,7 +16,7 @@ export const meta: { [key: string]: any } = {
   botAdmin: true,
   allowModerators: true,
   waitingTime: 1,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💽",
   category: "System",
 };

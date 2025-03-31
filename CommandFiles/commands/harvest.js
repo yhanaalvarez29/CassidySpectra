@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: "both",
   otherNames: ["plant"],
   shopPrice: 100,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🌾",
 };
 

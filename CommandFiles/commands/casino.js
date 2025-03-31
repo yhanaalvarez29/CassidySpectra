@@ -34,7 +34,7 @@ export const meta = {
   waitingTime: 15,
   otherNames: ["cas", "cs"],
   shopPrice: 100000,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🎲",
   requiredLevel: 3,
 };

@@ -1,4 +1,4 @@
-import { UNIRedux } from "../modules/unisym.js";
+import { UNIRedux } from "@cassidy/unispectra";
 import { Slicer } from "../plugins/utils-liane.js";
 
 export const meta = {
@@ -13,7 +13,7 @@ export const meta = {
   noPrefix: false,
   waitingTime: 1,
   otherNames: ["ndrive"],
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "💾",
 };
 

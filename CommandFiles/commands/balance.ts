@@ -1,9 +1,7 @@
-import {
-  SpectralCMDHome,
-  CassCheckly,
-  Config,
-} from "../modules/spectralCMDHome";
-import { abbreviateNumber, UNIRedux } from "../modules/unisym.js";
+import { SpectralCMDHome, CassCheckly, Config } from "@cassidy/spectral-home";
+import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
+
+import utils from "@cassidy/utils";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "balance",
@@ -67,8 +65,6 @@ function getTop(id: string, users: any, money: any) {
   return Object.keys(sortUsers(users, undefined, money)).indexOf(id) + 1;
 }
 
-const { parseCurrency: pCy } = global.utils;
-
 const configs: Config[] = [
   {
     key: "check",
@@ -103,7 +99,9 @@ const configs: Config[] = [
         .filter(({ amount }) => amount > 0)
         .map(
           ({ metadata, amount }) =>
-            `${metadata.icon} **${metadata.name}** (x**${pCy(amount)}**)`
+            `${metadata.icon} **${metadata.name}** (x**${utils.parseCurrency(
+              amount
+            )}**)`
         )
         .join("\n");
       const otherMoney = money.extractMoney(playerMoney);
@@ -116,10 +114,12 @@ const configs: Config[] = [
       const has = name === "You" ? "have" : "has";
 
       const outputText = [
-        `💵 **Cash** (x**${pCy(playerMoney.money)}**)`,
-        `⚔️ **Battle Points** (x**${pCy(playerMoney.battlePoints || 0)}**)`,
-        `🏦 **Bank** (x**${pCy(otherMoney.bank || 0)}**)`,
-        `🎒 **Cheques** (x**${pCy(otherMoney.cheques || 0)}**)`,
+        `💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
+        `⚔️ **Battle Points** (x**${utils.parseCurrency(
+          playerMoney.battlePoints || 0
+        )}**)`,
+        `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
+        `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.arrowFromT} **Rank**: ${
           top <= 10 ? `🏅 **#${top}**` : `🌱 **Rising**`
@@ -198,9 +198,13 @@ const configs: Config[] = [
       const { money: amount } = await money.get(input.senderID);
       if (isBrokenMoney(amount)) {
         await money.set(input.senderID, { money: 0 });
-        output.reply(`✅ Fixed from ${pCy(amount)} to 0$ ${UNIRedux.charm}`);
+        output.reply(
+          `✅ Fixed from ${utils.parseCurrency(amount)} to 0$ ${UNIRedux.charm}`
+        );
       } else {
-        output.reply(`❌ **${pCy(amount)}$** is fine ${UNIRedux.charm}`);
+        output.reply(
+          `❌ **${utils.parseCurrency(amount)}$** is fine ${UNIRedux.charm}`
+        );
       }
     },
   },

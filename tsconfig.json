@@ -27,7 +27,14 @@
     "declarationMap": true,
     "allowJs": true,
     "checkJs": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "paths": {
+      "@cassidy/unispectra": ["./CommandFiles/modules/unisym"],
+      "@cassidy/spectral-home": ["./CommandFiles/modules/spectralCMDHome"],
+      "@cassidy/redux-home": ["./CommandFiles/modules/reduxCMDHome"],
+      "@cassidy/ut-shop": ["./CommandFiles/plugins/ut-shop.js"],
+      "@cassidy/utils": ["./utils-path"]
+    }
   },
   "exclude": ["node_modules"],
   "include": ["**/*"]

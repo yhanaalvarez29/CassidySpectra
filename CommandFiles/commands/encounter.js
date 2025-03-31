@@ -1,4 +1,4 @@
-import { UNIRedux } from "../modules/unisym.js";
+import { UNIRedux } from "@cassidy/unispectra";
 import fs from "fs-extra";
 
 export const meta = {
@@ -13,7 +13,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 1,
   // botAdmin: true,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🔱",
 };
 

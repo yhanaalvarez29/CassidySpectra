@@ -14,7 +14,7 @@ export const meta = {
   noPrefix: false,
   whiteList: null,
   ext_plugins: {},
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🔧",
 };
 

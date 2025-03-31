@@ -1,5 +1,5 @@
 import { CassEXP } from "../modules/cassEXP.js";
-import { clamp } from "../modules/unisym.js";
+import { clamp } from "@cassidy/unispectra";
 
 export const meta = {
   name: "pet",
@@ -13,7 +13,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 1,
   shopPrice: 200,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🐕",
 };
 const { invLimit } = global.Cassidy;

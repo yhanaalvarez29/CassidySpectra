@@ -8,7 +8,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   waitingTime: 10,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   otherNames: ["uid"],
   icon: "🎮",
   noLevelUI: true,

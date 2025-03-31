@@ -1,5 +1,5 @@
 import { CassEXP } from "../modules/cassEXP.js";
-import { clamp } from "../modules/unisym.js";
+import { clamp } from "@cassidy/unispectra";
 
 export const style = {
   title: "Tiles 🟨",
@@ -20,7 +20,7 @@ export const meta = {
   waitingTime: 1,
   permissions: [0],
   noPrefix: false,
-  requirement: "2.5.0",
+  requirement: "3.0.0",
   icon: "🟨",
   category: "Chance Games",
 };

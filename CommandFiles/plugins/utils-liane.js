@@ -25,10 +25,10 @@ export const meta = {
 };
 import axios from "axios";
 import fs from "fs";
-import { ReduxCMDHome } from "../modules/reduxCMDHome";
+import { ReduxCMDHome } from "@cassidy/redux-home";
 import { stoData } from "../modules/stoData.js";
 import { CassEXP } from "../modules/cassEXP.js";
-import { clamp } from "../modules/unisym.js";
+import { clamp } from "@cassidy/unispectra";
 import { SpectralCMDHome } from "../modules/spectralCMDHome";
 const moment = require("moment-timezone");
 
