@@ -39,5 +39,6 @@
   "exitOnError": false,
   "WEB_PASSWORD": "liaSS-web",
   "maintenanceMode": false,
-  "noLevelUI": true
+  "noLevelUI": true,
+  "logPluginChange": false
 }

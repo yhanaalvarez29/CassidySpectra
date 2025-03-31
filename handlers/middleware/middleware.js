@@ -351,6 +351,7 @@ api.${key}(${args
     for (const order of queue) {
       if (!order) continue;
       for (const currentPlugin of order) {
+        const timeA = Date.now();
         await new Promise(async (resolve) => {
           const next = () => resolve(true);
           runObjects.next = next;
@@ -363,10 +364,18 @@ api.${key}(${args
             global.runner = runObjects;
             let copyDataKeys = Object.keys({ ...runObjects });
             await use(runObjects);
+            const timeB = Date.now();
             let dataKeys = Object.keys({ ...runObjects });
             pluginCount++;
 
-            if (dataKeys.length !== copyDataKeys.length) {
+            if (timeA !== timeB) {
+              console.log(`[${meta.name} - added latency]: ${timeB - timeA}ms`);
+            }
+
+            if (
+              dataKeys.length !== copyDataKeys.length &&
+              global.Cassidy.config.logPluginChange === true
+            ) {
               const added = dataKeys.filter(
                 (key) => !copyDataKeys.includes(key)
               );
