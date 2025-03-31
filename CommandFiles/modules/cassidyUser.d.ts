@@ -125,6 +125,19 @@ declare module "cassidy-userData" {
     battlePoints: number;
     extensionIDs?: string[];
     [key: string]: any;
+    threadInfo?:
+      | unknown
+      | {
+          threadID: string;
+          threadName: string;
+          emoji: string;
+          adminIDs: string[];
+          participantIDs: string[];
+          isGroup: boolean;
+        };
+    tdCreateTime?: {
+      timestamp: number;
+    };
   };
 
   type NullableUserData = {

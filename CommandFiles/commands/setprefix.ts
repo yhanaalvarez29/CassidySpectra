@@ -37,7 +37,7 @@ const configs: Config[] = [
       { itemList }
     ) {
       const currentPrefix = prefix;
-      const { threadPrefix } = await threadsDB.getUser(input.threadID);
+      const { threadPrefix } = await threadsDB.getItem(input.threadID);
 
       output.reply(
         `${UNIRedux.charm} **Current Prefix**:\n${currentPrefix}\n\n` +

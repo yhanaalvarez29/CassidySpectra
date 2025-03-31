@@ -41,7 +41,7 @@ const configs: Config[] = [
       }
 
       try {
-        const { rules = [] } = await threadsDB.getUser(input.threadID);
+        const { rules = [] } = await threadsDB.getItem(input.threadID);
 
         if (rules.length >= 10) {
           return output.reply("Maximum of 10 rules reached!");
@@ -74,7 +74,7 @@ const configs: Config[] = [
       }
 
       try {
-        const { rules = [] } = await threadsDB.getUser(input.threadID);
+        const { rules = [] } = await threadsDB.getItem(input.threadID);
 
         if (!rules.length) {
           return output.reply("No rules to remove!");
@@ -105,7 +105,7 @@ const configs: Config[] = [
     icon: "📋",
     async handler({ input, output, threadsDB }) {
       try {
-        const { rules = [] } = await threadsDB.getUser(input.threadID);
+        const { rules = [] } = await threadsDB.getItem(input.threadID);
 
         if (!rules.length) {
           return output.reply("No rules set yet!");

@@ -66,8 +66,8 @@ export default class UserStatsManager {
       });
       this.kv = this.#mongo.KeyValue;
     }
-    this.setUsers({ test: {} }).then(() => {
-      this.deleteUser("test");
+    this.setItems({ test: {} }).then(() => {
+      this.deleteItem("test");
     });
 
     this.cache = {};
@@ -178,7 +178,7 @@ export default class UserStatsManager {
    */
   async getCache(key: string): Promise<UserData> {
     if (!this.cache[key]) {
-      await this.get(key);
+      await this.getItem(key);
     }
 
     return JSON.parse(JSON.stringify(this.cache[key]));
@@ -230,7 +230,7 @@ export default class UserStatsManager {
   }
 
   /**
-   * @deprecated - use getUser or getUsers
+   * @deprecated - use getItem or getItems
    */
   async get(key: string): Promise<UserData> {
     if (this.isMongo) {
@@ -257,8 +257,8 @@ export default class UserStatsManager {
   /**
    * Gets a single user data but does not change the fact that it uses the bulk one.
    */
-  async getUser(key: string) {
-    const users = await this.getUsers(key);
+  async getItem(key: string) {
+    const users = await this.getItems(key);
 
     return users[key];
   }
@@ -266,7 +266,7 @@ export default class UserStatsManager {
   /**
    * Gets more than one user data (bulk)
    */
-  async getUsers<K extends readonly string[]>(
+  async getItems<K extends readonly string[]>(
     ...keys: K
   ): Promise<Record<K[number], UserData>> {
     let allData: [string, UserData][];
@@ -297,7 +297,7 @@ export default class UserStatsManager {
   /**
    * Bye bye user.
    */
-  async deleteUser(key: string) {
+  async deleteItem(key: string) {
     if (this.isMongo) {
       await this.#mongo.remove(key);
     } else {
@@ -308,6 +308,10 @@ export default class UserStatsManager {
       }
     }
     delete this.cache[key];
+  }
+
+  get deleteUser() {
+    return this.deleteItem;
   }
 
   /**
@@ -344,9 +348,9 @@ export default class UserStatsManager {
   /**
    * Sets a user data based on a key value record, key is the user id. Returns a record too.
    */
-  async setUsers(updatedUsers: Record<string, Nullable>) {
+  async setItems(updatedUsers: Record<string, Nullable>) {
     if (this.isMongo) {
-      const users = await this.getUsers(...Object.keys(updatedUsers));
+      const users = await this.getItems(...Object.keys(updatedUsers));
 
       const updatedData = Object.fromEntries(
         Object.entries(updatedUsers).map(([key, updatedProperties]) => {
@@ -389,6 +393,16 @@ export default class UserStatsManager {
 
   /**
    * Sets or overrides new properties of a user data
+   */
+  async setItem(key: string, updatedProperties: Nullable = {}) {
+    return this.setItems({
+      [key]: { ...updatedProperties },
+    });
+  }
+
+  /**
+   * Sets or overrides new properties of a user data
+   * @deprecated - use setItem
    */
   async set(key: string, updatedProperties: Nullable = {}) {
     if (this.isMongo) {
@@ -490,6 +504,34 @@ export default class UserStatsManager {
     } catch (error) {
       console.error("Error writing money data:", error);
     }
+  }
+
+  async saveThreadInfo(
+    threadID: string,
+    api: Record<string, unknown> | undefined
+  ) {
+    if (typeof api?.getThreadInfo === "function") {
+      const threadInfo = await api.getThreadInfo(threadID);
+      if (!threadInfo) {
+        return false;
+      }
+      const data = {
+        threadInfo: {
+          threadID: threadID,
+          threadName: threadInfo.threadName,
+          emoji: threadInfo.emoji,
+          adminIDs: threadInfo.adminIDs,
+          participantIDs: threadInfo.participantIDs,
+          isGroup: threadInfo.isGroup,
+        },
+        tdCreateTime: {
+          timestamp: Date.now(),
+        },
+      };
+      await this.setItem(threadID, { ...data });
+      return true;
+    }
+    return false;
   }
 
   /**
