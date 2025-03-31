@@ -143,6 +143,8 @@ const home = new SpectralCMDHome(
   configs
 );
 
-export async function entry(ctx: CommandContextOG) {
+import { defineEntry } from "@cass/define";
+
+export const entry = defineEntry(async (ctx) => {
   return home.runInContext(ctx);
-}
+});

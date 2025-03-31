@@ -14,11 +14,13 @@ export const meta = {
   noLevelUI: true,
 };
 
-export async function entry({ input, output }) {
+import { defineEntry } from "@cass/define";
+
+export const entry = defineEntry(async ({ input, output }) => {
   output.reply({
     body: `${input.detectID ?? input.senderID}`,
     attachment: await global.utils.getStreamFromURL(
       "https://st3.depositphotos.com/4570119/35986/i/450/depositphotos_359861810-stock-photo-guangzhou-city-square-road-architectural.jpg"
     ),
   });
-}
+});

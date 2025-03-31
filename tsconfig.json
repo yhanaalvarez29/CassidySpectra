@@ -32,12 +32,18 @@
       "@cassidy/unispectra": ["./CommandFiles/modules/unisym"],
       "@cassidy/spectral-home": ["./CommandFiles/modules/spectralCMDHome"],
       "@cassidy/redux-home": ["./CommandFiles/modules/reduxCMDHome"],
-      "@cassidy/ut-shop": ["./CommandFiles/plugins/ut-shop.js"],
+      "@cassidy/ut-shop": ["./CommandFiles/plugins/ut-shop"],
       "@cassidy/utils": ["./utils-path"],
+      "@cass/unispectra": ["./CommandFiles/modules/unisym"],
+      "@cass/spectral-home": ["./CommandFiles/modules/spectralCMDHome"],
+      "@cass/redux-home": ["./CommandFiles/modules/reduxCMDHome"],
+      "@cass/ut-shop": ["./CommandFiles/plugins/ut-shop"],
+      "@cass/utils": ["./utils-path"],
       "@cass-modules/*": ["./CommandFiles/modules/*"],
       "@cass-plugins/*": ["./CommandFiles/plugins/*"],
       "@cass-commands/*": ["./CommandFiles/commands/*"],
-      "@cassidy/styler": ["./handlers/styler.js/main.js"]
+      "@cassidy/styler": ["./handlers/styler.js/main"],
+      "@cass/define": ["./handlers/definers/defineEntry"]
     }
   },
   "exclude": ["node_modules"],
