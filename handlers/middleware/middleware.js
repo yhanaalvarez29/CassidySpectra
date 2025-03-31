@@ -53,7 +53,8 @@ function delAwaitStack(id, key) {
   awaitStack[id] = awaitStack[id].filter((v) => v !== key);
 }
 
-function sortPlugin(allPlugins) {
+// OG Plugin Sorting
+function sortPluginLegacy(allPlugins) {
   queue.length = 0;
   for (const pluginName in allPlugins) {
     const plugin = allPlugins[pluginName];
@@ -64,7 +65,35 @@ function sortPlugin(allPlugins) {
     }
     queue[meta.order].push(plugin);
   }
+  return queue;
 }
+
+// [new] Spectra Plugin Sorting
+function sortPlugin(allPlugins) {
+  queue.length = 0;
+  const sortedPlugins = [];
+
+  for (const pluginName in allPlugins) {
+    const plugin = allPlugins[pluginName];
+    plugin.meta.order = plugin.meta.order ?? 5;
+    sortedPlugins.push(plugin);
+  }
+
+  sortedPlugins.sort((a, b) => a.meta.order - b.meta.order);
+
+  for (const plugin of sortedPlugins) {
+    if (
+      queue.length === 0 ||
+      queue[queue.length - 1][0].meta.order !== plugin.meta.order
+    ) {
+      queue.push([]);
+    }
+    queue[queue.length - 1].push(plugin);
+  }
+
+  return queue;
+}
+
 export async function middleware({ allPlugins }) {
   handleStat = init();
   threadsDB = init({
