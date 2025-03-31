@@ -84,6 +84,7 @@ export async function use(obj) {
       popularCMD,
       recentCMD,
       money,
+      threadsDB,
     } = obj;
     /**
      * @type {typeof import("./shopV2.js").ShopClass}
@@ -186,12 +187,10 @@ export async function use(obj) {
       );
     }
     async function isThreadAdmin(uid) {
-      const { adminIDs = [], userInfo } = await api.getThreadInfo(threadID);
-      if (adminIDs.includes(uid)) {
-        return userInfo[uid];
-      } else {
-        return null;
-      }
+      await threadsDB.ensureThreadInfo(threadID, api);
+      const { threadInfo } = await threadsDB.getItem(threadID);
+
+      return Boolean(threadInfo && threadInfo.adminIDs.includes(uid));
     }
     obj.isThreadAdmin = isThreadAdmin;
 

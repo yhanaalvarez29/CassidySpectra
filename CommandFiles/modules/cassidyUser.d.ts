@@ -108,6 +108,14 @@ declare module "cassidy-userData" {
     | BaseInventoryItem;
 
   type UserData = {
+    nameMeta?:
+      | undefined
+      | {
+          name: string;
+          nonEmojis: string;
+          emojis: string;
+          finalName: string;
+        };
     money: number;
     userID?: string;
     inventory?: InventoryItem[];
@@ -125,16 +133,14 @@ declare module "cassidy-userData" {
     battlePoints: number;
     extensionIDs?: string[];
     [key: string]: any;
-    threadInfo?:
-      | unknown
-      | {
-          threadID: string;
-          threadName: string;
-          emoji: string;
-          adminIDs: string[];
-          participantIDs: string[];
-          isGroup: boolean;
-        };
+    threadInfo?: {
+      threadID: string;
+      threadName: string;
+      emoji: string;
+      adminIDs: string[];
+      participantIDs: string[];
+      isGroup: boolean;
+    };
     tdCreateTime?: {
       timestamp: number;
     };

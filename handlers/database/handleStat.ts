@@ -13,6 +13,7 @@ global.cassMongoManager = cassMongoManager;
 
 import type { InventoryItem } from "cassidy-userData";
 import fetchMeta from "../../CommandFiles/modules/fetchMeta";
+import { UNISpectra } from "@cassidy/unispectra";
 
 export function init(
   this: unknown,
@@ -133,7 +134,36 @@ export default class UserStatsManager {
 
     data.userID = String(userID);
 
+    if (typeof data.name === "string") {
+      const norm = this.normalizeName(data.name);
+      data.name = norm.finalName;
+      data.nameMeta = norm;
+    }
+
     return data;
+  }
+
+  normalizeName(name: string) {
+    const str = name.split(/\s+/);
+    let emojis = [...str]
+      .filter((char) => UNISpectra.emojiRegex.test(char))
+      .join("");
+    let nonEmojis = [...str]
+      .filter((char) => !UNISpectra.emojiRegex.test(char))
+      .map((char) => (/\w|\d/.test(char) ? char : ""))
+      .join("")
+      .trim()
+      .slice(0, 39);
+    name = nonEmojis;
+
+    let finalName = `${name}${emojis}`;
+
+    return {
+      name,
+      nonEmojis,
+      emojis,
+      finalName,
+    };
   }
 
   /**

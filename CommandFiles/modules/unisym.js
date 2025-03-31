@@ -15,7 +15,7 @@ export function secureRandom() {
 }
 
 export function emojiEnd(str) {
-  const emojiRegex = /\p{Emoji}/gu;
+  const { emojiRegex } = UNISpectra;
 
   let emojis = [...str].filter((char) => emojiRegex.test(char)).join("");
   let nonEmojis = [...str]
@@ -201,6 +201,8 @@ export class UNISpectra {
 
   static spectraMark = `${this.spectra} ${this.charm}\n[font=fancy_italic]Simplicity, and Innovation.[:font=fancy_italic]`;
   static spectra = `☄️🪐 [font=redux]Cass${this.nextArrow}dy[:font=redux][font=bold]Spectra[:font=bold]`;
+
+  static emojiRegex = /\p{Emoji}/gu;
 }
 
 export const fontMarkups = new Proxy(
