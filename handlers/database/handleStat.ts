@@ -10,6 +10,7 @@ const cassMongoManager = new CassMongoManager();
 global.cassMongoManager = cassMongoManager;
 
 import type { InventoryItem } from "cassidy-userData";
+import fetchMeta from "../../CommandFiles/modules/fetchMeta";
 
 export function init(
   this: unknown,
@@ -532,6 +533,44 @@ export default class UserStatsManager {
       return true;
     }
     return false;
+  }
+
+  async ensureUserInfo(userID: string) {
+    const { userMeta } = await this.getCache(userID);
+
+    if (!userMeta) {
+      return this.saveUserInfo(userID);
+    }
+
+    return true;
+  }
+
+  async ensureThreadInfo(
+    threadID: string,
+    api: Record<string, unknown> | undefined
+  ) {
+    const { threadInfo } = await this.getCache(threadID);
+
+    if (!threadInfo) {
+      return this.saveThreadInfo(threadID, api);
+    }
+
+    return true;
+  }
+
+  async saveUserInfo(userID: string) {
+    const data = {
+      userMeta: await fetchMeta(userID, true),
+    };
+
+    if (
+      !data.userMeta ||
+      Object.values(data.userMeta).some((i) => i === "Not found")
+    )
+      return false;
+
+    await this.setItem(userID, { ...data });
+    return true;
   }
 
   /**
