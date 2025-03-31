@@ -137,7 +137,9 @@ export default class UserStatsManager {
     if (typeof data.name === "string") {
       const norm = this.normalizeName(data.name);
       data.name = norm.finalName;
-      data.nameMeta = norm;
+      if (data.name) {
+        data.nameMeta = norm;
+      }
     }
 
     return data;
@@ -157,6 +159,11 @@ export default class UserStatsManager {
     name = nonEmojis;
 
     let finalName = `${name}${emojis}`;
+
+    if (finalName.length < 1) {
+      finalName = undefined;
+      name = undefined;
+    }
 
     return {
       name,
