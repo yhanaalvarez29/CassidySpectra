@@ -277,8 +277,8 @@ export default class UserStatsManager {
     }
 
     const queryResult = await this.query(
-      (doc) => doc.where("key").equals(key),
-      ...propertyNames.join(" ")
+      (doc) =>
+        doc && doc.where("key").equals(key).select(propertyNames.join(" "))
     );
 
     const partialData = queryResult?.[0] || {};
@@ -510,10 +510,9 @@ export default class UserStatsManager {
   query(
     filter:
       | Record<string, any>
-      | ((q: typeof this.kv) => mongoose.Query<any, any>),
-    ...select: string[]
+      | ((q: typeof this.kv) => mongoose.Query<any, any>)
   ) {
-    return this.#mongo.query(filter, ...select);
+    return this.#mongo.query(filter);
   }
 
   /**

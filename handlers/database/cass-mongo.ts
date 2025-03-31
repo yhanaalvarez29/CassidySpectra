@@ -318,20 +318,20 @@ class CassMongo {
   async query(
     filter:
       | Record<string, any>
-      | ((q: typeof this.KeyValue) => mongoose.Query<any, any>),
-    ...select: string[]
+      | ((q: typeof this.KeyValue) => mongoose.Query<any, any>)
   ): Promise<[string, any][]> {
     try {
-      const init = this.KeyValue.find(filter);
+      let queryInstance: mongoose.Query<any, any>;
 
-      const result1 =
-        select.length > 0 ? init.select(select.join(" ")).lean() : init.lean();
+      if (typeof filter === "function") {
+        queryInstance = filter(this.KeyValue);
+      } else {
+        queryInstance = this.KeyValue.find(filter);
+      }
 
-      const result = Array.isArray(result1) ? result1 : [result1];
+      const result = await queryInstance.lean();
 
-      return Object.entries(
-        result.reduce((acc, obj) => ({ ...acc, ...obj }), {})
-      );
+      return result.flatMap((obj) => Object.entries(obj));
     } catch (error) {
       if (this.ignoreError) {
         console.error("Error querying data:", error);
