@@ -66,6 +66,71 @@ function getTop(id: string, users: any, money: any) {
 
 const configs: Config[] = [
   {
+    key: "home",
+    description: "Your balance homepage.",
+    args: ["[uid]"],
+    aliases: ["-h"],
+    icon: "💸",
+    validator: new CassCheckly([
+      { index: 0, type: "string", required: false, name: "userID" },
+    ]),
+    async handler(
+      { money, input, output, prefix, Collectibles, commandName },
+      { itemList, spectralArgs, cooldown }
+    ) {
+      let senderID = input.senderID;
+      if (input.replier) senderID = input.replier.senderID;
+      if (input.hasMentions) senderID = input.firstMention.senderID;
+      if (spectralArgs[0]) senderID = spectralArgs[0];
+
+      let warn = "";
+      let playerMoney: UserData = await money.getCache(senderID);
+      if (!playerMoney || !playerMoney.name) {
+        return output.reply("❌ This user is a ghost!");
+      }
+      const cll = new Collectibles(playerMoney?.collectibles || []);
+
+      if (isBrokenMoney(playerMoney.money))
+        warn = `\n\n⚠️ Corrupted! Use **${prefix}money-fix**`;
+
+      const items = cll
+        .getAll()
+        .filter(({ amount }) => amount > 0)
+        .map(
+          ({ metadata, amount }) =>
+            `${metadata.icon} **${metadata.name}** (x**${utils.parseCurrency(
+              amount
+            )}**)`
+        )
+        .join("\n");
+      const otherMoney = money.extractMoney(playerMoney);
+      const name =
+        input.hasMentions || input.replier || spectralArgs[0]
+          ? playerMoney.name
+          : `${playerMoney.name} (You)`;
+      output.setUIName(name);
+
+      const outputText = [
+        `${
+          cooldown ? `🕒 Oops, **Cooling Down**!\n\n` : ""
+        } 💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
+        `⚔️ **Battle Points** (x**${utils.parseCurrency(
+          playerMoney.battlePoints || 0
+        )}**)`,
+        `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
+        `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
+        (items ? `${items}` : "") + warn,
+        `${UNIRedux.standardLine}`,
+        `${UNIRedux.arrow} ***All Options***`,
+        ``,
+        itemList,
+        `\nType **${prefix}${commandName}-check** to see a complete balance info.`,
+      ].join("\n");
+
+      return output.reply(outputText);
+    },
+  },
+  {
     key: "check",
     description: "View your money or someone else’s",
     args: ["[uid]"],
@@ -76,18 +141,21 @@ const configs: Config[] = [
     ]),
     async handler(
       { money, input, output, prefix, clearCurrStack, Collectibles },
-      { itemList }
+      { itemList, spectralArgs }
     ) {
       const i = input.isWeb ? null : await output.reply(`🔧 Loading...`);
 
       let senderID = input.senderID;
       if (input.replier) senderID = input.replier.senderID;
       if (input.hasMentions) senderID = input.firstMention.senderID;
-      if (input.arguments[0]) senderID = input.arguments[0];
+      if (spectralArgs[0]) senderID = spectralArgs[0];
 
       const allUsers = await money.getAll();
       let warn = "",
         playerMoney: UserData = allUsers[senderID];
+      if (!playerMoney || !playerMoney.name) {
+        return output.reply("❌ This user is a ghost!");
+      }
       const cll = new Collectibles(playerMoney?.collectibles || []);
 
       if (isBrokenMoney(playerMoney.money))
@@ -107,10 +175,12 @@ const configs: Config[] = [
       const top = getTop(senderID, allUsers, money);
       const { ahead, behind } = getBehindAhead(senderID, allUsers, money);
       const name =
-        input.hasMentions || input.replier || input.arguments[0]
+        input.hasMentions || input.replier || spectralArgs[0]
           ? playerMoney.name
-          : "You";
-      const has = name === "You" ? "have" : "has";
+          : `${playerMoney.name} (You)`;
+      const has =
+        input.hasMentions || input.replier || spectralArgs[0] ? "have" : "has";
+      output.setUIName(name);
 
       const outputText = [
         `💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
@@ -233,7 +303,7 @@ const home = new SpectralCMDHome(
     argIndex: 0,
     isHypen: true,
     globalCooldown: 5,
-    defaultKey: "check",
+    defaultKey: "home",
     errorHandler: (error, ctx) => {
       ctx.output.error(error);
     },

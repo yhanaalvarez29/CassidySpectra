@@ -45,6 +45,7 @@ declare module "output-cassidy" {
       body: OutputForm,
       callback?: (info: OutputResult) => void
     ): Promise<OutputResult>;
+    setUIName(name: string): void;
     contact(text: string, id?: string, destination?: string): Promise<boolean>;
     error(
       err: unknown | string | Error,

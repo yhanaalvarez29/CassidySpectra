@@ -31,9 +31,9 @@ export function emojiEnd(str) {
     "" +
     (emojis ? " " + emojis : "");
   const res =
-    UNISpectra.nextArrow.repeat(2) +
+    UNISpectra.nextArrow.repeat(1) +
     " " +
-    (emojis ? emojis + " " : "") +
+    (emojis ? UNISpectra.wrapEmoji(emojis) + " " : "") +
     nonEmojis;
   console.log(str, " => ", res);
   return res;
@@ -113,8 +113,26 @@ export class UNIRedux {
 
 export class UNISpectra {
   static specialSpace = "ᅠ";
+  static wrapEmoji(emoji) {
+    return `${this.wrapA} ${emoji} ${this.wrapB}`;
+  }
+  static standardizeLines(text) {
+    const lines = String(text).split("\n");
+    let result = lines
+      .map((i) => {
+        if (i.trim().includes(this.standardLineOld)) {
+          return this.standardLine;
+        }
+        return i;
+      })
+      .join("\n");
+    return result;
+  }
+  static wrapA = "❲";
+  static wrapB = "❳";
   static burger = "☰"; // burger menu
-  static standardLine = "━━━━━━━━━━━━━━━"; // Line
+  static standardLineOld = "━━━━━━━━━━━━━━━"; // Line
+  static standardLine = "•───────────────•"; // Line
   static section = "§"; // Section sign
   static paragraph = "¶"; // Pilcrow sign
   static registered = "®"; // Registered trademark sign

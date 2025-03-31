@@ -10,6 +10,7 @@ export type Config = {
       itemList?: string | undefined;
       cancelCooldown?: () => void;
       spectralArgs?: string[];
+      cooldown?: number | undefined;
     } & Record<string, unknown>
   ) => any | Promise<any>;
   description?: string | null;
@@ -335,7 +336,10 @@ export class SpectralCMDHome {
       //     this.getCooldown(ctx, key) / 1000
       //   }s before using this subcommand again.`
       // );
-      return await this.options.home!(ctx, extraCTX);
+      return await this.options.home!(ctx, {
+        ...extraCTX,
+        cooldown: this.getCooldown(ctx, key) / 1000,
+      });
     }
 
     try {

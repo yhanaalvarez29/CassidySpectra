@@ -6,7 +6,7 @@
 */
 
 import { CassEXP } from "../modules/cassEXP.js";
-import { UNIRedux } from "@cassidy/unispectra";
+import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 
 export const meta = {
   name: "output",
@@ -99,6 +99,7 @@ export function use(obj) {
     const { api, event, command: cmd, commands, input } = obj;
     let append = "";
     let prepend = "";
+    let uiName = null;
 
     /**
      *
@@ -115,10 +116,12 @@ export function use(obj) {
         const { name } = await obj.money.getCache(
           options.threadID ?? input.senderID
         );
+        const finalName = uiName || name;
+        let isOther = finalName !== name;
 
-        options.body = name
-          ? `👤 **${name}**${
-              obj.command ? ` (${obj.input.words[0]})` : ""
+        options.body = finalName
+          ? `👤 **${finalName}**${
+              obj.command && !isOther ? ` (${obj.input.words[0]})` : ""
             }\n\n${options.body}`
           : `🍃 Register with **${obj.prefix}id-setname** now!\n\n${options.body}`;
       }
@@ -137,13 +140,19 @@ export function use(obj) {
           boxItems = [],
         } = await obj.money.getCache(options.threadID ?? input.senderID);
         const inst = new CassEXP(cassEXP);
+        const finalName = uiName || name;
+        let isOther = finalName !== name;
 
-        options.body = name
-          ? `${options.body}\n\n━━━━【**Profile**】━━━━━\n📛 **${name}** ${
-              UNIRedux.charm
-            } **LV${inst.level}** (${inst.exp}/${inst.getNextEXP()})`
+        options.body = finalName
+          ? `${options.body}\n\n${UNIRedux.standardLine}\n${
+              UNIRedux.arrow
+            } ***Level*** ${UNISpectra.nextArrow} ${inst.level} [${
+              inst.exp
+            } / ${inst.getNextEXP()}]`
           : options.body;
       }
+
+      options.body = UNISpectra.standardizeLines(options.body);
 
       return options.body;
     }
@@ -299,6 +308,9 @@ export function use(obj) {
     const outputProps = {
       async reply(body, callback) {
         return await output(body, { callback, isReply: true });
+      },
+      async setUIName(name) {
+        uiName = String(name);
       },
       async contact(text, id, destination) {
         return new Promise(async (res, rej) => {
