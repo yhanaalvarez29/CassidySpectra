@@ -37,6 +37,8 @@ CassidySpectra is designed to be a powerful and extensible bot framework that al
 - **CORS Support**: Cross-Origin Resource Sharing (CORS) support for web integrations.
 - **Dynamic WS Protocol**: Dynamic WebSocket protocol for real-time communication.
 - **Enhanced UI**: Improved user interface with support for themes and custom fonts.
+- **Better Plugin Handling**: Improved plugin handling using promises.
+- **Richer Database**: Richer but simpler database.
 
 ## Changelog
 
@@ -168,7 +170,7 @@ All notable changes to this project will be documented in this file.
 
 ### Command Structure
 
-A command in CassidyRedux is typically defined in a JavaScript file with the following structure:
+A command in CassidySpectra is typically defined in a JavaScript file with the following structure:
 
 ```javascript
 export const meta = {
@@ -299,7 +301,7 @@ export async function entry({ input, output, args }) {
 
 ### Cassidy.js
 
-This file contains the core logic and configuration for CassidyRedux. It includes methods for loading commands, plugins, and managing the bot's state.
+This file contains the core logic and configuration for CassidySpectra. It includes methods for loading commands, plugins, and managing the bot's state.
 
 ### api.js
 
@@ -307,15 +309,15 @@ This file defines the `api` command, which provides access to Cassidy's Develope
 
 ### loadCommand.js
 
-This file contains the logic for loading and registering commands in CassidyRedux.
+This file contains the logic for loading and registering commands in CassidySpectra.
 
 ### loadPlugins.js
 
-This file contains the logic for loading and managing plugins in CassidyRedux.
+This file contains the logic for loading and managing plugins in CassidySpectra.
 
 ### extends.js
 
-This file extends the core functionality of CassidyRedux with additional features and utilities.
+This file extends the core functionality of CassidySpectra with additional features and utilities.
 
 ## License
 
