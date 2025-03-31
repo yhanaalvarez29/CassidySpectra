@@ -12,7 +12,28 @@ class CassMongo {
   ignoreError: boolean;
   allowClear: boolean;
   #uri: string;
-  KeyValue;
+  KeyValue: mongoose.Model<
+    {
+      key: string;
+      value: any;
+    },
+    {},
+    {},
+    {},
+    mongoose.Schema<
+      any,
+      mongoose.Model<any, any, any, any, any>,
+      {},
+      {},
+      {},
+      {},
+      mongoose.DefaultSchemaOptions,
+      {
+        key: string;
+        value: any;
+      }
+    >
+  >;
 
   constructor({
     uri,
@@ -294,9 +315,20 @@ class CassMongo {
     return result;
   }
 
-  async query(filter: any) {
+  async query(
+    filter:
+      | Record<string, any>
+      | ((q: typeof this.KeyValue) => mongoose.Query<any, any>),
+    ...select: string[]
+  ): Promise<[string, any][]> {
     try {
-      return await this.KeyValue.find(filter);
+      const result = await this.KeyValue.find(filter)
+        .select(select.join(" "))
+        .lean();
+
+      return Object.entries(
+        result.reduce((acc, obj) => ({ ...acc, ...obj }), {})
+      );
     } catch (error) {
       if (this.ignoreError) {
         console.error("Error querying data:", error);

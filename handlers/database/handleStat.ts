@@ -5,6 +5,8 @@ type UserData = import("cassidy-userData").UserData;
 
 type Nullable = import("cassidy-userData").NullableUserData;
 
+import mongoose from "mongoose";
+
 const cassMongoManager = new CassMongoManager();
 
 global.cassMongoManager = cassMongoManager;
@@ -44,7 +46,7 @@ export default class UserStatsManager {
   #mongo: CassMongo;
   isMongo: boolean;
   cache: Record<string, UserData>;
-  kv;
+  kv: typeof CassMongo.prototype.KeyValue;
   collection;
 
   constructor(
@@ -264,6 +266,42 @@ export default class UserStatsManager {
     return users[key];
   }
 
+  async queryItem(
+    key: string,
+    ...propertyNames: string[]
+  ): Promise<Record<string, any>> {
+    if (!this.isMongo) {
+      const data = this.readMoneyFile();
+      const userData = data[key] || {};
+      return this.processProperties(userData, key, propertyNames);
+    }
+
+    const queryResult = await this.query(
+      (doc) => doc.where("key").equals(key),
+      ...propertyNames.join(" ")
+    );
+
+    const partialData = queryResult?.[0] || {};
+
+    return this.processProperties(partialData, key, propertyNames);
+  }
+
+  private processProperties(
+    userData: Partial<UserData>,
+    userID: string,
+    propertyNames: string[]
+  ): Record<string, any> {
+    const processedData = this.process(
+      { ...this.defaults, ...userData } as UserData,
+      userID
+    );
+    return Object.fromEntries(
+      propertyNames
+        .map((prop) => [prop, processedData[prop]])
+        .filter(([_, value]) => value !== undefined)
+    );
+  }
+
   /**
    * Gets more than one user data (bulk)
    */
@@ -468,8 +506,13 @@ export default class UserStatsManager {
   /**
    * Wrapper of KeyValue.find of mongoose schema, more precise and saves bandwidth
    */
-  query(filter: Parameters<typeof this.kv.find>) {
-    return this.#mongo.query(filter);
+  query(
+    filter:
+      | Record<string, any>
+      | ((q: typeof this.kv) => mongoose.Query<any, any>),
+    ...select: string[]
+  ) {
+    return this.#mongo.query(filter, ...select);
   }
 
   /**
