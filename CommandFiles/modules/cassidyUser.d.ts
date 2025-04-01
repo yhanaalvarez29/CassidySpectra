@@ -137,7 +137,7 @@ declare module "cassidy-userData" {
       threadID: string;
       threadName: string;
       emoji: string;
-      adminIDs: string[];
+      adminIDs: { id: string }[];
       participantIDs: string[];
       isGroup: boolean;
     };

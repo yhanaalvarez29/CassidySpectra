@@ -190,7 +190,9 @@ export async function use(obj) {
       await threadsDB.ensureThreadInfo(threadID, api);
       const { threadInfo } = await threadsDB.getItem(threadID);
 
-      return Boolean(threadInfo && threadInfo.adminIDs.includes(uid));
+      return Boolean(
+        threadInfo && threadInfo.adminIDs.some((i) => i.id === uid)
+      );
     }
     obj.isThreadAdmin = isThreadAdmin;
 
