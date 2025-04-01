@@ -14,6 +14,12 @@ function extend() {
     )[Math.floor(Math.random() * Object.keys(this).length)];
   });
 
+  ExtendClass("randomEntry", function () {
+    return Object.entries(
+      this
+    )[Math.floor(Math.random() * Object.keys(this).length)];
+  });
+
   ExtendClass(
     "remove",
     function (...itemsToRemove) {

@@ -44,7 +44,6 @@ const home = new ReduxCMDHome(
       aliases: ["-s", "search"],
       async handler({ input, output, money, icon }) {
         const query = input.arguments.join(" ").trim().toLowerCase();
-
         if (!query) {
           output.reply(`Please provide a query to search for users.`);
           return;

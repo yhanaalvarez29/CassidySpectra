@@ -185,153 +185,205 @@ declare global {
 
 import type { UserStatsManager } from "cassidy-userData";
 import { CassMongoManager } from "./handlers/database/cass-mongo.js";
-
 declare global {
-  var Cassidy: CassidySpectra.GlobalCassidy;
-  var handleStat: UserStatsManager;
+  /**
+   * Custom utility type to mark CassidySpectra-specific extensions
+   * @internal
+   */
+  type WasCustom<T> = T & { readonly _cass_extends?: true };
 
-  var require: NodeRequire & {
-    url(url: string): Promise<any>;
-  };
+  /** Falsy values as per JavaScript */
+  type Falsy = false | null | undefined | "" | 0;
 
-  var cassMongoManager: CassMongoManager | undefined;
-}
-
-declare global {
-  // Everything here is custom! Do not use in other codes
-  // Can also result in side effects.
   interface Object {
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Creates a deep clone of the object using JSON serialization.
+     * @template T - The type of the object being cloned
+     * @returns A deep clone of the original object
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    cloneByJSON: WasCustom<<T>(this: T) => T>;
+    cloneByJSON<T>(this: T): T;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a random key from the object.
+     * @returns A random key from the object
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    randomKey: WasCustom<(this: Record<string, any>) => string>;
+    randomKey<T extends Record<string, any>>(this: T): string;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a random [key, value] entry from the object.
+     * @returns A tuple containing a random key and its value
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    randomValue: WasCustom<(this: Record<string, any>) => any>;
+    randomEntry<T extends Record<string, any>>(this: T): [string, T[keyof T]];
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a random value from the object.
+     * @returns A random value from the object
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    toJSONString: WasCustom<(this: { toJSON(): any }) => string>;
+    randomValue<T extends Record<string, any>>(this: T): T[keyof T];
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Converts the object to a JSON string using its toJSON method if available.
+     * @returns A JSON string representation of the object
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    typeof: WasCustom<(this: any) => string>;
+    toJSONString(this: { toJSON(): any }): string;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns the typeof result for the object.
+     * @returns The type of the object as a string
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    removeFalsy: WasCustom<(this: Record<string, any>) => void>;
+    typeof(this: unknown): string;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Removes falsy values from the object in-place.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    forEachKey: WasCustom<
-      (
-        this: Record<string, any>,
-        callback: (key: string, value: any) => void
-      ) => void
-    >;
+    removeFalsy<T extends Record<string, any>>(this: T): void;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Iterates over each key-value pair in the object.
+     * @template T - The type of the object
+     * @param callback - Function to execute for each key-value pair
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    mapAsync: WasCustom<
-      <T>(
-        this: Record<string, T>,
-        callback: (value: T) => Promise<any>
-      ) => Promise<Record<string, any>>
-    >;
+    forEachKey<T extends Record<string, any>>(
+      this: T,
+      callback: (key: string, value: T[keyof T]) => void
+    ): void;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Asynchronously maps over the object's values.
+     * @template T - The type of the object's values
+     * @template U - The type of the mapped values
+     * @param callback - Async function to transform each value
+     * @returns A promise resolving to a new object with transformed values
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    map: WasCustom<
-      <T, U>(
-        this: Record<string, T>,
-        callback: (value: T) => U
-      ) => Record<string, U>
-    >;
+    mapAsync<T, U>(
+      this: Record<string, T>,
+      callback: (value: T, key: string) => Promise<U>
+    ): Promise<Record<string, U>>;
+
+    /**
+     * Maps over the object's values synchronously.
+     * @template T - The type of the object's values
+     * @template U - The type of the mapped values
+     * @param callback - Function to transform each value
+     * @returns A new object with transformed values
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
+     */
+    map<T, U>(
+      this: Record<string, T>,
+      callback: (value: T, key: string) => U
+    ): Record<string, U>;
   }
 
   interface Array<T> {
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a random value from the array.
+     * @returns A random element from the array
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    randomValue: WasCustom<(this: T[]) => T>;
+    randomValue(this: T[]): T;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a random index from the array.
+     * @returns A random index number
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    randomIndex: WasCustom<(this: T[]) => number>;
+    randomIndex(this: T[]): number;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a new array with unique values.
+     * @returns A new array containing only unique elements
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    toUnique: WasCustom<(this: T[]) => T[]>;
+    toUnique(this: T[]): T[];
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Returns a new array with falsy values removed.
+     * @template U - The non-falsy type
+     * @returns A new array containing only truthy elements
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    removeFalsy: WasCustom<(this: (T | falsy)[]) => T[]>;
+    removeFalsy<U>(this: (U | Falsy)[]): U[];
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Removes specified items from the array and returns the new array.
+     * @param itemsToRemove - Items to remove from the array
+     * @returns A new array with specified items removed
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    remove: WasCustom<(this: T[], ...itemsToRemove: T[]) => T[]>;
+    remove(this: T[], ...itemsToRemove: T[]): T[];
   }
 
   interface String {
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Applies a font transformation to the string.
+     * @param font - The font to apply
+     * @returns The transformed string
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    toFonted: WasCustom<(this: string, font: string) => string>;
+    toFonted(this: string, font: string): string;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Converts the string to title case.
+     * @returns The string in title case
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    toTitleCase: WasCustom<(this: string) => string>;
+    toTitleCase(this: string): string;
+
     /**
-     * @custom CassidySpectra - This is a custom method exclusive to CassidySpectra projects.
-     * @warning Do not use in other codebases; may modify prototypes or cause unintended side effects outside CassidySpectra.
-     * @reusable Use freely within CassidySpectra projects where this utility is applied.
+     * Maps over each character in the string.
+     * @template U - The type of the mapped values
+     * @param callback - Function to transform each character
+     * @returns An array of transformed values
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
      */
-    map: WasCustom<
-      (
-        this: string,
-        callback: (char: string, index: number, array: string[]) => any
-      ) => any[]
-    >;
+    map<U>(
+      this: string,
+      callback: (char: string, index: number, array: string[]) => U
+    ): U[];
   }
-
-  type falsy = false | null | undefined | "" | 0;
-
-  type WasCustom<T> = T & { _cass_extends: true };
 }
