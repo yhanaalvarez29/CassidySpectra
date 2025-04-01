@@ -1355,6 +1355,12 @@ function ExtendClass(
   Target = Object,
   options = { writable: true, configurable: false, enumerable: false }
 ) {
+  Object.defineProperty(func, "_cass_extends", {
+    value: true,
+    writable: options.writable ?? false,
+    configurable: options.configurable ?? false,
+    enumerable: options.enumerable ?? false,
+  });
   Object.defineProperty(Target.prototype, key, {
     value: func,
     writable: options.writable ?? true,

@@ -132,7 +132,6 @@ export async function use(obj) {
     } catch (err) {
       console.log(err);
     }
-
     const { send, reply, react } = output;
     let eventTypes = ["message", "message_reply"];
     global.currData = command;
@@ -150,7 +149,7 @@ export async function use(obj) {
       );
     }
 
-    if (!command) {
+    if (!command || !command.meta) {
       if (!hasPrefix) {
         handleNo();
         return;

@@ -1,5 +1,7 @@
+// Check global.d.ts this all has types now lmao.
+import { fonts } from "./handlers/styler.js/fonts.js";
 import utils from "./utils.js";
-const { ExtendClass, randArrValue, randArrIndex, fonts } = utils;
+const { ExtendClass, randArrValue, randArrIndex } = utils;
 
 function extend() {
   ExtendClass("cloneByJSON", function () {
@@ -7,10 +9,25 @@ function extend() {
   });
 
   ExtendClass("randomKey", function () {
-    return Object.keys(this)[
-      Math.floor(Math.random() * Object.keys(this).length)
-    ];
+    return Object.keys(
+      this
+    )[Math.floor(Math.random() * Object.keys(this).length)];
   });
+
+  ExtendClass(
+    "remove",
+    function (...itemsToRemove) {
+      const arr = this;
+      itemsToRemove.forEach((item) => {
+        const index = arr.indexOf(item);
+        if (index !== -1) {
+          arr.splice(index, 1);
+        }
+      });
+      return arr;
+    },
+    Array
+  );
 
   /*const oldToString = Object.prototype.toString;
   ExtendClass("toString", function () {
@@ -21,7 +38,7 @@ function extend() {
       return oldToString.call(this);
     }
   });*/
-  
+
   ExtendClass("randomValue", function () {
     return this[this.randomKey()];
   });
@@ -31,7 +48,7 @@ function extend() {
     function () {
       return randArrValue(this);
     },
-    Array,
+    Array
   );
 
   ExtendClass(
@@ -39,7 +56,7 @@ function extend() {
     function () {
       return randArrIndex(this);
     },
-    Array,
+    Array
   );
 
   ExtendClass("toJSONString", function () {
@@ -55,7 +72,7 @@ function extend() {
     function () {
       return [...new Set(this)];
     },
-    Array,
+    Array
   );
 
   ExtendClass("removeFalsy", function () {
@@ -71,7 +88,7 @@ function extend() {
     function () {
       return this.filter((i) => !!i);
     },
-    Array,
+    Array
   );
 
   ExtendClass(
@@ -79,7 +96,7 @@ function extend() {
     function (font) {
       return fonts[font](this);
     },
-    String,
+    String
   );
 
   ExtendClass(
@@ -87,7 +104,7 @@ function extend() {
     function () {
       return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
     },
-    String,
+    String
   );
 
   ExtendClass(
@@ -96,7 +113,7 @@ function extend() {
       const string = this.split("");
       return string.map(callback);
     },
-    String,
+    String
   );
 
   ExtendClass("forEachKey", function (callback) {
