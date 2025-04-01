@@ -165,6 +165,14 @@ export function use(obj) {
           resolve(info);
         });
       },
+      async isThreadAdmin(uid) {
+        await obj.threadsDB.ensureThreadInfo(threadID, api);
+        const { threadInfo } = await obj.threadsDB.getItem(threadID);
+
+        return Boolean(
+          threadInfo && threadInfo.adminIDs.some((i) => i.id === uid)
+        );
+      },
       sid: event.senderID,
       tid: event.threadID,
       replier: event.messageReply,

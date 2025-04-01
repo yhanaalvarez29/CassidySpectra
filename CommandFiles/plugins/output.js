@@ -152,8 +152,6 @@ export function use(obj) {
           : options.body;
       }
 
-      options.body = UNISpectra.standardizeLines(options.body);
-
       return options.body;
     }
 
@@ -201,6 +199,8 @@ export function use(obj) {
         resultInfo.originalOptionsBody = options.body;
 
         if (!options.noStyle) {
+          options.body = UNISpectra.standardizeLines(options.body);
+
           options.body = input.isWss
             ? stylerShallow.html(resultInfo.originalOptionsBody) +
               "==========>" +
@@ -214,6 +214,8 @@ export function use(obj) {
         if (options.noStyle) {
           delete options.noStyle;
         }
+        options.body = UNISpectra.standardizeLines(options.body);
+
         options.body = options.body.trim();
         const optionsCopy = { ...options };
         for (const key in options) {

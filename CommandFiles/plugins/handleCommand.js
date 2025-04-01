@@ -1,3 +1,4 @@
+// @ts-check
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -39,7 +40,7 @@ const { Cooldown } = global.utils;
 const handleCD = new Cooldown();
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} obj
  */
 export async function use(obj) {
   try {
@@ -108,8 +109,8 @@ export async function use(obj) {
       threadID,
       argPipe,
       argArrow,
-      arg,
       arguments: args,
+      isThreadAdmin,
     } = input;
     try {
       for (const key in global.listener) {
@@ -186,14 +187,7 @@ export async function use(obj) {
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
     }
-    async function isThreadAdmin(uid) {
-      await threadsDB.ensureThreadInfo(threadID, api);
-      const { threadInfo } = await threadsDB.getItem(threadID);
 
-      return Boolean(
-        threadInfo && threadInfo.adminIDs.some((i) => i.id === uid)
-      );
-    }
     obj.isThreadAdmin = isThreadAdmin;
 
     const {
@@ -318,7 +312,7 @@ export async function use(obj) {
     if (handleArgs()) {
       return;
     }
-    const user = money.getCache(senderID) || {};
+    const user = await money.getCache(senderID);
     if (user.isBanned) {
       if (isFn(banned)) {
         return await banned(obj);
@@ -596,13 +590,9 @@ ${prefix}${commandName}.${prop} ${args
         const home = new SpectralCMDHome({
           entryConfig: entry,
           isHypen: true,
-
-          entryInfo: Object.keys(entry).map((i) => {
-            return {
-              key: i,
-              description: indivMeta?.[i]?.description ?? undefined,
-            };
-          }),
+          entryInfo: Object.fromEntries(
+            Object.keys(entry).map((key) => [key, indivMeta?.[key] || {}])
+          ),
         });
         await home.runInContext(obj);
         if (willCooldown) {
@@ -617,7 +607,7 @@ ${prefix}${commandName}.${prop} ${args
     recentCMD[senderID] = recentCMD[senderID].filter((i) => i !== meta.name);
 
     recentCMD[senderID].push(meta.name);
-    await handleEntry(obj);
+    await handleEntry();
     global.checkMemoryUsage(true);
   } catch (error) {
     console.log(error);
@@ -631,7 +621,6 @@ ${prefix}${commandName}.${prop} ${args
 
 function parseError(err) {
   const date = new Date();
-  const { getHours, getSeconds, getMinutes, getDate } = date;
   return `❌ | ${date.getDate()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} - ${
     err.message
   }\n\n${err.stack}`;

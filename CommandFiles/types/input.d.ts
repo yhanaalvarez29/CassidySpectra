@@ -3,6 +3,8 @@ declare module "input-cassidy" {
     [key: string]: boolean | InpProperty;
   }
   export interface InputProps {
+    xQ?: any;
+    strictPrefix?: boolean;
     body: string;
     senderID: string;
     type: string;
@@ -59,6 +61,7 @@ declare module "input-cassidy" {
     webQ?: string;
     defStyle?: import("output-cassidy").StrictOutputForm["defStyle"];
     style?: import("output-cassidy").StrictOutputForm["style"];
+    isThreadAdmin(uid: string): Promise<boolean>;
   }
 
   export interface RepliesObj<T extends Record<string, any>> {

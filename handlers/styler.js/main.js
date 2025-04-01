@@ -1,4 +1,8 @@
-import { UNIRedux, emojiEnd } from "../../CommandFiles/modules/unisym.js";
+import {
+  UNIRedux,
+  UNISpectra,
+  emojiEnd,
+} from "../../CommandFiles/modules/unisym.js";
 
 const { fonts } = require("./fonts");
 
@@ -653,7 +657,7 @@ export function styledForHTML(text = "", StyleClass) {
       let output = "";
 
       if (styling && topLine !== "hidden" && topLine !== "whiteline") {
-        output += "<hr>";
+        output += `<br>${UNISpectra.standardLine}<br>`;
       } else if (styling && topLine === "whiteline") {
         output += "<br>";
       }
@@ -661,7 +665,7 @@ export function styledForHTML(text = "", StyleClass) {
       output += styledText;
 
       if (styling && bottomLine !== "hidden" && bottomLine !== "whiteline") {
-        output += "<hr>";
+        output += `<br>${UNISpectra.standardLine}<br>`;
       } else if (styling && bottomLine === "whiteline") {
         output += "<br>";
       }

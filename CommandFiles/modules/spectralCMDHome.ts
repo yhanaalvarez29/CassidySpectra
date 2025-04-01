@@ -1,8 +1,9 @@
-import { UNIRedux } from "./unisym.js";
+import { UNIRedux } from "@cass/unispectra";
 
 export type Config = {
   key: string;
   handler: (
+    this: Config,
     ctx: CommandContext,
     extra?: {
       targets: Config[];
@@ -11,6 +12,7 @@ export type Config = {
       cancelCooldown?: () => void;
       spectralArgs?: string[];
       cooldown?: number | undefined;
+      self: SpectralCMDHome;
     } & Record<string, unknown>
   ) => any | Promise<any>;
   description?: string | null;
@@ -147,6 +149,7 @@ export class CassCheckly {
 export class SpectralCMDHome {
   configs: Config[];
   options: {
+    allowDefaultOnCooldown?: boolean;
     home?: Config["handler"];
     isHypen?: boolean;
     argIndex?: number;
@@ -172,6 +175,7 @@ export class SpectralCMDHome {
       errorHandler,
       validator,
       defaultCategory = "General",
+      allowDefaultOnCooldown = false,
     }: {
       home?: Config["handler"];
       isHypen?: boolean;
@@ -184,6 +188,7 @@ export class SpectralCMDHome {
       validator?: CassCheckly;
       defaultCategory?: string;
       defaultKey?: string | null;
+      allowDefaultOnCooldown?: boolean;
     },
     configs?: Config[]
   ) {
@@ -204,11 +209,16 @@ export class SpectralCMDHome {
       this.addHelpCommand();
     }
 
+    this.configs = this.configs.map((i) => {
+      i.handler = i.handler.bind(i);
+      return i;
+    });
+
     this.options = {
       home:
         this.configs.find((i) => i.key === defaultKey)?.handler ??
-        home ??
-        this.defaultHome.bind(this),
+        home?.bind(undefined) ??
+        this.defaultHome?.bind(null),
       isHypen,
       argIndex,
       setup,
@@ -217,6 +227,7 @@ export class SpectralCMDHome {
       validator,
       defaultCategory,
       defaultKey,
+      allowDefaultOnCooldown,
     };
     this.cooldowns = new Map();
   }
@@ -233,14 +244,17 @@ export class SpectralCMDHome {
   }
 
   async defaultHome(
+    this: undefined,
     ctx: CommandContext,
     extra: Parameters<Config["handler"]>["1"]
   ) {
     await ctx.output.reply(
-      `${UNIRedux.arrow} ***Sub Commands***\n\n` +
+      `${extra.cooldown ? `🕒 Oops, **Cooling Down**!\n\n` : ""}${
+        UNIRedux.arrow
+      } 🔎 ***All Options***\n\n` +
         extra.itemList +
         `\n\nTry **${ctx.prefix}${ctx.commandName}${
-          this.options.isHypen ? "-" : " "
+          extra.self.options.isHypen ? "-" : " "
         }help** ${UNIRedux.charm}`
     );
   }
@@ -304,19 +318,8 @@ export class SpectralCMDHome {
     const extraCTX: Parameters<Config["handler"]>["1"] = {
       targets,
       key,
-      itemList: this.configs
-        .filter((c) => !c.hidden)
-        .map(
-          (c) =>
-            `${c.icon || "✨"} ${UNIRedux.charm} ${ctx.prefix}${
-              ctx.commandName
-            }${this.options.isHypen ? "-" : " "}**${c.key}** ${
-              this.checkCooldown(ctx, c.key)
-                ? ""
-                : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
-            }`
-        )
-        .join("\n"),
+      self: this,
+      itemList: this.createHomeLists(this.configs, ctx),
       spectralArgs,
       cancelCooldown: () => {
         const userId = ctx.input.senderID;
@@ -336,14 +339,17 @@ export class SpectralCMDHome {
       //     this.getCooldown(ctx, key) / 1000
       //   }s before using this subcommand again.`
       // );
-      return await this.options.home!(ctx, {
+      const h = this.options.allowDefaultOnCooldown
+        ? this.options.home
+        : this.defaultHome;
+      return await h.call(undefined, ctx, {
         ...extraCTX,
         cooldown: this.getCooldown(ctx, key) / 1000,
       });
     }
 
     try {
-      await this.options.setup(ctx, extraCTX);
+      await this.options.setup.call(undefined, ctx, extraCTX);
 
       if (this.options.validator) {
         const validation = this.options.validator.validateArgs(spectralArgs);
@@ -380,7 +386,11 @@ export class SpectralCMDHome {
           this.setCooldown(ctx, target.key, target.cooldown);
         }
       } else {
-        await this.options.home!(ctx, extraCTX);
+        await this.options.home!.call(
+          this.getCommand(this.options.defaultKey),
+          ctx,
+          extraCTX
+        );
       }
     } catch (error) {
       this.handleError(error, ctx);
@@ -439,14 +449,14 @@ export class SpectralCMDHome {
     if (this.options.errorHandler) {
       this.options.errorHandler(error, ctx);
     } else {
-      ctx.output.error(`❌ Error: ${error.message} ${UNIRedux.charm}`);
+      ctx.output.error(error);
     }
   }
 
   createItemList(config: Config, commandName: string, prefix: string): string {
     return `${UNIRedux.arrow} ${config.icon || "✨"} ${prefix}${commandName}${
       this.options.isHypen ? "-" : " "
-    }**${config.key}**`;
+    }**${config.key}** `;
   }
 
   createDetailedHelp(
@@ -481,6 +491,26 @@ export class SpectralCMDHome {
       .join(" ");
   }
 
+  createHomeLists(configs: Config[], ctx: CommandContext) {
+    return configs
+      .filter((c) => !c.hidden)
+      .map(
+        (c, i) =>
+          `${UNIRedux.arrowFromT} ${c.icon || "✨"} ${ctx.prefix}${
+            !this.checkCooldown(ctx, c.key)
+              ? `***${ctx.commandName}***`
+              : ctx.commandName
+          }${this.options.isHypen ? "-" : " "}${
+            !this.checkCooldown(ctx, c.key) ? `***${c.key}***` : `**${c.key}**`
+          } ${
+            this.checkCooldown(ctx, c.key)
+              ? ""
+              : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
+          }`
+      )
+      .join("\n");
+  }
+
   createItemLists(
     configs: Config[],
     commandName: string,
@@ -496,6 +526,8 @@ export class SpectralCMDHome {
   }
 
   getCommand(key: string): Config | undefined {
-    return this.configs.find((c) => c.key.toLowerCase() === key.toLowerCase());
+    return this.configs.find(
+      (c) => String(c.key).toLowerCase() === String(key).toLowerCase()
+    );
   }
 }

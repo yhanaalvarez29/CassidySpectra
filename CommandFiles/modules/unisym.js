@@ -32,8 +32,8 @@ export function emojiEnd(str) {
     (emojis ? " " + emojis : "");
   const res =
     UNISpectra.nextArrow.repeat(1) +
-    " " +
-    (emojis ? UNISpectra.wrapEmoji(emojis) + " " : "") +
+    "  " +
+    (emojis ? UNISpectra.wrapEmoji(emojis) + "  " : "") +
     nonEmojis;
   console.log(str, " => ", res);
   return res;
@@ -120,8 +120,11 @@ export class UNISpectra {
     const lines = String(text).split("\n");
     let result = lines
       .map((i) => {
-        if (i.trim().includes(this.standardLineOld)) {
+        if (i.trim().startsWith(this.standardLineStart)) {
           return this.standardLine;
+        }
+        if (i.trim().startsWith(this.standardBottomStart)) {
+          return this.standardBottom;
         }
         return i;
       })
@@ -132,6 +135,9 @@ export class UNISpectra {
   static wrapB = "❳";
   static burger = "☰"; // burger menu
   static standardLineOld = "━━━━━━━━━━━━━━━"; // Line
+  static standardLineStart = "━━━━━━━━━━━━━━━"; // Line
+  static standardBottomStart = "━━━━━━━ ✕ ━━━━━━"; // Line
+  static standardBottom = "•────── ✕ ──────•"; // Line
   static standardLine = "•───────────────•"; // Line
   static section = "§"; // Section sign
   static paragraph = "¶"; // Pilcrow sign
