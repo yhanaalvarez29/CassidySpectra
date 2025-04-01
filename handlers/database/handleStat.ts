@@ -542,6 +542,40 @@ export default class UserStatsManager {
   }
 
   /**
+   * Retrieves all cached user data, fetching any missing entries from storage.
+   * Ensures consistency by processing all entries similarly to getAll.
+   */
+  async getAllCache(): Promise<Record<string, UserData>> {
+    let allKeys: string[];
+    if (this.isMongo && this.#mongo) {
+      allKeys = await this.#mongo.keys();
+    } else {
+      allKeys = Object.keys(this.readMoneyFile());
+    }
+
+    const cachedKeys = Object.keys(this.cache);
+    const missingKeys = allKeys.filter((key) => !cachedKeys.includes(key));
+
+    if (missingKeys.length > 0) {
+      const missingData = await this.getItems(...missingKeys);
+      Object.entries(missingData).forEach(([key, userData]) => {
+        this.updateCache(key, userData);
+      });
+    }
+
+    const result: Record<string, UserData> = {};
+    for (const [key, userData] of Object.entries(this.cache)) {
+      const clean = this.process(
+        userData || { ...this.defaults, lastModified: Date.now() },
+        key
+      );
+      result[key] = JSON.parse(JSON.stringify(clean));
+    }
+
+    return result;
+  }
+
+  /**
    * Wrapper of KeyValue.find of mongoose schema, more precise and saves bandwidth
    */
   query(
