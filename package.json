@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/lodash": "^4.17.16",
     "@types/source-map-support": "^0.5.10",
     "git-cliff": "^2.8.0",
     "typescript": "^5.7.3"
