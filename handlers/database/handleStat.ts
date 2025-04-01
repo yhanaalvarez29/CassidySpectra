@@ -49,6 +49,7 @@ export default class UserStatsManager {
   cache: Record<string, UserData>;
   kv: typeof CassMongo.prototype.KeyValue;
   collection;
+  ignoreQueue: string[];
 
   constructor(
     filePath: string,
@@ -75,6 +76,7 @@ export default class UserStatsManager {
     });
 
     this.cache = {};
+    this.ignoreQueue = [];
   }
 
   setMongo(mongo: CassMongo) {
@@ -628,39 +630,56 @@ export default class UserStatsManager {
     record: T
   ): Record<`${number}` | number, UserData> {
     return Object.fromEntries(
-      Object.entries(record).filter((i) => !isNaN(parseInt(i[0])))
+      Object.entries(record).filter((i) => this.isNumKey(i[0]))
     );
   }
 
+  isNumKey(key: string) {
+    return !isNaN(parseInt(key));
+  }
+
+  /**
+   * Use with caution.
+   */
   async saveThreadInfo(
     threadID: string,
     api: Record<string, unknown> | undefined
   ) {
-    if (isNaN(parseInt(threadID))) {
-      return false;
-    }
-    if (typeof api?.getThreadInfo === "function") {
-      const threadInfo = await api.getThreadInfo(threadID);
-      if (!threadInfo) {
+    try {
+      if (this.ignoreQueue.includes(threadID)) {
         return false;
       }
-      const data = {
-        threadInfo: {
-          threadID: threadID,
-          threadName: threadInfo.threadName,
-          emoji: threadInfo.emoji,
-          adminIDs: threadInfo.adminIDs,
-          participantIDs: threadInfo.participantIDs,
-          isGroup: threadInfo.isGroup,
-        },
-        tdCreateTime: {
-          timestamp: Date.now(),
-        },
-      };
-      await this.setItem(threadID, { ...data });
-      return true;
+      if (isNaN(parseInt(threadID))) {
+        return false;
+      }
+      if (typeof api?.getThreadInfo === "function") {
+        this.ignoreQueue.push(threadID);
+        const threadInfo = await api.getThreadInfo(threadID);
+        if (!threadInfo) {
+          return false;
+        }
+        const data = {
+          threadInfo: {
+            threadID: threadID,
+            threadName: threadInfo.threadName,
+            emoji: threadInfo.emoji,
+            adminIDs: threadInfo.adminIDs,
+            participantIDs: threadInfo.participantIDs,
+            isGroup: threadInfo.isGroup,
+          },
+          tdCreateTime: {
+            timestamp: Date.now(),
+          },
+        };
+        await this.setItem(threadID, { ...data });
+        this.ignoreQueue = this.ignoreQueue.filter((i) => i !== threadID);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
-    return false;
   }
 
   async ensureUserInfo(userID: string) {
@@ -686,22 +705,35 @@ export default class UserStatsManager {
     return true;
   }
 
+  /**
+   * Use with caution.
+   */
   async saveUserInfo(userID: string) {
-    if (isNaN(parseInt(userID))) {
+    try {
+      if (this.ignoreQueue.includes(userID)) {
+        return false;
+      }
+      if (isNaN(parseInt(userID))) {
+        return false;
+      }
+      this.ignoreQueue.push(userID);
+      const data = {
+        userMeta: await fetchMeta(userID, true),
+      };
+
+      if (
+        !data.userMeta ||
+        Object.values(data.userMeta).some((i) => i === "Not found")
+      )
+        return false;
+
+      await this.setItem(userID, { ...data });
+      this.ignoreQueue = this.ignoreQueue.filter((i) => i !== userID);
+      return true;
+    } catch (error) {
+      console.error(error);
       return false;
     }
-    const data = {
-      userMeta: await fetchMeta(userID, true),
-    };
-
-    if (
-      !data.userMeta ||
-      Object.values(data.userMeta).some((i) => i === "Not found")
-    )
-      return false;
-
-    await this.setItem(userID, { ...data });
-    return true;
   }
 
   /**

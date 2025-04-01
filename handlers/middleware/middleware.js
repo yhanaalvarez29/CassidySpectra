@@ -475,6 +475,36 @@ api.${key}(${args
     styler.activateAllPresets();
     runObjects.styler = styler;
 
+    // LMAO autoCreateDB finally got purpose.
+    const { autoCreateDB } = global.Cassidy.config;
+    if (
+      handleStat.isNumKey(event.senderID) &&
+      autoCreateDB &&
+      event.isFacebook
+    ) {
+      let i = await handleStat.ensureUserInfo(event.senderID);
+
+      if (i) {
+        console.log("[AutoCreateDB]", `Created userMeta for ${event.senderID}`);
+      }
+    }
+
+    if (
+      event.threadID !== event.senderID &&
+      handleStat.isNumKey(event.threadID) &&
+      autoCreateDB &&
+      event.isFacebook
+    ) {
+      let i = await threadsDB.ensureThreadInfo(event.senderID, api);
+
+      if (i) {
+        console.log(
+          "[AutoCreateDB]",
+          `Created threadInfo for ${event.threadID}`
+        );
+      }
+    }
+
     // [new] Spectra Plugin Handling
     let allDataKeys = [];
     const symbolSkip = Symbol("skip");

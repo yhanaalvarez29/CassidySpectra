@@ -144,6 +144,12 @@ declare module "cassidy-userData" {
     tdCreateTime?: {
       timestamp: number;
     };
+    userMeta?: {
+      name: string;
+      image: string;
+      url: string;
+      desc: string;
+    };
   };
 
   type NullableUserData = {

@@ -61,6 +61,7 @@ export interface InputProps {
   defStyle?: import("output-cassidy").StrictOutputForm["defStyle"];
   style?: import("output-cassidy").StrictOutputForm["style"];
   isThreadAdmin(uid: string): Promise<boolean>;
+  isFacebook?: boolean;
 }
 
 export interface RepliesObj<T extends Record<string, any>> {
