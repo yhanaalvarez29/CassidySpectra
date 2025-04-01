@@ -27,6 +27,7 @@ export interface StrictOutputForm {
   isReply?: boolean;
   messageID?: string;
   noLevelUI?: boolean;
+  noRibbonUI?: boolean;
 }
 export interface OutputResult extends StrictOutputForm {
   messageID: string;
@@ -62,8 +63,16 @@ export interface OutputProps {
   reaction(emoji: string, mid?: string): Promise<void>;
   prepend: string;
   append: string;
-  replyStyled(body: string, style: any, thread?: string): Promise<OutputResult>;
-  sendStyled(body: string, style: any, thread?: string): Promise<OutputResult>;
+  replyStyled(
+    form: OutputForm,
+    style: any,
+    thread?: string
+  ): Promise<OutputResult>;
+  sendStyled(
+    form: OutputForm,
+    style: any,
+    thread?: string
+  ): Promise<OutputResult>;
   Styled: {
     new (style: any): {
       style: any;

@@ -128,7 +128,7 @@ class CustomAI {
   }
 }
 
-class CassExpress {
+export class CassExpress {
   constructor(cassExpress) {
     this.cassExpress = JSON.parse(JSON.stringify(cassExpress));
     this.cassExpress.mailList = (this.cassExpress.mailList || []).filter(

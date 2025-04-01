@@ -1,3 +1,5 @@
+// @ts-check
+import { CassExpress } from "@cass-plugins/cassexpress";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { UNIRedux } from "@cassidy/unispectra";
 import { PasteClient } from "pastebin-api";
@@ -6,7 +8,7 @@ export const meta = {
   name: "identity",
   description:
     "Changes your identity or persona, allowing you to update your display name or alter how you are represented in the system. This command provides you with options to personalize your name, nickname, and other profile aspects.",
-  author: "Liane",
+  author: "Liane | JenicaDev",
   version: "1.1.1",
   usage: "{prefix}setname <newName>",
   category: "User Management",
@@ -17,6 +19,12 @@ export const meta = {
   otherNames: ["id", "users"],
   requirement: "3.0.0",
   icon: "💬",
+};
+
+export const style2 = {
+  title: "🍃 Change User",
+  titleFont: "fancy",
+  contentFont: "fancy",
 };
 
 const { parseCurrency: pCy } = global.utils;
@@ -37,12 +45,15 @@ const home = new ReduxCMDHome(
       description:
         "View your profile details, such as name, bio, exp, and level",
       aliases: ["-p", "show", "view"],
+      async handler({ output }) {
+        return output.reply(`Coming soon!`);
+      },
     },
     {
       key: "find",
       description: "Search for users by name.",
       aliases: ["-s", "search"],
-      async handler({ input, output, money, icon }) {
+      async handler({ input, output, money }) {
         const query = input.arguments.join(" ").trim().toLowerCase();
         if (!query) {
           output.reply(`Please provide a query to search for users.`);
@@ -89,113 +100,107 @@ const home = new ReduxCMDHome(
       description: "Set or change your display name.",
       args: ["<new name> (No Spaces)"],
       aliases: ["set", "-s"],
-      async handler({
-        input,
-        output,
-        money,
-        args,
-        Inventory,
-        CassExpress,
-        prefix,
-      }) {
-        const userData = await money.get(input.senderID);
-        let isRequire = !!userData.name;
-        const name = args.join(" ");
-        const inventory = new Inventory(userData.inventory);
-        const cassExpress = new CassExpress(userData.cassExpress ?? {});
-        if (!inventory.has("nameChanger") && isRequire) {
-          return output.reply(
-            "A 🎟️ **Name Changer** is required for this action."
+      async handler({ input, output, money, args, prefix }) {
+        const allData = await money.getAll();
+        let userData = allData[input.senderID] ?? { ...money.defaults };
+        let { usernameHistory = [], cassExpress = {} } = userData;
+        const oldName = userData.name || "Unregistered";
+        const newName = money.normalizeName(args[0] || "").finalName;
+
+        if (!newName || newName.length < 3 || newName.length > 20) {
+          return output.replyStyled(
+            {
+              body:
+                `👤 **${oldName}** (Change User)\n\n` +
+                `${UNIRedux.arrow} ❌ | Name must be 3-20 characters.\n\nExample: ${prefix}changeuser Nicaa`,
+              noRibbonUI: true,
+            },
+            style2
           );
         }
-        if (!name || name.length > 20) {
-          return output.reply(
-            `❌ Please enter a valid name (lower than 20 characters)\n\n***Example***: ${prefix}id-setname Liane`
+
+        if (!/^[a-zA-Z0-9]+$/.test(newName)) {
+          return output.replyStyled(
+            {
+              body:
+                `👤 **${oldName}** (Change User)\n\n` +
+                `${UNIRedux.arrow} ❌ | Name can only contain letters and numbers.\n\nExample: ${prefix}changeuser Nicaa`,
+              noRibbonUI: true,
+            },
+            style2
           );
         }
-        const names = {
-          chara: "The true name.",
-          frisk: "This name will trigger hardmode, proceed anyway?",
-          sans: "You cannot use this name.",
-          papyrus: "Are you kidding me? You cannot use this name.",
-          alphys: "Can you atleast find your original name",
-          undyne: "Very original.",
-          toriel: "You are not goat mom!",
-          asgore: "You are not goat dad!",
-          martlet: "You are not a royal guard.",
-          clover: "AMERICA! AMERICA!",
-          ceroba: "You are not a fox.",
-          liane: "Nice try.",
-          nea: "Queen Nean is tired of licensing her name.",
-          nean: "It's nea, but worse",
-          kaye: "Just.. don't use this name",
-          asriel: "You are nor goat prince.",
-          starlo: "No america for you.",
-          flowey: "Stfu.",
-          sand: "I will let this one slide",
-          papyru: "It doesn't have s, so proceed anyway.",
-          muffet: "No no no spiders for now",
-          mettaton: "I'm not a robot.",
-          mtt: "No way, he used MTT, mettaton will gonna be mad.",
-          axis: "Sorry human but you don't [freaking] deserve this name.",
-          chujin: "Steamworks..",
-          kanako: "Okay nevermind.",
-          get gaster() {
-            const err = {};
-            err.stack = "system:sound_test";
-            err.name = "Uknown";
-            err.message =
-              "Unknown issue. Beware of the man who speaks in hands.";
-            throw err;
-          },
-        };
-        const allowed = ["chara", "frisk", "clover", "sand", "papyru"];
-        if (
-          !names[name.toLowerCase()] ||
-          !Object.keys(names).some((i) =>
-            name.toLowerCase().includes(i.toLowerCase())
-          )
-        ) {
-          allowed.push(name.toLowerCase());
+
+        if (Object.values(allData).some((i) => i.name === newName)) {
+          return output.replyStyled(
+            {
+              body:
+                `👤 **${oldName}** (Change User)\n\n` +
+                `${UNIRedux.arrow} ❌ | That name’s taken! Try something unique.`,
+              noRibbonUI: true,
+            },
+            style2
+          );
         }
-        const nameOk = allowed.includes(name.toLowerCase());
-        let proceed = isRequire ? `Proceed for 1 🎟️` : `Proceed (Free 1st)`;
-        const i = await output.reply(
-          `${UNIRedux.charm} ${
-            names[name] || names[name.toLowerCase()] || "Is the name correct?"
-          }\n\n**${name.split("").join(" ")}**\n\n${
-            nameOk
-              ? `🔍 Please reply **'proceed'** without prefix if the name is correct.${
-                  isRequire
-                    ? "\n⚠️ This will cost you 1 🎟️ **Name Changer** item."
-                    : "\n🎁 Your first name change is **free**."
-                }`
-              : "❌ You cannot use this name. Please select a different one."
-          }\n\n🎟️ **${inventory.getAmount("nameChanger")}**`
-        );
-        input.setReply(i.messageID, {
-          key: "changename",
-          isRequire,
-          name,
-          userData,
-          inventory,
+
+        const isPreviousName =
+          usernameHistory.includes(newName) && newName !== oldName;
+
+        if (!usernameHistory.includes(newName)) {
+          usernameHistory.push(newName);
+          while (usernameHistory.length > 30) {
+            usernameHistory.shift();
+          }
+        }
+
+        const userCassExpress = new CassExpress(cassExpress);
+
+        userCassExpress.createMail({
+          title: `🍃 Name Changed`,
           author: input.senderID,
-          detectID: i.messageID,
-          callback: replySet,
+          body:
+            `Your name has been updated!\n\n` +
+            `${UNIRedux.arrow} Old Name: **${oldName}**\n` +
+            `${UNIRedux.arrowFromT} New Name: **${newName}**\n` +
+            `${
+              isPreviousName
+                ? `${UNIRedux.arrowFromT} Note: You’ve used this name before!\n`
+                : ""
+            }` +
+            `${UNIRedux.arrowFromT} Changed on: ${new Date().toLocaleString()}`,
+          timeStamp: Date.now(),
         });
+
+        await money.set(input.senderID, {
+          name: newName,
+          usernameHistory,
+          cassExpress: userCassExpress.raw(),
+        });
+
+        return output.replyStyled(
+          {
+            body:
+              `👤 ***${oldName}*** => **${newName}**\n\n` +
+              `${UNIRedux.arrow} ✅ | Your name is now "**${newName}**"!\n` +
+              `${
+                isPreviousName
+                  ? `${UNIRedux.arrowFromT} Back to an old favorite, huh?\n`
+                  : ""
+              }` +
+              `${UNIRedux.arrowFromT} Check your mail for details!`,
+            noRibbonUI: true,
+          },
+          style2
+        );
       },
     },
-    {
-      key: "unregister",
-      description: "Unregister your account or remove personal information.",
-      aliases: ["-u"],
-    },
+
     {
       key: "count",
       description:
         "Lists the total number of users and visualizes user statistics",
       aliases: ["-c"],
-      async handler({ output, input, money }) {
+      async handler({ output, money }) {
         const allUsers = await money.getAll();
         const userCount = Object.keys(allUsers).length;
         const formattedUserCount = pCy(userCount);
@@ -245,6 +250,7 @@ const home = new ReduxCMDHome(
           const client = new PasteClient("R02n6-lNPJqKQCd5VtL4bKPjuK6ARhHb");
           const url = await client.createPaste({
             code: fileContent,
+            // @ts-ignore
             expireDate: "N",
             format: "json",
             name: `${ID}.json`,
@@ -265,33 +271,4 @@ const home = new ReduxCMDHome(
 
 export async function entry(ctx) {
   return home.runInContext(ctx);
-}
-async function replySet({ input, output, repObj, money }) {
-  try {
-    if (repObj.author !== input.senderID) {
-      return output.replyStyled(`This is not your name change request.`, style);
-    }
-    const { name, userData, inventory, author } = repObj;
-    if (input.words[0] === "back") {
-      return output.replyStyled(`It's okay, go back!`, style);
-    }
-    if (!input.body.toLowerCase().startsWith("proceed")) {
-      return;
-    }
-    inventory.deleteOne("nameChanger");
-    userData.inventory = Array.from(inventory);
-    userData.name = name;
-    input.delReply(repObj.detectID);
-    await money.set(author, {
-      inventory: userData.inventory,
-      name: userData.name,
-    });
-    return output.replyStyled(
-      `✅ Successfully changed your name to "${name}"`,
-      style
-    );
-  } catch (error) {
-    console.error(error);
-    output.error(error);
-  }
 }
