@@ -47,7 +47,7 @@ export class ReduxCMDHome {
       argIndex?: number;
       setup?: Config["handler"];
       entryConfig?: Record<string, Config["handler"]>;
-      entryInfo?: { [key: string]: null | Config };
+      entryInfo?: { [key: string]: null | Partial<Config> };
     },
     configs?: Config[]
   ) {

@@ -621,10 +621,24 @@ export default class UserStatsManager {
     }
   }
 
+  /**
+   * Ensures only numerical (FB) ids exist, use when you need to use database keys as value for bot related tasks
+   */
+  filterNumKeys<T extends Record<string, UserData>>(
+    record: T
+  ): Record<`${number}` | number, UserData> {
+    return Object.fromEntries(
+      Object.entries(record).filter((i) => !isNaN(parseInt(i[0])))
+    );
+  }
+
   async saveThreadInfo(
     threadID: string,
     api: Record<string, unknown> | undefined
   ) {
+    if (isNaN(parseInt(threadID))) {
+      return false;
+    }
     if (typeof api?.getThreadInfo === "function") {
       const threadInfo = await api.getThreadInfo(threadID);
       if (!threadInfo) {
@@ -673,6 +687,9 @@ export default class UserStatsManager {
   }
 
   async saveUserInfo(userID: string) {
+    if (isNaN(parseInt(userID))) {
+      return false;
+    }
     const data = {
       userMeta: await fetchMeta(userID, true),
     };
