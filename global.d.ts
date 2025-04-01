@@ -55,7 +55,7 @@ declare global {
   interface GameSimulatorConstructor extends GameSimulator {}
 
   interface CommandContextOG {
-    [key: string]: any;
+    [key: string]: unknown;
     money: Cass.UserStatsManager;
     Inventory: typeof Inventory;
     Collectibles: typeof Collectibles;
@@ -66,14 +66,36 @@ declare global {
     commandName?: string;
     prefix: string;
     prefixes: string[];
-    commands: { [key: string]: any };
     CassEXP: typeof CassEXP;
-    userDataCache: UserData;
+    commands: { [key: string]: CassidySpectra.CassidyCommand };
+    command?: CassidySpectra.CassidyCommand;
+    userDataCache?: UserData;
     GameSimulator: typeof GameSimulator;
     replyStystem?: ReplySystem;
     reactSystem?: ReactSystem;
     threadsDB: UserStatsManager;
     usersDB: UserStatsManager;
+    api: any;
+    event: any;
+    allPlugins: { [key: string]: any };
+    queue: any[][];
+    origAPI: any;
+    hasPrefix: boolean;
+    invTime: number;
+    icon: string;
+    Cassidy: CassidySpectra.GlobalCassidy;
+    safeCalls: number;
+    discordApi: any;
+    pageApi: any;
+    awaitStack: { [key: string]: string[] };
+    setAwaitStack: (id: string, key: string) => void;
+    delAwaitStack: (id: string, key: string) => void;
+    hasAwaitStack: (id: string, key: string) => boolean;
+    clearCurrStack: () => void;
+    allObj: CommandContext;
+    userStat: Cass.UserStatsManager;
+    next?: () => void;
+    styler?: CassidyResponseStylerControl;
   }
 
   type CommandContext = CommandContextOG;
@@ -183,8 +205,20 @@ declare global {
   }
 }
 
+declare global {
+  var Cassidy: CassidySpectra.GlobalCassidy;
+  var handleStat: UserStatsManager;
+
+  var require: NodeRequire & {
+    url(url: string): Promise<any>;
+  };
+
+  var cassMongoManager: CassMongoManager | undefined;
+}
+
 import type { UserStatsManager } from "cassidy-userData";
 import { CassMongoManager } from "./handlers/database/cass-mongo.js";
+import type { CassidyResponseStylerControl } from "@cassidy/styler";
 declare global {
   /**
    * Custom utility type to mark CassidySpectra-specific extensions
