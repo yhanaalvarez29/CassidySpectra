@@ -77,6 +77,21 @@ export async function use(obj) {
       });
     });
   };
+  obj.output.addReactionListener = async (body, callback) => {
+    return new Promise(async (resolve, reject) => {
+      const { reactSystem } = obj;
+
+      reactSystem.set(messageID, {
+        callback:
+          callback ||
+          (async ({ input, repObj: { resolve } }) => {
+            resolve(input);
+          }),
+        resolve,
+        reject,
+      });
+    });
+  };
   obj.output.quickWaitReact = async (body, options = {}) => {
     if (input.isWeb) {
       return input;

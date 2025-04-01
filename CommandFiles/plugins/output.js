@@ -11,7 +11,7 @@ import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 export const meta = {
   name: "output",
   author: "Liane Cagara",
-  version: "1.0.0",
+  version: "1.0.1",
   description: "Output is a plugin that simplifies output responses.",
   supported: "^1.0.0",
   order: 3,
@@ -27,6 +27,67 @@ export const style = {
   contentFont: "fancy",
   titleFont: "bold",
 };
+
+/**
+ * @implements {import("output-cassidy").OutputResultInf}
+ */
+export class OutputResult {
+  /**
+   *
+   * @param {CommandContext} ctx
+   * @param {import("output-cassidy").OutputResultInf} result
+   */
+
+  constructor(ctx, result) {
+    Object.assign(result, this);
+
+    this.ctx = ctx;
+    this.result = result;
+    this.messageID = this.result.messageID;
+    this.body = this.result.body;
+    this.attachment = this.result.attachment;
+    this.callback = this.result.callback;
+    this.defStyle = this.result.defStyle;
+    this.html = this.result.html;
+    this.isReply = this.result.isReply;
+    this.location = this.result.location;
+    this.mentions = this.result.mentions;
+    this.messageID = this.result.messageID;
+    this.noLevelUI = this.result.noLevelUI;
+    this.noStyle = this.result.noStyle;
+    this.originalOptionsBody = this.result.originalOptionsBody;
+    this.referenceQ = this.result.referenceQ;
+    this.senderID = this.result.senderID;
+    this.style = this.result.style;
+    this.styleFields = this.result.styleFields;
+    this.threadID = this.result.threadID;
+    this.timestamp = this.result.timestamp;
+  }
+
+  /**
+   *
+   * @param {Parameters<import("output-cassidy").OutputProps["addReplyListener"]>[1]} callback
+   */
+  reply(callback) {
+    if (typeof callback !== "function") {
+      throw new TypeError("Callback is not a function.");
+    }
+
+    return this.ctx.output.addReplyListener(this.messageID, callback);
+  }
+
+  /**
+   *
+   * @param {Parameters<import("output-cassidy").OutputProps["addReactionListener"]>[1]} callback
+   */
+  reaction(callback) {
+    if (typeof callback !== "function") {
+      throw new TypeError("Callback is not a function.");
+    }
+
+    return this.ctx.output.addReactionListener(this.messageID, callback);
+  }
+}
 
 export class CassidyIO {
   input;

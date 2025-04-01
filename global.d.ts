@@ -101,7 +101,10 @@ declare global {
 
   type CommandContext = CommandContextOG;
 
-  type CommandEntry = (ctx: CommandContext) => any | Promise<any>;
+  type CommandEntry = (
+    ctx: CommandContext,
+    ...args: any[]
+  ) => any | Promise<any>;
 
   type UserData = Cass.UserData;
 
