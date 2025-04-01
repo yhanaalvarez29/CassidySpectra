@@ -443,6 +443,7 @@ api.${key}(${args
       userStat: handleStat,
     };
     runObjects.allObj = runObjects;
+    runObjects.ctx = runObjects;
     let command2 =
       commands[commandName] || commands[commandName.toLowerCase()] || null;
     if (!isLink) {

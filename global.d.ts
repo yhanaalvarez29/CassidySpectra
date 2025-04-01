@@ -96,6 +96,7 @@ declare global {
     userStat: Cass.UserStatsManager;
     next?: () => void;
     styler?: CassidyResponseStylerControl;
+    ctx: CommandContext;
   }
 
   type CommandContext = CommandContextOG;
