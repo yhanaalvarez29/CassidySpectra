@@ -17,6 +17,7 @@ export const meta = {
   order: 3,
   IMPORTANT: true,
   type: "plugin",
+  after: ["input"],
   expect: ["CassidyIO", "output", "outputOld", "AutoEdit", "cassIO"],
 };
 const { delay } = global.utils;

@@ -5,7 +5,8 @@ export const meta = {
   version: "1.0.1",
   supported: "^1.0.0",
   type: "plugin",
-  order: 10,
+  order: 900,
+  after: ["replySystem", "reactSystem"],
 };
 
 export async function use(obj) {

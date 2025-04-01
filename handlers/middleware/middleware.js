@@ -9,6 +9,7 @@ import fs from "fs";
 import UserStatsManager, { init } from "../../handlers/database/handleStat";
 import axios from "axios";
 import { SymLock } from "../loaders/loadCommand.js";
+import { join, resolve } from "path";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
@@ -69,7 +70,7 @@ function sortPluginLegacy(allPlugins) {
 }
 
 // [new] Spectra Plugin Sorting
-function sortPlugin(allPlugins) {
+function sortPluginKindaOld(allPlugins) {
   queue.length = 0;
   const sortedPlugins = [];
 
@@ -94,6 +95,134 @@ function sortPlugin(allPlugins) {
   return queue;
 }
 
+// [newest] Spectra Plugin Sorting
+const fs = require("fs");
+const { join, dirname } = require("path");
+
+export function sortPlugin(allPlugins) {
+  const savePath = join(process.cwd(), "CommandFiles", "plugin-order.json");
+  queue.length = 0;
+  const pluginMap = new Map();
+  const processed = new Set();
+  const visiting = new Set();
+  const circularDependencies = new Set();
+  const jsonData = {
+    timestamp: new Date().toISOString(),
+    orders: [],
+  };
+
+  const logDir = dirname(savePath);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  for (const pluginName in allPlugins) {
+    const plugin = allPlugins[pluginName];
+    plugin.meta = plugin.meta || {};
+    plugin.meta.name = plugin.meta.name || pluginName;
+    plugin.meta.order = plugin.meta.order ?? 0;
+    plugin.meta.before = plugin.meta.before || [];
+    plugin.meta.after = plugin.meta.after || [];
+    plugin.meta.orderLast = plugin.meta.orderLast ?? 0;
+    pluginMap.set(plugin.meta.name, plugin);
+  }
+
+  function calculateOrder(pluginName, depth = 0) {
+    const plugin = pluginMap.get(pluginName);
+    if (!plugin || processed.has(pluginName)) return true;
+    if (visiting.has(pluginName)) {
+      circularDependencies.add(pluginName);
+      queue.push([plugin]);
+      return false;
+    }
+
+    visiting.add(pluginName);
+
+    for (const afterName of plugin.meta.after) {
+      if (pluginMap.has(afterName) && !processed.has(afterName)) {
+        if (!calculateOrder(afterName, depth + 1)) {
+          visiting.delete(pluginName);
+          return false;
+        }
+      }
+    }
+
+    for (const beforeName of plugin.meta.before) {
+      if (pluginMap.has(beforeName) && !processed.has(beforeName)) {
+        if (!calculateOrder(beforeName, depth + 1)) {
+          visiting.delete(pluginName);
+          return false;
+        }
+      }
+    }
+
+    visiting.delete(pluginName);
+    processed.add(pluginName);
+    queue.push([plugin]);
+    return true;
+  }
+
+  for (const pluginName of pluginMap.keys()) {
+    if (!processed.has(pluginName)) {
+      calculateOrder(pluginName);
+    }
+  }
+
+  queue.sort((groupA, groupB) => {
+    const orderA = groupA[0].meta.order + groupA[0].meta.orderLast / 1000;
+    const orderB = groupB[0].meta.order + groupB[0].meta.orderLast / 1000;
+    return orderA - orderB;
+  });
+
+  let currentGroup = [];
+  const finalGroups = [];
+  const flatPlugins = queue.flat();
+  flatPlugins.forEach((plugin, index) => {
+    const prevPlugin = index > 0 ? flatPlugins[index - 1] : null;
+    const effectiveOrder = plugin.meta.order + plugin.meta.orderLast / 1000;
+
+    if (
+      currentGroup.length === 0 ||
+      (prevPlugin &&
+        Math.floor(prevPlugin.meta.order + prevPlugin.meta.orderLast / 1000) !==
+          Math.floor(effectiveOrder))
+    ) {
+      if (currentGroup.length > 0) {
+        finalGroups.push(currentGroup);
+      }
+      currentGroup = [];
+    }
+    currentGroup.push(plugin);
+  });
+
+  if (currentGroup.length > 0) {
+    finalGroups.push(currentGroup);
+  }
+
+  queue.flat().forEach((plugin) => {
+    jsonData.orders.push({
+      name: plugin.meta.name,
+      status: circularDependencies.has(plugin.meta.name)
+        ? "circular"
+        : "processed",
+      isCircular: circularDependencies.has(plugin.meta.name),
+      computedOrder: plugin.meta.order + plugin.meta.orderLast / 1000,
+      originalOrder: plugin.meta.order,
+      before: [...plugin.meta.before],
+      after: [...plugin.meta.after],
+      orderLast: plugin.meta.orderLast,
+    });
+  });
+
+  try {
+    fs.writeFileSync(savePath, JSON.stringify(jsonData, null, 2));
+    console.log(`Plugin load order log written to ${savePath}`);
+  } catch (err) {
+    console.error(`Failed to write log file: ${err}`);
+  }
+
+  return finalGroups;
+}
 export async function middleware({ allPlugins }) {
   handleStat = init();
   threadsDB = init({
@@ -104,7 +233,7 @@ export async function middleware({ allPlugins }) {
   global.handleStat = handleStat;
   await handleStat.connect();
   sortPlugin(allPlugins);
-  // console.log("PLUGIN QUEUE", queue);
+
   return handleMiddleWare;
 }
 

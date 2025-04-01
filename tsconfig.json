@@ -43,7 +43,9 @@
       "@cass-plugins/*": ["./CommandFiles/plugins/*"],
       "@cass-commands/*": ["./CommandFiles/commands/*"],
       "@cassidy/styler": ["./handlers/styler.js/main"],
-      "@cass/define": ["./handlers/definers/defineEntry"]
+      "@cass/define": ["./handlers/definers/defineEntry"],
+      "@cass/plugin-order": ["./CommandFiles/pluginOrder.js"],
+      "@cassidy/plugin-order": ["./CommandFiles/pluginOrder.js"]
     }
   },
   "exclude": ["node_modules"],

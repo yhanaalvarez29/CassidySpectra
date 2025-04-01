@@ -122,6 +122,9 @@ export async function loadPlugin(name, allPlugins, force) {
       console.log(error);
     }
   }
+
+  plugin.filePath = `CommandFiles/plugins/${name}`;
+  plugin.fileName = name;
   allPlugins[meta.name] = plugin;
   global.logger(`Loaded plugin '${meta.name}!'`, "Plugin");
   global.checkMemoryUsage(true);

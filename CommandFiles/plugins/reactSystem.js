@@ -5,9 +5,10 @@ export const meta = {
     "This is a reaction system where you can push reactions and detect it, also delete reactiondetects",
   version: "1.0.0",
   supported: "^1.0.0",
-  order: 10,
+  order: 799,
   type: "plugin",
   expect: ["reactSystem"],
+  after: ["input", "output"],
 };
 global.currData = {};
 

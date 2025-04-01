@@ -34,6 +34,7 @@ export const meta = {
   supported: "^1.0.0",
   IMPORTANT: true,
   type: "plugin",
+  order: 1000,
 };
 
 const { Cooldown } = global.utils;

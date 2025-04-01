@@ -15,6 +15,7 @@ export const meta = {
   supported: "^2.5.0",
   order: 4,
   type: "plugin",
+  after: ["input", "output"],
 };
 
 export async function use(obj) {

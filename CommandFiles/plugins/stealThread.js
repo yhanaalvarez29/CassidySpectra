@@ -7,6 +7,7 @@ export const meta = {
   order: 20,
   type: "plugin",
   expect: ["startSteal"],
+  after: ["input", "output"],
 };
 
 export function use(obj) {

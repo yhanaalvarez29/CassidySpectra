@@ -7,6 +7,8 @@ export const meta = {
   supported: "^1.0.0",
   type: "plugin",
   category: "events",
+  after: ["output", "input"],
+  order: 100,
 };
 
 const { Cassidy } = global;

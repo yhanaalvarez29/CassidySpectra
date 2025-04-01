@@ -5,9 +5,10 @@ export const meta = {
     "This is a reply system where you can push replies and detect it, also delete reply detects",
   version: "1.0.0",
   supported: "^1.0.0",
-  order: 10,
+  order: 800,
   type: "plugin",
   expect: ["replySystem"],
+  after: ["input", "output"],
 };
 global.currData = {};
 
