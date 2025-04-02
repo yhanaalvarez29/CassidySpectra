@@ -321,7 +321,7 @@ export default class UserStatsManager {
     const queryResult = await this.#mongo.KeyValue.find({ key }).select(
       selectedFields
     );
-    const partialData = queryResult?.[0] || {};
+    const partialData = queryResult?.[0].value || {};
 
     return this.processProperties(partialData, key, propertyNames);
   }
@@ -795,5 +795,12 @@ export default class UserStatsManager {
         throw error;
       }
     }
+  }
+
+  /**
+   * @private
+   */
+  exposeMongo() {
+    return this.#mongo;
   }
 }
