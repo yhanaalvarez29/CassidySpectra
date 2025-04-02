@@ -305,31 +305,32 @@ export default class UserStatsManager {
     return users[key];
   }
 
-  async queryItem(
+  async queryItem<T extends keyof UserData>(
     key: string,
-    ...propertyNames: string[]
-  ): Promise<Record<string, any>> {
+    ...propertyNames: T[]
+  ): Promise<Pick<UserData, T>> {
     if (!this.isMongo) {
       const data = this.readMoneyFile();
       const userData = data[key] || {};
       return this.processProperties(userData, key, propertyNames);
     }
 
-    const queryResult = await this.query(
-      (doc) =>
-        doc && doc.where("key").equals(key).select(propertyNames.join(" "))
+    const selectedFields = propertyNames
+      .map((prop) => `value.${prop}`)
+      .join(" ");
+    const queryResult = await this.#mongo.KeyValue.find({ key }).select(
+      selectedFields
     );
-
     const partialData = queryResult?.[0] || {};
 
     return this.processProperties(partialData, key, propertyNames);
   }
 
-  private processProperties(
+  private processProperties<T extends keyof UserData>(
     userData: Partial<UserData>,
     userID: string,
-    propertyNames: string[]
-  ): Record<string, any> {
+    propertyNames: T[]
+  ): Pick<UserData, T> {
     const processedData = this.process(
       { ...this.defaults, ...userData } as UserData,
       userID
