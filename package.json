@@ -15,6 +15,7 @@
   "type": "commonjs",
   "license": "ISC",
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.6",
     "@types/axios": "^0.9.36",
     "@types/cors": "^2.8.17",
     "@types/form-data": "^2.2.1",
@@ -57,13 +58,14 @@
     "tsconfig-paths": "^4.2.0",
     "ws": "^8.17.1",
     "ws3-fca": "^1.0.47",
-    "yt-search": "^2.10.4",
+    "yt-search": "^2.12.1",
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.16",
     "@types/source-map-support": "^0.5.10",
+    "@types/yt-search": "^2.10.3",
     "git-cliff": "^2.8.0",
     "typescript": "^5.7.3"
   },
