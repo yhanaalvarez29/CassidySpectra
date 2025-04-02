@@ -375,6 +375,40 @@ export default class UserStatsManager {
   }
 
   /**
+   * Gets more than one user data from the cache (bulk).
+   * For keys not found in the cache, it falls back to getting the data from the database or file.
+   * Does NOT update the cache.
+   */
+  async getCaches<K extends readonly string[]>(
+    ...keys: K
+  ): Promise<Record<K[number], UserData>> {
+    const missingKeys: string[] = [];
+
+    const cacheData = Object.fromEntries(
+      keys.map((keyx: string) => {
+        const cachedData = this.cache[keyx];
+
+        if (cachedData) {
+          return [keyx, this.process(cachedData, keyx)];
+        } else {
+          missingKeys.push(keyx);
+          return [keyx, null];
+        }
+      })
+    );
+
+    if (missingKeys.length > 0) {
+      const missingData = await this.getItems(...missingKeys);
+
+      Object.entries(missingData).forEach(([key, userData]) => {
+        cacheData[key] = this.process(userData, key);
+      });
+    }
+
+    return cacheData as Record<K[number], UserData>;
+  }
+
+  /**
    * Bye bye user.
    */
   async deleteItem(key: string) {
@@ -430,7 +464,7 @@ export default class UserStatsManager {
    */
   async setItems(updatedUsers: Record<string, Nullable>) {
     if (this.isMongo) {
-      const users = await this.getItems(...Object.keys(updatedUsers));
+      const users = await this.getCaches(...Object.keys(updatedUsers));
 
       const updatedData = Object.fromEntries(
         Object.entries(updatedUsers).map(([key, updatedProperties]) => {

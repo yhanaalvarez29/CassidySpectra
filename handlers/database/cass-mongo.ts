@@ -196,6 +196,26 @@ class CassMongo {
     }
   }
 
+  async bulkPutProperties(pairs: { [key: string]: any }) {
+    try {
+      await this.KeyValue.bulkWrite(
+        Object.entries(pairs).map(([key, newProperties]) => ({
+          updateOne: {
+            filter: { key: String(key) },
+            update: { $set: newProperties },
+            upsert: true,
+          },
+        }))
+      );
+    } catch (error) {
+      if (this.ignoreError) {
+        console.error("Error setting bulk properties:", error);
+      } else {
+        throw error;
+      }
+    }
+  }
+
   async toJSON() {
     return await this.load();
   }
