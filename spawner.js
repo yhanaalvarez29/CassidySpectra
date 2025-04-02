@@ -4,6 +4,8 @@ global.requireEsm = async function (url) {
 
 global.discordJS = require("discord.js");
 
+global.fileTypePromise = import("file-type");
+
 const originalExt = { ...require.extensions };
 const { createRequire } = require("module");
 const originalRequire = createRequire(__filename);

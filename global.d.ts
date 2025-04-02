@@ -220,10 +220,13 @@ declare global {
   var cassMongoManager: CassMongoManager | undefined;
 }
 
+import type * as FileType from "file-type";
+
 import type { UserStatsManager } from "cassidy-userData";
 import { CassMongoManager } from "./handlers/database/cass-mongo.js";
 import type { CassidyResponseStylerControl } from "@cassidy/styler";
 declare global {
+  var fileTypePromise: Promise<typeof FileType>;
   /**
    * Custom utility type to mark CassidySpectra-specific extensions
    * @internal

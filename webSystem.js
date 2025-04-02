@@ -346,7 +346,7 @@ export class WssAPI {
       resAt = await Promise.all(
         [...message.attachment]
           .filter((i) => i !== null && i !== undefined)
-          .map(async (item) => {
+          .map(async (item, index) => {
             if (item && typeof item.on === "function") {
               return await streamToBase64(item);
             }
@@ -364,6 +364,14 @@ export class WssAPI {
           .filter(Boolean)
       );
     }
+    const { fileTypeFromBuffer } = await global.fileTypePromise;
+    let attachmentType = await Promise.all(
+      (resAt ?? []).map(async (i) => {
+        const buffer = Buffer.from(i, "base64");
+        const type = await fileTypeFromBuffer(buffer);
+        return type.mime;
+      })
+    );
     const self = this;
     return new Promise((resolve) => {
       self._queue.push({
@@ -387,6 +395,7 @@ export class WssAPI {
           ...(resAt
             ? {
                 attachment: resAt,
+                attachmentType,
               }
             : {}),
           timestamp: Date.now().toString(),

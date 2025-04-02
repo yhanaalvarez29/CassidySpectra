@@ -7,7 +7,7 @@
     "checkJs": true,
     "allowJs": true,
     "types": [null],
-    "lib": ["dom", "es6"]
+    "lib": ["dom", "ESNext"]
   },
   "include": ["**/*.js", "**/*.mjs", "../CommandFiles/commands/autocassidy.js"]
 }

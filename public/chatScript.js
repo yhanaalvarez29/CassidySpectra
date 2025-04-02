@@ -1,5 +1,57 @@
-// @ts-nocheck
 let ws;
+
+/**
+ *
+ * @param {string} base64String
+ * @param {string} type
+ * @returns {HTMLImageElement | HTMLVideoElement | HTMLAudioElement}
+ */
+function createElementFromBase64(base64String, type = undefined) {
+  function detectFileType(base64) {
+    const signatures = {
+      "/9j/": "image/jpeg",
+      iVBORw0KGgo: "image/png",
+      R0lGOD: "image/gif",
+      // UklGR: "image/webp",
+      AAAAIGZ0eXBtcDQ: "video/mp4",
+      GkXfo59ChoEB: "video/webm",
+      T2dnUw: "audio/ogg",
+      UklGR: "audio/wav",
+      SUQzBA: "audio/mp3",
+    };
+
+    for (const [signature, mimeType] of Object.entries(signatures)) {
+      if (base64.startsWith(signature)) {
+        return mimeType;
+      }
+    }
+    return null;
+  }
+
+  const mimeType = type ?? detectFileType(base64String);
+  if (!mimeType) {
+    console.error("Unknown or unsupported file type.");
+    return null;
+  }
+
+  const dataUrl = `data:${mimeType};base64,${base64String}`;
+  let element;
+
+  if (mimeType.startsWith("image")) {
+    element = document.createElement("img");
+    element.src = dataUrl;
+  } else if (mimeType.startsWith("video")) {
+    element = document.createElement("video");
+    element.src = dataUrl;
+    element.controls = true;
+  } else if (mimeType.startsWith("audio")) {
+    element = document.createElement("audio");
+    element.src = dataUrl;
+    element.controls = true;
+  }
+
+  return element;
+}
 
 class IndexedDBMap {
   /**
@@ -533,14 +585,22 @@ function appendRep({
           return;
         }
 
+        let i = 0;
         for (const attachment of attachmentres) {
           console.log("ATT RES", attachment, attachmentres);
           if (typeof attachment === "string") {
-            const photoBox = document.createElement("img");
-            photoBox.classList.add("photo-box", "response-message");
-            photoBox.src = `data:image/png;base64,${attachment}`;
-            enhanceImage(photoBox);
+            const photoBox = createElementFromBase64(
+              attachment,
+              info?.attachmentType?.[i]
+            );
+            photoBox?.classList.add("photo-box", "response-message");
+            // photoBox.src = `data:image/png;base64,${attachment}`;
+            // console.log(attachment);
+            try {
+              enhanceImage(photoBox);
+            } catch (error) {}
             userMessage.after(photoBox);
+            i++;
           }
         }
       })();
