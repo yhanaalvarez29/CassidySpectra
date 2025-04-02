@@ -22,7 +22,7 @@ export class Listener {
     this.callback = () => {};
     if (api?.sendMessage) {
       const e = api?.listenMqtt?.((err, event) => {
-        event.isFacebook = true;
+        if (event) event.isFacebook = true;
         this.#callListener(err, event);
       });
     }

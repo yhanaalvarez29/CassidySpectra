@@ -71,12 +71,12 @@ export default class UserStatsManager {
       });
       this.kv = this.#mongo.KeyValue;
     }
-    this.setItems({ test: {} }).then(() => {
-      this.deleteItem("test");
-    });
 
     this.cache = {};
     this.ignoreQueue = [];
+    this.setItems({ test: {} }).then(() => {
+      this.deleteItem("test");
+    });
   }
 
   setMongo(mongo: CassMongo) {
@@ -386,7 +386,7 @@ export default class UserStatsManager {
 
     const cacheData = Object.fromEntries(
       keys.map((keyx: string) => {
-        const cachedData = this.cache[keyx];
+        const cachedData = keyx in this.cache ? this.cache[keyx] : undefined;
 
         if (cachedData) {
           return [keyx, this.process(cachedData, keyx)];
