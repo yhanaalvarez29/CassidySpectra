@@ -8,7 +8,7 @@ export const meta = {
   name: "airdrop",
   description:
     "Send airdrops of money, pet points, items, and collectibles to others!",
-  author: "JenicaDev",
+  author: "JenicaDev | Fixed by Liane",
   version: "1.0.3",
   usage: "{prefix}airdrop <send> <uid> [args]",
   category: "Economy",
@@ -18,7 +18,6 @@ export const meta = {
   otherNames: ["drop"],
   requirement: "3.0.0",
   icon: "✈️",
-  noRibbonUI: true,
 };
 
 export const style = {
@@ -28,15 +27,13 @@ export const style = {
 };
 
 const { invLimit } = global.Cassidy;
-const { parseCurrency: pCy } = global.utils;
+const { parseCurrency } = global.utils;
 
 /**
  * @param {CommandContext} ctx
  */
 export async function entry({ ...ctx }) {
   const { input, output, money, args, prefix, commandName } = ctx;
-  let userData = await money.get(input.senderID);
-  const { inventory, collectibles } = getDatas(userData);
 
   function getDatas({ ...data }) {
     const inventory = new Inventory(data.inventory || []);
@@ -53,21 +50,18 @@ export async function entry({ ...ctx }) {
       async handler() {
         if (!global.isDevMode) {
           return output.reply(
-            `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-              `❌ The skies are quiet! Airdrop claims are for devs only right now.\n` +
+            `❌ The skies are quiet! Airdrop claims are for devs only right now.\n` +
               `Try sending one with "${prefix}airdrop send <uid>" instead!`
           );
         }
         const claimCode = (args[1] || "").toUpperCase();
         if (!claimCode) {
           return output.reply(
-            `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-              `❌ [DEV] No code provided! Use "${prefix}airdrop receive <code>"!`
+            `❌ [DEV] No code provided! Use "${prefix}airdrop receive <code>"!`
           );
         }
         return output.reply(
-          `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-            `✦ [DEV] Received code "**${claimCode}**" - feature in progress!`
+          `✦ [DEV] Received code "**${claimCode}**" - feature in progress!`
         );
       },
     },
@@ -81,31 +75,23 @@ export async function entry({ ...ctx }) {
         const recipientID = args[1] ?? input.detectID;
         if (!recipientID) {
           return output.reply(
-            `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-              `❌ No target in sight! Use "${prefix}airdrop send <uid>" to drop some loot!`
+            `❌ No target in sight! Use "${prefix}airdrop send <uid>" to drop some loot!`
           );
         }
         if (recipientID === input.senderID) {
           return output.reply(
-            `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-              `❌ Can’t drop to yourself! Aim for someone else in the skies!`
+            `❌ Can’t drop to yourself! Aim for someone else in the skies!`
           );
         }
 
-        const allUsers = await money.getAll();
-        const recipientData = allUsers[recipientID];
-        if (!recipientData) {
+        if (!(await money.exists(recipientID))) {
           return output.reply(
-            `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-              `❌ No user with ID "**${recipientID}**"! Check the horizon!`
+            `❌ No user with ID "**${recipientID}**"! Check the horizon!`
           );
         }
-
-        const rInventory = new Inventory(recipientData.inventory || []);
-        const rCollectibles = new Collectibles(
-          recipientData.collectibles || []
-        );
-        const rCassExpress = new CassExpress(recipientData.cassExpress || {});
+        let { [input.senderID]: userData, [recipientID]: recipientData } =
+          await money.getItems(input.senderID, recipientID);
+        const { collectibles } = getDatas(userData);
 
         const collectibleList =
           collectibles.getAll().length > 0
@@ -113,16 +99,15 @@ export async function entry({ ...ctx }) {
                 .getAll()
                 .map(
                   (c) =>
-                    `${c.metadata.icon || "✦"} **${c.metadata.name}** (x${pCy(
-                      c.amount
-                    )}) [${c.metadata.key}]`
+                    `${c.metadata.icon || "✦"} **${
+                      c.metadata.name
+                    }** (x${parseCurrency(c.amount)}) [${c.metadata.key}]`
                 )
                 .join("\n")
             : "None yet!";
 
         const prompt = await output.reply(
-          `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-            `${UNIRedux.arrow} ***Pack Your Airdrop***\n\n` +
+          `${UNIRedux.arrow} ***Pack Your Airdrop***\n\n` +
             `✈️ Dropping to **${
               recipientData.name || "Unregistered"
             }** (ID: ${recipientID})!\n` +
@@ -133,8 +118,8 @@ export async function entry({ ...ctx }) {
             `- "item <key> <amount>" (e.g., "item potion 2")\n` +
             `- "done" to finish!\n\n` +
             `${UNIRedux.arrow} ***Your Stash***\n` +
-            `💵 **${pCy(userData.money || 0)}** Money\n` +
-            `💶 **${pCy(userData.battlePoints || 0)}** Pet Points\n` +
+            `💵 **${parseCurrency(userData.money || 0)}** Money\n` +
+            `💶 **${parseCurrency(userData.battlePoints || 0)}** Pet Points\n` +
             `${collectibleList}`
         );
 
@@ -170,25 +155,25 @@ export async function entry({ ...ctx }) {
               dropData.items.length === 0
             ) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ Nothing dropped yet! Send something first with "money", "petpoints", "collectible", or "item"!`
+                `❌ Nothing dropped yet! Send something first with "money", "petpoints", "collectible", or "item"!`
               );
             }
 
             // @ts-ignore
             ctx.input.delReply(ctx.detectID);
             return ctx.output.reply(
-              `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                `${UNIRedux.arrow} ***Airdrop Complete!***\n\n` +
+              `${UNIRedux.arrow} ***Airdrop Complete!***\n\n` +
                 `✈️ All drops sent to **${
                   rData.name || "Unregistered"
                 }** (ID: ${recipientID})!\n\n` +
                 `${
-                  dropData.money ? `💵 **${pCy(dropData.money)}** Money\n` : ""
+                  dropData.money
+                    ? `💵 **${parseCurrency(dropData.money)}** Money\n`
+                    : ""
                 }` +
                 `${
                   dropData.petPoints
-                    ? `💶 **${pCy(dropData.petPoints)}** Pet Points\n`
+                    ? `💶 **${parseCurrency(dropData.petPoints)}** Pet Points\n`
                     : ""
                 }` +
                 `${
@@ -196,7 +181,9 @@ export async function entry({ ...ctx }) {
                     ? Object.entries(dropData.collectibles)
                         .map(
                           ([k, v]) =>
-                            `${k === "gems" ? "💎" : "✦"} **${pCy(v)}** ${k}`
+                            `${k === "gems" ? "💎" : "✦"} **${parseCurrency(
+                              v
+                            )}** ${k}`
                         )
                         .join("\n") + "\n"
                     : ""
@@ -208,7 +195,9 @@ export async function entry({ ...ctx }) {
                         .join("\n") + "\n"
                     : ""
                 }` +
-                `✦ Your stash: 💵 **${pCy(userData.money)}**, 💶 **${pCy(
+                `✦ Your stash: 💵 **${parseCurrency(
+                  userData.money
+                )}**, 💶 **${parseCurrency(
                   userData.battlePoints
                 )}** Pet Points\n` +
                 `They’ll get a mail with the full drop details!`
@@ -225,10 +214,9 @@ export async function entry({ ...ctx }) {
             }
             if (amount > (userData.money || 0)) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ Only **${pCy(
-                    userData.money || 0
-                  )}** 💵 left! Can’t send **${pCy(amount)}**!`
+                `❌ Only **${parseCurrency(
+                  userData.money || 0
+                )}** 💵 left! Can’t send **${parseCurrency(amount)}**!`
               );
             }
             userData.money -= amount;
@@ -244,10 +232,9 @@ export async function entry({ ...ctx }) {
             }
             if (amount > (userData.battlePoints || 0)) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ Only **${pCy(
-                    userData.battlePoints || 0
-                  )}** 💶 Pet Points! Can’t send **${pCy(amount)}**!`
+                `❌ Only **${parseCurrency(
+                  userData.battlePoints || 0
+                )}** 💶 Pet Points! Can’t send **${parseCurrency(amount)}**!`
               );
             }
             userData.battlePoints = (userData.battlePoints || 0) - amount;
@@ -264,10 +251,9 @@ export async function entry({ ...ctx }) {
             }
             if ((collectibles.getAmount(key) || 0) < amount) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ Only **${pCy(
-                    collectibles.getAmount(key) || 0
-                  )}** ${key}! Can’t send **${pCy(amount)}**!`
+                `❌ Only **${parseCurrency(
+                  collectibles.getAmount(key) || 0
+                )}** ${key}! Can’t send **${parseCurrency(amount)}**!`
               );
             }
             rCollectibles.register(key, collectibles.getMeta(key));
@@ -288,18 +274,16 @@ export async function entry({ ...ctx }) {
             const items = inventory.get(key);
             if (!items || items.length < amount) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ Only **${
-                    items ? items.length : 0
-                  }** ${key}! Can’t send **${amount}**!`
+                `❌ Only **${
+                  items ? items.length : 0
+                }** ${key}! Can’t send **${amount}**!`
               );
             }
             if (rInventory.getAll().length + amount > invLimit) {
               return ctx.output.reply(
-                `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                  `❌ **${rData.name}**’s 🎒 is full (**${
-                    rInventory.getAll().length
-                  }/${invLimit}**)!\n` +
+                `❌ **${rData.name}**’s 🎒 is full (**${
+                  rInventory.getAll().length
+                }/${invLimit}**)!\n` +
                   `Can’t fit **${amount}** more items. They need to clear space with "${prefix}inv toss"!`
               );
             }
@@ -327,11 +311,13 @@ export async function entry({ ...ctx }) {
             body:
               `You’ve received an airdrop!\n\n` +
               `${
-                dropData.money ? `💵 **${pCy(dropData.money)}** Money\n` : ""
+                dropData.money
+                  ? `💵 **${parseCurrency(dropData.money)}** Money\n`
+                  : ""
               }` +
               `${
                 dropData.petPoints
-                  ? `💶 **${pCy(dropData.petPoints)}** Pet Points\n`
+                  ? `💶 **${parseCurrency(dropData.petPoints)}** Pet Points\n`
                   : ""
               }` +
               `${
@@ -339,7 +325,9 @@ export async function entry({ ...ctx }) {
                   ? Object.entries(dropData.collectibles)
                       .map(
                         ([k, v]) =>
-                          `${k === "gems" ? "💎" : "✦"} **${pCy(v)}** ${k}`
+                          `${k === "gems" ? "💎" : "✦"} **${parseCurrency(
+                            v
+                          )}** ${k}`
                       )
                       .join("\n") + "\n"
                   : ""
@@ -377,23 +365,24 @@ export async function entry({ ...ctx }) {
                       (c) =>
                         `${c.metadata.icon || "✦"} **${
                           c.metadata.name
-                        }** (x${pCy(c.amount)}) [${c.metadata.key}]`
+                        }** (x${parseCurrency(c.amount)}) [${c.metadata.key}]`
                     )
                     .join("\n")
                 : "None yet!";
 
             const reprompt = await ctx.output.replyStyled(
-              `👤 **${userData.name || "Unregistered"}** (Airdrop)\n\n` +
-                `${UNIRedux.arrow} ***Airdrop Updated!***\n\n` +
+              `${UNIRedux.arrow} ***Airdrop Updated!***\n\n` +
                 `✈️ Dropped to **${
                   rData.name || "Unregistered"
                 }** (ID: ${recipientID}):\n` +
                 `${
-                  dropData.money ? `💵 **${pCy(dropData.money)}** Money\n` : ""
+                  dropData.money
+                    ? `💵 **${parseCurrency(dropData.money)}** Money\n`
+                    : ""
                 }` +
                 `${
                   dropData.petPoints
-                    ? `💶 **${pCy(dropData.petPoints)}** Pet Points\n`
+                    ? `💶 **${parseCurrency(dropData.petPoints)}** Pet Points\n`
                     : ""
                 }` +
                 `${
@@ -401,7 +390,9 @@ export async function entry({ ...ctx }) {
                     ? Object.entries(dropData.collectibles)
                         .map(
                           ([k, v]) =>
-                            `${k === "gems" ? "💎" : "✦"} **${pCy(v)}** ${k}`
+                            `${k === "gems" ? "💎" : "✦"} **${parseCurrency(
+                              v
+                            )}** ${k}`
                         )
                         .join("\n") + "\n"
                     : ""
@@ -414,8 +405,10 @@ export async function entry({ ...ctx }) {
                     : ""
                 }` +
                 `${UNIRedux.arrow} ***Your Stash***\n` +
-                `💵 **${pCy(userData.money || 0)}** Money\n` +
-                `💶 **${pCy(userData.battlePoints || 0)}** Pet Points\n` +
+                `💵 **${parseCurrency(userData.money || 0)}** Money\n` +
+                `💶 **${parseCurrency(
+                  userData.battlePoints || 0
+                )}** Pet Points\n` +
                 `${collectibleList}\n\n` +
                 `✦ Reply with another drop ("money", "petpoints", "collectible", "item") or "done" to finish!`,
               style
