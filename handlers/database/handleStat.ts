@@ -335,11 +335,11 @@ export default class UserStatsManager {
       { ...this.defaults, ...userData } as UserData,
       userID
     );
-    return Object.fromEntries(
-      propertyNames
-        .map((prop) => [prop, processedData[prop]])
-        .filter(([_, value]) => value !== undefined)
-    );
+    const mapped = propertyNames
+      .map((prop) => [prop, processedData[prop]])
+      .filter(([_, value]) => value !== undefined);
+    mapped.forEach((i) => this.updateCache(i[0], i[1]));
+    return Object.fromEntries(mapped);
   }
 
   /**
