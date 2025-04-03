@@ -1,4 +1,20 @@
 export namespace CassTypes {
+  export type AdvancedType = Union<TypeSchema[]> | Intersection<TypeSchema[]>;
+
+  export class Union<T extends TypeSchema[] = TypeSchema[]> {
+    public types: T;
+    constructor(...types: T) {
+      this.types = types;
+    }
+  }
+
+  export class Intersection<T extends TypeSchema[] = TypeSchema[]> {
+    public types: T;
+    constructor(...types: T) {
+      this.types = types;
+    }
+  }
+
   export type TypeSchema =
     | "string"
     | "number"
@@ -12,7 +28,8 @@ export namespace CassTypes {
     | "any"
     | [TypeSchema]
     | { [key: string]: TypeSchema }
-    | (new (...args: any[]) => any);
+    | (new (...args: any[]) => any)
+    | AdvancedType;
 
   export type SchemaToType<T extends TypeSchema> = T extends "string"
     ? string
@@ -42,8 +59,26 @@ export namespace CassTypes {
     ? { [K in keyof T]: SchemaToType<T[K]> }
     : T extends new (...args: any[]) => infer R
     ? R
+    : T extends Union<infer U>
+    ? U extends TypeSchema[]
+      ? SchemaToType<U[number]>
+      : never
+    : T extends Intersection<infer U>
+    ? U extends TypeSchema[]
+      ? IntersectTypes<U>
+      : never
     : never;
 
+  export type IntersectTypes<T extends TypeSchema[]> = T extends [
+    infer First,
+    ...infer Rest
+  ]
+    ? First extends TypeSchema
+      ? Rest extends TypeSchema[]
+        ? SchemaToType<First> & IntersectTypes<Rest>
+        : SchemaToType<First>
+      : never
+    : unknown;
   /**
    * OOP wrapper class for type schemas
    */
@@ -94,9 +129,6 @@ export namespace CassTypes {
       return new Validator(generateDynamicSchema(obj));
     }
   }
-
-  export type FromValidator<T extends CassTypes.Validator> =
-    CassTypes.SchemaToType<ReturnType<T["getSchema"]>>;
 
   /**
    * Generates a type schema from an object dynamically
@@ -186,7 +218,7 @@ export namespace CassTypes {
    */
   export function isObjectOf(
     value: any,
-    schema: { [key: string]: TypeSchema }
+    schema: { [key: string]: TypeSchema } | AdvancedType
   ): value is object {
     if (typeof value !== "object" || value === null || Array.isArray(value))
       return false;
@@ -202,6 +234,12 @@ export namespace CassTypes {
    * @returns Whether the value matches the schema
    */
   export function isType(value: any, schema: TypeSchema): boolean {
+    if (schema instanceof Union) {
+      return schema.types.some((type) => isType(value, type));
+    }
+    if (schema instanceof Intersection) {
+      return schema.types.every((type) => isType(value, type));
+    }
     if (typeof schema === "function" && schema.prototype) {
       return value instanceof schema;
     }
@@ -229,6 +267,36 @@ export namespace CassTypes {
     schema: TypeSchema,
     path: string = ""
   ): void {
+    if (schema instanceof Union) {
+      const errors: string[] = [];
+      let matched = false;
+
+      for (const type of schema.types) {
+        try {
+          checkType(value, type, path);
+          matched = true;
+          break;
+        } catch (e) {
+          errors.push((e as Error).message);
+        }
+      }
+
+      if (!matched) {
+        throw new TypeError(
+          `Type mismatch at '${path}': expected one of union types, got '${typeof value}'. Errors: ${errors.join(
+            "; "
+          )}`
+        );
+      }
+      return;
+    }
+
+    if (schema instanceof Intersection) {
+      for (const type of schema.types) {
+        checkType(value, type, path);
+      }
+      return;
+    }
     if (typeof schema === "function" && schema.prototype) {
       if (!(value instanceof schema)) {
         throw new TypeError(
@@ -304,6 +372,7 @@ export namespace CassTypes {
           typeof schema === "object" &&
           schema !== null &&
           !Array.isArray(schema) &&
+          // @ts-ignore
           !schema.prototype
             ? generateDynamicSchema(schema)
             : schema;
@@ -320,6 +389,7 @@ export namespace CassTypes {
         typeof returnValue === "object" &&
         returnValue !== null &&
         !Array.isArray(returnValue) &&
+        // @ts-ignore
         !returnValue.prototype
           ? generateDynamicSchema(returnValue)
           : returnValue;
@@ -327,13 +397,32 @@ export namespace CassTypes {
       return result as SchemaToType<R>;
     };
   }
+  export type FromValidator<T extends CassTypes.Validator> =
+    CassTypes.SchemaToType<ReturnType<T["getSchema"]>>;
 }
 
 export function example() {
   const validator = new CassTypes.Validator({
     name: String,
     age: Number,
+    a: new CassTypes.Union(String, Map),
   });
 
-  validator.validate({ name: "Hello", age: 5 });
+  const validator2 = new CassTypes.Validator(
+    new CassTypes.Union("string", Map)
+  );
+
+  console.log(validator2);
+
+  type ValidatorT = CassTypes.FromValidator<typeof validator>;
+
+  let user: ValidatorT = {
+    name: "Liane",
+    age: 19,
+    a: new Map<string, string>(),
+  };
+
+  console.log(user);
+
+  validator.validate({ name: "Hello", age: 5, a: new Map() });
 }
