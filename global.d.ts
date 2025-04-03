@@ -426,5 +426,21 @@ declare global {
       this: string,
       callback: (char: string, index: number, array: string[]) => U
     ): U[];
+
+    /**
+     * Formats the string by replacing numbered placeholders (%1, %2, etc.) with corresponding values.
+     * Placeholders are 1-based and must exactly match the position of the replacer.
+     * Unmatched placeholders remain unchanged. Replacers can be strings or functions.
+     * @param replacers - The values or functions to replace placeholders with (%1 uses first replacer, %2 uses second, etc.)
+     * @returns The formatted string with placeholders replaced where applicable
+     * @example
+     * "Hello %1, welcome to %2!".formatWith("John", "Earth") // Returns "Hello John, welcome to Earth!"
+     * "test%1 and %2test".formatWith(n => n * 2, "b") // Returns "test2 and btest"
+     * "Test %123 %12 %1".formatWith("a", "b", "c") // Returns "Test %123 %12 a"
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning May cause side effects outside CassidySpectra; avoid in other codebases
+     * @reusable Safe within CassidySpectra projects
+     */
+    formatWith(...replacers: (string | ((position: number) => any))[]): string;
   }
 }

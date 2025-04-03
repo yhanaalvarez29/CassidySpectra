@@ -63,7 +63,14 @@ declare namespace _default {
 }
 export default _default;
 declare function generateCaptchaCode(length?: number): string;
-declare function convertTimeSentence({ years, months, days, hours, minutes, seconds }: {
+declare function convertTimeSentence({
+  years,
+  months,
+  days,
+  hours,
+  minutes,
+  seconds,
+}: {
   years: any;
   months: any;
   days: any;
@@ -73,11 +80,16 @@ declare function convertTimeSentence({ years, months, days, hours, minutes, seco
 }): string;
 declare function minimizeErrStack(stack: any): any;
 declare class UserSorter {
-  constructor({ users, limit, sortBy, defaultValue }: {
-      users: any;
-      limit?: any;
-      sortBy?: string;
-      defaultValue?: number;
+  constructor({
+    users,
+    limit,
+    sortBy,
+    defaultValue,
+  }: {
+    users: any;
+    limit?: any;
+    sortBy?: string;
+    defaultValue?: number;
   });
   users: any;
   limit: any;
@@ -99,7 +111,11 @@ declare function betterLog(initialContent: any): (newContent: any) => void;
 declare function parseCurrency(num: any): string[];
 declare function deformatBits(sizeStr: any): number;
 declare function formatBits(size: any): string;
-declare function compareCode(code1: any, code2: any, callback?: () => Promise<void>): Promise<{
+declare function compareCode(
+  code1: any,
+  code2: any,
+  callback?: () => Promise<void>
+): Promise<{
   status: string;
   diffString: string;
 }>;
@@ -108,20 +124,34 @@ declare function representObject(obj: any, depth?: number): string;
 declare function pearsonsR(arrayA: any, arrayB: any): number;
 declare const ObjectX: {};
 declare const LiaSystem: Object;
-declare function ExtendClass(key: any, func: any, Target?: ObjectConstructor, options?: {
-  writable: boolean;
-  configurable: boolean;
-  enumerable: boolean;
-}): void;
+declare function ExtendClass<
+  T extends new (...args: any[]) => any = ObjectConstructor
+>(
+  key: string,
+  func: (this: InstanceType<T>) => any,
+  Target?: T,
+  options?: {
+    writable: boolean;
+    configurable: boolean;
+    enumerable: boolean;
+  }
+): void;
 declare function reverseKeyValue(obj: any): {};
 declare class XYZ {
-  constructor({ limX, limY, limZ, endLimX, endLimY, endLimZ }: {
-      limX: any;
-      limY: any;
-      limZ: any;
-      endLimX: any;
-      endLimY: any;
-      endLimZ: any;
+  constructor({
+    limX,
+    limY,
+    limZ,
+    endLimX,
+    endLimY,
+    endLimZ,
+  }: {
+    limX: any;
+    limY: any;
+    limZ: any;
+    endLimX: any;
+    endLimY: any;
+    endLimZ: any;
   });
   x: number;
   y: number;
@@ -133,14 +163,14 @@ declare class XYZ {
   get array(): number[];
   toString(): string;
   toObject(): {
-      x: number;
-      y: number;
-      z: number;
+    x: number;
+    y: number;
+    z: number;
   };
   toJSON(): {
-      x: number;
-      y: number;
-      z: number;
+    x: number;
+    y: number;
+    z: number;
   };
   getJson(): string;
   clone(): XYZ;
@@ -156,7 +186,11 @@ declare const True: true;
 declare const False: false;
 declare const None: any;
 declare function chance(percent?: number): boolean;
-declare function range(min: any, max: any, format?: (i: any) => any): {
+declare function range(
+  min: any,
+  max: any,
+  format?: (i: any) => any
+): {
   [x: number]: any;
 }[];
 declare class Cooldown {
@@ -281,25 +315,28 @@ declare class UTYBattle {
   getMercyList(): string;
   hasFlee(): boolean;
   getRandomAttack(isWin: any): {
-      attack: string;
-      direction: any;
-      attacks: any[];
+    attack: string;
+    direction: any;
+    attacks: any[];
   };
   getAttack(key: any): any;
   isYellow(): boolean;
-  act(action: any): false | {
-      flavorText: any;
-      quote: string;
-      afterAct?: undefined;
-      effect?: undefined;
-      isWin?: undefined;
-  } | {
-      flavorText: any;
-      quote: any;
-      afterAct: any;
-      effect: any;
-      isWin: boolean;
-  };
+  act(action: any):
+    | false
+    | {
+        flavorText: any;
+        quote: string;
+        afterAct?: undefined;
+        effect?: undefined;
+        isWin?: undefined;
+      }
+    | {
+        flavorText: any;
+        quote: any;
+        afterAct: any;
+        effect: any;
+        isWin: boolean;
+      };
   getIndex(arr: any, key: any): any;
   getFlavor(): any;
   getEncounter(): any;
@@ -314,16 +351,26 @@ declare class UTYBattle {
   addExternalMethod(key: any, func: any): void;
 }
 declare class UTYPlayer {
-  constructor({ item, exp, gold, progress, kills, spares, entryMagic, name, ...other }: {
-      [x: string]: any;
-      item: any;
-      exp?: number;
-      gold?: number;
-      progress: any;
-      kills?: number;
-      spares?: number;
-      entryMagic: any;
-      name?: string;
+  constructor({
+    item,
+    exp,
+    gold,
+    progress,
+    kills,
+    spares,
+    entryMagic,
+    name,
+    ...other
+  }: {
+    [x: string]: any;
+    item: any;
+    exp?: number;
+    gold?: number;
+    progress: any;
+    kills?: number;
+    spares?: number;
+    entryMagic: any;
+    name?: string;
   });
   magic: any;
   set TP(tp: number);
@@ -336,10 +383,10 @@ declare class UTYPlayer {
   canTP(val: any): boolean;
   getLV(): number;
   defend(dmg: any): {
-      damage: number;
-      calc: number;
-      diff: number;
-      TP: number;
+    damage: number;
+    calc: number;
+    diff: number;
+    TP: number;
   };
   getMagicList(): string[];
   getMagic(number: any): any;
@@ -353,15 +400,15 @@ declare class UTYPlayer {
   get hp(): number;
   getWeapon(): any;
   toJSON(): {
-      lv: number;
-      hp: number;
-      name: any;
-      exp: any;
-      df: number;
-      kills: any;
-      spares: any;
-      gold: any;
-      at: number;
+    lv: number;
+    hp: number;
+    name: any;
+    exp: any;
+    df: number;
+    kills: any;
+    spares: any;
+    gold: any;
+    at: number;
   };
   getAT(battle: any): number;
   get dmg(): number;
@@ -374,11 +421,17 @@ declare class UTYPlayer {
 declare function delay(ms?: number): Promise<any>;
 declare function syncCall(func: any, ...args: any[]): void;
 declare function getUTY(player: any): {};
-declare function SpecialFunc({ index, ...obj }: {
+declare function SpecialFunc({
+  index,
+  ...obj
+}: {
   [x: string]: any;
   index: any;
 }): any;
-declare function ClassV({ constructor, ...methods }: {
+declare function ClassV({
+  constructor,
+  ...methods
+}: {
   [x: string]: any;
   constructor: any;
 }): (...args: any[]) => {
@@ -399,7 +452,10 @@ declare class MathNum extends Number {
   remainderWith(val?: number): number;
 }
 declare function deepClone(obj: any): any;
-declare function classMaker(className: any, options: any): (...args: any[]) => any;
+declare function classMaker(
+  className: any,
+  options: any
+): (...args: any[]) => any;
 declare function ClassExtra(Class: any): void;
 declare class Toggle {
   offStates: {};
@@ -417,10 +473,13 @@ declare class Toggle {
 import MusicTheory from "./handlers/music-theory-js.js";
 declare function stringArrayProxy(optionalArray: any): any;
 declare class FileControl {
-  constructor(path: any, options?: {
+  constructor(
+    path: any,
+    options?: {
       strict: boolean;
       sync: boolean;
-  });
+    }
+  );
   path: any;
   strict: boolean;
   sync: boolean;
@@ -438,13 +497,20 @@ declare class FileControl {
 }
 declare class Tiles {
   static numberTile(number: any): string;
-  constructor({ sizeX, sizeY, tileIcon, bombIcon, coinIcon, emptyIcon, }: {
-      sizeX?: number;
-      sizeY?: number;
-      tileIcon?: string;
-      bombIcon?: string;
-      coinIcon?: string;
-      emptyIcon?: string;
+  constructor({
+    sizeX,
+    sizeY,
+    tileIcon,
+    bombIcon,
+    coinIcon,
+    emptyIcon,
+  }: {
+    sizeX?: number;
+    sizeY?: number;
+    tileIcon?: string;
+    bombIcon?: string;
+    coinIcon?: string;
+    emptyIcon?: string;
   });
   size: number[];
   tileIcon: string;
@@ -459,7 +525,15 @@ declare class Tiles {
   range(): number[];
   reveal(): void;
   isEnd(): boolean;
-  choose(num: any): "OUT_OF_RANGE" | "ALREADY_CHOSEN" | "BOMB" | "COIN" | "EMPTY" | "UNKNOWN_ERROR";
+  choose(
+    num: any
+  ):
+    | "OUT_OF_RANGE"
+    | "ALREADY_CHOSEN"
+    | "BOMB"
+    | "COIN"
+    | "EMPTY"
+    | "UNKNOWN_ERROR";
   isBomb(num: any): boolean;
   isOutRange(num: any): boolean;
   isEmpty(num: any): boolean;

@@ -1,7 +1,6 @@
 // Check global.d.ts this all has types now lmao.
 import { fonts } from "./handlers/styler.js/fonts.js";
-import utils from "./utils.js";
-const { ExtendClass, randArrValue, randArrIndex } = utils;
+const { ExtendClass, randArrValue, randArrIndex } = global.utils;
 
 function extend() {
   ExtendClass("cloneByJSON", function () {
@@ -35,16 +34,6 @@ function extend() {
     Array
   );
 
-  /*const oldToString = Object.prototype.toString;
-  ExtendClass("toString", function () {
-    try {
-      return JSON.stringify(this, null, 2);
-    }
-    catch (error) {
-      return oldToString.call(this);
-    }
-  });*/
-
   ExtendClass("randomValue", function () {
     return this[this.randomKey()];
   });
@@ -55,6 +44,28 @@ function extend() {
       return randArrValue(this);
     },
     Array
+  );
+
+  ExtendClass(
+    "formatWith",
+    function (...replacers) {
+      let result = this.toString();
+      for (let i = replacers.length; i >= 1; i--) {
+        const placeholder = `%${i}`;
+        const replacer = replacers[i - 1];
+        if (replacer !== undefined) {
+          let replacement;
+          if (typeof replacer === "function") {
+            replacement = String(replacer(i));
+          } else {
+            replacement = String(replacer);
+          }
+          result = result.replaceAll(placeholder, replacement);
+        }
+      }
+      return result;
+    },
+    String
   );
 
   ExtendClass(

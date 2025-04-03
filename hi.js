@@ -84,7 +84,11 @@ const entryConf = {
 
     const invv = new Inventory();
 
-    schema.validate({ test: () => {}, inv: invv, name: "HAHA" });
+    schema.validate({
+      test: () => {},
+      inv: invv,
+      name: "HAHA %1".formatWith("idk"),
+    });
   },
 };
 
