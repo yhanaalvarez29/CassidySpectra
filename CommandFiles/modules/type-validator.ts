@@ -231,7 +231,7 @@ export namespace CassTypes {
   ): void {
     if (typeof schema === "function" && schema.prototype) {
       if (!(value instanceof schema)) {
-        throw new Error(
+        throw new TypeError(
           `Type mismatch at '${path}': expected instance of '${
             schema.name
           }', got '${value?.constructor?.name || typeof value}'`
@@ -242,7 +242,7 @@ export namespace CassTypes {
 
     if (typeof schema === "string") {
       if (!isPrimitive(value, schema)) {
-        throw new Error(
+        throw new TypeError(
           `Type mismatch at '${path}': expected '${schema}', got '${typeof value}'`
         );
       }
@@ -251,7 +251,7 @@ export namespace CassTypes {
 
     if (Array.isArray(schema)) {
       if (!Array.isArray(value)) {
-        throw new Error(
+        throw new TypeError(
           `Type mismatch at '${path}': expected array, got '${typeof value}'`
         );
       }
@@ -263,13 +263,13 @@ export namespace CassTypes {
 
     if (typeof schema === "object" && schema !== null) {
       if (typeof value !== "object" || value === null || Array.isArray(value)) {
-        throw new Error(
+        throw new TypeError(
           `Type mismatch at '${path}': expected object, got '${typeof value}'`
         );
       }
       for (const key in schema) {
         if (!(key in value)) {
-          throw new Error(`Missing property '${key}' at '${path}'`);
+          throw new TypeError(`Missing property '${key}' at '${path}'`);
         }
         checkType(value[key], schema[key], path ? `${path}.${key}` : key);
       }
@@ -294,7 +294,7 @@ export namespace CassTypes {
   ): (...args: SchemaToType<P[number]>[]) => SchemaToType<R> {
     return function (...args: SchemaToType<P[number]>[]): SchemaToType<R> {
       if (args.length !== paramsArray.length) {
-        throw new Error(
+        throw new TypeError(
           `Parameter count mismatch at '${methodName}': expected ${paramsArray.length}, got ${args.length}`
         );
       }

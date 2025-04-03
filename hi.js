@@ -3,6 +3,7 @@ import { Pinger } from "@cass-modules/pinger";
 import { CassTypes } from "@cass-modules/type-validator";
 import { defineEntry } from "@cass/define";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
+import { Inventory } from "@cassidy/ut-shop";
 
 export const meta = {
   name: "hi",
@@ -74,7 +75,17 @@ const entryConf = {
 
     items.inventory.at(0);
   },
-  async typetest({ money, output, input }) {},
+  async typetest({ money, output, input }) {
+    const schema = new CassTypes.Validator({
+      inv: Inventory,
+      name: "string",
+      test: "function",
+    });
+
+    const invv = new Inventory();
+
+    schema.validate({ test: () => {}, inv: invv, name: "HAHA" });
+  },
 };
 
 const home = new SpectralCMDHome({
