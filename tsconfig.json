@@ -21,6 +21,7 @@
     "target": "ES2024",
     "lib": ["ES2024"],
     "types": ["node"],
+    "experimentalDecorators": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true,

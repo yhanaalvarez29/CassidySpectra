@@ -1,5 +1,6 @@
 // @ts-check
 import { Pinger } from "@cass-modules/pinger";
+import { CassTypes } from "@cass-modules/type-validator";
 import { defineEntry } from "@cass/define";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 
@@ -73,6 +74,7 @@ const entryConf = {
 
     items.inventory.at(0);
   },
+  async typetest({ money, output, input }) {},
 };
 
 const home = new SpectralCMDHome({
