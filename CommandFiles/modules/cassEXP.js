@@ -1,3 +1,4 @@
+// @ts-check
 export class CassidyUser {
   constructor(allData = {}) {
     this.allData = allData;
@@ -13,7 +14,11 @@ export class CassEXP {
    *
    * @param {CXP} cassEXP
    */
-  constructor(cassEXP = {}) {
+  constructor(
+    cassEXP = {
+      exp: 0,
+    }
+  ) {
     this.cxp = this.sanitize(cassEXP);
     this.expControls = new EXP(this);
   }
@@ -28,7 +33,7 @@ export class CassEXP {
     if (isNaN(exp)) {
       exp = 0;
     }
-    exp = parseInt(exp, 10);
+    exp = Number.parseInt(String(exp), 10);
 
     return {
       ...data,
@@ -40,6 +45,9 @@ export class CassEXP {
     return this.cxp.exp;
   }
 
+  /**
+   * @param {number} exp
+   */
   setEXP(exp) {
     this.cxp.exp = exp;
     return true;
@@ -50,13 +58,16 @@ export class CassEXP {
   }
 
   set exp(exp) {
-    return this.setEXP(exp);
+    this.setEXP(exp);
   }
 
   getLevel() {
     return CassEXP.getLevelFromEXP(this.getEXP());
   }
 
+  /**
+   * @param {number} level
+   */
   setLevel(level) {
     this.setEXP(CassEXP.getEXPFromLevel(level));
     return true;
@@ -67,7 +78,7 @@ export class CassEXP {
   }
 
   set level(level) {
-    return this.setLevel(level);
+    this.setLevel(level);
   }
 
   getNextRemaningEXP() {
@@ -111,14 +122,23 @@ export class CassEXP {
     ];
   }
 
+  /**
+   * @param {number} exp
+   */
   expReached(exp) {
     return this.getEXP() >= exp;
   }
 
+  /**
+   * @param {number} level
+   */
   levelReached(level) {
     return this.getLevel() >= level;
   }
 
+  /**
+   * @param {number} level
+   */
   static getEXPFromLevel(level) {
     if (level <= 1) {
       return 0;
@@ -127,6 +147,9 @@ export class CassEXP {
     }
   }
 
+  /**
+   * @param {number} lastExp
+   */
   static getLevelFromEXP(lastExp) {
     return lastExp < 10 ? 1 : Math.floor(Math.log2(lastExp / 10)) + 1;
   }
@@ -346,26 +369,41 @@ class EXP {
 
   set exp(expp) {
     this.parent.exp = expp;
-    return true;
+    true;
   }
 
+  /**
+   * @param {number} expAmount
+   */
   raise(expAmount) {
     this.exp += expAmount;
   }
 
+  /**
+   * @param {number} expAmount
+   */
   decrease(expAmount) {
     this.exp -= expAmount;
   }
 
+  /**
+   * @param {any} level
+   */
   raiseToLevel(level) {
-    const targetEXP = EXP.getEXPFromLevel(level);
+    const targetEXP = CassEXP.getEXPFromLevel(level);
     this.exp = targetEXP;
   }
 
+  /**
+   * @param {number} targetEXP
+   */
   raiseTo(targetEXP) {
     this.exp = targetEXP;
   }
 
+  /**
+   * @param {any} level
+   */
   raiseWithLevel(level) {
     const baseEXP = CassEXP.getEXPFromLevel(level);
     this.exp = baseEXP + this.exp;

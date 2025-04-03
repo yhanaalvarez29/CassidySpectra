@@ -108,6 +108,7 @@ export namespace CassTypes {
      * @throws Error if validation fails
      */
     validate(value: FromValidator<this>, path: string = ""): void {
+      // @ts-ignore
       checkType(value, this.schema, path);
     }
 
