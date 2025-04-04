@@ -10,7 +10,12 @@ import type InputX from "input-cassidy";
 import type { ReplySystem, ReactSystem } from "input-cassidy";
 
 import type OutputX from "output-cassidy";
-import type { OutputProps } from "output-cassidy";
+import type {
+  OutputForm,
+  OutputProps,
+  OutputResult,
+  StrictOutputForm,
+} from "output-cassidy";
 import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 import type {
   GameSimulator,
@@ -97,6 +102,9 @@ declare global {
     next?: () => void;
     styler?: CassidyResponseStylerControl;
     ctx: CommandContext;
+    isCommand?: true | undefined;
+    ShopClass?: typeof import("@cass-plugins/shopV2.js").ShopClass;
+    outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
   }
 
   type CommandContext = CommandContextOG;
@@ -145,12 +153,23 @@ declare global {
     export interface CassidyCommand {
       meta: CommandMeta;
       entry: CommandHandler;
+      cooldown?: CommandHandler;
+      noWeb?: CommandHandler;
+      noPermission?: CommandHandler;
+      needPrefix?: CommandHandler;
+      banned?: CommandHandler;
+      shopLocked?: CommandHandler;
+      awaiting?: CommandHandler;
+      indivMeta?: ConstructorParameters<
+        typeof SpectralCMDHome
+      >["0"]["entryInfo"];
       middleware?: CommandMiddleware[];
       loaders?: CommandLoader[];
       onError?: ErrorHandler;
       onCooldown?: CooldownHandler;
       duringLoad?: DuringLoadHandler;
       noPrefix?: CommandHandler;
+      modLower?: CommandHandler;
       reply?: CommandHandler;
       style?: any;
     }
@@ -169,7 +188,7 @@ declare global {
       botAdmin?: boolean;
       dependencies?: Record<string, string>;
       whiteList?: string[];
-      noPrefix: boolean | "both";
+      noPrefix?: boolean | "both";
       allowModerators?: boolean;
       icon?: string;
       requirement?: string;
@@ -181,6 +200,9 @@ declare global {
         search: null | string;
         required: boolean;
       }[];
+      noWeb?: boolean;
+      params?: any[];
+      legacyMode?: boolean;
     }
 
     export type CommandHandler = (
@@ -225,6 +247,7 @@ import type * as FileType from "file-type";
 import type { UserStatsManager } from "cassidy-userData";
 import { CassMongoManager } from "./handlers/database/cass-mongo.js";
 import type { CassidyResponseStylerControl } from "@cassidy/styler";
+import { SpectralCMDHome } from "@cassidy/spectral-home";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
   /**

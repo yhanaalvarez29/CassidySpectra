@@ -6,11 +6,9 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 global.listener = {};
-import { LianeAPI } from "fca-liane-utils";
-import axios from "axios";
+
 import stringSimilarity from "string-similarity";
 import { CassEXP } from "../modules/cassEXP.js";
-import { ReduxCMDHome } from "@cassidy/redux-home";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 
 function getSuggestedCommand(input, commands) {
@@ -45,13 +43,7 @@ const handleCD = new Cooldown();
  */
 export async function use(obj) {
   try {
-    const {
-      awaitStack,
-      hasAwaitStack,
-      setAwaitStack,
-      delAwaitStack,
-      clearCurrStack,
-    } = obj;
+    const { setAwaitStack, delAwaitStack } = obj;
     obj.isCommand = true;
     function handleNo() {
       if (obj.input.xQ) {
@@ -70,46 +62,25 @@ export async function use(obj) {
     }
     const isFn = (i) => typeof i === "function";
     let {
-      api,
       event,
       commands,
       prefix,
       input,
       output,
-      userState,
       commandName,
       hasPrefix,
       command,
-      invTime,
-      GenericInfo,
-      Shop,
       popularCMD,
       recentCMD,
       money,
-      threadsDB,
     } = obj;
-    /**
-     * @type {typeof import("./shopV2.js").ShopClass}
-     */
+
     const ShopClass = obj.ShopClass;
     global.runner = obj;
     const {
-      text,
-      wordCount,
-      charCount,
-      allCharCount,
-      numbers,
-      links,
-      mentionNames,
-      replier,
-      isThread,
-      userInfo,
-      hasMentions,
       body,
       senderID,
-      threadID,
-      argPipe,
-      argArrow,
+
       arguments: args,
       isThreadAdmin,
     } = input;
@@ -132,7 +103,7 @@ export async function use(obj) {
     } catch (err) {
       console.log(err);
     }
-    const { send, reply, react } = output;
+    const { reply } = output;
     let eventTypes = ["message", "message_reply"];
     global.currData = command;
 
@@ -157,18 +128,7 @@ export async function use(obj) {
       if (prefix === "/") {
         return;
       }
-      const [id, username = "unregistered"] = `${commandName}`.split("@");
-      const key = `${id}@${username}`;
 
-      // return reply(
-      //   `⚠️ | The command ${
-      //     commandName ? `"${commandName}"` : "you are using"
-      //   } does not exist${
-      //     commands.start
-      //       ? `, please check the command list by typing ${prefix}start`
-      //       : ". The start command is missing anyway, so you're screwed."
-      //   }`
-      // );
       if (!commandName) {
         return commands.start?.entry({ ...obj, body: "start", args: [] });
       }
@@ -200,7 +160,6 @@ export async function use(obj) {
       banned,
       indivMeta = {},
       shopLocked,
-      awaiting,
     } = command;
     console.log(`Handling command "${meta.name}"`);
     const userDataCache = await money.getCache(senderID);
@@ -219,7 +178,7 @@ export async function use(obj) {
       );
     }
 
-    const cassEXP = new CassEXP(userDataCache.cassEXP);
+    // const cassEXP = new CassEXP(userDataCache.cassEXP);
 
     // if (typeof meta.requiredLevel === "number") {
     //   if (isNaN(meta.requiredLevel)) {
@@ -284,9 +243,9 @@ export async function use(obj) {
           fallback,
           response,
           search = "",
-          required = false,
         } = requirement || {};
         if (
+          // @ts-ignore
           search instanceof RegExp
             ? args[degree].match(search)
             : Array.isArray(search)
@@ -327,12 +286,18 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       if (isFn(needPrefix)) {
         return await needPrefix(obj);
       }
-      return reply(
-        `⚠️ | Please type ${prefix}${meta.name} to use this command.`
-      );
+      if (Cassidy.config.warnWhenNoPrefix) {
+        return reply(
+          `⚠️ | Please type ${prefix}${meta.name} to use this command.`
+        );
+      }
+      return handleNo();
     }
     if (meta.noPrefix === "both") {
       if (input.strictPrefix && !hasPrefix) {
+        if (!Cassidy.config.warnWhenNoPrefix) {
+          return handleNo();
+        }
         return reply(
           `⚠️ | Noprefix commands are not available, please type ${prefix}${meta.name} to use this command.`
         );
@@ -341,17 +306,21 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       if (isFn(noPrefix)) {
         return await noPrefix(obj);
       }
-      return reply(
-        `⚠️ | The command ${commandName} has noPrefix configured as true.`
-      );
+      if (Cassidy.config.strictNoPrefix) {
+        return reply(
+          `⚠️ | The command ${commandName} has noPrefix configured as true.`
+        );
+      }
     } else if (
       meta.noPrefix !== false &&
       meta.noPrefix !== true &&
       meta.noPrefix !== "both"
     ) {
-      return reply(
-        `⚠️ | The noPrefix of the command ${commandName} isn't properly configured to true, false or "both"`
-      );
+      if (Cassidy.config.strictNoPrefix) {
+        return reply(
+          `⚠️ | The noPrefix of the command ${commandName} isn't properly configured to true, false or "both"`
+        );
+      }
     }
     if (meta.noWeb && input.isWeb) {
       if (isFn(command.noWeb)) {
@@ -370,7 +339,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       );
     }
 
-    const { ADMINBOT } = global.Cassidy.config;
+    // const { ADMINBOT } = global.Cassidy.config;
     if (!meta.permissions) {
       meta.permissions = [];
     }
@@ -509,7 +478,9 @@ ${list}`;
           if (!input.property[prop.trim()]) {
             continue;
           } else if (meta.legacyMode === true) {
+            // @ts-ignore
             const propEntry = entry[prop];
+            // @ts-ignore
             const { params = [], waitingTime = meta.waitingTime } =
               indivMeta?.[prop] || {};
 
@@ -626,22 +597,22 @@ function parseError(err) {
   }\n\n${err.stack}`;
 }
 
-let _structure = {
-  meta: {
-    name: "name",
-    author: "Your name",
-    otherNames: ["name1", "name2"],
-    version: "1.0.0",
-    description: "Your description",
-    usage: "{prefix}name <arg]",
-    category: "your category",
-    permissions: [0, 1, 2],
-    //0 is non admin, 1 is gc admin, 2 is bot admin
-    waitingTime: 5,
-    noPrefix: "both", //both, true, false
-    whiteList: null, //[]
-    ext_plugins: {
-      plugin_name: "^1.0.0",
-    },
-  },
-};
+// let _structure = {
+//   meta: {
+//     name: "name",
+//     author: "Your name",
+//     otherNames: ["name1", "name2"],
+//     version: "1.0.0",
+//     description: "Your description",
+//     usage: "{prefix}name <arg]",
+//     category: "your category",
+//     permissions: [0, 1, 2],
+//     //0 is non admin, 1 is gc admin, 2 is bot admin
+//     waitingTime: 5,
+//     noPrefix: "both", //both, true, false
+//     whiteList: null, //[]
+//     ext_plugins: {
+//       plugin_name: "^1.0.0",
+//     },
+//   },
+// };

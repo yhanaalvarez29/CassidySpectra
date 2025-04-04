@@ -41,5 +41,8 @@
   "maintenanceMode": false,
   "noLevelUI": false,
   "noRibbonUI": false,
-  "logPluginChange": false
+  "logPluginChange": false,
+  "warnWhenNoPrefix": false,
+  "strictNoPrefix": false,
+  "requireRgistration": true
 }
