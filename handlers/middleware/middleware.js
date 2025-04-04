@@ -1,3 +1,4 @@
+// @ts-check
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -7,9 +8,8 @@
 */
 import fs from "fs";
 import UserStatsManager, { init } from "../../handlers/database/handleStat";
-import axios from "axios";
 import { SymLock } from "../loaders/loadCommand.js";
-import { join, resolve } from "path";
+import { join } from "path";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
@@ -96,8 +96,7 @@ function sortPluginKindaOld(allPlugins) {
 }
 
 // [newest] Spectra Plugin Sorting
-const fs = require("fs");
-const { join, dirname } = require("path");
+const { dirname } = require("path");
 
 export function sortPlugin(allPlugins) {
   const savePath = join(process.cwd(), "CommandFiles", "plugin-order.json");
@@ -241,9 +240,15 @@ const deSYMC = function (axx) {
   if (
     !axx[
       ("t" + "e" + "l" + "k" + "o" + "o" + "h")
-        ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
+        [
+          // @ts-ignore
+          "split" + []
+        ]([] + [] + [] + [] + [] + [] + [] + [])
         ["reverse" + []]()
-        ["join" + []]([] + [] + [] + [] + [] + [])
+        [
+          // @ts-ignore
+          "join" + []
+        ]([] + [] + [] + [] + [] + [])
     ]
   )
     return undefined;
@@ -261,9 +266,15 @@ const deSYMC = function (axx) {
         [] +
         [] +
         [])
-        ["split" + []]([] + [] + [] + [] + [] + [] + [] + [])
+        [
+          // @ts-ignore
+          "split" + []
+        ]([] + [] + [] + [] + [] + [] + [] + [])
         ["reverse" + []]()
-        ["join" + []]([] + [] + [] + [] + [] + [])
+        [
+          // @ts-ignore
+          "join" + []
+        ]([] + [] + [] + [] + [] + [])
     )(axx)
     .then((xha) =>
       []["constructor" + [] + [] + [] + [] + [] + [] + [] + []]
@@ -302,10 +313,16 @@ async function handleMiddleWare({
 
   try {
     let prefixes = ["/", prefix, ...global.Cassidy.config.EXTRAPREFIX];
+    const cache = await threadsDB.getCache(event.threadID);
+    if (typeof cache.threadPrefix === "string") {
+      prefixes = [cache.threadPrefix];
+      prefix = prefixes[0];
+    }
     if (Array.isArray(event.prefixes)) {
       prefixes = [...event.prefixes];
       prefix = prefixes[0];
     }
+
     const { createSafeProxy } = global.utils;
     const { logo: icon } = global.Cassidy;
     let [pref1 = "", commandName = "", ...etc] = (event.body ?? "")
