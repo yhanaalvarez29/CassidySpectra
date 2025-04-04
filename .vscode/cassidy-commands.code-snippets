@@ -2,6 +2,10 @@
   "Command Template": {
     "prefix": "define-command",
     "body": [
+      "// @ts-check",
+      "/**",
+      " * @type {CassidySpectra.CommandMeta}",
+      " */",
       "export const meta = {",
       "  name: \"${1:commandName}\",",
       "  description: \"${2:Command description}\",",
@@ -18,6 +22,9 @@
       "  icon: \"${13:🔧}\"",
       "};",
       "",
+      "/**",
+      " * @param {CassidySpectra.CommandContext} ctx",
+      " */",
       "export async function entry({ input, output, args, money, threadsDB }) {",
       "  // Your command logic here",
       "  ${15:// Example: output.reply(\"Hello, World!\");}",
@@ -28,6 +35,7 @@
   "Command Template With Spectral Home": {
     "prefix": "define-command-spectra",
     "body": [
+      "// @ts-check",
       "import { SpectralCMDHome } from \"@cassidy/spectral-home\";",
       "import { defineEntry } from \"@cass/define\";",
       "",

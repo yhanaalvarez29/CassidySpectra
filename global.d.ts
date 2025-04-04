@@ -124,6 +124,7 @@ declare global {
   var loadSymbols: Map<string, symbol>;
 
   export namespace CassidySpectra {
+    export interface CommandContext extends CommandContextOG {}
     export interface GlobalCassidy {
       config: typeof import("./settings.json");
       uptime: number;
@@ -211,7 +212,7 @@ declare global {
 
     export type CommandHandler = (
       context: CommandContext
-    ) => Promise<void> | void;
+    ) => Promise<any> | any;
 
     export type CommandMiddleware = (
       context: CommandContext,
