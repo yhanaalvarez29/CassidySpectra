@@ -1,185 +1,176 @@
-/**
- * A mapping of modifier names to functions that can transform or augment promise behavior.
- */
 export type ModifierMap = Record<string, (...args: any[]) => any>;
 
-/**
- * A promise subclass that allows attaching custom modifiers to enhance its behavior.
- * @template T The type of the value the promise resolves to.
- * @author lianecagara https://github.com/lianecagara
- */
-export class EnhancedPromise<T> extends Promise<T> {
-  public modifiers: Record<string, any> = {};
-  public customizer: ModifierMap;
-  private executor: (
-    resolve: (value: T | PromiseLike<T>) => void,
-    reject: (reason?: any) => void,
-    modifiers: Record<string, any>
-  ) => void;
-  public isExecutorStarted: boolean = false;
-  public resolve!: (value: T | PromiseLike<T>) => void;
-  public reject!: (reason?: any) => void;
-
-  constructor(
-    customizer: ModifierMap,
-    executor: (
-      resolve: (value: T | PromiseLike<T>) => void,
-      reject: (reason?: any) => void,
-      modifiers: Record<string, any>
-    ) => void
-  ) {
-    super((resolve, reject) => {
-      this.resolve = resolve;
-      this.reject = reject;
-    });
-    this.customizer = customizer;
-    this.executor = executor;
-  }
-
-  /**
-   * Lazily starts the executor when a promise method is called.
-   * @private
-   */
-  public startExecutor(): void {
-    if (!this.isExecutorStarted) {
-      this.isExecutorStarted = true;
-      this.executor(this.resolve, this.reject, this.modifiers);
-    }
-  }
-
-  /**
-   * Handles fulfillment and rejection of the promise.
-   * @template TResult1 The type of the fulfilled result.
-   * @template TResult2 The type of the rejected result.
-   */
-  then<TResult1 = T, TResult2 = never>(
-    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
-  ): Promise<TResult1 | TResult2> {
-    this.startExecutor();
-    return super.then(onfulfilled, onrejected);
-  }
-
-  /**
-   * Handles rejection of the promise.
-   * @template TResult The type of the rejection result.
-   */
-  catch<TResult = never>(
-    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null
-  ): Promise<T | TResult> {
-    this.startExecutor();
-    return super.catch(onrejected);
-  }
-
-  /**
-   * Executes a callback regardless of the promise's outcome.
-   */
-  finally(onfinally?: (() => void) | null): Promise<T> {
-    this.startExecutor();
-    return super.finally(onfinally);
-  }
-
-  /**
-   * Creates an EnhancedPromise with custom modifiers.
-   * @template T The type of the value the promise resolves to.
-   * @param customizer A map of modifier functions.
-   * @param executor The promise executor function.
-   * @returns An EnhancedPromise instance with attached modifiers.
-   */
-  static create<T>(
-    customizer: ModifierMap,
-    executor: (
-      resolve: (value: T | PromiseLike<T>) => void,
-      reject: (reason?: any) => void,
-      modifiers: Record<string, any>
-    ) => void
-  ): EnhancedPromise<T> {
-    const promise = new EnhancedPromise<T>(customizer, executor);
-
-    for (const key in customizer) {
-      if (!(key in promise)) {
-        Object.defineProperty(promise, key, {
-          value: function (...args: any[]) {
-            promise.modifiers[key] = customizer[key](...args);
-            return promise;
-          },
-          writable: false,
-          configurable: true,
-        });
-      }
-    }
-
-    return promise;
-  }
-}
-
-/**
- * Extracts the return types of a ModifierMap as an optional record.
- * @template T The ModifierMap type.
- */
 export type ModifierResults<T extends ModifierMap> = {
   [K in keyof T]?: ReturnType<T[K]>;
 };
 
+export type ModifierMerge<T extends ModifierMap, S> = {
+  [K in keyof T]: (...args: Parameters<T[K]>) => S;
+};
+
 /**
- * A factory class for creating EnhancedPromise instances with a predefined set of modifiers.
- * @template T The type of the modifier map.
+ * Creates an enhanced promise with custom modifiers and lazy execution
+ * @template T The type of the value the promise resolves to
+ * @template C The type of the modifier map
+ * @param customizer A map of modifier functions
+ * @param executor The promise executor function
+ * @returns A promise with attached modifiers
  * @author lianecagara https://github.com/lianecagara
  */
-export class PromiseEnhancer<T extends ModifierMap> {
-  private customizer: T;
+export function createEnhancedPromise<T, C extends ModifierMap>(
+  customizer: C,
+  executor: (
+    resolve: (value: T | PromiseLike<T>) => void,
+    reject: (reason?: any) => void,
+    modifiers: ModifierResults<C>
+  ) => void
+): Promise<T> & ModifierMerge<C, Promise<T>> {
+  let internalPromise: Promise<T> | null = null;
+  const modifiers: ModifierResults<C> = {};
+  let isStarted = false;
 
-  constructor(customizer: T) {
-    this.customizer = customizer;
+  const enhancedPromise = {
+    /**
+     * Handles fulfillment and rejection of the promise
+     * @template TResult1 The type of the fulfilled result
+     * @template TResult2 The type of the rejected result
+     * @param onfulfilled Optional callback for when the promise is fulfilled
+     * @param onrejected Optional callback for when the promise is rejected
+     * @returns A new promise with the result of the callbacks
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+    ): Promise<TResult1 | TResult2> {
+      if (!isStarted) {
+        isStarted = true;
+        internalPromise = new Promise<T>((resolve, reject) => {
+          executor(resolve, reject, modifiers);
+        });
+      }
+      return internalPromise!.then(onfulfilled, onrejected);
+    },
+
+    /**
+     * Handles rejection of the promise
+     * @template TResult The type of the rejection result
+     * @param onrejected Optional callback for when the promise is rejected
+     * @returns A new promise with the result of the callback
+     */
+    catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null
+    ): Promise<T | TResult> {
+      if (!isStarted) {
+        isStarted = true;
+        internalPromise = new Promise<T>((resolve, reject) => {
+          executor(resolve, reject, modifiers);
+        });
+      }
+      return internalPromise!.catch(onrejected);
+    },
+
+    /**
+     * Executes a callback regardless of the promise's outcome
+     * @param onfinally Optional callback to execute when the promise settles
+     * @returns A new promise with the original value
+     */
+    finally(onfinally?: (() => void) | null): Promise<T> {
+      if (!isStarted) {
+        isStarted = true;
+        internalPromise = new Promise<T>((resolve, reject) => {
+          executor(resolve, reject, modifiers);
+        });
+      }
+      return internalPromise!.finally(onfinally);
+    },
+  } as Promise<T>;
+
+  for (const key in customizer) {
+    Object.defineProperty(enhancedPromise, key, {
+      value: (...args: any[]) => {
+        modifiers[key] = customizer[key](...args);
+        return enhancedPromise;
+      },
+      writable: false,
+      configurable: true,
+    });
   }
 
-  /**
-   * Creates an EnhancedPromise with the configured modifiers.
-   * @template P The type of the value the promise resolves to.
-   * @param executor The promise executor function.
-   * @returns An EnhancedPromise instance.
-   */
-  create<P>(
-    executor: (
-      resolve: (value: P) => void,
-      reject: (reason?: any) => void,
-      custom: ModifierResults<T>
-    ) => void
-  ): EnhancedPromise<P> {
-    return EnhancedPromise.create(this.customizer, executor);
-  }
+  return enhancedPromise as Promise<T> & ModifierMerge<C, Promise<T>>;
 }
 
 /**
- * Example usage of PromiseEnhancer and EnhancedPromise.
+ * Factory for creating enhanced promises with predefined modifiers
+ * @template T The type of the modifier map
+ * @author lianecagara https://github.com/lianecagara
+ */
+export class PromiseEnhancer<T extends ModifierMap> {
+  constructor(public customizer: T) {}
+
+  /**
+   * Creates an enhanced promise with the configured modifiers
+   * @template P The type of the value the promise resolves to
+   * @param executor The promise executor function
+   * @returns A promise instance with the configured modifiers
+   */
+  create<P>(
+    executor: (
+      resolve: (value: P | PromiseLike<P>) => void,
+      reject: (reason?: any) => void,
+      modifiers: ModifierResults<T>
+    ) => void
+  ): Promise<P> & ModifierMerge<T, Promise<P>> {
+    return createEnhancedPromise(this.customizer, executor);
+  }
+}
+
+export type EnhancedPromiseType<
+  T,
+  M extends PromiseEnhancer<ModifierMap>
+> = Promise<T> & ModifierMerge<M["customizer"], Promise<T>>;
+
+/**
+ * Example usage with a threading mode modifier
  */
 export namespace example {
   const CustomPromise = new PromiseEnhancer({
     /**
-     * Sets the language modifier.
-     * @param l The language code (defaults to "en").
-     * @returns The language string.
+     * Sets the execution mode for the promise
+     * @param m The mode, either "thread" (delayed) or "immediate" (default)
+     * @returns The selected mode
      */
-    lang(l: string = "en") {
-      return String(l);
+    mode(m: "thread" | "immediate" = "immediate") {
+      return m;
     },
   });
 
   /**
-   * Creates an EnhancedPromise that appends a language code to a message.
-   * @param msg The message to process.
-   * @returns An EnhancedPromise resolving to the modified message.
+   * Creates an enhanced promise that resolves a message with a configurable execution mode
+   * @param msg The message to process
+   * @returns An enhanced promise resolving to the message
    */
-  export function processMessage(msg: string): EnhancedPromise<string> {
-    return CustomPromise.create<string>((resolve, reject, custom) => {
-      if (custom.lang) {
-        resolve(msg + custom.lang);
+  export function customPromise(
+    msg: string
+  ): EnhancedPromiseType<string, typeof CustomPromise> {
+    return CustomPromise.create<string>((resolve, _reject, modifiers) => {
+      if (modifiers.mode === "thread") {
+        setTimeout(() => resolve(msg.repeat(5)), 1000);
       } else {
         resolve(msg);
       }
     });
   }
-}
 
-// Usage example:
-// example.processMessage("Hello").lang("fr").then(console.log); // Outputs: "Hellofr"
+  /**
+   * Runs example usage of customPromise with different modes
+   */
+  export async function runExamples() {
+    const result1 = await customPromise("test").then((value) => value);
+    console.log(result1);
+
+    const result2 = await customPromise("test")
+      .mode("thread")
+      .then((value) => value);
+    console.log(result2);
+  }
+}

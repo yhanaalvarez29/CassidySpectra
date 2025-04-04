@@ -229,4 +229,5 @@ Error.prepareStackTrace = (error, structuredStack) => {
   }`;
 };
 
+require("@cass-modules/promise-customizer").example.runExamples()
 require("./Cassidy");
