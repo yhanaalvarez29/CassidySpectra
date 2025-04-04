@@ -11,15 +11,22 @@ export const meta = {
   icon: "🎁",
   requiredLevel: 3,
 };
+
 export const style = {
   title: "Free Gift 💗",
   titleFont: "bold",
   contentFont: "fancy",
 };
+
 const diaCost = 2;
 const { parseCurrency: pCy } = global.utils;
 const { invLimit } = global.Cassidy;
 
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 async function handlePaid({
   input,
   output,
@@ -27,20 +34,22 @@ async function handlePaid({
   Inventory,
   generateGift,
   Collectibles,
+  langParser,
 }) {
+  const getLang = langParser.createGetLang(langs);
   let { inventory = [], collectibles = [] } = await money.get(input.senderID);
   if (String(input.words[0]).toLowerCase() !== "buy") {
     return;
   }
   if (inventory.length >= invLimit) {
-    return output.reply(`❌ You're carrying too many items!`);
+    return output.reply(getLang("tooManyItems"));
   }
   inventory = new Inventory(inventory);
   collectibles = new Collectibles(collectibles);
   if (!collectibles.hasAmount("gems", diaCost)) {
     if (input.isAdmin && input.words[1] === "cheat") {
     } else {
-      return output.reply(`❌ You don't have enough gems to purchase it.`);
+      return output.reply(getLang("notEnoughGems"));
     }
   }
   const giftItem = generateGift();
@@ -64,14 +73,44 @@ async function handlePaid({
     collectibles: Array.from(collectibles),
   });
   return output.reply(
-    `✅ You bought a **${giftItem.icon} ${
-      giftItem.name
-    }**! Check your inventory to see it.\n\n💎 **${pCy(
-      collectibles.getAmount("gems")
-    )}** (-${diaCost})`
+    getLang(
+      "boughtGift",
+      giftItem.icon,
+      giftItem.name,
+      pCy(collectibles.getAmount("gems")),
+      diaCost
+    )
   );
 }
 
+export const langs = {
+  en: {
+    tooManyItems: "❌ You're carrying too many items!",
+    notEnoughGems: "❌ You don't have enough gems to purchase it.",
+    boughtGift:
+      "✅ You bought a **%1 %2**! Check your inventory to see it.\n\n💎 **%3** (-%4)",
+    alreadyClaimed:
+      "⏳ You've already claimed your free gift. Please wait for %1 hours, %2 minutes, and %3 seconds before claiming again.\nReply **buy** to purchase a fortune **envelope** for %4💎\n\n**💎 %5**",
+    claimedGift:
+      "🎁 You've claimed your free gift! Check your inventory and come back later for more.",
+  },
+  tl: {
+    tooManyItems: "❌ OMG, your items are like, sobrang dami na, girl!",
+    notEnoughGems: "❌ Wala kang enough gems, so sad naman!",
+    boughtGift:
+      "✅ You bought a **%1 %2**, so fab! Check mo your inventory na.\n\n💎 **%3** (-%4)",
+    alreadyClaimed:
+      "⏳ Na-claim mo na your free gift, besh! Wait ka lang ng %1 hours, %2 minutes, and %3 seconds before you can claim ulit.\nJust reply **buy** if you wanna get a fortune **envelope** for %4💎\n\n**💎 %5**",
+    claimedGift:
+      "🎁 Yes, na-claim mo na your free gift! So cute, check your inventory and come back later ha, so fun!",
+  },
+};
+
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({
   input,
   output,
@@ -79,20 +118,20 @@ export async function entry({
   Inventory,
   generateGift,
   Collectibles,
+  langParser,
 }) {
+  const getLang = langParser.createGetLang(langs);
   let {
     inventory = [],
     lastGiftClaim,
     collectibles = [],
   } = await money.get(input.senderID);
   if (inventory.length >= invLimit) {
-    return output.reply(`❌ You're carrying too many items!`);
+    return output.reply(getLang("tooManyItems"));
   }
   inventory = new Inventory(inventory);
-
   collectibles = new Collectibles(collectibles);
   const currentTime = Date.now();
-  // const msWait = 60 * 60 * 1000;
   const msWait = 20 * 60 * 1000;
 
   let canClaim = false;
@@ -110,13 +149,18 @@ export async function entry({
       const hoursRemaining = Math.floor(
         (timeRemaining / (1000 * 60 * 60)) % 24
       );
-      const minutesRemaining = Math.floor((timeRemaining / 1000 / 60) % 60);
+      const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
       const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
 
       const info = await output.reply(
-        `⏳ You've already claimed your free gift. Please wait for ${hoursRemaining} hours, ${minutesRemaining} minutes, and ${secondsRemaining} seconds before claiming again.\nReply **buy** to purchase a fortune **envelope** for ${diaCost}💎\n\n**💎 ${pCy(
-          collectibles.getAmount("gems")
-        )}**`
+        getLang(
+          "alreadyClaimed",
+          hoursRemaining,
+          minutesRemaining,
+          secondsRemaining,
+          diaCost,
+          pCy(collectibles.getAmount("gems"))
+        )
       );
       input.setReply(info.messageID, {
         callback: handlePaid,
@@ -136,8 +180,6 @@ export async function entry({
       lastGiftClaim: currentTime,
     });
 
-    output.reply(
-      `🎁 You've claimed your free gift! Check your inventory and come back later for more.`
-    );
+    return output.reply(getLang("claimedGift"));
   }
 }
