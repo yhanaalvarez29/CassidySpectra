@@ -1,4 +1,6 @@
-class LangParser {
+import formatWith from "@cass-modules/format-with";
+
+export class LangParser {
   private readonly parsedData: Map<string, string> = new Map();
 
   constructor(content: string = "") {
@@ -41,6 +43,7 @@ class LangParser {
 
   public static parse(content: string): Map<string, string> {
     const result = new Map<string, string>();
+
     content
       .split("\n")
       .map((line) => line.trim())
@@ -48,13 +51,18 @@ class LangParser {
       .forEach((line) => {
         const [key, ...valueParts] = line.split(/(?<!\\)=/);
         const value = valueParts.join("=");
+
         if (key) {
-          result.set(
-            key.trim().replace(/\\=/g, "="),
-            value.trim().replace(/\\=/g, "=")
-          );
+          const unescapedKey = key.trim().replace(/\\=/g, "=");
+          const unescapedValue = value
+            .trim()
+            .replace(/\\=/g, "=")
+            .replace(/\\n/g, "\n");
+
+          result.set(unescapedKey, unescapedValue);
         }
       });
+
     return result;
   }
 
@@ -82,6 +90,22 @@ class LangParser {
   }
 
   private static escape(str: string): string {
-    return str.replace(/=/g, "\\=");
+    return str.replaceAll("=", "\\=").replaceAll("\n", "\\n");
+  }
+
+  public createGetLang() {
+    return (key: string, ...replacers: string[]) => {
+      const item = this.get(key);
+      if (!item) {
+        return `❌ Cannot find language properties: "${key}"`;
+      }
+      if (
+        "formatWith" in String.prototype &&
+        typeof String.prototype.formatWith === "function"
+      ) {
+        return item.formatWith(...replacers);
+      }
+      return formatWith(item, ...replacers);
+    };
   }
 }
