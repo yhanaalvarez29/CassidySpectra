@@ -39,7 +39,7 @@ export const meta = {
 export async function use(ctx) {
   try {
     ctx.langParser = langParser;
-    ctx.getLang = langParser.createGetLang(ctx.command.langs);
+    ctx.getLang = langParser.createGetLang(ctx.command?.langs);
   } catch (error) {
     console.error(error);
   } finally {

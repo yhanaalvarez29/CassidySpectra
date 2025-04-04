@@ -1,4 +1,5 @@
 declare namespace _default {
+  export { goatbotUtils };
   export { generateCaptchaCode };
   export { convertTimeSentence };
   export { minimizeErrStack };
@@ -60,8 +61,37 @@ declare namespace _default {
   export { FileControl };
   export { Tiles };
   export { StylerGlobal };
+  export { CustomError };
+  export { TaskQueue };
+  export { convertTime };
+  export { defaultStderrClearLine };
+  export { formatNumber };
+  export { getExtFromAttachmentType };
+  export { getExtFromMimeType };
+  export { getExtFromUrl };
+  export { getPrefix };
+  export { getTime };
+  export { getType };
+  export { isNumber };
+  export { randomString };
+  export { randomNumber };
+  export { removeHomeDir };
+  export { splitPage };
+  export { translateAPI };
+  export { downloadFile };
+  export { findUid };
+  export { getStreamsFromAttachment };
+  export { getStreamFromURL as getStreamFromUrl };
+  export { translate };
+  export { shortenURL };
+  export { uploadZippyshare };
+  export { uploadImgbb };
 }
 export default _default;
+
+declare namespace goatbotUtils {
+  export { getStreamFromURL };
+}
 declare function generateCaptchaCode(length?: number): string;
 declare function convertTimeSentence({
   years,
@@ -543,4 +573,98 @@ declare class Tiles {
   toString(): string;
 }
 import StylerGlobal = require("./handlers/styler.js/main.js");
+declare class CustomError extends Error {
+  constructor(obj: any);
+}
+declare class TaskQueue {
+  constructor(callback: any);
+  queue: any[];
+  running: any;
+  callback: any;
+  push(task: any): void;
+  next(): void;
+  length(): number;
+}
+declare function convertTime(
+  miliSeconds: any,
+  replaceSeconds?: string,
+  replaceMinutes?: string,
+  replaceHours?: string,
+  replaceDays?: string,
+  replaceMonths?: string,
+  replaceYears?: string,
+  notShowZero?: boolean
+): string;
+declare const defaultStderrClearLine: (
+  dir: import("tty").Direction,
+  callback?: () => void
+) => boolean;
+declare function formatNumber(number: any): any;
+declare function getExtFromAttachmentType(
+  type: any
+): "png" | "gif" | "mp4" | "mp3" | "txt";
+declare function getExtFromMimeType(mimeType?: string): any;
+declare function getExtFromUrl(url?: string): string;
+declare function getPrefix(threadID: any): any;
+declare function getTime(timestamps: any, format: any): string;
+/**
+ * @param {any} value
+ * @returns {("Null" | "Undefined" | "Boolean" | "Number" | "String" | "Symbol" | "Object" | "Function" | "AsyncFunction" | "Array" | "Date" | "RegExp" | "Error" | "Map" | "Set" | "WeakMap" | "WeakSet" | "Int8Array" | "Uint8Array" | "Uint8ClampedArray" | "Int16Array" | "Uint16Array" | "Int32Array" | "Uint32Array" | "Float32Array" | "Float64Array" | "BigInt" | "BigInt64Array" | "BigUint64Array")}
+ */
+declare function getType(
+  value: any
+):
+  | "Null"
+  | "Undefined"
+  | "Boolean"
+  | "Number"
+  | "String"
+  | "Symbol"
+  | "Object"
+  | "Function"
+  | "AsyncFunction"
+  | "Array"
+  | "Date"
+  | "RegExp"
+  | "Error"
+  | "Map"
+  | "Set"
+  | "WeakMap"
+  | "WeakSet"
+  | "Int8Array"
+  | "Uint8Array"
+  | "Uint8ClampedArray"
+  | "Int16Array"
+  | "Uint16Array"
+  | "Int32Array"
+  | "Uint32Array"
+  | "Float32Array"
+  | "Float64Array"
+  | "BigInt"
+  | "BigInt64Array"
+  | "BigUint64Array";
+declare function isNumber(num: any): boolean;
+declare function isNumber(value: any): boolean;
+declare function randomString(
+  max: any,
+  onlyOnce: boolean,
+  possible: any
+): string;
+declare function randomNumber(min: any, max: any): any;
+declare function removeHomeDir(fullPath: any): any;
+declare function splitPage(
+  arr: any,
+  limit: any
+): {
+  totalPage: number;
+  allPage: any[][];
+};
+declare function translateAPI(text: any, lang: any): Promise<any>;
+declare function downloadFile(url?: string, path?: string): Promise<string>;
+declare function findUid(link: any): Promise<any>;
+declare function getStreamsFromAttachment(attachments: any): Promise<any[]>;
+declare function translate(text: any, lang: any): Promise<string>;
+declare function shortenURL(url: any): Promise<any>;
+declare function uploadZippyshare(stream: any): Promise<any>;
+declare function uploadImgbb(file: any): Promise<any>;
 //# sourceMappingURL=utils.d.ts.map

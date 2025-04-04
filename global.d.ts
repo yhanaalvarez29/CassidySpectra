@@ -129,7 +129,7 @@ declare global {
       config: typeof import("./settings.json");
       uptime: number;
       plugins: Record<string, any>;
-      commands: Record<string, any>;
+      commands: Record<string, CassidySpectra.CassidyCommand>;
       invLimit: number;
       replies: Record<
         string,
@@ -255,6 +255,7 @@ import { CassMongoManager } from "./handlers/database/cass-mongo.js";
 import type { CassidyResponseStylerControl } from "@cassidy/styler";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { LangParser } from "@cass-modules/langparser.js";
+import * as GoatFill from "@cassidy/polyfills/goatbot.js";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
   /**
@@ -473,4 +474,8 @@ declare global {
      */
     formatWith(...replacers: (string | ((position: number) => any))[]): string;
   }
+
+  var GoatBot: typeof GoatFill.GoatBot;
+  var client: typeof GoatFill.client;
+  var db: typeof GoatFill.db;
 }

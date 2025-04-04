@@ -51,7 +51,8 @@
       "@cass/output-types": ["./CommandFiles/types/output.d.ts"],
       "@cass/input-types": ["./CommandFiles/types/input.d.ts"],
       "@cassidy/output-types": ["./CommandFiles/types/output.d.ts"],
-      "@cassidy/input-types": ["./CommandFiles/types/input.d.ts"]
+      "@cassidy/input-types": ["./CommandFiles/types/input.d.ts"],
+      "@cassidy/polyfills/*": ["./handlers/polyfills/*"]
     }
   },
   "exclude": ["node_modules"],
