@@ -14,5 +14,5 @@ export const meta = {
  * @param {CommandContext} ctx
  */
 export async function use(ctx) {
-  
+  ctx.next();
 }
