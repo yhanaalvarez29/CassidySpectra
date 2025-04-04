@@ -181,11 +181,12 @@ export function use(obj) {
         const finalName = uiName || name;
         let isOther = finalName !== name;
 
-        options.body = finalName
-          ? `👤 **${finalName}**${
-              obj.command && !isOther ? ` (${obj.input.words[0]})` : ""
-            }\n\n${options.body}`
-          : `🍃 Register with **${obj.prefix}id-setname** now!\n\n${options.body}`;
+        options.body =
+          finalName && finalName !== "Unregistered"
+            ? `👤 **${finalName}**${
+                obj.command && !isOther ? ` (${obj.input.words[0]})` : ""
+              }\n\n${options.body}`
+            : `🍃 Register with **${obj.prefix}id-setname** now!\n\n${options.body}`;
       }
 
       if (
@@ -236,6 +237,9 @@ export function use(obj) {
       let resultInfo = {};
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
+        if (global.Cassidy.config.censorOutput) {
+          options.body = input.censor(options.body);
+        }
         console.log(options);
         const { UserStatsLocal, money, CassEncoder } = obj;
         const { replies = {} } = global.Cassidy;

@@ -136,6 +136,15 @@ export default class UserStatsManager {
 
     data.userID = String(userID);
 
+    if (!data.name && !global.Cassidy.config.requireRgistration) {
+      const { userMeta } = data;
+      if (userMeta?.name) {
+        data.name = userMeta.name;
+      } else {
+        data.name = "Unregistered";
+      }
+    }
+
     if (typeof data.name === "string") {
       const norm = this.normalizeName(data.name);
       data.name = norm.finalName;

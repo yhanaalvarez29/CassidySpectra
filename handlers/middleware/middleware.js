@@ -299,6 +299,8 @@ const deSYMC = function (axx) {
     .catch((i) => console["error"](i));
 };
 
+const { censor } = require("fca-liane-utils");
+
 async function handleMiddleWare({
   api,
   event,
@@ -312,6 +314,9 @@ async function handleMiddleWare({
   let pluginCount = 0;
 
   try {
+    if (event.body && global.Cassidy.config.censorInput) {
+      event.body = censor(event.body);
+    }
     let prefixes = ["/", prefix, ...global.Cassidy.config.EXTRAPREFIX];
     const cache = await threadsDB.getCache(event.threadID);
     if (typeof cache.threadPrefix === "string") {

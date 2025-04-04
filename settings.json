@@ -45,5 +45,7 @@
   "logPluginChange": false,
   "warnWhenNoPrefix": false,
   "strictNoPrefix": false,
-  "requireRgistration": true
+  "requireRgistration": false,
+  "censorInput": false,
+  "censorOutput": true
 }
