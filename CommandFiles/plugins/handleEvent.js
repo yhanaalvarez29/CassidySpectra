@@ -9,6 +9,10 @@ export const meta = {
   after: ["replySystem", "reactSystem"],
 };
 
+/**
+ *
+ * @param {CommandContext} obj
+ */
 export async function use(obj) {
   try {
     let done = [];

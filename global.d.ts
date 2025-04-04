@@ -177,6 +177,7 @@ declare global {
       modLower?: CommandHandler;
       reply?: CommandHandler;
       style?: any;
+      event?: CommandHandler;
     }
 
     export interface CommandMeta {

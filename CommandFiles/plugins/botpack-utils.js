@@ -1,8 +1,8 @@
-// Commenting everything to make sure I wouldn't loose track of what I was doing
+// @ts-check
 export const meta = {
   name: "botpack-utils",
   author: "Botpack | Mirai | Liane Cagara",
-  version: "1.0.0",
+  version: "2.0.0",
   description:
     "Important utils like Users, Threads, and Currencies to make them compatible with Cassidy.",
   supported: "^1.0.0",
@@ -11,21 +11,18 @@ export const meta = {
   expect: ["Users", "Threads"],
 };
 
-// Utility functions to manage user data (I rewrote 'em all)
-function createUsers({ api }) {
+function createUsers({ api, ctx }) {
   const { writeFileSync, existsSync } = require("fs");
   const path = `${__dirname}/data/botpack-usersData.json`;
 
   let usersData = {};
 
-  // Initialize user data file if it doesn't exist
   if (!existsSync(path)) {
     writeFileSync(path, "{}", { flag: "a+" });
   } else {
     usersData = require(path);
   }
 
-  // Save user data to file
   async function saveData(data) {
     if (!data) throw new Error("Data cannot be empty");
     writeFileSync(path, JSON.stringify(data, null, 4));
@@ -67,7 +64,6 @@ function createUsers({ api }) {
     }
   }
 
-  // Get all users or specific user keys, as Array
   async function getAll(keys, callback) {
     try {
       if (!keys) return Object.values(usersData);
@@ -86,7 +82,6 @@ function createUsers({ api }) {
     }
   }
 
-  // Get user data by user ID
   async function getData(userID, callback) {
     try {
       if (!userID) throw new Error("User ID cannot be blank");
@@ -101,7 +96,6 @@ function createUsers({ api }) {
     }
   }
 
-  // Set user data by user ID (options can merge the current data)
   async function setData(userID, options, callback) {
     try {
       if (!userID) throw new Error("User ID cannot be blank");
@@ -120,7 +114,6 @@ function createUsers({ api }) {
     }
   }
 
-  // Delete user data by user ID
   async function delData(userID, callback) {
     try {
       if (!userID) throw new Error("User ID cannot be blank");
@@ -137,7 +130,6 @@ function createUsers({ api }) {
     }
   }
 
-  // Create user data for a new user ID (helper function)
   async function createData(userID, callback) {
     try {
       if (!userID) throw new Error("User ID cannot be blank");
@@ -165,7 +157,7 @@ function createUsers({ api }) {
   }
 
   return {
-    getInfo, // deprecated
+    getInfo,
     getNameUser,
     getAll,
     getData,
@@ -176,27 +168,29 @@ function createUsers({ api }) {
   };
 }
 
-// Utility functions to manage thread data
-function createThreads({ api }) {
-  const Users = createUsers({ api });
+
+/**
+ * 
+ * @param {{ api: any, ctx: CommandContext }} param0 
+ * @returns 
+ */
+function createThreads({ api, ctx }) {
+  const Users = createUsers({ api, ctx });
   const { writeFileSync, existsSync } = require("fs");
   const path = `${__dirname}/data/threadsData.json`;
 
   let threadsData = {};
 
-  // Initialize thread data file if it doesn't exist
   if (!existsSync(path)) {
     writeFileSync(path, "{}", { flag: "a+" });
   } else {
     threadsData = require(path);
   }
 
-  // Get thread info (deprecated, dangerous asf)
   async function getInfo(threadID) {
     throw new Error("Threads.getInfo is deprecated.");
   }
 
-  // Get thread data by thread ID
   async function getData(threadID, callback) {
     try {
       if (!threadID) throw new Error("Thread ID cannot be empty");
@@ -211,14 +205,12 @@ function createThreads({ api }) {
     }
   }
 
-  // Save thread data to file
   async function saveData(data) {
     if (!data) throw new Error("Data cannot be empty");
     writeFileSync(path, JSON.stringify(data, null, 4));
     return true;
   }
 
-  // Get all threads or specific thread keys as Areay
   async function getAll(keys, callback) {
     try {
       if (!keys) return Object.values(threadsData);
@@ -237,7 +229,6 @@ function createThreads({ api }) {
     }
   }
 
-  // Set thread data by thread ID
   async function setData(threadID, options, callback) {
     try {
       if (!threadID) throw new Error("Thread ID cannot be empty");
@@ -258,7 +249,6 @@ function createThreads({ api }) {
     }
   }
 
-  // Delte thread data by thread ID
   async function delData(threadID, callback) {
     try {
       if (!threadID) throw new Error("Thread ID cannot be empty");
@@ -277,7 +267,6 @@ function createThreads({ api }) {
     }
   }
 
-  // Create thread data for a new thread ID (helper)
   async function createData(threadID, callback) {
     try {
       if (!threadID) throw new Error("Thread ID cannot be empty");
@@ -336,7 +325,7 @@ function createThreads({ api }) {
   }
 
   return {
-    getInfo, // deprecated
+    getInfo,
     getAll,
     getData,
     setData,
@@ -345,10 +334,8 @@ function createThreads({ api }) {
   };
 }
 
-// Finally, we are here
 export async function use(obj) {
-  obj.Users = createUsers({ api: obj.origAPI });
-  obj.Threads = createThreads({ api: obj.origAPI });
-  // I'm not going to automatically save their data
+  obj.Users = createUsers({ api: obj.origAPI, ctx: obj });
+  obj.Threads = createThreads({ api: obj.origAPI, ctx: obj });
   obj.next();
 }
