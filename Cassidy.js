@@ -248,7 +248,7 @@ function saveSettings(data) {
 function loadCookie() {
   try {
     try {
-      return JSON.parse(process.env.COOKIE);
+      return JSON.parse(process.env.APPSTATE ?? process.env.COOKIE);
     } catch {
       // do nothing lol
     }
