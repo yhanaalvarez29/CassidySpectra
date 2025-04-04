@@ -8,7 +8,7 @@ export class LangParser {
   }
 
   public static stringify(
-    data: Map<string, string> | { [key: string]: any }
+    data: Map<string, string> | { [key: string]: string }
   ): string {
     let entries: [string, string][];
 
@@ -16,28 +16,23 @@ export class LangParser {
       entries = Array.from(data.entries());
     } else {
       const flattenObject = (
-        obj: { [key: string]: any },
+        obj: { [key: string]: string },
         prefix: string = ""
       ): [string, string][] => {
         return Object.entries(obj).flatMap(([key, value]) => {
           const newKey = prefix ? `${prefix}.${key}` : key;
           if (value && typeof value === "object" && !Array.isArray(value)) {
-            return flattenObject(value, newKey);
-          } else {
-            const stringValue =
-              typeof value === "string" ? value : String(value);
-            return [[newKey, stringValue] as [string, string]];
+            return flattenObject(value as { [key: string]: string }, newKey);
           }
+          const jsonValue = JSON.stringify(String(value));
+          return [[newKey, jsonValue] as [string, string]];
         });
       };
       entries = flattenObject(data);
     }
 
     return entries
-      .map(
-        ([key, value]) =>
-          `${LangParser.escape(key)}=${LangParser.escape(value)}`
-      )
+      .map(([key, value]) => `${key}=${value}`)
       .join("\n");
   }
 
@@ -49,17 +44,21 @@ export class LangParser {
       .map((line) => line.trim())
       .filter((line) => line && !line.startsWith("#"))
       .forEach((line) => {
-        const [key, ...valueParts] = line.split(/(?<!\\)=/);
+        const [key, ...valueParts] = line.split("=");
         const value = valueParts.join("=");
 
         if (key) {
-          const unescapedKey = key.trim().replace(/\\=/g, "=");
-          const unescapedValue = value
-            .trim()
-            .replace(/\\=/g, "=")
-            .replace(/\\n/g, "\n");
+          const trimmedKey = key.trim();
+          const trimmedValue = value.trim();
 
-          result.set(unescapedKey, unescapedValue);
+          try {
+            const parsedValue = JSON.parse(trimmedValue);
+            if (typeof parsedValue === "string") {
+              result.set(trimmedKey, parsedValue);
+            }
+          } catch (e) {
+            // Ignore invalid JSON, only accept valid JSON strings
+          }
         }
       });
 
@@ -85,7 +84,7 @@ export class LangParser {
     return new Map(this.parsedData);
   }
 
-  public raw(): Record<string, any> {
+  public raw(): Record<string, string> {
     return Object.fromEntries(this.parsedData);
   }
 
@@ -93,12 +92,8 @@ export class LangParser {
     return LangParser.stringify(this.parsedData);
   }
 
-  private static escape(str: string): string {
-    return str.replaceAll("=", "\\=").replaceAll("\n", "\\n");
-  }
-
   public createGetLang(
-    langs?: Record<string, Record<string, any>>,
+    langs?: Record<string, Record<string, string>>,
     k1?: string
   ) {
     langs ??= {};
@@ -108,9 +103,11 @@ export class LangParser {
         langs?.[k1]?.[key] ||
         langs?.[global.Cassidy.config.defaultLang]?.[key] ||
         this.get(key);
+      
       if (!item) {
         return `❌ Cannot find language properties: "${key}"`;
       }
+
       if (
         "formatWith" in String.prototype &&
         typeof String.prototype.formatWith === "function"
