@@ -67,7 +67,7 @@
     "@types/source-map-support": "^0.5.10",
     "@types/yt-search": "^2.10.3",
     "git-cliff": "^2.8.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "engines": {
     "node": ">=20.0.0"
