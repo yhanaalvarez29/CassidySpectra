@@ -1,4 +1,3 @@
-// @ts-check
 import { Pinger } from "@cass-modules/pinger";
 import { CassTypes } from "@cass-modules/type-validator";
 import { defineEntry } from "@cass/define";
@@ -22,10 +21,7 @@ export const meta = {
   },
 };
 
-/**
- * @type {Record<string, CommandEntry>}
- */
-const entryConf = {
+const entryConf: Record<string, CommandEntry> = {
   async test({ input, output, commandName }) {
     if (input.arguments[0] === "Error" && input.arguments[1]) {
       throw new Error(input.arguments.slice(1).join(" "));
@@ -47,11 +43,8 @@ const entryConf = {
   async debug({ output, input }) {
     output.reply(JSON.stringify(input, null, 2));
   },
-  async dbtest({ money, threadsDB, output }) {
-    /**
-     * @type {[string, Partial<UserData>]}
-     */
-    const payload = [
+  async dbtest({ money, output }) {
+    const payload: [string, Partial<UserData>] = [
       "test",
       {
         name: "Test",
@@ -70,25 +63,31 @@ const entryConf = {
 
     return output.reply(`money.set: ${ping1}\nmoney.setItem: ${ping2}`);
   },
-  async dbtest2({ money, output, input }) {
+  async dbtest2({ money, input }) {
     const items = await money.getItem(input.sid);
 
     items.inventory.at(0);
   },
-  async typetest({ money, output, input }) {
-    const schema = new CassTypes.Validator({
+  async typetest() {
+    const UserSchema = new CassTypes.Validator({
       inv: Inventory,
       name: "string",
       test: "function",
+      idk: new CassTypes.Union("number", "string", "bigint"),
     });
+
+    type UserType = CassTypes.FromValidator<typeof UserSchema>;
 
     const invv = new Inventory();
 
-    schema.validate({
+    const userInfo: UserType = {
       test: () => {},
       inv: invv,
       name: "HAHA %1".formatWith("idk"),
-    });
+      idk: 5,
+    };
+
+    UserSchema.validate(userInfo);
   },
 };
 
@@ -98,11 +97,12 @@ const home = new SpectralCMDHome({
 
 export const entry = defineEntry((ctx) => home.runInContext(ctx));
 
-/**
- *
- * @param {CommandContext & { detectID: string }} param0
- */
-export async function reply({ output, repObj, input, detectID, commandName }) {
+export async function reply({
+  output,
+  input,
+  detectID,
+  commandName,
+}: CommandContext & { detectID: string }) {
   input.delReply(detectID);
   const messageInfo = await output.reply(
     `Why the hell are you replying to me?`
