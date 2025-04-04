@@ -85,6 +85,10 @@ export class LangParser {
     return new Map(this.parsedData);
   }
 
+  public raw(): Record<string, any> {
+    return Object.fromEntries(this.parsedData);
+  }
+
   public toString(): string {
     return LangParser.stringify(this.parsedData);
   }
@@ -93,9 +97,17 @@ export class LangParser {
     return str.replaceAll("=", "\\=").replaceAll("\n", "\\n");
   }
 
-  public createGetLang() {
+  public createGetLang(
+    langs?: Record<string, Record<string, any>>,
+    k1?: string
+  ) {
+    langs ??= {};
+    k1 ||= global.Cassidy.config.defaultLang ?? "en";
     return (key: string, ...replacers: string[]) => {
-      const item = this.get(key);
+      const item =
+        langs?.[k1]?.[key] ||
+        langs?.[global.Cassidy.config.defaultLang]?.[key] ||
+        this.get(key);
       if (!item) {
         return `❌ Cannot find language properties: "${key}"`;
       }

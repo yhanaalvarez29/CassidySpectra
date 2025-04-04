@@ -25,6 +25,7 @@ import type {
 import GlobalUtilsX from "./utils-type";
 
 declare global {
+  var logger: (text: any, title?: string, valueOnly?: boolean) => void;
   interface FactoryConfig {
     title: string;
     key: string;
@@ -105,6 +106,8 @@ declare global {
     isCommand?: true | undefined;
     ShopClass?: typeof import("@cass-plugins/shopV2.js").ShopClass;
     outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
+    getLang?: ReturnType<LangParser["createGetLang"]>;
+    langParser: LangParser;
   }
 
   type CommandContext = CommandContextOG;
@@ -160,6 +163,7 @@ declare global {
       banned?: CommandHandler;
       shopLocked?: CommandHandler;
       awaiting?: CommandHandler;
+      langs?: Record<string, Record<string, string>>;
       indivMeta?: ConstructorParameters<
         typeof SpectralCMDHome
       >["0"]["entryInfo"];
@@ -248,6 +252,7 @@ import type { UserStatsManager } from "cassidy-userData";
 import { CassMongoManager } from "./handlers/database/cass-mongo.js";
 import type { CassidyResponseStylerControl } from "@cassidy/styler";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
+import { LangParser } from "@cass-modules/langparser.js";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
   /**
