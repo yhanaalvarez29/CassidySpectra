@@ -21,10 +21,14 @@ export class Listener {
 
     this.callback = () => {};
     let setupFB = () => {
+      let alive = true;
       if (typeof api?.listenMqtt === "function") {
         global.logger("Listener Setup Invoked", "FB");
 
         const e = api?.listenMqtt?.((err, event) => {
+          if (!alive) {
+            return;
+          }
           if (event) event.isFacebook = true;
           this.#callListener(err, event);
         });
@@ -42,6 +46,7 @@ export class Listener {
           setInterval(() => {
             global.logger("Stops listening...", "MQTT");
             e?.stopListening?.();
+            alive = false;
             setupFB();
           }, mqttRestart.interval);
         } catch (error) {
@@ -158,6 +163,7 @@ export function formatWssEvent(event) {
   }
   return {
     ...event,
+    isFacebook: false,
     body: String(event.body || ""),
     senderID: event.senderID
       ? formatIP(`${event.senderID}`)
@@ -222,6 +228,8 @@ export class Event {
     if (Array.isArray(this.participantIDs)) {
       this.participantIDs = this.participantIDs.map((id) => formatIP(id));
     }
+
+    this.isFacebook = false;
 
     if (Object.keys(this.mentions ?? {}).length > 0) {
       this.mentions = Object.fromEntries(
