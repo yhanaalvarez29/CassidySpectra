@@ -363,9 +363,8 @@ async function main() {
       password = process.env[password];
     }
     if (
-      (cookie || (email && password)) &&
-      !settings.noFB &&
-      !process.env["test"]
+      !(process.env["test"] || settings.noFB) &&
+      (cookie || (email && password))
     ) {
       api = await loginHelper({ appState: cookie, email, password });
       delete settings.FCA.path;
