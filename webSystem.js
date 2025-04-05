@@ -403,7 +403,7 @@ export class WssAPI {
       (resAt ?? []).map(async (i) => {
         const buffer = Buffer.from(i, "base64");
         const type = await fileTypeFromBuffer(buffer);
-        return type.mime;
+        return type?.mime;
       })
     );
     const self = this;

@@ -179,6 +179,7 @@ declare global {
       reply?: CommandHandler;
       style?: any;
       event?: CommandHandler;
+      [name: string]: any;
     }
 
     export interface CommandMeta {
@@ -210,6 +211,7 @@ declare global {
       noWeb?: boolean;
       params?: any[];
       legacyMode?: boolean;
+      [name: string]: any;
     }
 
     export type CommandHandler = (
