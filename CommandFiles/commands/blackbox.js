@@ -19,12 +19,12 @@ export const meta = {
   botAdmin: false,
   waitingTime: 1,
   requirement: "3.0.0",
-  icon: "🤖",
+  icon: "⬛",
   deku: true,
 };
 
 export const style = {
-  title: "🤖 Blackbox",
+  title: "⬛ Blackbox",
   titleFont: "bold",
   contentFont: "none",
 };
@@ -59,6 +59,8 @@ export async function entry({
       prompt,
     },
   });
+
+  data.response += `\n\n${UNISpectra.standardLine}\n${UNISpectra.arrow} Use **CLEAR** to reset conversation.\n${UNISpectra.arrowFromT} Use **TOGGLE** to switch websearch.\n${UNISpectra.charm} Use **CODE** to switch coding model`;
 
   if (input.isWeb) {
     const i = await output.reply(parseRes(data.response));

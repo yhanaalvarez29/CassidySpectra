@@ -210,7 +210,7 @@ export function use(obj) {
 
         options.body =
           hasS && finalName
-            ? `${options.body}\n\n${UNIRedux.standardLine}\n${
+            ? `${options.body}\n${UNIRedux.standardLine}\n${
                 UNIRedux.arrow
               } ***Level*** ${UNISpectra.nextArrow} ${inst.level} [${
                 inst.exp
