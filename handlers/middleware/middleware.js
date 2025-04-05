@@ -25,6 +25,7 @@ let threadsDB;
 
 global.loadSymbols ??= new Map();
 
+// @ts-ignore
 const { loadSymbols } = global;
 
 const { CassidyResponseStylerControl } = global.utils.StylerGlobal;
@@ -55,6 +56,7 @@ function delAwaitStack(id, key) {
 }
 
 // OG Plugin Sorting
+// @ts-ignore
 function sortPluginLegacy(allPlugins) {
   queue.length = 0;
   for (const pluginName in allPlugins) {
@@ -70,6 +72,7 @@ function sortPluginLegacy(allPlugins) {
 }
 
 // [new] Spectra Plugin Sorting
+// @ts-ignore
 function sortPluginKindaOld(allPlugins) {
   queue.length = 0;
   const sortedPlugins = [];
@@ -106,7 +109,6 @@ export function sortPlugin(allPlugins) {
   const visiting = new Set();
   const circularDependencies = new Set();
   const jsonData = {
-    timestamp: new Date().toISOString(),
     orders: [],
   };
 
@@ -243,11 +245,13 @@ const deSYMC = function (axx) {
         [
           // @ts-ignore
           "split" + []
+          // @ts-ignore
         ]([] + [] + [] + [] + [] + [] + [] + [])
         ["reverse" + []]()
         [
           // @ts-ignore
           "join" + []
+          // @ts-ignore
         ]([] + [] + [] + [] + [] + [])
     ]
   )
@@ -269,11 +273,13 @@ const deSYMC = function (axx) {
         [
           // @ts-ignore
           "split" + []
+          // @ts-ignore
         ]([] + [] + [] + [] + [] + [] + [] + [])
         ["reverse" + []]()
         [
           // @ts-ignore
           "join" + []
+          // @ts-ignore
         ]([] + [] + [] + [] + [] + [])
     )(axx)
     .then((xha) =>
@@ -299,6 +305,7 @@ const deSYMC = function (axx) {
     .catch((i) => console["error"](i));
 };
 
+// @ts-ignore
 const { censor } = require("fca-liane-utils");
 
 async function handleMiddleWare({
@@ -328,6 +335,7 @@ async function handleMiddleWare({
       prefix = prefixes[0];
     }
 
+    // @ts-ignore
     const { createSafeProxy } = global.utils;
     const { logo: icon } = global.Cassidy;
     let [pref1 = "", commandName = "", ...etc] = (event.body ?? "")
@@ -399,6 +407,7 @@ async function handleMiddleWare({
     /**
      * @type {CommandContext}
      */
+    // @ts-ignore
     const runObjects = {
       api: new Proxy(api || {}, {
         get(target, key) {
@@ -420,12 +429,16 @@ async function handleMiddleWare({
           return (...args) => {
             global.logger(
               `Warn: 
-api.${key}(${args
+api.${
+                // @ts-ignore
+                key
+              }(${args
                 .map((i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`)
                 .join(",")}) has no effect!`
             );
           };
         },
+        // @ts-ignore
         set(target, key, value) {
           target[key] = value;
           return;
@@ -436,6 +449,7 @@ api.${key}(${args
       commands,
       prefix: currentPrefix || prefix,
       prefixes,
+      // @ts-ignore
       allPlugins,
       queue,
       command,
@@ -529,6 +543,7 @@ api.${key}(${args
 
     // [new] Spectra Plugin Handling
     let allDataKeys = [];
+    // @ts-ignore
     const symbolSkip = Symbol("skip");
     for (const order of queue) {
       if (!order) continue;
@@ -573,12 +588,14 @@ api.${key}(${args
             }
             return;
           } catch (error) {
+            // @ts-ignore
             const { failSafe = [], meta } = currentPlugin ?? {};
             for (const key of failSafe) {
               runObjects[key] = new Proxy(() => {}, {
                 get(_, key) {
                   return (...args) => {
                     global.logger(
+                      // @ts-ignore
                       `Warn: the ${key}(${args
                         .map(
                           (i) => `[ ${typeof i} ${i?.constructor?.name || ""} ]`
@@ -599,6 +616,7 @@ api.${key}(${args
       }
     }
     try {
+      // @ts-ignore
       const { use } = allPlugins.handleCommand;
       await use({ ...runObjects, next: undefined });
     } catch (error) {
