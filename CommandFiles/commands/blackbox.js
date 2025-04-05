@@ -60,13 +60,13 @@ export async function entry({
     },
   });
 
-  data.response += `\n\n${UNISpectra.standardLine}\n${UNISpectra.arrow} Use **CLEAR** to reset conversation.\n${UNISpectra.arrowFromT} Use **TOGGLE** to switch websearch.\n${UNISpectra.charm} Use **CODE** to switch coding model`;
+  // data.response += `\n\n${UNISpectra.standardLine}\n${UNISpectra.arrow} Use **CLEAR** to reset conversation.\n${UNISpectra.arrowFromT} Use **TOGGLE** to switch websearch.\n${UNISpectra.charm} Use **CODE** to switch coding model`;
 
   if (input.isWeb) {
-    const i = await output.reply(parseRes(data.response));
+    const i = await output.replyStyled(parseRes(data.response), style);
     j = i;
   } else {
-    await output.edit(parseRes(data.response), j.messageID);
+    await output.edit(parseRes(data.response), j.messageID, 0, style);
   }
   input.setReply(j.messageID, {
     callback(ctx) {
