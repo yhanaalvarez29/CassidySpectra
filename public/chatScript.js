@@ -734,7 +734,7 @@ function appendRep({
           }
         }
       })();
-
+      autoParseUrlsAsAnchors(userMessage);
       messageContainer.append(wrapper);
 
       // chatPad.appendChild(messageContainer);
@@ -928,6 +928,7 @@ function appendSend({ message, chatPad }) {
       }
       wrapper.append(userMessage);
       messageContainer.append(wrapper);
+      autoParseUrlsAsAnchors(userMessage);
 
       chatPad.appendChild(messageContainer);
       animateSend(userMessage);
@@ -1740,4 +1741,53 @@ function enhanceImage(imgElement) {
       centerImage();
     }
   });
+}
+function autoParseUrlsAsAnchors(element) {
+  if (!element || !(element instanceof Element)) return;
+
+  const urlRegex = /(\b(?:https?:\/\/|www\.)[^\s<>]+)/gi;
+
+  function processNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.nodeValue;
+      const parent = node.parentNode;
+      let lastIndex = 0;
+      let match;
+
+      urlRegex.lastIndex = 0;
+      const fragment = document.createDocumentFragment();
+
+      while ((match = urlRegex.exec(text)) !== null) {
+        const url = match[0];
+        const start = match.index;
+
+        if (start > lastIndex) {
+          fragment.appendChild(
+            document.createTextNode(text.slice(lastIndex, start))
+          );
+        }
+
+        const a = document.createElement("a");
+        a.href = url.startsWith("http") ? url : `http://${url}`;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = url;
+        fragment.appendChild(a);
+
+        lastIndex = urlRegex.lastIndex;
+      }
+
+      if (lastIndex < text.length) {
+        fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+      }
+
+      if (fragment.childNodes.length) {
+        parent.replaceChild(fragment, node);
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      Array.from(node.childNodes).forEach(processNode);
+    }
+  }
+
+  processNode(element);
 }
