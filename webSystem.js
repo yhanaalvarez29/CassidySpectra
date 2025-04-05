@@ -1,4 +1,4 @@
-//
+// @ts-check
 import { creatorX } from "./handlers/page/webhook.js";
 import { createDiscordListener } from "./handlers/discord/discordLogin.js";
 import { tphHandler } from "./handlers/talkersPH/tphHandler.js";
@@ -20,12 +20,36 @@ export class Listener {
     this.app = app;
 
     this.callback = () => {};
-    if (api?.sendMessage) {
-      const e = api?.listenMqtt?.((err, event) => {
-        if (event) event.isFacebook = true;
-        this.#callListener(err, event);
-      });
-    }
+    let setupFB = () => {
+      if (typeof api?.listenMqtt === "function") {
+        global.logger("Listener Setup Invoked", "FB");
+
+        const e = api?.listenMqtt?.((err, event) => {
+          if (event) event.isFacebook = true;
+          this.#callListener(err, event);
+        });
+        this.mqttF = e;
+        try {
+          let { mqttRestart } = global.Cassidy.config;
+          if (!mqttRestart) {
+            let d = {
+              enabled: false,
+              interval: 3600000,
+            };
+            mqttRestart ??= d;
+            mqttRestart = Object.assign({}, d, mqttRestart);
+          }
+          setInterval(() => {
+            global.logger("Stops listening...", "MQTT");
+            e?.stopListening?.();
+            setupFB();
+          }, mqttRestart.interval);
+        } catch (error) {
+          console.error("Cant setup mqtt restart.");
+        }
+      }
+    };
+    setupFB();
     app.post("/listenMsg", (req, res) => {
       try {
         const event = req.body;

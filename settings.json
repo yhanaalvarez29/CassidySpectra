@@ -47,5 +47,9 @@
   "strictNoPrefix": false,
   "requireRgistration": false,
   "censorInput": false,
-  "censorOutput": true
+  "censorOutput": true,
+  "mqttRestart": {
+    "enabled": true,
+    "interval": 3600000
+  }
 }
