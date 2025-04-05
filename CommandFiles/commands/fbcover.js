@@ -15,7 +15,7 @@ export const meta = {
   botAdmin: false,
   waitingTime: 1,
   requirement: "3.0.0",
-  icon: "🔧",
+  icon: "📷",
   deku: true,
 };
 
