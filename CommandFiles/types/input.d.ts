@@ -2,6 +2,7 @@ interface InpProperty {
   [key: string]: boolean | InpProperty;
 }
 export interface InputProps {
+  messageID?: string;
   xQ?: any;
   strictPrefix?: boolean;
   body: string;

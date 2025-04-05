@@ -25,6 +25,7 @@ import type {
 import GlobalUtilsX from "./utils-type";
 
 declare global {
+  var package: typeof import("./package.json");
   var logger: (text: any, title?: string, valueOnly?: boolean) => void;
   interface FactoryConfig {
     title: string;

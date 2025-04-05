@@ -71,11 +71,27 @@ const configs: Config[] = [
       const newPrefix = spectralArgs[0];
 
       try {
-        await threadsDB.set(input.threadID, { threadPrefix: newPrefix });
-        output.reply(
-          `${UNIRedux.arrow} ***Prefix Updated*** ✅\n\n` +
-            `${prefix} ${UNISpectra.nextArrow} ${newPrefix}\n\n` +
-            `${UNISpectra.arrowFromT} Type **${newPrefix}start** to view the list of available commands!`
+        output.waitForReaction(
+          `${UNIRedux.arrow} ***Confirmation Required***\n\nReact with any emoji to confirm the update to the new prefix.`,
+          async (ctx) => {
+            await threadsDB.setItem(input.threadID, {
+              threadPrefix: newPrefix,
+            });
+
+            ctx.output.setUIName("Confirmed!");
+            ctx.output.replyStyled(
+              {
+                body:
+                  `${UNIRedux.arrow} ***Prefix Updated*** ✅\n\n` +
+                  `The prefix has been changed from **${prefix}** to **${newPrefix}**.\n\n` +
+                  `${UNISpectra.arrowFromT} Use **${newPrefix}start** to explore the list of available commands!`,
+                messageID: ctx.input.messageID,
+                noRibbonUI: true,
+                noLevelUI: true,
+              },
+              style
+            );
+          }
         );
       } catch (error) {
         output.error(error);

@@ -175,6 +175,7 @@ export function use(obj) {
         obj.money &&
         options.noRibbonUI !== true
       ) {
+        let hasS = Boolean(input.senderID);
         const { name } = await obj.money.getCache(
           options.threadID ?? input.senderID
         );
@@ -182,7 +183,7 @@ export function use(obj) {
         let isOther = finalName !== name;
 
         options.body =
-          finalName && finalName !== "Unregistered"
+          hasS && finalName && finalName !== "Unregistered"
             ? `👤 **${finalName}**${
                 obj.command && !isOther ? ` (${obj.input.words[0]})` : ""
               }\n\n${options.body}`
@@ -195,6 +196,7 @@ export function use(obj) {
         obj.money &&
         options.noLevelUI !== true
       ) {
+        let hasS = Boolean(input.senderID);
         const {
           cassEXP,
           name,
@@ -206,13 +208,14 @@ export function use(obj) {
         const finalName = uiName || name;
         let isOther = finalName !== name;
 
-        options.body = finalName
-          ? `${options.body}\n\n${UNIRedux.standardLine}\n${
-              UNIRedux.arrow
-            } ***Level*** ${UNISpectra.nextArrow} ${inst.level} [${
-              inst.exp
-            } / ${inst.getNextEXP()}]`
-          : options.body;
+        options.body =
+          hasS && finalName
+            ? `${options.body}\n\n${UNIRedux.standardLine}\n${
+                UNIRedux.arrow
+              } ***Level*** ${UNISpectra.nextArrow} ${inst.level} [${
+                inst.exp
+              } / ${inst.getNextEXP()}]`
+            : options.body;
       }
 
       return options.body;
