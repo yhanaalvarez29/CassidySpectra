@@ -43,12 +43,14 @@ export class Listener {
             mqttRestart ??= d;
             mqttRestart = Object.assign({}, d, mqttRestart);
           }
-          setInterval(() => {
-            global.logger("Stops listening...", "MQTT");
-            e?.stopListening?.();
-            alive = false;
-            setupFB();
-          }, mqttRestart.interval);
+          if (mqttRestart.enabled) {
+            setInterval(() => {
+              global.logger("Stops listening...", "MQTT");
+              e?.stopListening?.();
+              alive = false;
+              setupFB();
+            }, mqttRestart.interval);
+          }
         } catch (error) {
           console.error("Cant setup mqtt restart.");
         }
