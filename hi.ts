@@ -89,6 +89,7 @@ const entryConf: Record<string, CommandEntry> = {
 
     UserSchema.validate(userInfo);
   },
+  async test3({ args, output, input, money }) {},
 };
 
 const home = new SpectralCMDHome({

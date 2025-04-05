@@ -254,11 +254,13 @@ declare global {
 import type * as FileType from "file-type";
 
 import type { UserStatsManager } from "cassidy-userData";
-import { CassMongoManager } from "./handlers/database/cass-mongo.js";
+import { CassMongoManager } from "./handlers/database/cass-mongo";
 import type { CassidyResponseStylerControl } from "@cassidy/styler";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
-import { LangParser } from "@cass-modules/langparser.js";
-import * as GoatFill from "@cassidy/polyfills/goatbot.js";
+import { LangParser } from "@cass-modules/langparser";
+import * as GoatFill from "@cassidy/polyfills/goatbot";
+import { CassTypes } from "@cass-modules/type-validator";
+import { createCallable } from "@cass-modules/callable-obj";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
   /**
@@ -476,6 +478,181 @@ declare global {
      * @reusable Safe within CassidySpectra projects
      */
     formatWith(...replacers: (string | ((position: number) => any))[]): string;
+  }
+
+  interface Function {
+    /**
+     * Converts a class constructor or regular function into a callable wrapper.
+     * If the function has a prototype, it instantiates with `new`; otherwise, it invokes normally.
+     * @returns A function that can be called with arguments like a factory.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    toCallable<T extends new (...args: any[]) => any>(
+      this: T
+    ): (...args: ConstructorParameters<T>) => InstanceType<T>;
+
+    /**
+     * Caches results of deep-argument function calls using `JSON.stringify` as key.
+     * Handles complex arguments including nested objects and functions (serialized by `.toString()`).
+     * @returns A memoized version of the function.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning Be cautious of large/deep structures and functions with side effects.
+     * @reusable Safe within CassidySpectra projects
+     */
+    memoizeDeep<T extends (...args: any[]) => any>(this: T): T;
+
+    /**
+     * Chains the current function’s output into the next function’s input.
+     * Equivalent to `nextFn(fn(...args))`.
+     * @param nextFn - A function that takes the output of the current function.
+     * @returns A chained function composition.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    chain<T extends (...args: any[]) => any, U>(
+      this: T,
+      nextFn: (result: ReturnType<T>) => U
+    ): (...args: Parameters<T>) => U;
+
+    /**
+     * Logs the duration of the function execution to the console in milliseconds.
+     * Useful for profiling or performance tuning.
+     * @returns A timed version of the function.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    time<T extends (...args: any[]) => any>(this: T): T;
+
+    /**
+     * Defers the function execution until the next microtask using `Promise.resolve().then()`.
+     * Useful for event loop control or async sequencing.
+     * @returns A deferred asynchronous version of the function.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    defer<T extends (...args: any[]) => any>(
+      this: T
+    ): (...args: Parameters<T>) => Promise<ReturnType<T>>;
+
+    /**
+     * Validates the arguments passed into the function using a schema validator.
+     * The schema must be compatible with `CassTypes.Validator`.
+     * @param config - Schema configuration for validation.
+     * @returns A guarded function that throws if inputs do not match schema.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning This assumes global `CassTypes.Validator` is defined and behaves like `zod` or `yup`.
+     * @reusable Safe within CassidySpectra projects
+     */
+    guard<T extends (...args: any[]) => any>(
+      this: T,
+      config: CassTypes.TypeSchema
+    ): T;
+
+    /**
+     * Injects a side-effect hook into the function call lifecycle.
+     * Useful for debugging, logging, or analytics without modifying the logic.
+     * @param callback - Receives the call `args`, `result`, and original `fn`.
+     * @returns The function wrapped with an observer hook.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    observe<T extends (...args: any[]) => any | Function>(
+      this: T,
+      callback: (info: {
+        args: Parameters<T>;
+        result: ReturnType<T>;
+        fn: T;
+      }) => void
+    ): T;
+  }
+
+  interface Function {
+    /**
+     * Retries the function if it throws, up to a maximum number of attempts.
+     * Useful for transient failures like network requests or flaky operations.
+     * @param attempts - Number of retries before giving up
+     * @returns A function that automatically retries on failure
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    retry<T extends (...args: any[]) => any>(
+      this: T,
+      attempts: number
+    ): (...args: Parameters<T>) => ReturnType<T>;
+
+    /**
+     * Limits function execution to no more than once per `ms` milliseconds.
+     * Ignores any extra calls during the cooldown period.
+     * @param ms - The time window in milliseconds
+     * @returns A throttled version of the function
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    throttle<T extends (...args: any[]) => any>(
+      this: T,
+      ms: number
+    ): (...args: Parameters<T>) => void;
+
+    /**
+     * Delays execution of the function until `ms` milliseconds after the last call.
+     * Useful for input handling, search boxes, etc.
+     * @param ms - Delay duration in milliseconds
+     * @returns A debounced version of the function
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    debounce<T extends (...args: any[]) => any>(
+      this: T,
+      ms: number
+    ): (...args: Parameters<T>) => void;
+
+    /**
+     * Executes a side-effect function with the same arguments, then proceeds with original execution.
+     * Great for debugging, telemetry, or instrumentation.
+     * @param callback - Receives the arguments for side-effect
+     * @returns The original function with side-effect injection
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    tap<T extends (...args: any[]) => any>(
+      this: T,
+      callback: (...args: Parameters<T>) => void
+    ): T;
+
+    /**
+     * Delays the function call by a specified time.
+     * Works similarly to `setTimeout` but preserves context and args.
+     * @param delay - Time to wait before execution
+     * @param unit - Time unit: 'ms', 's', or 'm'
+     * @returns A version of the function that executes after the delay
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning Timing is approximate; uses `setTimeout` under the hood
+     * @reusable Safe within CassidySpectra projects
+     */
+    after<T extends (...args: any[]) => any>(
+      this: T,
+      delay: number,
+      unit?: "ms" | "s" | "m"
+    ): (...args: Parameters<T>) => Promise<ReturnType<T>>;
+
+    /**
+     * Assigns a static.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @warning Timing is approximate; uses `setTimeout` under the hood
+     * @reusable Safe within CassidySpectra projects
+     */
+    assignStatic<
+      T extends (...args: any[]) => any,
+      M extends Record<string, any>
+    >(
+      methods: M
+    ): ReturnType<typeof createCallable<T, M>>;
+  }
+
+  interface NodeRequire {
+    url(url: string): Promise<any>;
+    ensure(id: string): any;
   }
 
   var GoatBot: typeof GoatFill.GoatBot;
