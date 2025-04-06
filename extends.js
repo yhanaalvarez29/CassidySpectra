@@ -9,7 +9,7 @@ function extend() {
   ExtendClass(
     "toCallable",
     function () {
-      if (this.prototype.constructor) {
+      if (Reflect.ownKeys(this.prototype ?? {}).length > 0) {
         // @ts-ignore
         return (...args) => new this(...args);
       }
@@ -98,6 +98,43 @@ function extend() {
         // @ts-ignore
         return fn.apply(this, args);
       };
+    },
+    Function
+  );
+
+  ExtendClass(
+    "wrap",
+    function (callback) {
+      const fn = this;
+      return function (...args) {
+        // @ts-ignore
+        const returnValue = callback(fn, ...args);
+      };
+    },
+    Function
+  );
+
+  ExtendClass(
+    "invokeMultiple",
+    function (count, ...args) {
+      const fn = this;
+      return Array.from({ length: count }, (_) => fn(...args));
+    },
+    Function
+  );
+
+  ExtendClass(
+    "invokeMultipleSettled",
+    function (count, ...args) {
+      const fn = this;
+      return Array.from({ length: count }, (_) => {
+        try {
+          const returned = fn(...args);
+          return { returned, error: null };
+        } catch (error) {
+          return { returned: null, error };
+        }
+      });
     },
     Function
   );

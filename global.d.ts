@@ -493,6 +493,17 @@ declare global {
     ): (...args: ConstructorParameters<T>) => InstanceType<T>;
 
     /**
+     * Converts a class constructor or regular function into a callable wrapper.
+     * If the function has a prototype, it instantiates with `new`; otherwise, it invokes normally.
+     * @returns A function that can be called with arguments like a factory.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    toCallable<T extends (...args: any[]) => any>(
+      this: T
+    ): (...args: Parameters<T>) => ReturnType<T>;
+
+    /**
      * Caches results of deep-argument function calls using `JSON.stringify` as key.
      * Handles complex arguments including nested objects and functions (serialized by `.toString()`).
      * @returns A memoized version of the function.
@@ -648,6 +659,46 @@ declare global {
     >(
       methods: M
     ): ReturnType<typeof createCallable<T, M>>;
+
+    /**
+     * Wraps the function with a callback that intercepts its execution.
+     * The callback receives the original function and its arguments.
+     * @param callback - A function that takes the original function and its arguments.
+     * @returns A wrapped version of the function.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    wrap<T extends (...args: any[]) => any, R>(
+      this: T,
+      callback: (fn: T, ...args: Parameters<T>) => R
+    ): (...args: Parameters<T>) => R;
+
+    /**
+     * Invokes the function multiple times, passing the current index as an argument.
+     * @param count - The number of times to invoke the function.
+     * @returns An array of results from each invocation.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    invokeMultiple<T extends (...args: any[]) => any>(
+      this: T,
+      count: number,
+      ...args: Parameters<T>
+    ): ReturnType<T>[];
+
+    /**
+     * Invokes the function multiple times, passing the current index as an argument.
+     * Returns an array of objects containing the result or error for each invocation.
+     * @param count - The number of times to invoke the function.
+     * @returns An array of objects with `returned` and `error` properties.
+     * @custom CassidySpectra - Exclusive to CassidySpectra projects
+     * @reusable Safe within CassidySpectra projects
+     */
+    invokeMultipleSettled<T extends (...args: any[]) => any>(
+      this: T,
+      count: number,
+      ...args: Parameters<T>
+    ): { returned: ReturnType<T>; error: unknown }[];
   }
 
   interface NodeRequire {

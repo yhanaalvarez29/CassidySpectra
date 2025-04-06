@@ -113,3 +113,11 @@ export async function reply({
     key: commandName,
   });
 }
+
+let a = (name: string) => {
+  return name.repeat(5);
+};
+
+const wrapped = a.wrap((fn, name) => {
+  return a.invokeMultiple(5, "idk");
+});
