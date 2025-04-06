@@ -12,5 +12,10 @@ export function createNamespace<
   const safeTarget = target ?? ({} as T);
 
   const result = callback(safeTarget);
-  return Object.assign(safeTarget, result ?? ({} as R));
+  const ownKeys: (keyof R)[] = Object.getOwnPropertyNames(
+    result
+  ) as (keyof R)[];
+
+  const from = Object.fromEntries(ownKeys.map((i) => [i, result[i]]));
+  return Object.assign(safeTarget, from ?? ({} as R));
 }
