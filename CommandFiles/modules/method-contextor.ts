@@ -51,40 +51,41 @@ export namespace MethodContextor {
       : M[K];
   };
 }
-
-const Car = MethodContextor(
-  {
-    speed: 0,
-    name: "",
-    drive(speed: number): string {
-      this.speed = speed;
-      return `${this.getName()} is driving at ${speed} mph`;
+export namespace example {
+  const Car = MethodContextor(
+    {
+      speed: 0,
+      name: "",
+      drive(speed: number): string {
+        this.speed = speed;
+        return `${this.getName()} is driving at ${speed} mph`;
+      },
+      stop(): string {
+        this.speed = 0;
+        return `${this.getName()} has stopped`;
+      },
+      getName(): string {
+        return this.name;
+      },
+      getSpeed(): number {
+        return this.speed;
+      },
     },
-    stop(): string {
+    function (name: string) {
+      this.name = name;
       this.speed = 0;
-      return `${this.getName()} has stopped`;
-    },
-    getName(): string {
-      return this.name;
-    },
-    getSpeed(): number {
-      return this.speed;
-    },
-  },
-  function (name: string) {
-    this.name = name;
-    this.speed = 0;
-  }
-);
+    }
+  );
 
-const myCar = Car("toyota");
-console.log(myCar.drive(60));
-console.log(myCar.stop());
-console.log(myCar.getName());
-console.log(myCar.getSpeed());
+  const myCar = Car("toyota");
+  console.log(myCar.drive(60));
+  console.log(myCar.stop());
+  console.log(myCar.getName());
+  console.log(myCar.getSpeed());
 
-const someCar = Car("IDK");
-console.log(Car.drive(someCar, 80));
-console.log(Car.stop(someCar));
-console.log(Car.getName(someCar));
-console.log(Car.getSpeed(someCar));
+  const someCar = Car("IDK");
+  console.log(Car.drive(someCar, 80));
+  console.log(Car.stop(someCar));
+  console.log(Car.getName(someCar));
+  console.log(Car.getSpeed(someCar));
+}
