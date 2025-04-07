@@ -1,7 +1,14 @@
-export function createCallable(main, methods) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.example = exports.Namespace = void 0;
+exports.createCallable = createCallable;
+exports.createNamespace = createNamespace;
+exports.cloneAllKeys = cloneAllKeys;
+exports.MethodContextor = MethodContextor;
+function createCallable(main, methods) {
   return createNamespace(() => methods, main);
 }
-export function createNamespace(callback, target) {
+function createNamespace(callback, target) {
   const safeTarget = target ?? {};
   const result = callback(safeTarget);
   const ownKeys = Object.getOwnPropertyNames(result);
@@ -9,12 +16,12 @@ export function createNamespace(callback, target) {
   // @ts-ignore
   return Object.assign(safeTarget, from ?? {});
 }
-export const Namespace = class Namespace {
+exports.Namespace = class Namespace {
   constructor(callback, target) {
     return createNamespace(callback, target);
   }
 };
-export function cloneAllKeys(methods) {
+function cloneAllKeys(methods) {
   // @ts-ignore
   return Object.fromEntries(
     Reflect.ownKeys(methods).map((i) => {
@@ -23,7 +30,7 @@ export function cloneAllKeys(methods) {
     })
   );
 }
-export function MethodContextor(methods, init) {
+function MethodContextor(methods, init) {
   const baseMethods = cloneAllKeys(methods);
   const constructor = (...args) => {
     const instance = Object.create(baseMethods);
@@ -56,7 +63,7 @@ export function MethodContextor(methods, init) {
   }
   return constructor;
 }
-export var example;
+var example;
 (function (example) {
   const Car = MethodContextor(
     {
@@ -95,4 +102,4 @@ export var example;
   console.log(Car.stop(someCar));
   console.log(Car.getName(someCar));
   console.log(Car.getSpeed(someCar));
-})(example || (example = {}));
+})(example || (exports.example = example = {}));
