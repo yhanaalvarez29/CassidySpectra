@@ -31,11 +31,20 @@ export function emojiEnd(str) {
     UNISpectra.nextArrow.repeat(2) +
     "" +
     (emojis ? " " + emojis : "");
-  const res =
+  const res = (
     UNISpectra.nextArrow.repeat(1) +
     "  " +
     (emojis ? UNISpectra.wrapEmoji(emojis) + "  " : "") +
-    nonEmojis;
+    nonEmojis
+      .split(" ")
+      .map((i, j) => {
+        if (j === 0) {
+          return `**${i}**`;
+        }
+        return i;
+      })
+      .join(" ")
+  ).trim();
   console.log(str, " => ", res);
   return res;
 }

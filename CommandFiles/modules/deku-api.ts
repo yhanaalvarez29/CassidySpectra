@@ -16,7 +16,7 @@ import axios from "axios";
 export const Deku = axios.create({
   baseURL: "https://api.zetsu.xyz",
   headers: {
-    Cookie: process.env.deku_cookie,
+    Cookie: process.env.deku_cookie ?? "",
   },
 });
 
@@ -36,7 +36,7 @@ export const Deku = axios.create({
 export const DekuAlt = axios.create({
   baseURL: "http://87.106.100.187:6312/",
   headers: {
-    Cookie: process.env.deku_cookie,
+    Cookie: process.env.deku_cookie ?? "",
   },
 });
 
