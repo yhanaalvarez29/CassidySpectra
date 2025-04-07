@@ -5,52 +5,55 @@ export function MethodContextor<
   I extends (...args: any[]) => void
 >(
   methods: M,
-  init: (this: M, ...args: Parameters<I>) => void
-): MethodContextor.Result<M, I> {
-  const clonedMethods = cloneAllKeys(methods);
-  const thisArg = { ...clonedMethods } as M;
+  init: (this: M,...args: Parameters<I>) => void
+): MethodContextor.Result<I, M> {
+  const baseMethods = cloneAllKeys(methods);
 
-  const constructor: (...args: Parameters<I>) => M = (...args) => {
-    const instance = Object.create(thisArg);
+  const constructor = (...args: Parameters<I>) => {
+    const instance = Object.create(baseMethods);
 
-    for (const [key, value] of Object.entries(thisArg)) {
-      if (typeof value === "function") {
-        Object.defineProperty(instance, key, {
-          value: value.bind(instance),
-          writable: true,
-          configurable: true,
-        });
-      }
+    for (const [key, value] of Object.entries(baseMethods)) {
+      try {
+        if (typeof value === "function") {
+          instance[key] = value.bind(instance);
+        }
+      } catch {}
     }
 
     init.call(instance, ...args);
-    return instance;
+    return instance as M;
   };
 
-  for (const [key, value] of Object.entries(thisArg)) {
-    if (typeof value === "function") {
-      Object.defineProperty(constructor, key, {
-        value: function (thisArg: M, ...args: any[]) {
-          return (value as Function).apply(thisArg, args);
-        },
-        writable: true,
-        configurable: true,
-      });
-    }
+  const staticMethods = Object.create(null);
+  for (const [key, value] of Object.entries(baseMethods)) {
+    try {
+      if (typeof value === "function") {
+        staticMethods[key] = function (thisArg: M, ...args: any[]) {
+          return value.apply(thisArg, args);
+        };
+      } else {
+        staticMethods[key] = value;
+      }
+    } catch {}
   }
 
-  return Object.assign(constructor, thisArg) as MethodContextor.Result<M, I>;
+  for (const [key, value] of Object.entries(staticMethods)) {
+    try {
+      constructor[key] = value;
+    } catch {}
+  }
+
+  return constructor as MethodContextor.Result<I, M>;
 }
 
 export namespace MethodContextor {
-  export type Result<M, I extends (...args: any[]) => void> = ((
-    ...args: Parameters<I>
-  ) => M) & {
+  export type Result<I extends (...args: any[]) => void, M> = {
     [K in keyof M]: M[K] extends (...args: infer Args) => infer R
       ? (thisArg: M, ...args: Args) => R
       : M[K];
-  };
+  } & ((...args: Parameters<I>) => M);
 }
+
 export namespace example {
   const Car = MethodContextor(
     {
@@ -70,8 +73,11 @@ export namespace example {
       getSpeed(): number {
         return this.speed;
       },
+      create(name: string) {
+        return Car(name);
+      }
     },
-    function (name: string) {
+    function (this, name: string) {
       this.name = name;
       this.speed = 0;
     }
