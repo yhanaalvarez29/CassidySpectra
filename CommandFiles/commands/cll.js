@@ -267,7 +267,7 @@ export async function entry(ctx) {
                 `${UNIRedux.arrowFromT} Check specific rankings with '${prefix}cll top <key> <page>'`
             );
           } else {
-            const key = actionArgs[0].toLowerCase();
+            const key = actionArgs[0];
             const usersWithKey = Object.entries(allUsers)
               .map(([uid, data]) => {
                 const userCollectibles = new Collectibles(
