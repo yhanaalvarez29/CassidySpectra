@@ -436,8 +436,16 @@ const home = new ReduxCMDHome({
   },
 });
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry(ctx) {
-  home.runInContext(ctx);
+  // home.runInContext(ctx);
+  return ctx.output.reply(
+    `✨ We were moving away!\n\n**Buy** - unlock a command.\n**Tileshop** - Buy tiles themes!`
+  );
 }
 
 function mapThemeIcons(theme) {
