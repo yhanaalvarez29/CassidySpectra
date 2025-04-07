@@ -109,6 +109,8 @@ declare global {
     outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
     getLang?: ReturnType<LangParser["createGetLang"]>;
     langParser: LangParser;
+    // OutputJSX: ReturnType<typeof defineOutputJSX>;
+    // UserStatsJSX: ReturnType<typeof defineUserStatsJSX>;
   }
 
   type CommandContext = CommandContextOG;
@@ -261,6 +263,8 @@ import { LangParser } from "@cass-modules/langparser";
 import * as GoatFill from "@cassidy/polyfills/goatbot";
 import { CassTypes } from "@cass-modules/type-validator";
 import { createCallable } from "@cass-modules/callable-obj";
+import { VNode } from "@cass/define";
+// import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
   /**
@@ -704,6 +708,32 @@ declare global {
   interface NodeRequire {
     url(url: string): Promise<any>;
     ensure(id: string): any;
+  }
+
+  interface OutputJSX {
+    reply?: boolean;
+    send?: boolean;
+    reaction?: boolean;
+    form?: StrictOutputForm;
+  }
+
+  interface UserStatsJSX {
+    key: keyof UserData;
+  }
+
+  export type FirstArg<T> = T extends (arg1: infer A, ...args: any[]) => any
+    ? A
+    : never;
+
+  namespace JSX {
+    type Element = VNode;
+
+    type ElementFragment = VNode;
+
+    interface IntrinsicElements {
+      output: OutputJSX;
+      userdata: UserStatsJSX;
+    }
   }
 
   var GoatBot: typeof GoatFill.GoatBot;

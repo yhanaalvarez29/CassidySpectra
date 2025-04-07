@@ -1,5 +1,6 @@
 import { Pinger } from "@cass-modules/pinger";
 import { CassTypes } from "@cass-modules/type-validator";
+
 import { defineEntry } from "@cass/define";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { Inventory } from "@cassidy/ut-shop";
@@ -89,7 +90,15 @@ const entryConf: Record<string, CommandEntry> = {
 
     UserSchema.validate(userInfo);
   },
-  async test3({ args, output, input, money }) {},
+  async test3() {
+    return (
+      <>
+        <output reply>
+          Hello, <userdata key={"name"}></userdata>!
+        </output>
+      </>
+    );
+  },
 };
 
 const home = new SpectralCMDHome({
