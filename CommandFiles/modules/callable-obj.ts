@@ -37,3 +37,14 @@ export const Namespace: NamespaceConstructor = class Namespace<
     return createNamespace(callback, target);
   }
 } as NamespaceConstructor;
+
+export function cloneAllKeys<M extends Record<string | symbol | number, any>>(
+  methods: M
+): M {
+  return Object.fromEntries(
+    Reflect.ownKeys(methods).map((i) => {
+      const val = methods[i];
+      return [i, val];
+    })
+  );
+}
