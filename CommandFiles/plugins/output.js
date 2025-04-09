@@ -382,6 +382,21 @@ export function use(obj) {
       async reply(body, callback) {
         return await output(body, { callback, isReply: true });
       },
+      async attach(body, stream, style) {
+        const awaited =
+          typeof stream === "string"
+            ? await global.utils.getStreamFromURL(stream)
+            : stream;
+        let form1 = typeof body === "string" ? { body } : { ...body };
+        let form = {
+          ...form1,
+          attachment: stream,
+        };
+        if (style) {
+          return outputProps.replyStyled(form, style);
+        }
+        return outputProps.reply(form);
+      },
       async setUIName(name) {
         uiName = String(name);
       },

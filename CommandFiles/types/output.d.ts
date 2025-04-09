@@ -73,6 +73,11 @@ export interface OutputProps {
     style: any,
     thread?: string
   ): Promise<OutputResult>;
+  attach(
+    form: OutputForm,
+    stream: string | Readable[] | Readable | any,
+    style: any
+  ): Promise<OutputResult>;
   Styled: {
     new (style: any): {
       style: any;
