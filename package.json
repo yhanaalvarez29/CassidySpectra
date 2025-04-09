@@ -30,6 +30,8 @@
     "cassidy-styler": "^1.2.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "shoti": "latest",
+    "fb-downloader-scrapper": "latest",
     "discord.js": "^14.15.2",
     "dotenv": "^16.4.5",
     "envfile": "^7.1.0",
