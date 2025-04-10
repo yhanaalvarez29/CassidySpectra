@@ -41,69 +41,276 @@ export interface OutputResult extends StrictOutputForm {
 export type OutputResultInf = OutputResult;
 
 export type OutputForm = string | StrictOutputForm;
+/**
+ * Interface representing the properties and methods for handling output operations.
+ */
 export interface OutputProps {
+  /**
+   * Sends a reply with the specified body and an optional callback.
+   * @param body - The content of the reply.
+   * @param callback - Optional callback to handle the result of the reply.
+   * @returns A promise resolving to the result of the reply.
+   */
   reply(
     body: OutputForm,
     callback?: (info: OutputResult) => void
   ): Promise<OutputResult>;
+
+  /**
+   * Registers a reply listener to handle replies asynchronously.
+   * @param replyListener - A function to handle the reply context.
+   * @returns A promise resolving to the generic type `T`.
+   */
+  reply<T>(
+    replyListener: (
+      ctx: CommandContext & {
+        repObj: PromiseStandardReplyArg<T>;
+      }
+    ) => any | Promise<any>
+  ): Promise<T>;
+
+  /**
+   * Sets the UI name for the output.
+   * @param name - The name to set for the UI.
+   */
   setUIName(name: string): void;
+
+  /**
+   * Sends a contact message with optional ID and destination.
+   * @param text - The contact message text.
+   * @param id - Optional ID for the contact.
+   * @param destination - Optional destination for the contact.
+   * @returns A promise resolving to a boolean indicating success.
+   */
   contact(text: string, id?: string, destination?: string): Promise<boolean>;
+
+  /**
+   * Handles an error by sending it with an optional callback.
+   * @param err - The error to handle.
+   * @param callback - Optional callback to handle additional information.
+   * @returns A promise resolving to any result.
+   */
   error(
     err: unknown | string | Error,
     callback?: (info: any) => void
   ): Promise<any>;
+
+  /**
+   * Sends a message with the specified body, optional ID, and callback.
+   * @param body - The content of the message.
+   * @param id - Optional ID for the message.
+   * @param callback - Optional callback to handle the result.
+   * @returns A promise resolving to the result of the message.
+   */
   send(
     body: OutputForm,
     id?: string,
     callback?: (info: OutputResult) => void
   ): Promise<OutputResult>;
+
+  /**
+   * Adds a user to a thread.
+   * @param user - The user to add.
+   * @param thread - Optional thread to add the user to.
+   * @returns A promise resolving when the operation is complete.
+   */
   add(user: string, thread?: string): Promise<void>;
+
+  /**
+   * Removes a user from a thread.
+   * @param user - The user to remove.
+   * @param thread - Optional thread to remove the user from.
+   * @returns A promise resolving when the operation is complete.
+   */
   kick(user: string, thread?: string): Promise<void>;
+
+  /**
+   * Un-sends a message by its ID.
+   * @param mid - The ID of the message to un-send.
+   * @returns A promise resolving when the operation is complete.
+   */
   unsend(mid: string): Promise<void>;
+
+  /**
+   * Reacts to a message with the specified emoji.
+   * @param emoji - The emoji to react with.
+   * @param mid - Optional ID of the message to react to.
+   * @returns A promise resolving when the operation is complete.
+   */
   reaction(emoji: string, mid?: string): Promise<void>;
+
+  /**
+   * Registers a reaction listener to handle reactions asynchronously.
+   * @param reactListener - A function to handle the reaction context.
+   * @returns A promise resolving to the generic type `T`.
+   */
+  reaction<T>(
+    reactListener?: (
+      ctx: CommandContext & {
+        repObj: PromiseStandardReplyArg<T>;
+      }
+    ) => any | Promise<any>
+  ): Promise<T>;
+
+  /**
+   * A string to prepend to messages.
+   */
   prepend: string;
+
+  /**
+   * A string to append to messages.
+   */
   append: string;
+
+  /**
+   * Sends a styled reply with the specified form, style, and optional thread.
+   * @param form - The content of the reply.
+   * @param style - The style to apply to the reply.
+   * @param thread - Optional thread to send the reply to.
+   * @returns A promise resolving to the result of the reply.
+   */
   replyStyled(
     form: OutputForm,
     style: any,
     thread?: string
   ): Promise<OutputResult>;
+
+  /**
+   * Sends a styled message with the specified form, style, and optional thread.
+   * @param form - The content of the message.
+   * @param style - The style to apply to the message.
+   * @param thread - Optional thread to send the message to.
+   * @returns A promise resolving to the result of the message.
+   */
   sendStyled(
     form: OutputForm,
     style: any,
     thread?: string
   ): Promise<OutputResult>;
+
+  /**
+   * Attaches a stream to a message with optional style.
+   * @param form - The content of the message.
+   * @param stream - The stream to attach.
+   * @param style - Optional style to apply to the message.
+   * @returns A promise resolving to the result of the message.
+   */
   attach(
     form: OutputForm,
     stream: string | Readable[] | Readable | any,
     style?: any
   ): Promise<OutputResult>;
+
+  /**
+   * A class for creating styled messages.
+   */
   Styled: {
+    /**
+     * Creates a new styled message instance.
+     * @param style - The style to apply to the messages.
+     */
     new (style: any): {
+      /**
+       * The style applied to the messages.
+       */
       style: any;
+
+      /**
+       * The ID of the last message sent.
+       */
       lastID: string | null;
+
+      /**
+       * Sends a reply with the specified body.
+       * @param body - The content of the reply.
+       * @returns A promise resolving to the result of the reply.
+       */
       reply(body: string): Promise<OutputResult>;
+
+      /**
+       * Sends a message with the specified body.
+       * @param body - The content of the message.
+       * @returns A promise resolving to the result of the message.
+       */
       send(body: string): Promise<OutputResult>;
+
+      /**
+       * Edits a message with the specified body and message ID.
+       * @param body - The new content of the message.
+       * @param messageID - The ID of the message to edit.
+       * @param delay - Optional delay before editing the message.
+       * @returns A promise resolving when the operation is complete.
+       */
       edit(body: string, messageID: string, delay?: number): Promise<void>;
     };
   };
+
+  /**
+   * Handles a generic error scenario.
+   * @returns A promise resolving to the result of the operation.
+   */
   wentWrong(): Promise<OutputResult>;
+
+  /**
+   * Handles a syntax error in a command.
+   * @param commandX - Optional command context or details.
+   * @returns A promise resolving to the result of the operation.
+   */
   syntaxError(commandX?: any): Promise<OutputResult>;
+
+  /**
+   * Edits a message with the specified text, message ID, and optional delay and style.
+   * @param text - The new content of the message.
+   * @param mid - The ID of the message to edit.
+   * @param delay - Optional delay before editing the message.
+   * @param style - Optional style to apply to the message.
+   * @returns A promise resolving to a boolean indicating success.
+   */
   edit(
     text: string,
     mid: string,
     delay?: number,
     style?: any
   ): Promise<boolean>;
+
+  /**
+   * Creates frames from the specified arguments.
+   * @param args - The arguments to create frames from.
+   * @returns A promise resolving to the result of the operation.
+   */
   frames(...args: (string | number)[]): Promise<any>;
-  react(emoji: string, mid?: string): Promise<void>;
+
+  /**
+   * Alias for the `reaction` method.
+   */
+  react: OutputProps["reaction"];
+
+  /**
+   * Formats an error into a string representation.
+   * @param err - The error to format.
+   * @returns A string representation of the error.
+   */
   formatError(err: string | Error): string;
+
+  /**
+   * Sends a confirmation message and waits for a response.
+   * @param body - The content of the confirmation message.
+   * @param done - Optional callback to handle the confirmation context.
+   * @returns A promise resolving to the confirmation context.
+   */
   confirm(
     body: string,
     done?: (
       ctx: CommandContext & { yes: boolean; no: boolean }
     ) => any | Promise<any>
   ): Promise<CommandContext & { yes: boolean; no: boolean }>;
+
+  /**
+   * Adds a reply listener for a specific message ID.
+   * @param mid - The ID of the message to listen for replies.
+   * @param callback - Optional callback to handle the reply context.
+   * @returns A promise resolving to the generic type `T`.
+   */
   addReplyListener?: <T>(
     mid: string,
     callback?: (
@@ -112,6 +319,13 @@ export interface OutputProps {
       }
     ) => any | Promise<any>
   ) => Promise<T>;
+
+  /**
+   * Adds a reaction listener for a specific message ID.
+   * @param mid - The ID of the message to listen for reactions.
+   * @param callback - Optional callback to handle the reaction context.
+   * @returns A promise resolving to the generic type `T`.
+   */
   addReactionListener?: <T>(
     mid: string,
     callback?: (
@@ -120,6 +334,13 @@ export interface OutputProps {
       }
     ) => any | Promise<any>
   ) => Promise<T>;
+
+  /**
+   * Waits for a reply to a specific message.
+   * @param body - The content of the message to wait for a reply to.
+   * @param callback - Optional callback to handle the reply context.
+   * @returns A promise resolving to the input of the command context.
+   */
   waitForReply?: <T>(
     body: string,
     callback?:
@@ -130,6 +351,13 @@ export interface OutputProps {
         ) => any | Promise<any>)
       | undefined
   ) => Promise<CommandContext["input"]>;
+
+  /**
+   * Waits for a reaction to a specific message.
+   * @param body - The content of the message to wait for a reaction to.
+   * @param callback - Optional callback to handle the reaction context.
+   * @returns A promise resolving to the input of the command context.
+   */
   waitForReaction?: <T>(
     body: string,
     callback?:
@@ -140,6 +368,13 @@ export interface OutputProps {
         ) => any | Promise<any>)
       | undefined
   ) => Promise<CommandContext["input"]>;
+
+  /**
+   * Waits for a quick reaction with specific options.
+   * @param body - The content of the message to wait for a reaction to.
+   * @param options - Options for the quick reaction.
+   * @returns A promise resolving to the input of the command context.
+   */
   quickWaitReact?: (
     body: string,
     options: {

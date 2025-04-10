@@ -156,6 +156,7 @@ export class CassidyIO {
  * @type {CommandEntry}
  */
 export function use(obj) {
+  let LASTID = null;
   try {
     obj.CassidyIO = CassidyIO;
     const { api, event, command: cmd, commands, input } = obj;
@@ -337,6 +338,7 @@ export function use(obj) {
             threadID: options.threadID || event.threadID,
           };
           return new Promise((r) => {
+            LASTID = toR.messageID;
             r(toR);
           });
         }
@@ -364,6 +366,8 @@ export function use(obj) {
                 senderID: api.getCurrentUserID() || "",
                 body: options.body,
               };
+              LASTID = resu.messageID;
+
               res(resu);
             },
             optionsCopy.messageID ||
@@ -380,6 +384,12 @@ export function use(obj) {
      */
     const outputProps = {
       async reply(body, callback) {
+        if (typeof body === "function") {
+          if (!LASTID) {
+            throw new Error("No last output to attach to.");
+          }
+          return obj.output.addReplyListener(LASTID, body);
+        }
         return await output(body, { callback, isReply: true });
       },
       async attach(body, stream, style) {
@@ -447,6 +457,12 @@ export function use(obj) {
         api.unsendMessage(mid, (err) => {});
       },
       async reaction(emoji, mid = event.messageID) {
+        if (typeof emoji === "function") {
+          if (!LASTID) {
+            throw new Error("No last output to attach to.");
+          }
+          return obj.output.addReactionListener(LASTID, emoji);
+        }
         api.setMessageReaction(emoji, mid, (err) => {}, true);
       },
       get prepend() {
