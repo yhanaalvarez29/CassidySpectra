@@ -385,12 +385,12 @@ export function use(obj) {
       async attach(body, stream, style) {
         const awaited =
           typeof stream === "string"
-            ? await global.utils.getStreamFromURL(stream)
+            ? await global.utils.getStreamFromUrl(stream)
             : stream;
         let form1 = typeof body === "string" ? { body } : { ...body };
         let form = {
           ...form1,
-          attachment: stream,
+          attachment: awaited,
         };
         if (style) {
           return outputProps.replyStyled(form, style);
