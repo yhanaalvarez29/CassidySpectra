@@ -69,116 +69,268 @@ declare global {
   export type AnyConstructor = new (...args: any[]) => any;
 
   interface CommandContextOG {
-    money: Cass.UserStatsManager;
-    Inventory?: typeof Inventory;
-    Collectibles?: typeof Collectibles;
-    input: InputX;
-    output: OutputProps;
-    args: string[];
-    cancelCooldown?: () => void;
-    commandName?: string;
-    prefix: string;
-    prefixes: string[];
-    CassEXP: typeof CassEXP;
-    commands: { [key: string]: CassidySpectra.CassidyCommand };
-    command?: CassidySpectra.CassidyCommand;
-    userDataCache?: UserData;
-    GameSimulator: typeof GameSimulator;
     /**
-     * @deprecated
+     * Manages user statistics and data.
+     */
+    money: Cass.UserStatsManager;
+
+    /**
+     * Handles inventory-related operations.
+     */
+    Inventory?: typeof Inventory;
+
+    /**
+     * Manages collectible items for users.
+     */
+    Collectibles?: typeof Collectibles;
+
+    /**
+     * Represents input data and utilities for commands.
+     */
+    input: InputX;
+
+    /**
+     * Handles output operations and responses.
+     */
+    output: OutputProps;
+
+    /**
+     * Contains arguments passed to the command.
+     */
+    args: string[];
+
+    /**
+     * Cancels the cooldown for the current command.
+     */
+    cancelCooldown?: () => void;
+
+    /**
+     * Stores the name of the current command being executed.
+     */
+    commandName?: string;
+
+    /**
+     * Represents the prefix used for commands.
+     */
+    prefix: string;
+
+    /**
+     * Contains all valid prefixes for commands.
+     */
+    prefixes: string[];
+
+    /**
+     * Manages experience points and levels for users.
+     */
+    CassEXP: typeof CassEXP;
+
+    /**
+     * Stores all available commands.
+     */
+    commands: { [key: string]: CassidySpectra.CassidyCommand };
+
+    /**
+     * Represents the current command being executed.
+     */
+    command?: CassidySpectra.CassidyCommand;
+
+    /**
+     * Caches user data for the current session.
+     */
+    userDataCache?: UserData;
+
+    /**
+     * Provides game simulation utilities.
+     */
+    GameSimulator: typeof GameSimulator;
+
+    /**
+     * @deprecated Handles reply system operations.
      */
     replySystem?: ReplySystem;
+
     /**
-     * @deprecated
+     * @deprecated Handles reaction system operations.
      */
     reactSystem?: ReactSystem;
-    threadsDB: UserStatsManager;
-    usersDB: UserStatsManager;
-    api: any;
-    event: any;
-    allPlugins: { [key: string]: any };
-    queue: any[][];
+
     /**
-     * @deprecated
+     * Manages thread-related user statistics.
+     */
+    threadsDB: UserStatsManager;
+
+    /**
+     * Manages user-related statistics.
+     */
+    usersDB: UserStatsManager;
+
+    /**
+     * Provides access to the API for external operations.
+     */
+    api: any;
+
+    /**
+     * Represents the event data for the current command.
+     */
+    event: any;
+
+    /**
+     * Contains all loaded plugins.
+     */
+    allPlugins: { [key: string]: any };
+
+    /**
+     * Stores queued operations or commands.
+     */
+    queue: any[][];
+
+    /**
+     * @deprecated Provides access to the original API.
      */
     origAPI: any;
-    hasPrefix: boolean;
+
     /**
-     * @deprecated
+     * Indicates whether the command has a prefix.
+     */
+    hasPrefix: boolean;
+
+    /**
+     * @deprecated Tracks inventory time for operations.
      */
     invTime: number;
-    icon: string;
-    Cassidy: CassidySpectra.GlobalCassidy;
+
     /**
-     * @deprecated
+     * Represents the icon associated with the command or context.
+     */
+    icon: string;
+
+    /**
+     * Provides global Cassidy-specific utilities and configurations.
+     */
+    Cassidy: CassidySpectra.GlobalCassidy;
+
+    /**
+     * @deprecated Tracks the number of safe calls made.
      */
     safeCalls: number;
-    discordApi: any;
-    pageApi: any;
+
     /**
-     * @deprecated
+     * Provides access to Discord-specific API operations.
+     */
+    discordApi: any;
+
+    /**
+     * Provides access to page-specific API operations.
+     */
+    pageApi: any;
+
+    /**
+     * @deprecated Tracks the stack of awaiting operations.
      */
     awaitStack: { [key: string]: string[] };
+
     /**
-     * @deprecated
+     * @deprecated Adds an operation to the await stack.
      */
     setAwaitStack: (id: string, key: string) => void;
+
     /**
-     * @deprecated
+     * @deprecated Removes an operation from the await stack.
      */
     delAwaitStack: (id: string, key: string) => void;
+
     /**
-     * @deprecated
+     * @deprecated Checks if an operation exists in the await stack.
      */
     hasAwaitStack: (id: string, key: string) => boolean;
+
     /**
-     * @deprecated
+     * @deprecated Clears the current stack of operations.
      */
     clearCurrStack: () => void;
-    allObj: CommandContext;
-    userStat: Cass.UserStatsManager;
-    next?: () => void;
+
     /**
-     * @deprecated
+     * Represents the entire command context object.
+     */
+    allObj: CommandContext;
+
+    /**
+     * Manages user statistics for the current session.
+     */
+    userStat: Cass.UserStatsManager;
+
+    /**
+     * Proceeds to the next middleware or operation in the pipeline.
+     */
+    next?: () => void;
+
+    /**
+     * @deprecated Provides styling utilities for responses.
      */
     styler?: CassidyResponseStylerControl;
-    ctx: CommandContext;
+
     /**
-     * @deprecated
+     * Represents the current command context.
+     */
+    ctx: CommandContext;
+
+    /**
+     * @deprecated Indicates whether the current context is a command.
      */
     isCommand?: true | undefined;
-    ShopClass?: typeof import("@cass-plugins/shopV2.js").ShopClass;
-    outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
-    getLang?: ReturnType<LangParser["createGetLang"]>;
-    langParser: LangParser;
-    // OutputJSX: ReturnType<typeof defineOutputJSX>;
-    // UserStatsJSX: ReturnType<typeof defineUserStatsJSX>;
-
-    // AUTO GENERATED
 
     /**
-     * @deprecated
+     * Provides access to the shop class for managing purchases.
+     */
+    ShopClass?: typeof import("@cass-plugins/shopV2.js").ShopClass;
+
+    /**
+     * Sends an old-style output response.
+     */
+    outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
+
+    /**
+     * Retrieves the language-specific text for the context.
+     */
+    getLang?: ReturnType<LangParser["createGetLang"]>;
+
+    /**
+     * Provides access to the language parser for translations.
+     */
+    langParser: LangParser;
+
+    /**
+     * @deprecated Tracks popular commands used by users.
      */
     popularCMD?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Tracks recently used commands by users.
      */
     recentCMD?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to a JSON mapping utility.
      */
     JsonMap?: typeof JsonMap;
-    CassExpress?: typeof CassExpress;
+
     /**
-     * @deprecated
+     * Provides access to the Cassidy Express framework.
+     */
+    CassExpress?: typeof CassExpress;
+
+    /**
+     * @deprecated Provides access to custom AI utilities.
      */
     CustomAI?: typeof CustomAI;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the G4F framework.
      */
     g4f?: G4F;
+
     /**
-     * @deprecated
+     * @deprecated Manages flipcoin-related operations.
      */
     flipcoin?: {
       ranker: {
@@ -197,117 +349,238 @@ declare global {
         ): Promise<number | undefined>;
       };
     };
+
     /**
-     * @deprecated
+     * @deprecated Provides access to a censoring utility.
      */
     censor?: Function;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to a generic box utility.
      */
     Box?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the Liane utility.
      */
     Liane?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to a generic box object.
      */
     box?: AnyRecord;
+
+    /**
+     * Provides access to the ElementalChild utility.
+     */
     ElementalChild?: typeof ElementalChild;
+
+    /**
+     * Provides access to the elemental mapping utility.
+     */
     elementalMapping?: typeof elementalMapping;
+
+    /**
+     * Provides access to the UNISym utility.
+     */
     UNISym?: typeof UNISpectra;
+
+    /**
+     * Provides access to the options list utility.
+     */
     OptionsList?: typeof OptionsList;
+
+    /**
+     * Provides access to the NeaxUI utility.
+     */
     NeaxUI?: typeof NeaxUI;
+
+    /**
+     * Provides access to the VirtualFiles utility.
+     */
     VirtualFiles?: typeof VirtualFiles;
+
+    /**
+     * Represents an instance of the NeaxUI utility.
+     */
     neaxUI?: NeaxUI;
+
+    /**
+     * Provides access to the PetPlayer utility.
+     */
     PetPlayer?: typeof PetPlayer;
+
+    /**
+     * Provides access to the GearsManage utility.
+     */
     GearsManage?: typeof GearsManage;
+
+    /**
+     * Provides access to the GearData utility.
+     */
     GearData?: typeof GearData;
+
+    /**
+     * Provides access to the WildPlayer utility.
+     */
     WildPlayer?: typeof WildPlayer;
+
+    /**
+     * Provides access to the Quest utility.
+     */
     Quest?: typeof Quest;
+
+    /**
+     * Provides access to the ElementalChilds utility.
+     */
     ElementalChilds?: typeof ElementalChilds;
+
+    /**
+     * Provides access to the elementalPets utility.
+     */
     elementalPets?: typeof elementalPets;
+
+    /**
+     * Retrieves the current inflation rate.
+     */
     getInflationRate?: () => Promise<number>;
+
+    /**
+     * Selects a random item based on probabilities.
+     */
     randomWithProb?: (teasures: Cass.InventoryItem[]) => Cass.InventoryItem;
+
+    /**
+     * Generates a gift item.
+     */
     generateGift?: typeof generateGift;
+
+    /**
+     * Generates a trash item.
+     */
     generateTrash?: typeof generateTrash;
+
+    /**
+     * Generates a treasure item based on a key.
+     */
     generateTreasure?: (treasureKey: string) => Cass.InventoryItem;
+
+    /**
+     * Provides access to the treasures utility.
+     */
     treasures?: typeof treasures;
+
+    /**
+     * Maps pet player data to relevant utilities.
+     */
     petPlayerMaps?: (data: any) => {
       gearsManage: GearsManage;
       petsData: Inventory;
       playersMap: Map<string, PetPlayer>;
     };
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the UTShop utility.
      */
     UTShop?: AnyConstructor;
-    TagParser?: typeof TagParser;
-    Slicer?: typeof Slicer;
-    ArgsHelper?: typeof ArgsHelper;
-    CommandProperty?: typeof CommandProperty;
+
     /**
-     * @deprecated
+     * Provides access to the TagParser utility.
+     */
+    TagParser?: typeof TagParser;
+
+    /**
+     * Provides access to the Slicer utility.
+     */
+    Slicer?: typeof Slicer;
+
+    /**
+     * Provides access to the ArgsHelper utility.
+     */
+    ArgsHelper?: typeof ArgsHelper;
+
+    /**
+     * Provides access to the CommandProperty utility.
+     */
+    CommandProperty?: typeof CommandProperty;
+
+    /**
+     * @deprecated Provides access to the Attachment utility.
      */
     Attachment?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the MessageEditor utility.
      */
     MessageEditor?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the MsgEditor utility.
      */
     MsgEditor?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the Editor utility.
      */
     Editor?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the ItemPrompt utility.
      */
     ItemPrompt?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the GameSimulatorRedux utility.
      */
     GameSimulatorRedux?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Checks if a specific time is available.
      */
     isTimeAvailable?: typeof isTimeAvailable;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the ItemLister utility.
      */
     ItemLister?: typeof ItemLister;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to user-related utilities.
      */
     Users?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to thread-related utilities.
      */
     Threads?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to a requester utility.
      */
     requester?: Function;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the Shop utility.
      */
     Shop?: AnyRecord;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the CassidyIO utility.
      */
     CassidyIO?: typeof CassidyIO;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the AutoEdit utility.
      */
     AutoEdit?: AnyConstructor;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to an instance of CassidyIO.
      */
     cassIO?: CassidyIO;
+
     /**
-     * @deprecated
+     * @deprecated Provides access to the startSteal utility.
      */
     startSteal?: Function;
   }

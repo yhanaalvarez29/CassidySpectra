@@ -99,6 +99,7 @@ const entryConf: Record<string, CommandEntry> = {
       </>
     );
   },
+  async test33({ input, output, ctx }) {},
   async test4({
     api,
     event,
@@ -249,7 +250,7 @@ const entryConf: Record<string, CommandEntry> = {
       Box,
       Liane,
       box,
-    
+
       ElementalChild,
       elementalMapping,
       UNISym,
@@ -287,7 +288,6 @@ const entryConf: Record<string, CommandEntry> = {
       GameSimulator,
       GameSimulatorRedux,
       isTimeAvailable,
-      BulkUpdater,
       ItemLister,
       Users,
       Threads,
