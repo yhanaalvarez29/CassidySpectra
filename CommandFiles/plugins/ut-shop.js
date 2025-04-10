@@ -26,7 +26,7 @@ export const meta = {
 };
 const { parseCurrency: pCy } = global.utils;
 
-function generateGift() {
+export function generateGift() {
   return {
     name: "Gift",
     icon: "🎁",
@@ -38,7 +38,7 @@ function generateGift() {
     key: "gift",
   };
 }
-function generateTrash() {
+export function generateTrash() {
   const types = ["dog", "cat", "dragon", "anypet"];
   const type = types[Math.floor(Math.random() * types.length)];
   return {
@@ -55,7 +55,7 @@ function generateTrash() {
   };
 }
 
-function generateTrashOld() {
+export function generateTrashOld() {
   const types = ["dog", "cat", "dragon"];
   const type = types[Math.floor(Math.random() * types.length)];
   return {
@@ -172,7 +172,7 @@ const rarePets = [
   },
 ];
 
-const treasures = [
+export const treasures = [
   {
     name: "HighRoll Pass",
     key: "highRollPass",

@@ -2,6 +2,9 @@ import type * as Cass from "cassidy-userData";
 import type {
   Inventory,
   Collectibles,
+  generateGift,
+  generateTrash,
+  treasures,
 } from "./CommandFiles/plugins/ut-shop.js";
 
 import type * as CassidyStylerNPM from "cassidy-styler";
@@ -61,15 +64,18 @@ declare global {
   interface InventoryConstructor extends Inventory {}
   interface GameSimulatorConstructor extends GameSimulator {}
 
+  export type AnyRecord = Record<string, any>;
+
+  export type AnyConstructor = new (...args: any[]) => any;
+
   interface CommandContextOG {
-    [key: string]: unknown;
     money: Cass.UserStatsManager;
-    Inventory: typeof Inventory;
-    Collectibles: typeof Collectibles;
+    Inventory?: typeof Inventory;
+    Collectibles?: typeof Collectibles;
     input: InputX;
     output: OutputProps;
     args: string[];
-    cancelCooldown?: Function;
+    cancelCooldown?: () => void;
     commandName?: string;
     prefix: string;
     prefixes: string[];
@@ -78,7 +84,13 @@ declare global {
     command?: CassidySpectra.CassidyCommand;
     userDataCache?: UserData;
     GameSimulator: typeof GameSimulator;
-    replyStystem?: ReplySystem;
+    /**
+     * @deprecated
+     */
+    replySystem?: ReplySystem;
+    /**
+     * @deprecated
+     */
     reactSystem?: ReactSystem;
     threadsDB: UserStatsManager;
     usersDB: UserStatsManager;
@@ -86,24 +98,54 @@ declare global {
     event: any;
     allPlugins: { [key: string]: any };
     queue: any[][];
+    /**
+     * @deprecated
+     */
     origAPI: any;
     hasPrefix: boolean;
+    /**
+     * @deprecated
+     */
     invTime: number;
     icon: string;
     Cassidy: CassidySpectra.GlobalCassidy;
+    /**
+     * @deprecated
+     */
     safeCalls: number;
     discordApi: any;
     pageApi: any;
+    /**
+     * @deprecated
+     */
     awaitStack: { [key: string]: string[] };
+    /**
+     * @deprecated
+     */
     setAwaitStack: (id: string, key: string) => void;
+    /**
+     * @deprecated
+     */
     delAwaitStack: (id: string, key: string) => void;
+    /**
+     * @deprecated
+     */
     hasAwaitStack: (id: string, key: string) => boolean;
+    /**
+     * @deprecated
+     */
     clearCurrStack: () => void;
     allObj: CommandContext;
     userStat: Cass.UserStatsManager;
     next?: () => void;
+    /**
+     * @deprecated
+     */
     styler?: CassidyResponseStylerControl;
     ctx: CommandContext;
+    /**
+     * @deprecated
+     */
     isCommand?: true | undefined;
     ShopClass?: typeof import("@cass-plugins/shopV2.js").ShopClass;
     outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
@@ -111,9 +153,168 @@ declare global {
     langParser: LangParser;
     // OutputJSX: ReturnType<typeof defineOutputJSX>;
     // UserStatsJSX: ReturnType<typeof defineUserStatsJSX>;
+
+    // AUTO GENERATED
+
+    /**
+     * @deprecated
+     */
+    popularCMD?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    recentCMD?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    JsonMap?: typeof JsonMap;
+    CassExpress?: typeof CassExpress;
+    /**
+     * @deprecated
+     */
+    CustomAI?: typeof CustomAI;
+    /**
+     * @deprecated
+     */
+    g4f?: G4F;
+    /**
+     * @deprecated
+     */
+    flipcoin?: {
+      ranker: {
+        getRank: (...args: any[]) => any;
+        romanize: (...args: any[]) => any;
+      };
+      luck: {
+        isLucky(uid: string): Promise<boolean>;
+        getLuckStat(uid: string): Promise<number>;
+        setLuckStat(uid: string, luckStat: number): Promise<number>;
+        addLuckStat(
+          uid: string,
+          luckStat2: number | "random",
+          range1?: number,
+          range2?: number
+        ): Promise<number | undefined>;
+      };
+    };
+    /**
+     * @deprecated
+     */
+    censor?: Function;
+    /**
+     * @deprecated
+     */
+    Box?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    Liane?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    box?: AnyRecord;
+    ElementalChild?: typeof ElementalChild;
+    elementalMapping?: typeof elementalMapping;
+    UNISym?: typeof UNISpectra;
+    OptionsList?: typeof OptionsList;
+    NeaxUI?: typeof NeaxUI;
+    VirtualFiles?: typeof VirtualFiles;
+    neaxUI?: NeaxUI;
+    PetPlayer?: typeof PetPlayer;
+    GearsManage?: typeof GearsManage;
+    GearData?: typeof GearData;
+    WildPlayer?: typeof WildPlayer;
+    Quest?: typeof Quest;
+    ElementalChilds?: typeof ElementalChilds;
+    elementalPets?: typeof elementalPets;
+    getInflationRate?: () => Promise<number>;
+    randomWithProb?: (teasures: Cass.InventoryItem[]) => Cass.InventoryItem;
+    generateGift?: typeof generateGift;
+    generateTrash?: typeof generateTrash;
+    generateTreasure?: (treasureKey: string) => Cass.InventoryItem;
+    treasures?: typeof treasures;
+    petPlayerMaps?: (data: any) => {
+      gearsManage: GearsManage;
+      petsData: Inventory;
+      playersMap: Map<string, PetPlayer>;
+    };
+    /**
+     * @deprecated
+     */
+    UTShop?: AnyConstructor;
+    TagParser?: typeof TagParser;
+    Slicer?: typeof Slicer;
+    ArgsHelper?: typeof ArgsHelper;
+    CommandProperty?: typeof CommandProperty;
+    /**
+     * @deprecated
+     */
+    Attachment?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    MessageEditor?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    MsgEditor?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    Editor?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    ItemPrompt?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    GameSimulatorRedux?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    isTimeAvailable?: typeof isTimeAvailable;
+    /**
+     * @deprecated
+     */
+    ItemLister?: typeof ItemLister;
+    /**
+     * @deprecated
+     */
+    Users?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    Threads?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    requester?: Function;
+    /**
+     * @deprecated
+     */
+    Shop?: AnyRecord;
+    /**
+     * @deprecated
+     */
+    CassidyIO?: typeof CassidyIO;
+    /**
+     * @deprecated
+     */
+    AutoEdit?: AnyConstructor;
+    /**
+     * @deprecated
+     */
+    cassIO?: CassidyIO;
+    /**
+     * @deprecated
+     */
+    startSteal?: Function;
   }
 
-  type CommandContext = CommandContextOG;
+  type CommandContext = CommandContextOG & { [key: string]: unknown };
+
+  type StrictCommandContext = CommandContextOG;
 
   type CommandEntry = (
     ctx: CommandContext,
@@ -264,6 +465,32 @@ import * as GoatFill from "@cassidy/polyfills/goatbot";
 import { CassTypes } from "@cass-modules/type-validator";
 import { createCallable } from "@cass-modules/callable-obj";
 import { VNode } from "@cass/define";
+import { G4F } from "g4f";
+import { UNISpectra } from "@cassidy/unispectra";
+import {
+  ElementalChild,
+  ElementalChilds,
+  elementalMapping,
+  elementalPets,
+  GearData,
+  GearsManage,
+  PetPlayer,
+  Quest,
+  WildPlayer,
+} from "@cass-plugins/pet-fight.js";
+import { ShopClass } from "@cass-plugins/shopV2.js";
+import { CassidyIO } from "@cass-plugins/output.js";
+import { JsonMap } from "@cass-plugins/JsonMap.js";
+import { CassExpress, CustomAI } from "@cass-plugins/cassexpress.js";
+import { NeaxUI, OptionsList, VirtualFiles } from "@cass-plugins/neax-ui.js";
+import {
+  ArgsHelper,
+  CommandProperty,
+  isTimeAvailable,
+  ItemLister,
+  Slicer,
+  TagParser,
+} from "@cass-plugins/utils-liane.js";
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;

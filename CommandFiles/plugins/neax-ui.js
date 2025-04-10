@@ -13,7 +13,7 @@ export const meta = {
   expect: ["UNISym", "OptionsList", "NeaxUI", "VirtualFiles", "neaxUI"],
 };
 
-class NeaxUI {
+export class NeaxUI {
   constructor(ctx) {
     this.ctx = ctx;
     this.menuBarOpts = new OptionsList();
@@ -134,7 +134,7 @@ class NeaxUI {
     }
   }
 }
-class OptionsList {
+export class OptionsList {
   constructor(array) {
     this.raw = Array.from(array ?? []);
   }

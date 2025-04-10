@@ -90,178 +90,6 @@ export class ItemLister {
     return Array.from(this.inventory);
   }
 }
-
-class BulkUpdater {
-  constructor(allUsers, { Inventory, GearsManage } = {}) {
-    this.allUsers = this.serialClone(allUsers);
-    this.Inventory = Inventory;
-    this.GearsManage = GearsManage;
-
-    if (!Inventory || !GearsManage) {
-      throw new Error("Classes missing.");
-    }
-  }
-
-  async eachUsers(callback) {
-    const users = this.raw();
-    for (const userID in users) {
-      await callback(userID, users[userID]);
-    }
-  }
-
-  async mapUsers(callback) {
-    const result = {};
-    const users = this.raw();
-    for (const userID in users) {
-      result[userID] = await callback(userID, users[userID]);
-    }
-    return this.newBulk(result);
-  }
-
-  async filterUsers(callback) {
-    const result = {};
-    const users = this.raw();
-    for (const userID in users) {
-      if (await callback(userID, users[userID])) {
-        result[userID] = users[userID];
-      }
-    }
-    return this.newBulk(result);
-  }
-
-  async eachInventory(callback) {
-    const result = {};
-    const users = this.raw();
-    for (const userID in users) {
-      const value = this.serialClone(users[userID]);
-      const inver = new this.Inventory(value.inventory ?? []);
-      const boxer = new this.Inventory(value.boxItems ?? [], 100);
-      const trades = new this.Inventory(value.tradeVentory ?? []);
-      await callback(userID, inver, boxer, trades);
-      value.boxItems = Array.from(boxer);
-      value.inventory = Array.from(inver);
-      value.tradeVentory = Array.from(trades);
-      result[userID] = value;
-    }
-    return this.newBulk(result);
-  }
-
-  async editAllItems(itemKey, replaceData) {
-    replaceData = this.serialClone(replaceData);
-
-    const bulk = await this.eachInventory(
-      async (userID, inventory, boxInventory, tradeVentory) => {
-        const items = inventory.get(itemKey);
-        for (const item of items) {
-          Object.assign(item, replaceData);
-        }
-        inventory.deleteRefs(items);
-        inventory.add(items);
-
-        const boxItems = boxInventory.get(itemKey);
-        for (const item of boxItems) {
-          Object.assign(item, replaceData);
-        }
-        boxInventory.deleteRefs(boxItems);
-        boxInventory.add(boxItems);
-
-        const tradeItems = tradeVentory.get(itemKey);
-        for (const item of tradeItems) {
-          Object.assign(item, replaceData);
-        }
-        tradeVentory.deleteRefs(tradeItems);
-        tradeVentory.add(tradeItems);
-      }
-    );
-
-    const bulk2 = await bulk.mapUsers(async (userID, value) => {
-      value = this.serialClone(value);
-      const gearsManage = new this.GearsManage(value.gearsData ?? []);
-      for (const { key } of gearsManage) {
-        const gearData = gearsManage.getGearData(key);
-        for (const weapon of gearData.weaponArray) {
-          if (weapon?.key !== itemKey) {
-            continue;
-          }
-          Object.assign(weapon, replaceData);
-        }
-        for (const armor of gearData.armorsArray) {
-          if (armor?.key !== itemKey) {
-            continue;
-          }
-          Object.assign(armor, replaceData);
-        }
-      }
-      value.gearsData = Array.from(gearsManage);
-      return value;
-    });
-
-    return bulk2;
-  }
-
-  async set(userID, data) {
-    const existing = this.raw()[userID] ?? {};
-    this.raw()[userID] = this.serialClone({ ...existing, ...data });
-    return this.raw()[userID];
-  }
-
-  async replace(userID, data) {
-    this.raw()[userID] = this.serialClone(data);
-  }
-
-  async getCopy(userID) {
-    return this.serialClone(await this.get(userID));
-  }
-
-  async get(userID) {
-    return this.raw()[userID] ?? {};
-  }
-
-  async clone() {
-    return this.newBulk(this.serialClone(this.raw()));
-  }
-
-  newBulk(data) {
-    return new BulkUpdater(data, {
-      Inventory: this.Inventory,
-      GearsManage: this.GearsManage,
-    });
-  }
-
-  raw() {
-    return this.allUsers;
-  }
-
-  toJSON() {
-    return this.raw();
-  }
-
-  toUsersArray() {
-    const users = [];
-    const rawUsers = this.raw();
-    for (const userID in rawUsers) {
-      const value = rawUsers[userID];
-      users.push({
-        ...value,
-        userID,
-      });
-    }
-    return users;
-  }
-
-  serialClone(data) {
-    return JSON.parse(JSON.stringify(data));
-  }
-
-  static fromUsersArray(usersArray) {
-    const userMap = {};
-    for (const user of usersArray) {
-      const { userID, ...value } = user;
-      userMap[userID] = value;
-    }
-    return new BulkUpdater(userMap);
-  }
-}
 export class Slicer {
   constructor(array = [], limit = 10) {
     this.array = Array.from(array);
@@ -298,7 +126,7 @@ export class Slicer {
     return array.slice(...this.byPage(page, limit));
   }
 }
-class CommandProperty {
+export class CommandProperty {
   constructor(commandName) {
     this.commandName = commandName;
 
@@ -343,7 +171,7 @@ class CommandProperty {
   }
 }
 
-class ArgsHelper extends Array {
+export class ArgsHelper extends Array {
   constructor({ body, isCommand } = {}) {
     let array = String(body).split(" ").filter(Boolean);
     let commandName = null;
@@ -398,7 +226,7 @@ class ArgsHelper extends Array {
     }
   }
 }
-class TagParser {
+export class TagParser {
   constructor(event) {
     this.event = event;
   }

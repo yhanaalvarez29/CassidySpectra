@@ -60,7 +60,7 @@ const g4f = new G4F();
     - Example: "Conversational", "Detailed".
 */
 
-class CustomAI {
+export class CustomAI {
   constructor({
     name = "DefaultAI",
     behavior = "Neutral",

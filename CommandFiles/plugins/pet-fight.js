@@ -18,7 +18,7 @@ export const meta = {
     "elementalPets",
   ],
 };
-const elementalMapping = {
+export const elementalMapping = {
   Fire: {
     strong: { Grass: 1.0, Ice: 0.85, Bug: 0.7, Steel: 0.6 },
     weak: { Water: 0.55, Rock: 0.5, Fire: 0.55 },
@@ -101,7 +101,7 @@ const elementalMapping = {
   },
 };
 
-const elementalPets = {
+export const elementalPets = {
   dog: ["Fighting"],
   cat: ["Grass", "Electric"],
   phoenix: ["Fire", "Electric", "Flying"],
@@ -119,7 +119,7 @@ const elementalPets = {
   kraken: ["Water", "Ground"],
   panda: ["Grass", "Fighting"],
 };
-class ElementalChilds {
+export class ElementalChilds {
   constructor(...elements) {
     this.elements = elements.map((i) => new ElementalChild(i));
   }
@@ -184,7 +184,7 @@ class ElementalChilds {
   }
 }
 
-class ElementalChild {
+export class ElementalChild {
   constructor(element, mapping = elementalMapping) {
     if (element instanceof ElementalChild) {
       element = element.element;
@@ -255,7 +255,7 @@ class ElementalChild {
     }
   }
 }
-const petSpellMap = {
+export const petSpellMap = {
   dog: ["ferocious_bark", "loyal_guard"],
   cat: ["shadow_pounce", "nimble_dodge"],
   phoenix: ["rebirth", "flame_of_rejuvenation"],
@@ -264,7 +264,7 @@ const petSpellMap = {
   tiger: ["shadow_pounce", "nimble_dodge"],
   snake: ["poison_bite", "heal_prayer"],
 };
-const spells = {
+export const spells = {
   ferocious_bark: {
     name: "PK Ferocious Bark",
     tp: 28, // Reduced TP cost
