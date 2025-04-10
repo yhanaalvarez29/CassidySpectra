@@ -1,6 +1,11 @@
+// @ts-check
 import axios from "axios";
 import { ReduxCMDHome } from "@cassidy/redux-home";
+import { PetPlayer } from "@cass-plugins/pet-fight";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "api",
   description: "Cassidy's Developer API!",
@@ -129,6 +134,11 @@ export const langs = {
   },
 };
 
+/**
+ * 
+ * @param {CommandContext} param0 
+ * @returns 
+ */
 export async function entry({
   args,
   prefix,
@@ -154,7 +164,7 @@ export async function entry({
  * @type {Record<string, CommandEntry>}
  */
 const handlers = {
-  async redux_demo({ output, langParser, ctx }) {
+  async redux_demo({  langParser, ctx }) {
     const getLang = langParser.createGetLang(langs);
     const home = new ReduxCMDHome(
       {
@@ -223,7 +233,7 @@ const handlers = {
     const jsonStr = JSON.stringify(targetItem, null, 2);
     return output.reply(getLang("invjsonResult", jsonStr));
   },
-  async style({ input, output, args, langParser }) {
+  async style({  output, args, langParser }) {
     const getLang = langParser.createGetLang(langs);
     const jsonData = JSON.parse(args.join(" "));
     const styled = new output.Styled({
@@ -248,7 +258,7 @@ const handlers = {
     const jsonStr = JSON.stringify(targetPet, null, 2);
     return output.reply(getLang("petjsonResult", jsonStr));
   },
-  async cmdmetajson({ input, output, commands, args, langParser }) {
+  async cmdmetajson({ output, commands, args, langParser }) {
     const getLang = langParser.createGetLang(langs);
     const command =
       commands[args[0]] ?? commands[String(args[0]).toLowerCase()];
@@ -315,10 +325,8 @@ const handlers = {
     return output.reply(getLang("reqitemSuccess", jsonStr));
   },
   async reqitemlist({
-    input,
     output,
     money,
-    Inventory,
     Slicer,
     args,
     langParser,
@@ -388,7 +396,12 @@ ${item.flavorText ?? "Not Configured"}
         playersMap,
       };
     }
+    // @ts-ignore
     const { gearsManage, petsData, playersMap } = getInfos(userData);
+
+    /**
+     * @type {Array<string | number>}
+     */
     let [targetName, enemyAtk, enemyDef, enemyHP] = args;
     enemyAtk = parseInt(enemyAtk);
     enemyDef = parseInt(enemyDef);
@@ -399,8 +412,10 @@ ${item.flavorText ?? "Not Configured"}
     const petKey = petsData.findKey(
       (i) => String(i?.name).toLowerCase() === String(targetName).toLowerCase()
     );
+    /**
+     * @type {PetPlayer}
+     */
     const player = playersMap.get(petKey);
-    const gear = gearsManage.getGearData(petKey);
     if (!player) {
       return output.reply(getLang("petTestNoPet"));
     }
@@ -416,12 +431,14 @@ ${item.flavorText ?? "Not Configured"}
       return getLang(
         "petTestUI",
         opponent.getPlayerUI(),
+        // @ts-ignore
         opponent.ATK,
+        // @ts-ignore
         opponent.DF,
         player.getPlayerUI(),
-        player.ATK,
-        player.DF,
-        player.MAGIC
+        String(player.ATK),
+        String(player.DF),
+        String(player.MAGIC)
       );
     }
     const author = input.senderID;
@@ -429,6 +446,7 @@ ${item.flavorText ?? "Not Configured"}
       const getLang = langParser.createGetLang(langs);
       if (input.senderID !== author) return;
       const args = input.words;
+      // @ts-ignore
       function detect(...actions) {
         return actions.every((a, ind) => a === args[ind]);
       }
@@ -442,12 +460,16 @@ ${item.flavorText ?? "Not Configured"}
       const option = String(args[0]).toLowerCase();
       const subOption = String(args[1]).toLowerCase();
       if (option === "attack") {
+        // @ts-ignore
         const damage = player.calculateAttack(opponent.DF);
+        // @ts-ignore
         opponent.HP -= damage;
         const i = await output.replyStyled(
           getLang(
             "petTestAttack",
+            // @ts-ignore
             player.petIcon,
+            // @ts-ignore
             player.petName,
             damage,
             makeUI()
@@ -456,6 +478,7 @@ ${item.flavorText ?? "Not Configured"}
         );
         handleEnd(i.messageID);
       } else if (option === "take") {
+        // @ts-ignore
         let damage = player.calculateTakenDamage(opponent.ATK);
         if (subOption === "thirds") {
           damage /= 3;
@@ -468,8 +491,11 @@ ${item.flavorText ?? "Not Configured"}
         player.HP -= damage;
         const i = await output.replyStyled(
           getLang(
+            
             "petTestTakeDamage",
+            // @ts-ignore
             player.petIcon,
+            // @ts-ignore
             player.petName,
             damage,
             makeUI()
@@ -487,6 +513,7 @@ ${item.flavorText ?? "Not Configured"}
       callback: handleInput,
     });
   },
+  // @ts-ignore
   async test({ input, output, api, args, langParser }) {
     const getLang = langParser.createGetLang(langs);
     const [url, ...pArgs] = args;

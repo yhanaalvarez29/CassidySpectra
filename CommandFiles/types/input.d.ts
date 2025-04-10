@@ -11,6 +11,7 @@ export interface InputProps {
   threadID: string;
   author: string;
   reaction: string;
+  password?: string;
   messageReply: any;
   mentions: { [key: string]: any };
   attachments: Array<any>;

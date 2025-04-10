@@ -120,7 +120,7 @@ type UserData = {
   money: number;
   userID?: string;
   inventory?: InventoryItem[];
-  petsData?: InventoryItem & PetUncaged;
+  petsData?: InventoryItem[] & PetUncaged[];
   /**
    * @deprecated
    */

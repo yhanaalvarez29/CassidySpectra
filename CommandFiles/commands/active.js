@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "active",
   description: "Lists the top 10 most active users.",
@@ -16,16 +21,27 @@ export class style {
   titleFont = "bold";
   contentFont = "none";
 }
-const { parseCurrency: pCy } = global.utils;
 
+/**
+ *
+ * @param {CommandContext} param0
+ */
 export async function entry({ output, input, money, Slicer, args }) {
   const time = Date.now();
 
   const allUsers = await money.getAll();
 
   const sortedUsers = Object.keys(allUsers).sort((a, b) => {
-    allUsers[a] ??= {};
-    allUsers[b] ??= {};
+    allUsers[a] ??= {
+      money: 0,
+      battlePoints: 0,
+      exp: 0,
+    };
+    allUsers[b] ??= {
+      money: 0,
+      battlePoints: 0,
+      exp: 0,
+    };
     const { lastModified: lastModifiedA = Date.now() } = allUsers[a];
 
     const { lastModified: lastModifiedB = Date.now() } = allUsers[b];

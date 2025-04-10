@@ -1,5 +1,9 @@
+// @ts-check
 import axios from "axios";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "autocass",
   description: "Basta auto na cass.",
@@ -18,41 +22,34 @@ export const meta = {
 const url = process.env.AUTOCASS ?? "https://cassidybot.onrender.com";
 const pref = "!";
 
-const mappings = new Map();
-
 /**
  *
  * @param {CommandContext}
  * @returns
  */
-export async function entry({ input, args, output }) {
+export async function entry({ input, args, output, threadsDB }) {
+  const isEna = (await threadsDB.queryItem(input.threadID, "autocass"))
+    .autocass;
   let choice =
-    args[0] === "on"
-      ? true
-      : args[0] === "off"
-      ? false
-      : mappings.get(input.threadID)
-      ? !mappings.get(input.threadID)
-      : true;
-  mappings.set(input.threadID, choice);
+    args[0] === "on" ? true : args[0] === "off" ? false : isEna ? !isEna : true;
+  await threadsDB.setItem(input.threadID, {
+    autocass: choice,
+  });
 
   return output.reply(`✅ ${choice ? "Enabled" : "Disabled"} successfully!`);
 }
 
 /**
  *
- * @param {CommandContext}
+ * @param {CommandContext} ctx
  */
-export async function event({ input, event, output }) {
+export async function event({ input, event, output, threadsDB }) {
   if (!url) return;
   if (!["message", "message_reply"].includes(input.type)) {
     return;
   }
-  if (!mappings.get(input.threadID)) {
-    return console.log(
-      "AUTOCASS",
-      mappings.get(input.threadID, input.threadID)
-    );
+  if (!(await threadsDB.queryItem(input.threadID, "autocass")).autocass) {
+    return;
   }
   if (!input.body.startsWith(pref)) {
     return;
@@ -91,14 +88,8 @@ export async function event({ input, event, output }) {
         "Upgrade-Insecure-Requests": "1",
       },
     });
-    /**
-     * @type {{ result: Partial<typeof input> }}
-     */
-    const {
-      result: { body, messageID },
-      status: estatus,
-      result,
-    } = res.data;
+
+    const { status: estatus, result } = res.data;
 
     if (estatus === "fail") {
       return null;
