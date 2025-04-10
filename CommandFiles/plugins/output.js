@@ -5,6 +5,7 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
+import axios from "axios";
 import { CassEXP } from "../modules/cassEXP.js";
 import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 
@@ -383,6 +384,36 @@ export function use(obj) {
      * @type {Partial<import("output-cassidy").OutputProps>}
      */
     const outputProps = {
+      async req(url, params = {}, configOrMethod = "GET") {
+        let finalUrl = url;
+
+        /**
+         * @type {import("axios").AxiosRequestConfig}
+         */
+        let finalConfig =
+          typeof configOrMethod !== "string"
+            ? configOrMethod
+            : { method: String(configOrMethod).toUpperCase() };
+
+        if (finalUrl.startsWith("@")) {
+          let [method, ...uurl] = finalUrl.slice(1).split(":");
+          finalUrl = uurl.join(":");
+          finalConfig.method = String(method).toUpperCase();
+        }
+        if (finalConfig.method === "POST") {
+          finalConfig.data = params;
+        } else {
+          finalConfig.params = params;
+        }
+        try {
+          const res = await axios(finalUrl, finalConfig);
+          return res.data;
+        } catch (error) {
+          throw new Error(
+            error instanceof Error ? error.message : String(error)
+          );
+        }
+      },
       async reply(body, callback) {
         if (typeof body === "function") {
           if (!LASTID) {

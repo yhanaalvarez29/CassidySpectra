@@ -46,6 +46,37 @@ export type OutputForm = string | StrictOutputForm;
  */
 export interface OutputProps {
   /**
+   * A flexible wrapper for making HTTP requests using Axios, supporting both
+   * method shorthands and full Axios config objects.
+   *
+   * Features:
+   * - Supports both `"@method:url"` shorthand and explicit method in config
+   * - Automatically assigns params to `params` (GET) or `data` (POST-like)
+   * - Catches and formats errors to always return an `Error` object
+   *
+   *
+   * @param url - The endpoint URL or a special format like "@METHOD:url"
+   *                       (e.g., "@post:/api/user") to define the HTTP method inline.
+   *
+   * @param [params={}] - Key-value pairs to be sent:
+   *        - As query parameters (for GET, DELETE, etc.)
+   *        - As request body (for POST, PUT, PATCH)
+   *
+   * @param [configOrMethod="GET"] - Either:
+   *        - A string representing the HTTP method (e.g., "GET", "POST")
+   *        - An AxiosRequestConfig object (preferred for complex setups)
+   *
+   * @returns The response data from the server
+   *
+   * @throws {Error} If the request fails, throws a formatted error with message
+   */
+
+  req(
+    url: string,
+    params: Record<string, any>,
+    configOrMethod: string | import("axios").AxiosRequestConfig
+  ): Promise<any>;
+  /**
    * Sends a reply with the specified body and an optional callback.
    * @param body - The content of the reply.
    * @param callback - Optional callback to handle the result of the reply.
