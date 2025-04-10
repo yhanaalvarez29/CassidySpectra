@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "beekeep",
   description: "Harvest honey from your bee farm!",

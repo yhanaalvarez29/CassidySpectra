@@ -1,3 +1,4 @@
+// @ts-check
 export const style = {
   title: "Casino 🎲",
   titleFont: "bold", // Options: fancy, fancy_italic, bold, bold_italic, double_struck, typewriter, none
@@ -22,6 +23,9 @@ const gamesInfo = {
     "**🎯 Sibco** - A strategic dice game, where high stakes meet high rewards.",
 };
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "casino",
   description: "Play various casino games",
@@ -41,11 +45,15 @@ export const meta = {
 
 const { randArrValue } = global.utils;
 
+/**
+ * 
+ * @param {CommandContext} param0 
+ * @returns 
+ */
 export async function entry({
   input,
   output,
   money,
-  icon,
   cancelCooldown = function () {},
   Inventory,
   cooldown,
@@ -54,6 +62,10 @@ export async function entry({
   /*if (input.isAdmin) {
     cancelCooldown();
   }*/
+
+ /**
+  * @type {Array<string | number>}
+  */
   let [inf, bet, ...additionalArgs] = input.arguments;
   const game = Object.keys(gamesInfo).find(
     (i) => String(i).toLowerCase() === String(inf).toLowerCase()
@@ -65,13 +77,13 @@ export async function entry({
     casinoLosses = 0,
     winStreak = 0,
     loseStreak = 0,
-    inventory,
+    inventory: rawInv,
     casinoLuck = false,
   } = await money.get(senderID);
   const { invLimit } = global.Cassidy;
 
   if (casinoLuck) cancelCooldown();
-  inventory = new Inventory(inventory);
+  let inventory = new Inventory(rawInv);
 
   if (!game || !gamesInfo[game] || cooldown) {
     cancelCooldown();
@@ -98,8 +110,8 @@ export async function entry({
     "Sibco",
   ];
   if (gamesWithBets.includes(game)) {
-    if (bet === "all") bet = parseint(playerMoney * 0.75);
-    else bet = parseInt(CassExpress.parseAbbr(String(bet)));
+    if (bet === "all") bet = parseInt(String(playerMoney * 0.75));
+    else bet = parseInt(String(CassExpress.parseAbbr(String(bet))));
 
     if (isNaN(bet) || bet <= 0 || bet > playerMoney) {
       cancelCooldown();
@@ -129,7 +141,7 @@ export async function entry({
       const dealerTotal = Math.floor(Math.random() * 10) + 12;
       const win =
         (playerTotal > dealerTotal && playerTotal <= 21) || dealerTotal > 21;
-      netGain = win ? bet : -bet;
+      netGain = win ? Number(bet) : -bet;
       resultMessage =
         `**🎴 Blackjack Result**\n` +
         `Player's Total: ${playerTotal} ${
@@ -146,15 +158,15 @@ export async function entry({
       const playerBet = additionalArgs[0];
       const win =
         (playerBet === "number" &&
-          winningNumber === parseInt(additionalArgs[1])) ||
+          winningNumber === parseInt(String(additionalArgs[1]))) ||
         (playerBet === "red" && winningNumber % 2 !== 0) ||
         (playerBet === "black" && winningNumber % 2 === 0) ||
         (!playerBet && winningNumber % 2 !== 0);
       const ballPosition = `🎱 ${winningNumber}`;
       netGain = win
         ? playerBet === "number"
-          ? bet * 25
-          : Math.round(bet / 2.2)
+          ? Number(bet) * 25
+          : Math.round(+bet / 2.2)
         : -bet;
       resultMessage =
         `**🎡 Roulette Result**\n` +
@@ -174,7 +186,7 @@ export async function entry({
       const handStrength = Math.random();
       const hand = !(handStrength < 0.6) ? "👑 Royal Flush" : "💩 High Card";
       const win = !(handStrength < 0.6);
-      netGain = win ? bet : -bet;
+      netGain = win ? +bet : -bet;
       resultMessage =
         `**🃏 Poker Result**\n` +
         `Your Hand: ${hand}\n` +
@@ -185,7 +197,7 @@ export async function entry({
       const roll = Math.floor(Math.random() * 12) + 1;
       const point = Math.floor(Math.random() * 12) + 1;
       const win = roll === 7 || roll === point;
-      netGain = win ? bet * 3 : -bet;
+      netGain = win ? +bet * 3 : -bet;
       resultMessage =
         `**🎲 Craps Result**\n` +
         `Roll: ${roll}\n` +
@@ -197,7 +209,7 @@ export async function entry({
       const playerHand = Math.floor(Math.random() * 10);
       const bankerHand = Math.floor(Math.random() * 10);
       const win = playerHand > bankerHand;
-      netGain = win ? bet : -bet;
+      netGain = win ? +bet : -bet;
       resultMessage =
         `**👑 Baccarat Result**\n` +
         `Player Hand: ${playerHand}\n` +
@@ -209,7 +221,7 @@ export async function entry({
       const reelSymbols = Array.from({ length: 3 }, () => randArrValue(fruits));
       const allMatch = new Set(reelSymbols).size === 1;
       const twoMatch = new Set(reelSymbols).size === 2;
-      netGain = allMatch ? bet * 3 : twoMatch ? bet * 2 : -bet;
+      netGain = allMatch ? +bet * 3 : twoMatch ? +bet * 2 : -bet;
       resultMessage =
         `**🎰 Slots Result**\n` +
         `Reel Symbols: ${reelSymbols.join(" | ")}\n` +
@@ -219,7 +231,7 @@ export async function entry({
     Sibco() {
       const diceRoll = Math.floor(Math.random() * 6) + 1;
       const win = diceRoll > 3;
-      netGain = win ? bet : -bet;
+      netGain = win ? +bet : -bet;
       resultMessage =
         `**🎯 Sibco Result**\n` +
         `Dice Roll: ${diceRoll} ${win ? `>` : `<=`} 3\n` +

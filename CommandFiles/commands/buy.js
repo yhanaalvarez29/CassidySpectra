@@ -1,7 +1,11 @@
+// @ts-check
 import { UNIRedux, toTitleCase } from "../modules/unisym.js";
 import { ShopClass } from "../plugins/shopV2.js";
 import { Slicer } from "../plugins/utils-liane.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "buy",
   description: "Purchases a command.",
@@ -27,12 +31,11 @@ export const style = {
  */
 export async function entry(context) {
   const { input, output, args, money, prefix } = context;
-  if (isNaN(args[0])) {
+  if (isNaN(Number(args[0]))) {
     const {
       shopInv = {},
       money: userMoney,
-      name,
-    } = await money.get(input.senderID);
+    } = await money.getItem(input.senderID);
     const shop = new ShopClass(shopInv);
 
     async function buyReply(item, price) {
@@ -81,6 +84,10 @@ export async function entry(context) {
   } else {
     const { shopInv = {}, money: userMoney } = await money.get(input.senderID);
     const shop = new ShopClass(shopInv);
+    /**
+     * @type {any[]}
+     */
+    // @ts-ignore
     const allItems = shop.getItems();
     const page = Slicer.parseNum(args[0]);
     const slicer = new Slicer(allItems, 5);

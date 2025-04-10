@@ -1,5 +1,9 @@
+// @ts-check
 import { evaluate } from "mathjs";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "calc",
   otherNames: ["calculator"],
@@ -19,6 +23,10 @@ export const style = {
   contentFont: "none",
 }
 
+/**
+ * 
+ * @param {CommandContext} param0 
+ */
 export async function entry({ input, output }) {
   try {
     const data = input.arguments;

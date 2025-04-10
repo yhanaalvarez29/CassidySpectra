@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "brew",
   description: "Brew potions and sell them for gold!",

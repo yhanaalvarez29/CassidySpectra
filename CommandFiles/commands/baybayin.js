@@ -1,6 +1,9 @@
-import axios from "axios";
+// @ts-check
 import baybayin from "baybayin-transliterator";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "baybayin",
   description: "Convert text into baybayin",

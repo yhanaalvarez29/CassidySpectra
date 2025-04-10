@@ -1,7 +1,11 @@
+// @ts-check
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "../modules/unisym.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "car",
   description: "Rule the roads: customize, race, and build your car empire!",
@@ -463,7 +467,6 @@ export async function entry(ctx) {
     money,
     Inventory,
     UTShop,
-    generateGift,
     prefix,
     args,
   } = ctx;
@@ -839,7 +842,7 @@ export async function entry(ctx) {
           const timeLeft =
             5 -
             Math.floor(
-              (new Date() - new Date(targetCarData.lastAction)) / (1000 * 60)
+              (new Date().getTime() - new Date(targetCarData.lastAction).getTime()) / (1000 * 60)
             );
           return output.reply(
             `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** on refuel cooldown. Wait ${timeLeft} min.`
@@ -1075,7 +1078,7 @@ export async function entry(ctx) {
         }
 
         const weather = getRandomWeather();
-        const { speedMod, fuelMod, conditionMod } = weatherEffects[weather];
+        const { fuelMod, conditionMod } = weatherEffects[weather];
         const fuelCost = trip.distance * targetCarData.fuelEfficiency * fuelMod;
         const conditionDamage =
           trip.distance * 0.1 * conditionMod * (1 - targetCarData.durability);
@@ -1198,8 +1201,8 @@ export async function entry(ctx) {
 
 function isCooldownActive(lastAction, cooldownMinutes = 5) {
   if (!lastAction) return false;
-  const now = new Date();
-  const last = new Date(lastAction);
+  const now = new Date().getTime();
+  const last = new Date(lastAction).getTime();
   const diffMs = now - last;
   const diffMins = diffMs / (1000 * 60);
   return diffMins < cooldownMinutes;
