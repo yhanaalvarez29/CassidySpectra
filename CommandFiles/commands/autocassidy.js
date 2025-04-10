@@ -15,7 +15,7 @@ export const meta = {
   noLevelUI: true,
 };
 
-const url = process.env.AUTOCASS ?? "";
+const url = process.env.AUTOCASS ?? "https://cassidybot.onrender.com";
 const pref = "!";
 
 const mappings = new Map();

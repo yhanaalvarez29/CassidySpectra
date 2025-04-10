@@ -1437,6 +1437,10 @@ ${self.optionText()}
   obj.next();
 }
 
+/**
+ * @typedef {import("@cass-modules/cassidyUser").InventoryItem} CInventoryItem
+ */
+
 export class Inventory {
   constructor(inventory = [], limit = global.Cassidy.invLimit) {
     inventory ??= [];
@@ -1509,22 +1513,48 @@ export class Inventory {
     return result.filter(Boolean);
   }
 
+  /**
+   *
+   * @param {number} index
+   *
+   */
   at(index) {
     const parsedIndex = parseInt(index);
     return isNaN(parsedIndex) ? undefined : this.inv.at(parsedIndex - 1);
   }
 
+  /**
+   *
+   * @param {string | number} key
+   * @returns {CInventoryItem}
+   */
   getOne(key) {
     return this.inv.find((item) => item.key === key) || this.at(key);
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @returns {CInventoryItem[]}
+   */
   get(key) {
     return this.inv.filter(
       (item) => item.key === key || item.key === this.keyAt(key)
     );
   }
+
+  /**
+   *
+   * @returns {CInventoryItem[]}
+   */
   getAll() {
     return this.inv;
   }
+
+  /**
+   *
+   * @param {CInventoryItem | string | number} item
+   */
   deleteRef(item) {
     let index = this.inv.indexOf(item);
 
@@ -1537,11 +1567,21 @@ export class Inventory {
     }
   }
 
+  /**
+   *
+   * @param {Parameters<typeof this.deleteRef>[0][]} items
+   */
   deleteRefs(items) {
     for (const item of items) {
       this.deleteRef(item);
     }
   }
+
+  /**
+   *
+   * @param {(item: CInventoryItem) => boolean} callback
+   * @returns
+   */
   findKey(callback) {
     const result = this.inv.find((item) => callback(item) || this.keyAt(item));
     if (result) {
@@ -1550,18 +1590,45 @@ export class Inventory {
       return null;
     }
   }
+
+  /**
+   *
+   * @param {CInventoryItem[]} item
+   * @returns {number}
+   */
   indexOf(item) {
     return this.inv.indexOf(item);
   }
+
+  /**
+   *
+   * @returns {number}
+   */
   size() {
     return this.inv.length;
   }
+
+  /**
+   *
+   * @returns {Inventory}
+   */
   clone() {
     return new Inventory(this.inv);
   }
+
+  /**
+   *
+   * @returns {CInventoryItem[]}
+   */
   toJSON() {
     return this.inv;
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @returns {boolean}
+   */
   deleteOne(key) {
     let index = this.inv.findIndex(
       (item) => item.key === key || item.key === this.keyAt(key)
@@ -1574,33 +1641,80 @@ export class Inventory {
     }
     this.inv = this.inv.filter((_, i) => i !== index);
   }
+
+  /**
+   *
+   * @param {number | string} index
+   * @returns {string}
+   */
   keyAt(index) {
     return this.at(index)?.key;
   }
+
+  /**
+   *
+   * @param {string | number} key
+   */
   delete(key) {
     this.inv = this.inv.filter(
       (item) => item.key !== key || item.key !== this.keyAt(key)
     );
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @returns {boolean}
+   */
   has(key) {
     return this.inv.some(
       (item) => item.key === key || item.key === this.keyAt(key)
     );
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @param {number} amount
+   * @returns {boolean}
+   */
   hasAmount(key, amount) {
     const length = this.getAmount(key);
     return length >= amount;
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @returns {number}
+   */
   getAmount(key) {
     return this.get(key).length;
   }
+
+  /**
+   *
+   * @param {CInventoryItem} item
+   * @returns {number}
+   */
   addOne(item) {
     return this.inv.push(item);
   }
 
+  /**
+   *
+   * @param {CInventoryItem[]} item
+   * @returns {number}
+   */
   add(item) {
     return this.inv.push(...item);
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @param {number | "all"} amount
+   */
   toss(key, amount) {
     if (amount === "all") {
       amount = this.getAmount(key);
@@ -1610,6 +1724,14 @@ export class Inventory {
       this.deleteOne(key);
     }
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @param {number | "all"} amount
+   * @returns {number}
+   * @deprecated
+   */
   tossDEPRECATED(key, amount) {
     if (amount === "all") {
       const i = this.getAmount(key);
@@ -1626,18 +1748,31 @@ export class Inventory {
     }
     return r;
   }
+
+  /**
+   *
+   * @param {string | number} key
+   * @param {number} amount
+   */
   setAmount(key, amount) {
     const data = this.get(key);
     for (let i = 0; i < amount; i++) {
       this.addOne(data[i]);
     }
   }
+
   *[Symbol.iterator]() {
     yield* this.inv;
   }
+
+  /**
+   *
+   * @returns {CInventoryItem[]}
+   */
   raw() {
     return Array.from(this.inv);
   }
+
   *keys() {
     yield* this.inv.map((item) => item.key);
   }

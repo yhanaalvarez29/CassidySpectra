@@ -34,11 +34,10 @@ const { parseCurrency: pCy } = global.utils;
  * @returns
  */
 export async function entry({ ...ctx }) {
-  const { input, output, money, args, prefix, generateTreasure, commandName } =
-    ctx;
-  let userData = await money.get(input.senderID);
+  const { input, output, money, prefix, generateTreasure, commandName } = ctx;
+  let userData = await money.getItem(input.senderID);
 
-  const { inventory, petsData, gearsData, collectibles } = getDatas(userData);
+  let { inventory, petsData, gearsData } = getDatas(userData);
 
   const userDataCopy = userData;
   function getDatas({ ...data }) {
@@ -101,8 +100,7 @@ export async function entry({ ...ctx }) {
         args: ["<optional uid>"],
         async handler() {
           let userData = userDataCopy;
-          let { inventory, petsData, gearsData, collectibles } =
-            getDatas(userData);
+          let { inventory, collectibles } = getDatas(userData);
           let otherTarget = null;
           if (actionArgs[0]) {
             const allUsers = await money.getAll();
@@ -149,8 +147,7 @@ export async function entry({ ...ctx }) {
           const sorted = Array.from(categoryMap).sort((a, b) =>
             a[0].localeCompare(b[0])
           );
-          let cache1 = [];
-          for (const [category, items] of sorted) {
+          for (const [_, items] of sorted) {
             itemList += ``;
 
             const itemCounts = new Map();
@@ -189,7 +186,7 @@ export async function entry({ ...ctx }) {
           const sorted2 = Array.from(cllMap).sort((a, b) =>
             a[0].localeCompare(b[0])
           );
-          for (const [category, items] of sorted2) {
+          for (const [_, items] of sorted2) {
             cllList += ``;
             cllList += items
               .map(
@@ -244,7 +241,7 @@ export async function entry({ ...ctx }) {
             .join("");
           const lastKey = inventory
             .getAll()
-            .find((item) => item.name === actionArgs.join(" "));
+            .find((item) => item.name === actionArgs.join(" ")).key;
           const item =
             inventory.getOne(keyToCheck) ||
             inventory.getOne(altKey) ||
@@ -270,7 +267,7 @@ export async function entry({ ...ctx }) {
               `DEF: **+${item.def ?? 0}**\n` +
               `ATK: **+${item.atk ?? 0}**\n` +
               `Saturation: **${
-                (item.saturation ?? 0) / 60 / 1000
+                (Number(item.saturation) ?? 0) / 60 / 1000
               } mins** 🐾\n\n` +
               `Sell Price: **$${item.sellPrice ?? 0}** 💵`
           );
@@ -284,9 +281,7 @@ export async function entry({ ...ctx }) {
         args: ["<item_id | index>"],
         async handler() {
           const [key] = actionArgs;
-          const purposed = sortExtensions(
-            extensions.filter((i) => i.info.purpose.startsWith("item_use_"))
-          );
+
           if (!key) {
             return output.reply(
               `👤 **${userData.name || "Unregistered"}** (Inventory)\n\n` +
@@ -302,26 +297,16 @@ export async function entry({ ...ctx }) {
             );
           }
 
-          item ??= {};
+          item ??= {
+            type: "generic",
+            key: "__",
+            flavorText: "",
+            icon: "",
+            name: "",
+            sellPrice: 0,
+            index: 0,
+          };
           item.type ??= "generic";
-          const targets = purposed.filter((i) =>
-            i.info.purpose.endsWith(item.type)
-          );
-
-          if (targets.length > 0) {
-            let replyString = "";
-            for (const ext of targets) {
-              try {
-                const strRes = await ext.info.hook(ctx, item);
-                if (typeof strRes === "string") {
-                  replyString = strRes;
-                }
-              } catch (error) {
-                console.error(error);
-              }
-            }
-            return replyString ? output.reply(replyString) : null;
-          }
 
           if (item?.type === "food") {
             return output.reply(
@@ -334,7 +319,9 @@ export async function entry({ ...ctx }) {
           }
           if (item?.type.endsWith("_food")) {
             const petType = item.type.replaceAll("_food", "");
-            const durationMinutes = ((item.saturation ?? 0) / 60000).toFixed(1);
+            const durationMinutes = (
+              (Number(item.saturation) ?? 0) / 60000
+            ).toFixed(1);
             if (petType === "any") {
               return output.reply(
                 `👤 **${userData.name || "Unregistered"}** (Inventory)\n\n` +
@@ -390,7 +377,15 @@ export async function entry({ ...ctx }) {
               if (ctx.input.senderID !== input.senderID) return;
               const userData = await ctx.money.get(ctx.input.senderID);
               const { inventory, petsData, gearsData } = getDatas(userData);
-              item ??= {};
+              item ??= {
+                type: "generic",
+                key: "__",
+                flavorText: "",
+                icon: "",
+                name: "",
+                sellPrice: 0,
+                index: 0,
+              };
               if (!key.startsWith(eKey) && !inventory.has(item.key)) {
                 return ctx.output.reply(
                   `👤 **${userData.name || "Unregistered"}** (Inventory)\n\n` +
@@ -416,7 +411,15 @@ export async function entry({ ...ctx }) {
               }
               const gearData = gearsData.getGearData(pet.key);
               const [, keyType] = key.split("_");
-              item ??= {};
+              item ??= {
+                type: "generic",
+                key: "__",
+                flavorText: "",
+                icon: "",
+                name: "",
+                sellPrice: 0,
+                index: 0,
+              };
 
               if (
                 item.type === "armor" ||
@@ -502,7 +505,7 @@ export async function entry({ ...ctx }) {
                   `❌ No valid **cheque** with key "**${chequeKey}**" in your 🎒!`
               );
             }
-            const chequeAmount = parseInt(itemToCash.chequeAmount);
+            const chequeAmount = parseInt(String(itemToCash.chequeAmount));
             if (isNaN(chequeAmount) || chequeAmount <= 0) {
               return output.reply(
                 `👤 **${userData.name || "Unregistered"}** (Inventory)\n\n` +
@@ -545,7 +548,7 @@ export async function entry({ ...ctx }) {
             );
           }
           let diaCost = 2;
-          let tresCount = item.tresCount || 20;
+          let tresCount = Number(item.tresCount) || 20;
           const author = input.senderID;
           let chosenNumbers = [];
           async function handleTriple(ctx) {
@@ -654,7 +657,7 @@ export async function entry({ ...ctx }) {
           for (let i = 0; i < tresCount; i++) {
             let newTreasure;
             do {
-              newTreasure = generateTreasure(item.treasureKey);
+              newTreasure = generateTreasure(String(item.treasureKey));
             } while (false);
             treasures.push(newTreasure);
           }
@@ -684,6 +687,9 @@ export async function entry({ ...ctx }) {
         args: ["<item_id | index>*<num|'all'>", "<uid>"],
         async handler() {
           let [keyTX = "", recipientID] = actionArgs;
+          /**
+           * @type {[string?, (string | number)?, ...a: any[]]}
+           */
           let [keyT, amountItem = "1"] = keyTX.split("*");
 
           if (recipientID === input.senderID) {
@@ -699,7 +705,7 @@ export async function entry({ ...ctx }) {
             );
           }
           if (amountItem === "all") amountItem = inventory.getAmount(keyT);
-          amountItem = parseInt(amountItem);
+          amountItem = parseInt(String(amountItem));
           if (isNaN(amountItem)) amountItem = 1;
           if (!inventory.hasAmount(keyT, amountItem) || amountItem < 1) {
             return output.reply(
@@ -751,7 +757,7 @@ export async function entry({ ...ctx }) {
               continue;
             }
             if (itemToSend.type === "cheque") {
-              const amount = itemToSend.chequeAmount;
+              const amount = Number(itemToSend.chequeAmount);
               if (isNaN(amount) || amount < 1) {
                 failItems.push({
                   ...itemToSend,
@@ -803,6 +809,9 @@ export async function entry({ ...ctx }) {
         aliases: ["discard", "drop", "throw"],
         args: ["<item_id | index>*<num|'all'>"],
         async handler() {
+          /**
+           * @type {[string?, (string | number)?, ...a: any[]]}
+           */
           let [key, amount] = (actionArgs[0] ?? "").split("*");
           if (!amount && actionArgs[1]) amount = actionArgs[1];
 
@@ -880,7 +889,7 @@ export async function entry({ ...ctx }) {
           const allUsers = await money.getAll();
           const page = parseInt(actionArgs[1] || "1") || 1;
           const perPage = 10;
-          if (!isNaN(actionArgs[0])) {
+          if (!isNaN(Number(actionArgs[0]))) {
             return output.reply(
               `👤 **${userData?.name || "Unregistered"}** (Inventory)\n\n` +
                 `❌ Invalid (buggy) item key! Try "all" or a specific item to check rankings.`
