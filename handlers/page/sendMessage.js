@@ -146,7 +146,7 @@ export class APIPage {
         !content.attachment.destroy
       ) {
         body.attachment = content.attachment;
-      } else if (content.attachment.pipe) {
+      } else if (content?.attachment?.pipe) {
         const temp = new TempFile();
         const base64_ = await streamToBase64(content.attachment);
         const buffer = Buffer.from(base64_, "base64");
@@ -167,6 +167,17 @@ export class APIPage {
         type = __type;
       }
     }
+
+    if (url) {
+      body.attachment = {
+        type,
+        payload: {
+          title: body.text,
+          url,
+          is_reusable: true,
+        },
+      };
+    }
     if (
       !body.text ||
       body.text === "" ||
@@ -175,15 +186,8 @@ export class APIPage {
     ) {
       delete body.text;
     }
-
-    if (url) {
-      body.attachment = {
-        type,
-        payload: {
-          url,
-          is_reusable: true,
-        },
-      };
+    if (body.attachment) {
+      delete body.text;
     }
 
     const conf = {
