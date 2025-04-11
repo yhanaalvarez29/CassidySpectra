@@ -624,6 +624,7 @@ declare global {
       readonly redux: boolean;
       readonly spectra: boolean;
       readonly highRoll: 10_000_000;
+      hostedFilenames: (undefined | TempFile)[];
     }
 
     export type Output = OutputX;
@@ -764,6 +765,7 @@ import {
   Slicer,
   TagParser,
 } from "@cass-plugins/utils-liane.js";
+import { TempFile } from "./handlers/page/sendMessage.js";
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;

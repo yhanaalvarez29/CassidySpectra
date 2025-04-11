@@ -324,7 +324,8 @@ export function use(obj) {
         }
         if (
           !options.body ||
-          (options.body === "") | (String(options.body).trim() === "")
+          (options.body === "") | (String(options.body).trim() === "") ||
+          options.body === "undefined"
         ) {
           delete options.body;
         }

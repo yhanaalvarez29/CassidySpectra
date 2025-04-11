@@ -160,6 +160,7 @@ global.Cassidy = {
   oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
   accessToken: null,
   redux: true,
+  hostedFilenames: [],
 };
 const login = require(global.Cassidy.config.FCA.path);
 
@@ -515,6 +516,7 @@ import { postState } from "./handlers/appstate/handleGetState.js";
 import requestIp from "request-ip";
 import bodyParser from "body-parser";
 import fetchMeta from "./CommandFiles/modules/fetchMeta.js";
+import { TempFile } from "./handlers/page/sendMessage";
 
 const limit = {
   windowMs: 60 * 1000,
@@ -542,6 +544,42 @@ function web(api, funcListen, settings) {
   app.use((req, _, next) => {
     req.trueIP = requestIp.getClientIp(req);
     next();
+  });
+  app.get("/api/temp", async (req, res) => {
+    try {
+      const { id } = req.query;
+      if (id) {
+        const temp = new TempFile(id);
+        if (!temp.exists()) {
+          res.status(404).end("File not found");
+          return;
+        }
+        const fileStream = temp.getStream();
+
+        const { fileTypeFromStream } = await global.fileTypePromise;
+        const x = (await fileTypeFromStream(fileStream))?.mime;
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${temp.getFilename()}"`
+        );
+        res.setHeader("Content-Type", x);
+        fileStream.pipe(res);
+        res.on("finish", async () => {
+          try {
+            await temp.delete();
+            console.log(`File ${filename} deleted after download.`);
+          } catch (err) {
+            console.error(`Failed to delete file ${filename}:`, err);
+          }
+        });
+        return;
+      }
+
+      res.status(400).end("Bad request (no id)");
+    } catch (error) {
+      console.error(error);
+      res.status(500).end("Server error");
+    }
   });
   app.get("/", fake502, (req, res) => {
     const page = genericPage({
