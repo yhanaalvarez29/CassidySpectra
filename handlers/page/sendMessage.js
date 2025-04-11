@@ -211,14 +211,16 @@ export class APIPage {
         message: { text },
       },
     };
-    await new Promise((r) => {
-      request(conf, (error) => {
-        if (error) {
-          console.error(error);
-        }
-        r();
+    if (!body.text && text) {
+      await new Promise((r) => {
+        request(conf, (error) => {
+          if (error) {
+            console.error(error);
+          }
+          r();
+        });
       });
-    });
+    }
 
     const promise = new Promise((resolve, reject) => {
       request(conf2, (error, _, responseBodyX) => {
