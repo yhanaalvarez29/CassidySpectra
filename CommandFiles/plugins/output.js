@@ -8,7 +8,7 @@
 import axios from "axios";
 import { CassEXP } from "../modules/cassEXP.js";
 import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
-import { PageButton } from "@cass-modules/PageButton";
+import { PagePayload } from "@cass-modules/PageButton";
 
 export const meta = {
   name: "output",
@@ -250,11 +250,11 @@ export function use(obj) {
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
         options.body ??= "";
-        if (PageButton.isPageButton(options.attachment) && !obj.input.isPage) {
-          const buttons = PageButton.fromPayload(options.attachment);
+        if (PagePayload.isPageButton(options.attachment) && !obj.input.isPage) {
+          const buttons = PagePayload.fromPayload(options.attachment);
           options.body = buttons.toString();
         }
-        if (PageButton.isPageButton(options.attachment)) {
+        if (PagePayload.isPageButton(options.attachment)) {
           delete options.body;
         }
         if (global.Cassidy.config.censorOutput && options.body) {

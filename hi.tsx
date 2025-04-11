@@ -1,4 +1,4 @@
-import { PageButton } from "@cass-modules/PageButton";
+import { PagePayload } from "@cass-modules/PageButton";
 import { Pinger } from "@cass-modules/pinger";
 import { CassTypes } from "@cass-modules/type-validator";
 
@@ -63,7 +63,7 @@ const entryConf: Record<string, CommandEntry> = {
     await money.setItem(...payload);
     const ping2 = pinger2.getLastPing();
 
-    const pbtn = new PageButton();
+    const pbtn = new PagePayload();
     pbtn.title(`money.set: ${ping1}\nmoney.setItem: ${ping2}`);
     pbtn.button("https://cassidybot.onrender.com", "Old Cassidy");
 
