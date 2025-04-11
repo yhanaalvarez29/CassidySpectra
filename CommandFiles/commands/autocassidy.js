@@ -24,12 +24,11 @@ const pref = "!";
 
 /**
  *
- * @param {CommandContext}
- * @returns
+ * @param {CommandContext} ctx
  */
 export async function entry({ input, args, output, threadsDB }) {
   const isEna = (await threadsDB.queryItem(input.threadID, "autocass"))
-    .autocass;
+    ?.autocass;
   let choice =
     args[0] === "on" ? true : args[0] === "off" ? false : isEna ? !isEna : true;
   await threadsDB.setItem(input.threadID, {
@@ -48,7 +47,7 @@ export async function event({ input, event, output, threadsDB }) {
   if (!["message", "message_reply"].includes(input.type)) {
     return;
   }
-  if (!(await threadsDB.queryItem(input.threadID, "autocass")).autocass) {
+  if (!(await threadsDB.queryItem(input.threadID, "autocass"))?.autocass) {
     return;
   }
   if (!input.body.startsWith(pref)) {

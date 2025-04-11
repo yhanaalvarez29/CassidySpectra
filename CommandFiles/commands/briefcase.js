@@ -241,7 +241,7 @@ export async function entry({ ...ctx }) {
             .join("");
           const lastKey = inventory
             .getAll()
-            .find((item) => item.name === actionArgs.join(" ")).key;
+            .find((item) => item.name === actionArgs.join(" "))?.key;
           const item =
             inventory.getOne(keyToCheck) ||
             inventory.getOne(altKey) ||
