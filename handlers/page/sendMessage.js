@@ -168,11 +168,12 @@ export class APIPage {
       }
     }
 
+    let text = body.text;
+
     if (url) {
       body.attachment = {
         type,
         payload: {
-          title: body.text,
           url,
           is_reusable: true,
         },
@@ -201,8 +202,26 @@ export class APIPage {
     };
     console.log(JSON.stringify(conf.json, null, 2));
 
+    const conf2 = {
+      url: "https://graph.facebook.com/v20.0/me/messages",
+      qs: { access_token: this.token },
+      method: "POST",
+      json: {
+        recipient: { id: senderID },
+        message: { text },
+      },
+    };
+    await new Promise((r) => {
+      request(conf, (error) => {
+        if (error) {
+          console.error(error);
+        }
+        r();
+      });
+    });
+
     const promise = new Promise((resolve, reject) => {
-      request(conf, (error, _, responseBodyX) => {
+      request(conf2, (error, _, responseBodyX) => {
         console.log(responseBodyX);
         const responseBody = {
           timestamp: Date.now().toString(),
