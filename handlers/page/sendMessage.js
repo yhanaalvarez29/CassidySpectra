@@ -13,7 +13,15 @@ export class APIPage {
       body = { text: content };
     } else {
       body = { text: content.body };
-      if (content.attachment) {
+      if (
+        typeof content.attachment === "object" &&
+        !content.attachment.pipe &&
+        !content.attachment.on &&
+        !content.attachment.readable &&
+        !content.attachment.read &&
+        !content.attachment.pause &&
+        !content.attachment.destroy
+      ) {
         body.attachment = content.attachment;
       }
     }
@@ -26,7 +34,7 @@ export class APIPage {
         message: body,
       },
     };
-    console.log(conf);
+    console.log(JSON.stringify(conf.json, null, 2));
 
     const promise = new Promise((resolve, reject) => {
       request(conf, (error, response, responseBodyX) => {
