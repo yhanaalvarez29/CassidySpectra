@@ -1,5 +1,10 @@
+// @ts-check
+
 import { ReduxCMDHome } from "@cassidy/redux-home";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "cheque",
   description: "Manage your cheques and cash them for money.",
@@ -32,7 +37,7 @@ const home = new ReduxCMDHome(
       aliases: ["-c"],
       args: ["<amount>"],
       description: "Create a cheque of the specified amount.",
-      async handler({ input, output, money, args, Inventory, prefix }) {
+      async handler({ input, output, money, args, Inventory,  }) {
         const userData = await money.get(input.senderID);
         let userInventory = new Inventory(userData.inventory);
         userData.shadowPower ??= 0;
@@ -111,7 +116,7 @@ ${
       aliases: ["-ca"],
       description:
         " Cash a cheque using the specified key and add it to your balance.",
-      async handler({ input, output, money, args, Inventory, prefix }) {
+      async handler({ input, output, money, args, Inventory,  }) {
         const userData = await money.get(input.senderID);
         let userInventory = new Inventory(userData.inventory);
         userData.shadowPower ??= 0;
@@ -133,7 +138,7 @@ ${
           );
         }
 
-        const chequeAmount = parseInt(itemToCash.chequeAmount);
+        const chequeAmount = parseInt(String(itemToCash.chequeAmount));
 
         if (isNaN(chequeAmount) || chequeAmount <= 0) {
           return output.reply(`❌ The cheque amount is invalid.`);

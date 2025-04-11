@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "catfact",
   author: "Liane Cagara",
@@ -18,15 +23,18 @@ export const style = {
 };
 const { delay } = global.utils;
 
+/**
+ *
+ * @param {CommandContext} ctx
+ */
 export async function entry({ output, input, requester }) {
   try {
     let i;
     if (!input.isWeb) {
       i = await output.reply(`MEOW!`);
     }
-    const { response } = await requester("https://catfact.ninja/fact");
+    const { fact } = await output.req("https://catfact.ninja/fact");
 
-    const fact = response.fact;
     await delay(1000);
 
     if (i) {
@@ -38,7 +46,7 @@ export async function entry({ output, input, requester }) {
         `${fact}
 
 Do you love cassidy bot? ^^`,
-        i.messageID,
+        i.messageID
       );
     } else {
       output.reply(fact);
@@ -48,7 +56,7 @@ Do you love cassidy bot? ^^`,
   } catch (error) {
     console.error("Error fetching cat fact:", error);
     output.reply(
-      "Sorry, I couldn't fetch a cat fact at the moment. Please try again later.",
+      "Sorry, I couldn't fetch a cat fact at the moment. Please try again later."
     );
   }
 }

@@ -1,5 +1,9 @@
+// @ts-check
 import { CLIParser } from "../modules/cliparser.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "casscli",
   author: "Liane Cagara",
@@ -14,7 +18,6 @@ export const meta = {
   requirement: "3.0.0",
   otherNames: ["ccli", "cbox", "cassbox"],
   waitingTime: 0.01,
-  requirement: "3.0.0",
   icon: ">_",
   category: "Utilities",
   noLevelUI: true,
@@ -22,6 +25,8 @@ export const meta = {
 
 import util from "util";
 import { VirtualFiles } from "../plugins/neax-ui.js";
+import path from "path";
+import axios from "axios";
 const { TextEncoder } = util;
 
 export const style = {
@@ -31,11 +36,11 @@ export const style = {
 };
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry({ input, output, money }) {
   const parser = new CLIParser();
-  const userData = await money.get(input.senderID);
+  const userData = await money.getItem(input.senderID);
   const vf = new VirtualFiles(userData.virtualFiles ?? []);
 
   async function onlyAdmin() {
@@ -50,7 +55,7 @@ export async function entry({ input, output, money }) {
     command: "moneyset",
     usage: "moneyset <uid | 'self'> <money>",
     description: "Modifies user balance.",
-    async handler({ args, flags }) {
+    async handler() {
       if (await onlyAdmin()) return;
     },
   });
@@ -60,7 +65,7 @@ export async function entry({ input, output, money }) {
     usage: "stateget <uid | 'self'> <key | 'all'>",
     description:
       "Retrieve information about the specified user's state from the database. You can query either your own state or the state of another user using their UID. The query returns the value associated with the given key.",
-    async handler({ args, flags }) {
+    async handler({ args }) {
       if (args.length < 3) {
         return `error: missing arguments. Usage: ${this.usage}`;
       }
@@ -83,7 +88,7 @@ export async function entry({ input, output, money }) {
 
       let target = data;
       if (key !== "all") {
-        for (const aKey of keys) {
+        for (const {} of keys) {
           target = target[key];
         }
       }
@@ -91,7 +96,6 @@ export async function entry({ input, output, money }) {
       return `${util.inspect(target, { showHidden: false, depth: 1 })}`;
     },
   });
-  const axios = require("axios");
 
   parser.registerCommand({
     command: "curl",
@@ -350,12 +354,6 @@ export async function entry({ input, output, money }) {
               vf.stat(path.join(directoryPath, a)).size -
               vf.stat(path.join(directoryPath, b)).size
           );
-        } else if (options.sortBy === "time") {
-          items.sort(
-            (a, b) =>
-              vf.stat(path.join(directoryPath, a)).mtime -
-              vf.stat(path.join(directoryPath, b)).mtime
-          );
         } else {
           items.sort();
         }
@@ -365,11 +363,17 @@ export async function entry({ input, output, money }) {
             const stats = vf.stat(path.join(directoryPath, item));
             let fileSize = stats.size;
             if (options.humanReadable) {
+              // @ts-ignore
               fileSize = humanReadableSize(fileSize);
             }
+            // @ts-ignore
             return `${stats.mode.toString(8)} ${stats.nlink} ${stats.uid} ${
+              // @ts-ignore
               stats.gid
-            } ${fileSize} ${stats.mtime.toLocaleString()} ${item}`;
+            } ${fileSize} ${
+              // @ts-ignore
+              stats.mtime.toLocaleString()
+            } ${item}`;
           });
 
           return fileDetails.join("\n");
@@ -575,7 +579,7 @@ export async function entry({ input, output, money }) {
 
       const content = vf.readFile(oldPath);
 
-      vf.writeFile(newPath, content);
+      vf.writeFile(newPath, String(content));
 
       vf.unlink(oldPath);
 
@@ -592,7 +596,7 @@ export async function entry({ input, output, money }) {
     usage: "help <optional command>",
     description:
       "Displays help information for a specific command or all commands.",
-    async handler({ args, flags }) {
+    async handler({ args }) {
       return `**Welcome to CassidyCLI v${
         meta.version
       }**\n\n***Available Commands:***\n\n${parser.showHelp(args[1] || null)}`;
@@ -617,8 +621,7 @@ export async function entry({ input, output, money }) {
       if (!vf.exists(path)) {
         return `Error: File ${path} does not exist.`;
       }
-      const content = vf
-        .readFile(path)
+      const content = String(vf.readFile(path))
         .split("\n")
         .slice(0, numLines)
         .join("\n");
@@ -636,7 +639,10 @@ export async function entry({ input, output, money }) {
       if (!vf.exists(path)) {
         return `Error: File ${path} does not exist.`;
       }
-      const content = vf.readFile(path).split("\n").slice(-numLines).join("\n");
+      const content = String(vf.readFile(path))
+        .split("\n")
+        .slice(-numLines)
+        .join("\n");
       return content;
     },
   });
@@ -685,7 +691,7 @@ export async function entry({ input, output, money }) {
         return `Error: Destination file ${destinationPath} already exists.`;
       }
 
-      vf.writeFile(destinationPath, content);
+      vf.writeFile(destinationPath, String(content));
       await money.set(input.senderID, { virtualFiles: vf.raw() });
       return `File copied from ${sourcePath} to ${destinationPath}.`;
     },

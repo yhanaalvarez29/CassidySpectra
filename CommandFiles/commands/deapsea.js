@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "deepseadiver",
   description:
@@ -10,7 +15,7 @@ export const meta = {
   noPrefix: false,
   requirement: "3.0.0",
   icon: "🌊",
-  otherNames: "deepsea",
+  otherNames: ["deepsea"],
   shopPrice: 1000000,
 };
 

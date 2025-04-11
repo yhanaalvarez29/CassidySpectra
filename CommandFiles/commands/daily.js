@@ -1,5 +1,9 @@
+// @ts-check
 import { UNIRedux } from "@cassidy/unispectra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "daily",
   description: "Claim your daily reward!",
@@ -19,7 +23,7 @@ export const style = {
 };
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry({
   input,
@@ -32,15 +36,15 @@ export async function entry({
   let {
     money: userMoney,
     lastDailyClaim,
-    collectibles,
+    collectibles: rawCLL,
     battlePoints = 0,
-    cassExpress = {},
+    cassExpress: cexpr = {},
     cassEXP: cxp,
     name = "Unregistered",
-  } = await money.get(input.senderID);
+  } = await money.getItem(input.senderID);
   let cassEXP = new CassEXP(cxp);
-  cassExpress = new CassExpress(cassExpress);
-  collectibles = new Collectibles(collectibles);
+  const cassExpress = new CassExpress(cexpr);
+  const collectibles = new Collectibles(rawCLL);
 
   const currentTime = Date.now();
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
@@ -98,7 +102,7 @@ export async function entry({
 
     cassEXP.expControls.raise(extraEXP);
     collectibles.raise("gems", gemReward);
-    await money.set(input.senderID, {
+    await money.setItem(input.senderID, {
       money: userMoney + dailyReward,
       lastDailyClaim: currentTime,
       battlePoints: battlePoints + petPoints,

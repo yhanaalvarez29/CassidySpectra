@@ -1,3 +1,4 @@
+// @ts-check
 import { NeonHub } from "@cass-modules/neonhub";
 import { UNIRedux } from "../modules/unisym.js";
 
@@ -7,6 +8,9 @@ export const style = {
   contentFont: "fancy",
 };
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "gambleden",
   description: "Test your luck in the neon-lit GambleDen!",
@@ -31,19 +35,22 @@ const gameDescriptions = {
   luckystrike: "**⚡ Lucky Strike** - Match numbers for a jackpot.",
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry(ctx) {
-  const { input, output, money, Inventory, prefix, args } = ctx;
+  const { input, money } = ctx;
 
   const {
     money: playerMoney = 0,
     prizePool = 0,
     name = "Unregistered",
-    inventory: rawInventory = [],
-  } = await money.get(input.senderID);
-  const inventory = new Inventory(rawInventory);
-  const { invLimit } = global.Cassidy;
+  } = await money.getItem(input.senderID);
 
-  const formatMoney = (amount) => `$${amount.toLocaleString()}`;
+  const formatMoney = (/** @type {number} */ amount) =>
+    `$${amount.toLocaleString()}`;
 
   const home = new NeonHub({
     pulseEffect: false,
@@ -53,7 +60,7 @@ export async function entry(ctx) {
         description: gameDescriptions.neonflip,
         aliases: ["-nf"],
         args: ["<bet>"],
-        async handler({ args }) {
+        async handler(/** @type {CommandContext} */ { args }) {
           const bet = parseInt(args[0]);
           if (!bet || bet <= 0 || bet > playerMoney) {
             return (
@@ -111,8 +118,13 @@ export async function entry(ctx) {
             1 +
             Math.floor(Math.random() * 6) +
             1;
+          const hr1 =
+            Math.floor(Math.random() * 6) +
+            1 +
+            Math.floor(Math.random() * 6) +
+            1;
           const houseRoll =
-            canWin && playerRoll > houseRoll
+            canWin && playerRoll > hr1
               ? Math.floor(Math.random() * 6) +
                 1 +
                 Math.floor(Math.random() * 6) +

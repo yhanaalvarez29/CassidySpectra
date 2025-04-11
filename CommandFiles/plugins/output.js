@@ -107,9 +107,9 @@ export class CassidyIO {
   }
   /**
    * @param {string} text
-   * @param {string} sendID
+   * @param {string | undefined} sendID
    */
-  async out(text, sendID) {
+  async out(text, sendID = undefined) {
     text = String(text.body ?? text);
     let info;
     if (sendID) {

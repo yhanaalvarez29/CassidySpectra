@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "dig",
   description: "Unearth ancient artifacts!",

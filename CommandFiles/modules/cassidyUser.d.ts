@@ -63,7 +63,7 @@ type BaseInventoryItem = {
   /**
    * @deprecated
    */
-  index: number;
+  index?: number;
   [key: string]: unknown;
 };
 

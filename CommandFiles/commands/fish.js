@@ -1,3 +1,4 @@
+// @ts-check
 const fishItems = [
   {
     key: "fishGoldfish",
@@ -77,6 +78,9 @@ const fishItems = [
   },
 ];
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "fish",
   description: "Catch a fish and add it to your inventory.",
@@ -107,11 +111,11 @@ const { invLimit } = global.Cassidy;
  * @param {CommandContext} param0
  * @returns
  */
-export async function entry({ input, output, money, Inventory, Collectibles }) {
+export async function entry({ input, output, money, Inventory }) {
   const { inventory = [], fishStamp } = await money.get(input.senderID);
   let updatedInventory = new Inventory(inventory);
 
-  if (updatedInventory.length >= invLimit) {
+  if (updatedInventory.size() >= invLimit) {
     return output.reply(`❌ You're carrying too many items!`);
   }
 

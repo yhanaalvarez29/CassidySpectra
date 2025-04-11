@@ -1,5 +1,8 @@
-import axios from 'axios';
+// @ts-check
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "chuck",
   author: "Liane Cagara",
@@ -13,18 +16,25 @@ export const meta = {
   icon: "😄",
 };
 
+/**
+ * 
+ * @param {CommandContext} ctx 
+ */
 export async function entry({ output }) {
   try {
-    const response = await axios.get('https://api.chucknorris.io/jokes/random');
+    const { value } = await output.req(
+      "https://api.chucknorris.io/jokes/random"
+    );
 
-    const joke = response.data.value;
+    const joke = value;
 
     output.reply(joke);
-    
+
     output.reaction("😄");
   } catch (error) {
     console.error("Error fetching Chuck Norris joke:", error);
-    output.reply("Sorry, I couldn't fetch a Chuck Norris joke at the moment. Please try again later.");
+    output.reply(
+      "Sorry, I couldn't fetch a Chuck Norris joke at the moment. Please try again later."
+    );
   }
 }
-

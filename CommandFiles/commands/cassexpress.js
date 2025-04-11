@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "cassexpress",
   version: "1.3.0",
@@ -28,6 +33,11 @@ export const style = {
 
 // LMAO u cannot convert it without actually writing the missing logic
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry({
   input,
   output,
@@ -85,8 +95,8 @@ export async function entry({
     async deposit() {
       let amount =
         args[1] === "all"
-          ? parseInt(userMoney)
-          : parseInt(CassExpress.parseAbbr(args[1]));
+          ? parseInt(String(userMoney))
+          : parseInt(String(CassExpress.parseAbbr(args[1])));
       if (isNaN(amount) || amount > userMoney) {
         return output.reply(
           `💵 | Please enter a **valid** amount to deposit, your current balance is ${formatCash(
@@ -122,7 +132,7 @@ export async function entry({
       let amount =
         args[1] === "all"
           ? parseInt(bankData.bank)
-          : parseInt(CassExpress.parseAbbr(args[1]));
+          : parseInt(String(CassExpress.parseAbbr(args[1])));
       if (isNaN(amount) || amount > bankData.bank) {
         return output.reply(
           `💵 | Please enter a **valid** amount to withdraw, your current bank balance is ${formatCash(
@@ -166,7 +176,6 @@ export async function entry({
     },
     async interest() {
       const originalInterestRate = 0.001;
-      let interestRate = originalInterestRate;
       if (!bankData.lastInterestClaimed) {
         return output.reply(`You don't have transactions in this database.`);
       }
@@ -192,7 +201,6 @@ export async function entry({
         0,
         interestNoInflation - interestNoInflation * (inflationRate / 1000)
       );
-      const originalEarn = interestEarned;
       if (interestEarned < 1) {
         return output.reply(
           `🏛️ Failed claiming your interest because the calculated result is ${formatCash(
@@ -241,7 +249,7 @@ export async function entry({
       for (const userID of sortedKeys) {
         i++;
         const userData = allUsers[userID];
-        const { name = "Unregistered", bankData } = userData;
+        const { name = "Unregistered" } = userData;
         result += `${
           i === 1
             ? `👑 [font=double_struck]${charm} ${name
@@ -263,7 +271,7 @@ export async function entry({
             ? `[ Page Empty ]`
             : paged
                 .map(
-                  (i, index) =>
+                  (i) =>
                     `${mails.findIndex((item) => i === item) + 1}. **${
                       i.title
                     }** ${i.isRead ? "✅" : "❌"}\n${CassExpress.formatDate(
@@ -300,7 +308,6 @@ export async function entry({
           style
         );
       }
-      const askerName = name;
       const tellerAI = new CustomAI({
         name: "Zia",
         languages: ["Taglish"],
@@ -346,7 +353,7 @@ export async function entry({
         .replaceAll(userMoney + "$", formatCash(userMoney))
         .replaceAll("$" + bankData.bank, formatCash(bankData.bank))
         .replaceAll("$" + pCy(userMoney), formatCash(userMoney));
-      const i = await output.replyStyled(answer, {
+      await output.replyStyled(answer, {
         ...style,
         contentFont: "none",
         title: `🎀 Zia ℂ𝔹𝕒𝕟𝕜 🏦`,

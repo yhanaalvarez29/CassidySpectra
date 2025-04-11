@@ -73,8 +73,8 @@ export interface OutputProps {
 
   req(
     url: string,
-    params: Record<string, any>,
-    configOrMethod: string | import("axios").AxiosRequestConfig
+    params?: Record<string, any>,
+    configOrMethod?: string | import("axios").AxiosRequestConfig
   ): Promise<any>;
   /**
    * Sends a reply with the specified body and an optional callback.

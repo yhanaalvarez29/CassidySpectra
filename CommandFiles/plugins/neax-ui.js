@@ -192,7 +192,7 @@ export class OptionsList {
   }
 }
 
-class FileNotFoundError extends Error {
+class FileNotFoundErrorOld extends Error {
   constructor(path) {
     super(
       `File not found: "${path}". Please check the path and ensure the file exists.`
@@ -201,7 +201,7 @@ class FileNotFoundError extends Error {
   }
 }
 
-class DirectoryNotFoundError extends Error {
+class DirectoryNotFoundErrorOld extends Error {
   constructor(path) {
     super(
       `Directory not found: "${path}". Please check the path and ensure the directory exists.`
@@ -210,7 +210,7 @@ class DirectoryNotFoundError extends Error {
   }
 }
 
-export class VirtualFiles {
+export class VirtualFilesOld {
   static fileTypeEmojis = {
     pdf: "📄",
     doc: "📝",
@@ -520,6 +520,14 @@ export class VirtualFiles {
     return true;
   }
 }
+
+import {
+  VirtualFiles,
+  DirectoryNotFoundError,
+  FileNotFoundError,
+} from "@cass-modules/VF";
+
+export { VirtualFiles, DirectoryNotFoundError, FileNotFoundError };
 
 export async function use(obj) {
   obj.UNISym = UNISym;

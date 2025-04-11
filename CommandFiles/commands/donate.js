@@ -1,6 +1,10 @@
+// @ts-check
 import { ReduxCMDHome } from "@cassidy/redux-home";
-import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
+import { abbreviateNumber } from "@cassidy/unispectra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "donate",
   description: "Donate your virtual money to charity",
@@ -33,7 +37,7 @@ const configs = [
     description: "Donate money to charity",
     args: ["<amount>"],
     aliases: ["-s", "charity"],
-    async handler({ money, input, output, prefix, clearCurrStack }) {
+    async handler({ money, input, output, }) {
       const { arguments: args, senderID } = input;
 
       if (args.length < 1) {
@@ -84,7 +88,7 @@ const home = new ReduxCMDHome(
 );
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry(ctx) {
   return home.runInContext(ctx);

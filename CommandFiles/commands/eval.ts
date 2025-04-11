@@ -4,7 +4,7 @@ import util from "util";
 
 import { TsObject, compileTS } from "@cass-modules/tsobject";
 
-export const meta = {
+export const meta: CassidySpectra.CommandMeta = {
   name: "eval",
   author: "Liane",
   description:

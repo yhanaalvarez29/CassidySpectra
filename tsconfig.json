@@ -33,6 +33,7 @@
     "allowJs": true,
     "checkJs": false,
     "strictNullChecks": false,
+    "useUnknownInCatchVariables": false,
     "paths": {
       "@cassidy/unispectra": ["./CommandFiles/modules/unisym"],
       "@cassidy/spectral-home": ["./CommandFiles/modules/spectralCMDHome"],

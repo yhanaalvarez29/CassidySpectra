@@ -1,8 +1,12 @@
+// @ts-check
 import fs from "fs";
 import stringSimilarity from "string-similarity";
 import { translate } from "@vitalets/google-translate-api";
 import { clamp, UNIRedux } from "@cassidy/unispectra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "familyfeud",
   author: "Liane Cagara",
@@ -20,7 +24,7 @@ const logo = `🔎 [ **FAMILY FEUD** ] 🔍\n${UNIRedux.standardLine}\n`;
 
 function getRandomQuestion() {
   const data = JSON.parse(
-    fs.readFileSync(__dirname + "/json/familyfeud.json", "utf8"),
+    fs.readFileSync(__dirname + "/json/familyfeud.json", "utf8")
   );
   const index = Math.floor(Math.random() * data.length);
   return data[index];
@@ -45,25 +49,23 @@ function generateTable(answers) {
 }
 /**
  *
- * @type {CommandEntry}
+ * @param {CommandContext & { repObj: Record<string, any>}} ctx
  */
 export async function reply({
-  api,
   input,
   output,
+
   repObj: receive,
   money: moneyH,
-  userInfos,
   detectID,
   Collectibles,
   CassEXP,
-  Inventory,
 }) {
   try {
     const logo = "🔎 [ **FAMILY FEUD** ] 🔍\n";
     output.prepend = logo;
 
-    if (!receive) return;
+    if (typeof receive !== "object" || !receive) return;
     receive.mid = detectID;
     if (input.senderID !== receive.author) {
       return output.reply(`❌ This is not your game!`);
@@ -91,7 +93,7 @@ export async function reply({
       ...answer,
       similarity: stringSimilarity.compareTwoStrings(
         answer.answer.toLowerCase(),
-        userAnswer,
+        userAnswer
       ),
       index: index,
     }));
@@ -108,8 +110,8 @@ export async function reply({
           (answer) =>
             stringSimilarity.compareTwoStrings(
               answer.answer.toLowerCase(),
-              userAnswer,
-            ) > 0.7,
+              userAnswer
+            ) > 0.7
         );
       } catch (error) {
         console.error("Translation error:", error);
@@ -133,10 +135,10 @@ export async function reply({
           strikes: 0,
           ffStamp: Date.now(),
         });
-        input.delReply(detectID);
+        input.delReply(String(detectID));
         const allPoints = answers.reduce(
           (total, answer) => total + answer.points,
-          0,
+          0
         );
 
         return output.reply(
@@ -144,7 +146,7 @@ export async function reply({
             name?.split(" ")[0]
           }! You've guessed all answers and earned **${allPoints} points** that's added to your balance!\nYou also won 20 EXP! And 🎫 **${
             answers.length
-          }**.\n\n${generateTable(answers)}`,
+          }**.\n\n${generateTable(answers)}`
         );
       } else {
         const replyMessage = `✅ | Correct ${name?.split(" ")[0]}! "${
@@ -152,7 +154,7 @@ export async function reply({
         }" was worth **${
           correctAnswer.points
         } points** that was added to your balance!\n\nKeep guessing! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(
-          answers,
+          answers
         )}`;
         const xp = clamp(1, correctAnswer.points / 20, 10);
         cassEXP.expControls.raise(xp);
@@ -169,7 +171,7 @@ export async function reply({
         });
 
         const newReply = await output.reply(replyMessage);
-        input.delReply(detectID);
+        input.delReply(String(detectID));
 
         input.setReply(newReply.messageID, {
           key: "familyfeud",
@@ -188,14 +190,14 @@ export async function reply({
           strikes: 0,
           ffStamp: Date.now(),
         });
-        input.delReply(detectID);
+        input.delReply(String(detectID));
 
         return output.reply(
           `[ ${"❌ ".repeat(strikes).trim()} ]\n\nSorry ${
             name?.split(" ")[0]
           }, you've received ten strikes! Better luck next time.\n\nQuestion: ${question}\n\n${generateTable(
-            answers,
-          )}`,
+            answers
+          )}`
         );
       } else {
         await moneyH.set(input.senderID, {
@@ -210,11 +212,11 @@ export async function reply({
         const replyMessage = `[ ${"❌ "
           .repeat(strikes)
           .trim()} ]\n\nSorry, but the survey says "${userAnswer}" is not the correct answer. Please try again! (Reply more!)\n\nQuestion: ${question}\n\n${generateTable(
-          answers,
+          answers
         )}`;
 
         const newReply = await output.reply(replyMessage);
-        input.delReply(detectID);
+        input.delReply(String(detectID));
 
         input.setReply(newReply.messageID, {
           key: "familyfeud",
@@ -230,15 +232,13 @@ export async function reply({
 
 /**
  *
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry({
-  api,
   input,
   output,
   prefix,
   money: moneyH,
-  repObj: receive,
   Inventory,
 }) {
   output.prepend = logo;
@@ -313,20 +313,20 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
       }
 
       const txt = `🕜 | You can use this command again in ${Math.ceil(
-        (10 * 60 * 1000 - elapsedTime) / 60 / 1000,
+        (10 * 60 * 1000 - elapsedTime) / 60 / 1000
       )} minutes.`;
 
       await output.reply(txt);
       return;
     }
   }
-  await moneyH.set(input.senderID, {
+  await moneyH.setItem(input.senderID, {
     ffRunStamp: Date.now(),
     inventory: inventory.raw(),
   });
   if (!name) {
     return output.reply(
-      `❌ | Please use the command ${prefix}identity-setname first.`,
+      `❌ | Please use the command ${prefix}identity-setname first.`
     );
   }
   if (!lastFeudGame || input.property["refresh"]) {
@@ -344,7 +344,7 @@ Test your knowledge and try to guess the most popular answers in our Family Feud
   const str = `👪 Question: **${
     lastFeudGame.question
   }**\n\nType your answer below (reply). You can type '${prefix}familyfeud guide' if you need help.\n${generateTable(
-    lastFeudGame.answers,
+    lastFeudGame.answers
   )}`;
 
   const info = await output.reply(str);

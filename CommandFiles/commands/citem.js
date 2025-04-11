@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "citem",
   description: "Create custom items to add to your inventory.",
@@ -23,6 +28,11 @@ export const style = {
 const { invLimit } = global.Cassidy;
 
 
+/**
+ * 
+ * @param {CommandContext} octx 
+ * @returns 
+ */
 export async function entry(octx) {
   const { input, output, args, Inventory, money, cassIO, VirtualFiles } = octx;
   let userData = await money.get(input.senderID);
@@ -60,14 +70,15 @@ ${vf}`
     return mainCB(octx);
   }
 
+  /**
+   * 
+   * @param {CommandContext} ctx 
+   * @returns 
+   */
   async function mainCB({
-    input,
     output,
     args,
-    Inventory,
-    money,
     cassIO,
-    VirtualFiles,
   }) {
     try {
       itemData ??= JSON.parse(args.join(" "));
@@ -89,18 +100,16 @@ ${vf}`
 ${icon} **${name}** (c_${key})
 ✦ ${flavorText}`);
 
-    const replyData = await cassIO.in({
+    await cassIO.in({
+      // @ts-ignore
       test(i) {
         return i.body.startsWith("yes");
       },
       async callback({
         input,
-        output,
-        args,
         Inventory,
         money,
         cassIO,
-        VirtualFiles,
       }) {
         userData = await money.get(input.senderID);
         userInventory = new Inventory(userData.inventory);
@@ -113,7 +122,7 @@ ${icon} **${name}** (c_${key})
           type: "custom",
         };
 
-        if (userInventory.length >= invLimit) {
+        if (userInventory.size() >= invLimit) {
           return cassIO.out(`❌ You're carrying too many items!`);
         }
 
@@ -127,7 +136,6 @@ ${icon} **${name}** (c_${key})
           `✅ Created a custom item: ${sanitizedItem.name}. Check your inventory to see it.\nReply with **write example.json** to save your file to the cloud, you can freely change the file name.\n\n${vf}`
         );
         console.log(ID);
-        let success = false;
         save();
       },
       dontUpdate: true,
@@ -136,6 +144,7 @@ ${icon} **${name}** (c_${key})
     async function save() {
       while (true) {
         await cassIO.in({
+          // @ts-ignore
           test(i) {
             console.log("citem saving", i.words);
             return i.words[0] === "write";

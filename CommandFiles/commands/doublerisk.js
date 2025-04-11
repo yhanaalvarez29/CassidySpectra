@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "doublerisk",
   description: "Risk your money to potentially double it, or lose it all!",
@@ -26,11 +31,16 @@ export class style {
     // text_prefix: "✦ ",
   };
 }
+
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry({
   input,
   output,
   money,
-  icon,
   styler,
   Inventory,
   cancelCooldown,
@@ -41,10 +51,10 @@ export async function entry({
     drLost = 0,
     slotWins = 0,
     slotLooses = 0,
-    inventory,
+    inventory: rawInv,
     prizePool = 0,
   } = await money.get(input.senderID);
-  inventory = new Inventory(inventory);
+  const inventory = new Inventory(rawInv);
   let hasPass = inventory.has("highRollPass");
 
   const betAmount = parseFloat(input.arguments[0]);
@@ -97,7 +107,7 @@ export async function entry({
     resultText = `😢 You lost your bet and now have ${newBalance}$.`;
   }
 
-  await money.set(input.senderID, {
+  await money.setItem(input.senderID, {
     money: newBalance,
     drWin,
     drLost,

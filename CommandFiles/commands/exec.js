@@ -1,7 +1,10 @@
-#!/usr/bin/env node
+// @ts-ignore
 
 import { exec } from "child_process";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "exec",
   otherNames: ["shell", "$", "terminal"],
@@ -26,6 +29,11 @@ export const style = {
   contentFont: "fancy",
 };
 
+/**
+ * 
+ * @param {CommandContext} ctx 
+ * @returns 
+ */
 export async function entry({ output, input, AutoEdit }) {
   output.reaction("⏳");
   let auto = new AutoEdit();
