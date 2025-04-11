@@ -9,7 +9,8 @@
     "build": "[ ! -d ./dist-commandfiles ] && (command -v npx >/dev/null 2>&1 && npx tsc || tsc) || echo 'dist-commandfiles exists, skipping compilation'",
     "dev": "node dist-commandfiles/index.js",
     "clean": "rm -rf ./dist-commandfiles",
-    "update": "sh updater.sh"
+    "update": "sh updater.sh",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "type": "commonjs",
@@ -50,6 +51,7 @@
     "moment-timezone": "^0.5.45",
     "pastebin-api": "^7.0.0",
     "pastebin-js": "^1.0.6",
+    "patch-package": "^8.0.0",
     "random-js": "^2.1.0",
     "readline-sync": "^1.4.10",
     "request": "^2.88.2",
