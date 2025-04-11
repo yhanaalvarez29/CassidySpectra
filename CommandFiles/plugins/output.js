@@ -8,6 +8,7 @@
 import axios from "axios";
 import { CassEXP } from "../modules/cassEXP.js";
 import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
+import { PageButton } from "@cass-modules/PageButton";
 
 export const meta = {
   name: "output",
@@ -248,6 +249,14 @@ export function use(obj) {
       let resultInfo = {};
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
+        options.body ??= "";
+        if (PageButton.isPageButton(options.attachment) && !obj.input.isPage) {
+          const buttons = PageButton.fromPayload(options.attachment);
+          options.body = buttons.toString();
+        }
+        if (PageButton.isPageButton(options.attachment)) {
+          delete options.body;
+        }
         if (global.Cassidy.config.censorOutput && options.body) {
           options.body = input.censor(options.body);
         }
@@ -271,11 +280,13 @@ export function use(obj) {
           Object.assign({}, options.style ?? {}, input.style ?? {})
         );
 
-        options.body = await processOutput(options);
+        if (options.body) {
+          options.body = await processOutput(options);
+        }
 
         resultInfo.originalOptionsBody = options.body;
 
-        if (!options.noStyle) {
+        if (!options.noStyle && options.body) {
           options.body = UNISpectra.standardizeLines(options.body);
 
           options.body = input.isWss
@@ -291,7 +302,9 @@ export function use(obj) {
         if (options.noStyle) {
           delete options.noStyle;
         }
-        options.body = UNISpectra.standardizeLines(options.body);
+        if (options.body) {
+          options.body = UNISpectra.standardizeLines(options.body);
+        }
 
         options.body = options.body.trim();
         const optionsCopy = { ...options };

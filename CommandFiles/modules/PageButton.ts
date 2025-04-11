@@ -1,4 +1,5 @@
 import { CassTypes } from "./type-validator";
+import { UNISpectra } from "./unisym";
 
 export class PageButton {
   private buttons: PageButton.ButtonItem[];
@@ -98,6 +99,29 @@ export class PageButton {
     };
   }
 
+  [Symbol.toStringTag] = PageButton.name;
+
+  static fromPayload(
+    payload: ReturnType<PageButton["buildPayload"]>["attachment"]
+  ) {
+    const inst = new PageButton();
+    inst.title(payload.title);
+    payload.buttons.forEach((i) => inst.button(i.url, i.title));
+    return inst;
+  }
+
+  toString(): string;
+
+  toString(raw: boolean = false) {
+    return `${this.title()}\n\n${
+      !raw
+        ? `${UNISpectra.standardLine}\n${this.button().map(
+            (i) => `**${i.title}** [${i.url}]`
+          )}`
+        : `\n\n${this.button().map((i) => `${i.title} [${i.url}]`)}`
+    }`;
+  }
+
   get payload() {
     return this.buildPayload();
   }
@@ -150,6 +174,14 @@ export namespace PageButton {
     url: "string",
     title: "string",
   });
+
+  export function isPageButton(
+    attachment: any
+  ): attachment is ReturnType<PageButton["buildPayload"]> {
+    return (
+      "title" in attachment && "buttons" in attachment && "type" in attachment
+    );
+  }
 
   export type ValidatorT = CassTypes.FromValidator<typeof validator>;
 
