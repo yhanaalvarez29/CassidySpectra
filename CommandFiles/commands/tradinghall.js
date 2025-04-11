@@ -1,3 +1,10 @@
+// @ts-check
+
+import { defineEntry } from "@cass/define";
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "tradinghall",
   description: "Manage your trading hall.",
@@ -21,14 +28,12 @@ export const style = {
   contentFont: "fancy",
 };
 
-export const entry = {
+export const entry = defineEntry({
   async sell({ input, output, money, Inventory, args }) {
     const userData = await money.get(input.senderID);
     const guide = `**Guide**: ${input.words[0]} <item key> <price> <amount ?? 1>`;
     const tradeVentory = new Inventory(userData.tradeVentory ?? []);
     const inventory = new Inventory(userData.inventory ?? []);
-    const boxInventory = new Inventory(userData.boxItems ?? [], 100);
-    const userMoney = userData.money ?? 0;
     const key = args[0];
     const price = parseInt(args[1]);
     const amount = parseInt(args[2] ?? "1");
@@ -119,17 +124,10 @@ export const entry = {
       }
     }
     args[0] = args[0]?.split("[")[0];
-    const flatTrades = mappedTrades
-      .map((trades) => {
-        return trades.map((trade) => {
-          trade.userID = trades.userID;
-          return trade;
-        });
-      })
-      .flat();
+
     const slicer = new Slicer(mappedTrades, 3);
     let result = "";
-    let i = (parseInt(args[0] || 1) - 1) * 5;
+    let i = (parseInt(String(args[0] || 1)) - 1) * 5;
     const preservedIndex = {};
     const userData = allUsers[input.senderID];
     const inventory = new Inventory(userData.inventory ?? []);
@@ -182,8 +180,16 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/${invLimit}**`;
       author: input.senderID,
       key: "tradinghall",
       preservedIndex,
+
+      // @ts-ignore
       callback: handleBuy,
     });
+
+    /**
+     *
+     * @param {CommandContext & { repObj: any; detectID: string; }} r
+     * @returns
+     */
     async function handleBuy(r) {
       if (r.repObj.author !== r.input.senderID) {
         return;
@@ -194,6 +200,9 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/${invLimit}**`;
       const userCass = new CassExpress(userData.cassExpress ?? {});
       const { input, output, Inventory, money } = r;
       const inventory = new Inventory(userData.inventory ?? []);
+      /**
+       * @type {Array<string | number>}
+       */
       let [index, key, amount = "1"] = input.words;
       index = parseInt(index);
       amount = parseInt(amount);
@@ -244,16 +253,16 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/${invLimit}**`;
           });
           continue;
         }
-        if (userMoney < item.price) {
+        if (userMoney < Number(item.price)) {
           bought.push({
             ...item,
             error: "Not enough balance.",
           });
           continue;
         }
-        userMoney -= item.price ?? 0;
-        total += item.price ?? 0;
-        traderMoney += item.price ?? 0;
+        userMoney -= Number(item.price ?? 0);
+        total += Number(item.price ?? 0);
+        traderMoney += Number(item.price ?? 0);
         inventory.addOne(item);
         tradeVentory.deleteOne(key);
         bought.push(item);
@@ -378,4 +387,4 @@ $**${pCy(userMoney)}** **${inventory.getAll().length}/${invLimit}**`;
         .join("\n")}`
     );
   },
-};
+});

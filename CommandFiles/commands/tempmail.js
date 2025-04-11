@@ -1,5 +1,9 @@
+// @ts-check
 import axios from "axios";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "tempmail",
   author: "Hazeey | AkhiroDEV",
@@ -13,6 +17,10 @@ export const meta = {
   category: "Utilities",
 };
 
+/**
+ *
+ * @param {CommandContext} param0
+ */
 export async function entry({ api, event }) {
   const args = event.body.split(/\s+/);
   args.shift();

@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "numbergame",
   author: "Liane Cagara",
@@ -14,21 +18,23 @@ const initialReward = 400;
 const minReward = 50;
 const penaltyPerSecond = 5;
 
-import axios from "axios";
-
 export const style = {
   title: "Number Game 🔢",
   titleFont: "bold",
   contentFont: "fancy",
 };
 
+/**
+ *
+ * @param {CommandContext & { detectID: string; repObj: { author: string; number: number; mid: string; timestamp: number } }} param0
+ * @returns
+ */
 export async function reply({
   api,
   input,
   output,
   repObj: receive,
   money: moneyH,
-  userInfos,
   detectID,
 }) {
   if (!receive) return;
@@ -38,34 +44,41 @@ export async function reply({
   const elapsedSeconds = Math.floor((curr - receive.timestamp) / 1000);
   const currentReward = Math.max(
     initialReward - elapsedSeconds * penaltyPerSecond,
-    minReward,
+    minReward
   );
 
   const guessedNumber = parseInt(input?.words[0]?.trim());
   if (guessedNumber === receive.number) {
     api.unsendMessage(receive.mid);
     input.delReply(receive.mid);
-    const userInfo = await moneyH.get(input.senderID);
+    const userInfo = await moneyH.getItem(input.senderID);
     const { money = 0, numberGameWins = 0, name } = userInfo;
 
-    await moneyH.set(input.senderID, {
+    await moneyH.setItem(input.senderID, {
       money: money + currentReward,
       numberGameWins: numberGameWins + 1,
       lastNumberGame: null,
     });
 
     return output.reply(
-      `✅ | Correct ${name?.split(" ")[0]}! You have been rewarded ${currentReward} coins!`,
+      `✅ | Correct ${
+        name?.split(" ")[0]
+      }! You have been rewarded ${currentReward} coins!`
     );
   } else {
-    const userInfo = await moneyH.get(input.senderID);
+    const userInfo = await moneyH.getItem(input.senderID);
     return output.reply(
-      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`,
+      `❌ | Wrong ${userInfo?.name?.split(" ")[0]}! Try again.`
     );
   }
 }
 
-export async function entry({ api, input, output, prefix, money: moneyH }) {
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ input, output, prefix, money: moneyH }) {
   if (input.arguments[0] == "guide") {
     return output.reply(`𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄
 Test your luck and number-guessing skills with our Number Game! Guess the hidden number to earn rewards.
@@ -130,7 +143,7 @@ Test your luck and number-guessing skills with our Number Game! Guess the hidden
   } else {
     info = await output.reply(str);
   }
-  await moneyH.set(input.senderID, {
+  await moneyH.setItem(input.senderID, {
     lastNumberGame,
   });
   input.setReply(info.messageID, {
@@ -140,8 +153,4 @@ Test your luck and number-guessing skills with our Number Game! Guess the hidden
     mid: info.messageID,
     timestamp: lastNumberGame.timeStamp,
   });
-}
-
-function getRandomNumber() {
-  return Math.floor(Math.random() * 100) + 1;
 }

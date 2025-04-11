@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "richroll",
   description:
@@ -39,6 +43,11 @@ export class style {
   preset = ["cash_games.json"];
 }
 
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({
   output,
   money,
@@ -49,12 +58,12 @@ export async function entry({
 }) {
   let {
     money: userMoney,
-    inventory,
+    inventory: r,
     rrWins = 0,
     rrLooses = 0,
     prizePool = 0,
   } = await money.get(input.senderID);
-  inventory = new Inventory(inventory);
+  const inventory = new Inventory(r);
   let hasPass = inventory.has("highRollPass");
 
   const outcomeIndex = Math.floor(Math.random() * outcomes.length);
@@ -63,7 +72,7 @@ export async function entry({
 
   let amount = parseInt(bet);
   const isAffordable = prizePool * 2 >= amount;
-  let outcome = outcomes.toSorted((i) => Math.random() - 0.5)[outcomeIndex];
+  let outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
   if (!isAffordable) {
     outcome = outcomes
       .toSorted(() => Math.random() - 0.5)
@@ -120,7 +129,7 @@ export async function entry({
 
   output.reply(
     `💥 ` +
-      outcome.replace("<amount>", amount) +
+      outcome.replace("<amount>", String(amount)) +
       xText +
       ` Your new balance is $${(await money.get(input.senderID)).money}💵`
   );

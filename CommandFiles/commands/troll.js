@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "troll",
   description: "Risk your money with this stupid game.",
@@ -44,8 +48,13 @@ const looseTexts = [
   "You challenged Michael Phelps to a swimming race and ended up with <amount>$ for swim lessons.",
 ];
 
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({ input, output, money, icon }) {
-  const { money: userMoney } = await money.get(input.senderID);
+  const { money: userMoney } = await money.getItem(input.senderID);
   const outcome = Math.random() < 0.5 ? "win" : "lose";
   let amount = Math.floor(Math.random() * 100) + 1;
   if (userMoney < amount && outcome === "lose") {
@@ -54,14 +63,14 @@ export async function entry({ input, output, money, icon }) {
   if (outcome === "win") {
     const text = randArrValue(winTexts).replace("<amount>", String(amount));
     output.reply(`${icon}\n\n${text}`);
-    await money.set(input.senderID, {
+    await money.setItem(input.senderID, {
       money: userMoney + amount,
     });
     return;
   } else {
     const text = randArrValue(looseTexts).replace("<amount>", String(amount));
     output.reply(`${icon}\n\n${text}`);
-    await money.set(input.senderID, {
+    await money.setItem(input.senderID, {
       money: userMoney - amount,
     });
     return;

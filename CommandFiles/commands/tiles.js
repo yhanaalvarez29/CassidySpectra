@@ -1,3 +1,4 @@
+// @ts-check
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp } from "@cassidy/unispectra";
 
@@ -10,6 +11,9 @@ export const style = {
 const { delay, Tiles } = global.utils;
 const { invLimit } = global.Cassidy;
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "tiles",
   author: "Liane Cagara, idea from Duke",
@@ -30,7 +34,7 @@ export const meta = {
 // Also tiles can be customized easily
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry({
   input,
@@ -46,9 +50,9 @@ export async function entry({
   let sizeY = 5;
   let info;
   if (args[0] === "size" && args[1].includes("x")) {
-    [sizeX, sizeY] = args[1].split("x");
-    sizeX = parseInt(sizeX);
-    sizeY = parseInt(sizeY);
+    [sizeX, sizeY] = args[1].split("x").map(Number);
+    sizeX = parseInt(String(sizeX));
+    sizeY = parseInt(String(sizeY));
     if (isNaN(sizeX) || isNaN(sizeY)) {
       cancelCooldown();
       return output.reply(
@@ -72,9 +76,9 @@ export async function entry({
     name = "Unregistered",
     tilesStamp = Date.now() - 10 * 60 * 1000,
     tilesRunStamp,
-    inventory,
+    inventory: iR,
   } = await money.get(input.senderID);
-  inventory = new Inventory(inventory);
+  const inventory = new Inventory(iR);
   if (inventory.has("tilesBomb")) {
     const txt = `❌ | There are bombs in your inventory, you cannot play right now!`;
     if (info) {
@@ -199,18 +203,16 @@ ${board}`;
   });
 }
 
+export let a = new Tiles({});
 /**
- * @type {CommandEntry}
+ * @param {CommandContext & { repObj: { board: typeof a; userMoney: number; tileConfig: any; author: string; xID: string; name: string; isEnd: boolean; coins: number; explodes: number } }} ctx
  */
 export async function reply({
   input,
   output: { ...output },
   repObj,
-  args,
   money,
-  prefix,
   commandName,
-  detectID,
   Inventory,
 }) {
   output.reply = (...args) =>
@@ -252,8 +254,8 @@ ${board}`;
 
     if (code === "BOMB") {
       explodes++;
-      let { inventory } = await money.get(input.senderID);
-      inventory = new Inventory(inventory);
+      let { inventory: iR } = await money.get(input.senderID);
+      const inventory = new Inventory(iR);
       if (inventory.getAll().length < invLimit) {
         inventory.addOne({
           key: "tilesBomb",

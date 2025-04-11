@@ -1,7 +1,11 @@
+// @ts-check
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "../modules/unisym.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "pet",
   description: "Manage your pets!",
@@ -211,8 +215,6 @@ async function renameReply({ input, output, Inventory, money, repObj }) {
     );
   }
 }
-
-const { parseCurrency: pCy } = global.utils;
 
 export const style = {
   title: "Pet 🐕",
@@ -1067,6 +1069,11 @@ async function confirmSell({ input, output, repObj, money }) {
   );
 }
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry(ctx) {
   const {
     input,
@@ -1078,8 +1085,6 @@ export async function entry(ctx) {
     UTShop,
     generateGift,
     prefix,
-    ElementalChilds,
-    elementalPets,
     args,
   } = ctx;
   const {
@@ -1106,7 +1111,11 @@ export async function entry(ctx) {
         async handler() {
           const petsData = new Inventory(rawPetsData);
           const gearsData = new GearsManage(rawGearsData);
-          petsData.getAll().sort((a, b) => (b.lastExp ?? 0) - (a.lastExp ?? 0));
+          petsData
+            .getAll()
+            .sort(
+              (a, b) => (Number(b.lastExp) || 0) - (Number(a.lastExp) || 0)
+            );
           const spellMap = PetPlayer.petSpellMap;
 
           if (args[0]) {
@@ -1138,6 +1147,7 @@ export async function entry(ctx) {
               `🔰 ${gearData.getArmorUI(0)}\n` +
               `🔰 ${gearData.getArmorUI(1)}\n\n` +
               `${UNIRedux.arrow} ***Elemental Info***\n\n` +
+              // @ts-ignore
               `${petPlayer.petIcon} **${petPlayer.petName}** (${petPlayer.petType})\n`;
             const elementals = petPlayer.getElementals();
             result += `Weak Against: ${elementals.getAllWeaks().join(", ")}\n`;
@@ -1244,6 +1254,7 @@ export async function entry(ctx) {
             author: input.senderID,
             petToSell: updatedPet,
             key: "pet",
+            // @ts-ignore
             callback: confirmSell,
           });
         },
@@ -1425,7 +1436,8 @@ export async function entry(ctx) {
               (targetFood.picky ||
                 targetFood.key === "badApple" ||
                 targetFood.type === "food")) ||
-            (targetFood.saturation < 0 && targetPetData.lastExp < 0)
+            (Number(targetFood.saturation) < 0 &&
+              Number(targetPetData.lastExp) < 0)
           ) {
             return output.reply(
               `👤 **${name}** (Pet)\n\n` +
@@ -1434,12 +1446,12 @@ export async function entry(ctx) {
           }
 
           if (targetFood.type === "food") {
-            const sat1 = (targetFood.heal ?? 0) * 1.2 * 60 * 1000;
+            const sat1 = (Number(targetFood.heal) || 0) * 1.2 * 60 * 1000;
             targetFood.saturation = Math.floor(
               sat1 * 0.25 + Math.floor(Math.random() * (sat1 * 0.75)) + 1
             );
           }
-          if (isNaN(targetFood.saturation)) {
+          if (isNaN(Number(targetFood.saturation))) {
             return output.reply(
               `👤 **${name}** (Pet)\n\n` +
                 `❌ Something went wrong with the food...`
@@ -1448,18 +1460,24 @@ export async function entry(ctx) {
 
           targetPetData.lastSaturation = targetFood.saturation;
           if (targetFood.type === "food")
+            // @ts-ignore
             targetPetData.lastSaturation += targetFood.saturation;
           targetPetData.lastFeed = Math.min(
+            // @ts-ignore
             (targetPetData.lastFeed ?? Date.now()) +
+              // @ts-ignore
               targetFood.saturation * 360,
             Date.now()
           );
           targetPetData.lastFoodEaten = targetFood.key;
           targetPetData.lastExp =
+            // @ts-ignore
             (targetPetData.lastExp ?? 0) +
+            // @ts-ignore
             Math.floor(targetFood.saturation / 60 / 1000);
           const userAddedExp = clamp(
             3,
+            // @ts-ignore
             Math.floor(targetPetData.lastExp / 1000),
             50
           );
@@ -1479,6 +1497,7 @@ export async function entry(ctx) {
           }
 
           await money.set(input.senderID, {
+            // @ts-ignore
             petsData: Array.from(petsData),
             inventory: Array.from(inventory),
             cassEXP: cassEXP.raw(),
@@ -1499,7 +1518,9 @@ export async function entry(ctx) {
               )}${getDiff("lastExp")}\n` +
               `Worth: ${calculateWorth(updatedPet)}${
                 getDiff("lastExp")
-                  ? ` (+${Math.floor(targetFood.saturation / 60 / 1000)})`
+                  ? ` (+${Math.floor(
+                      Number(targetFood.saturation) / 60 / 1000
+                    )})`
                   : ""
               }\n` +
               `Hungry ${
@@ -1577,8 +1598,8 @@ export async function entry(ctx) {
               petsData.sort(
                 (a, b) =>
                   calculateWorth(b) +
-                  (b.lastExp ?? 0) -
-                  (calculateWorth(a) + (a.lastExp ?? 0))
+                  (Number(b.lastExp) || 0) -
+                  (Number(calculateWorth(a)) + (Number(a.lastExp) ?? 0))
               )[0] || {}
             );
             const gearsManage = new GearsManage(gearsData);
@@ -1664,6 +1685,7 @@ export async function entry(ctx) {
           );
           input.setReply(i.messageID, {
             author: input.senderID,
+            // @ts-ignore
             callback: uncageReply,
             key: "pet",
             inventory,
@@ -1706,6 +1728,7 @@ export async function entry(ctx) {
           );
           input.setReply(i.messageID, {
             author: input.senderID,
+            // @ts-ignore
             callback: renameReply,
             key: "pet",
             inventory,
@@ -1772,6 +1795,7 @@ export async function entry(ctx) {
             if (
               typeof pet.carAssigned === "string" &&
               pet.carAssigned !== targetCar.key &&
+              // @ts-ignore
               !targetCar.pets.includes(pet.key)
             ) {
               const oldCar = carsData.getOne(pet.carAssigned);
@@ -1784,6 +1808,7 @@ export async function entry(ctx) {
             petsToAssign.push(pet);
           }
 
+          // @ts-ignore
           const currentPetCount = targetCar.pets.length || 0;
           if (currentPetCount + petsToAssign.length > 5) {
             return output.reply(
@@ -1793,7 +1818,9 @@ export async function entry(ctx) {
           }
 
           for (const pet of petsToAssign) {
+            // @ts-ignore
             if (!targetCar.pets.includes(pet.key)) {
+              // @ts-ignore
               targetCar.pets.push(pet.key);
             }
             pet.carAssigned = targetCar.key;
@@ -1805,6 +1832,8 @@ export async function entry(ctx) {
           carsData.addOne(targetCar);
 
           await money.set(input.senderID, {
+            //
+            // @ts-ignore
             petsData: Array.from(petsData),
             carsData: Array.from(carsData),
           });
@@ -1847,6 +1876,7 @@ export async function entry(ctx) {
             }
 
             cars.sort((a, b) => {
+              // @ts-ignore
               const petCountDiff = (b.pets.length || 0) - (a.pets.length || 0);
               return petCountDiff !== 0
                 ? petCountDiff
@@ -1860,9 +1890,11 @@ export async function entry(ctx) {
                   const pet = petsData.getOne(petId);
                   return pet && pet.icon ? pet.icon : "🐾";
                 })
+                // @ts-ignore
                 .join(" ");
               result +=
                 `${car.icon || "🚗"} ${car.name || "Unnamed"}\n` +
+                // @ts-ignore
                 `${UNIRedux.arrow} ${car.pets.length}/5\n` +
                 `${petIcons || "None"}\n\n`;
             }

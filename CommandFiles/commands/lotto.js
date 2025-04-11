@@ -1,5 +1,9 @@
+// @ts-check
 import { Inventory } from "../plugins/ut-shop.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "lotto",
   description: "Test your luck with the lotto game!",
@@ -29,7 +33,12 @@ function hasDuplicate(args) {
   return false;
 }
 
-export async function entry({ input, output, money, icon, cancelCooldown }) {
+/**
+ * 
+ * @param {CommandContext} ctx 
+ * @returns 
+ */
+export async function entry({ input, output, money, cancelCooldown }) {
   const lottoLen = 3;
   const rangeB = 45;
   const {

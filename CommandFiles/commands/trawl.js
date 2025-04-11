@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "trawl",
   description: "Use a fishing trawler to catch massive hauls!",

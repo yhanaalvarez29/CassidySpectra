@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "shoti",
   description: "Send a random Shoti video",
@@ -14,38 +18,35 @@ export const meta = {
 };
 
 import Shoti from "shoti";
-import { defineEntry } from "@cass/define";
 
 const shoti = new Shoti("$shoti-b04f8c279e");
 
-export async function entry({
-  output,
-  money,
-  input,
-  styler,
-  cancelCooldown,
-  Inventory,
-}) {
+/**
+ *
+ * @param {CommandContext} ctx
+ */
+export async function entry({ output }) {
   try {
-    const data = await shoti.getShoti({ type: "link" });
+    const data = await shoti.getShoti({ type: "video" });
+    if ("error" in data) {
+      return output.wentWrong();
+    }
 
-    const message = `Country: ${data?.region|| "N/A"}\n` +
-    `Instagram: ${data?.user?.instagram || "N/A"}\n` +
-                    `Nickname: ${data?.user?.nickname || "N/A"}\n` +
-                    `Signature: ${data?.user?.signature || "N/A"}\n` +
-                    `Twitter: ${data?.user?.twitter || "N/A"}\n` +
-                    `Username: ${data?.user?.username || "N/A"}`;
+    const message =
+      `**Country**: ${data.region ?? "N/A"}\n` +
+      `**Instagram**: ${data.user.instagram ?? "N/A"}\n` +
+      `**Nickname**: ${data.user.nickname ?? "N/A"}\n` +
+      `**Signature**: ${data.user.signature ?? "N/A"}\n` +
+      `**Twitter**: ${data.user.twitter ?? "N/A"}\n` +
+      `**Username**: ${data.user.username ?? "N/A"}`;
 
-    await output.reply({
-      body: message,
-      attachment: await global.utils.getStreamFromURL(data?.content),
-    });
+    await output.attach(message, data.content);
   } catch (err) {
     await output.reply({
       body: `Failed to fetch Shoti video: ${err.message || err}`,
     });
   }
-};
+}
 
 export const style = {
   title: "Random Shoti Video",

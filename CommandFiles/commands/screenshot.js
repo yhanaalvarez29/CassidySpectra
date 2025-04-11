@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "screenshot",
   description: "Take a screenshot of a url.",
@@ -22,6 +26,11 @@ export const style = {
   titleFont: "bold",
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry({ input, output }) {
   const url = input.arguments.join("");
   if (!url) {

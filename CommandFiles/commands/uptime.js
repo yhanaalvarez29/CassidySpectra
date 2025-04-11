@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "uptime",
   description: "Check Uptime Status.",
@@ -21,7 +25,16 @@ export const style = {
 };
 
 const { formatTimeDiff, formatBits } = global.utils;
-export async function entry({ output, input, icon }) {
+
+/**
+ *
+ * @param {CommandContext} param0
+ */
+export async function entry({ output }) {
+  /**
+   * @param {number} value
+   * @param {string} unit
+   */
   function formatTimeUnit(value, unit) {
     return value ? `${value} ${unit}${value > 1 ? "s" : ""}, ` : "";
   }

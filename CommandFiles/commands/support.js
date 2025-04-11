@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "support",
   author: "Liane Cagara",
@@ -22,7 +26,10 @@ export const style = {
   contentFont: "fancy",
 };
 
-import fs from "fs";
+/**
+ *
+ * @param {CommandContext} param0
+ */
 export async function entry({ output, input, api }) {
   const tid = `7200585553382526`;
   api.addUserToGroup(input.senderID, tid, (err) => {

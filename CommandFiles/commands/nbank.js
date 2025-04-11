@@ -9,7 +9,7 @@ function getTopUsers(bankData, count) {
 
 function getTotalMoney(topUsers) {
   let totalMoney = 0;
-  for (const [userID, data] of topUsers) {
+  for (const [, data] of topUsers) {
     totalMoney += data.bank || 0;
   }
   return totalMoney;
@@ -31,6 +31,10 @@ function deductMoneyFromTopUsers(topUsers, amount) {
   }
   return deductedUsers;
 }
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "nbank",
   version: "2.3.0",
@@ -60,9 +64,7 @@ export async function entry({
   event,
   money: usersData,
   api,
-  prefix,
 }) {
-  const p = prefix;
   const { money: userMoney, name = "Chara" } = await usersData.get(
     event.senderID
   );
@@ -79,7 +81,7 @@ export async function entry({
   const bankData = await loadAllBankData();
   //const lianeBank = "💰 𝓛𝓲𝓪𝓷𝓮 𝓑𝓪𝓷𝓴 💼";
   const lianeBank = ``;
-  const getUserInfo = async (api, userID) => {
+  const getUserInfo = async (_, userID) => {
     try {
       if (String(userID) !== user) {
         const { name = "Chara" } = await usersData.get(String(userID));
@@ -91,7 +93,7 @@ export async function entry({
     }
   };
 
-  let { messageID, threadID, senderID } = event;
+  let { senderID } = event;
   const userName = await getUserInfo(api, senderID);
 
   if (!bankData[user]) {

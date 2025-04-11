@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "russianroulette",
   author: "Liane Cagara",
@@ -18,9 +22,9 @@ export const style = {
 };
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
-export async function entry({ api, input, output, prefix, money: moneyH }) {
+export async function entry({ input, output, money: moneyH }) {
   const bet = parseInt(input.arguments[0], 10);
   if (isNaN(bet) || bet <= 0) {
     return output.reply(
@@ -46,12 +50,13 @@ export async function entry({ api, input, output, prefix, money: moneyH }) {
     bet,
     mid: message.messageID,
     timestamp: Date.now(),
+    // @ts-ignore
     callback: reply,
   });
 }
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext & { detectID: string; repObj: { author: string; bet: number; mid: string; timestamp: number } }} cctx
  */
 export async function reply(cctx) {
   const { api, input, output, repObj: receive, money: moneyH } = cctx;
@@ -59,7 +64,7 @@ export async function reply(cctx) {
 
   if (input.words[0].toLowerCase() === "accept") {
     const opponentInfo = await moneyH.get(input.senderID);
-    const { money: opponentMoney = 0, name: opponentName } = opponentInfo;
+    const { money: opponentMoney = 0 } = opponentInfo;
 
     if (opponentMoney < receive.bet) {
       return output.replyStyled(
@@ -85,14 +90,13 @@ export async function reply(cctx) {
       style
     );
     const bet = receive.bet;
-    let mid = null;
     let sss = 0;
     let nextPlayerr = players.find((i) => i !== players[0]);
     if (!nextPlayerr) {
       return output.wentWrong();
     }
 
-    const playTurn = async ({ output, input, repObj: receive }) => {
+    const playTurn = async ({ input }) => {
       try {
         input.delReply(gameMessage.messageID);
       } catch {}
@@ -101,7 +105,7 @@ export async function reply(cctx) {
         key: "shoot",
         author: nextPlayerr,
         /**
-         * @type {CommandEntry}
+         * @param {CommandContext  & { detectID: string; repObj: { author: string; bet: number; mid: string; timestamp: number } }} ctx
          */
         async callback(ctx) {
           const { output, input: inp, repObj: receive } = ctx;

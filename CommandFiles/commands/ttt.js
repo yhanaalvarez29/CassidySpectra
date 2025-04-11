@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "ttt",
   description: "Tic-Tac-Toe game",
@@ -114,6 +118,7 @@ class TicTacToe {
       return "Invalid move!";
     }
     if (checkWin(this.board, this.currentPlayer)) {
+      // @ts-ignore
       callback(this.currentPlayer);
       return `Player ${this.currentPlayer} wins ${reward}$`;
     }
@@ -134,7 +139,11 @@ class TicTacToe {
   }
 }
 
-export async function entry({ input, output, commandName, commands, api }) {
+/**
+ *
+ * @param {CommandContext} param0
+ */
+export async function entry({ input, output, commandName }) {
   const game = new TicTacToe();
   const messageInfo = await output.reply(game.displayBoard());
   input.setReply(messageInfo.messageID, {
@@ -144,14 +153,21 @@ export async function entry({ input, output, commandName, commands, api }) {
   });
   //
 }
-export async function reply({ input, output, repObj, detectID, money, api }) {
+
+export let game2 = new TicTacToe();
+
+/**
+ *
+ * @param {CommandContext & { repObj: { game: typeof game2; id: string; key: string }; detectID: string }} param0
+ * @returns
+ */
+export async function reply({ input, output, repObj, detectID, money }) {
   await delay(500);
   const { id, game } = repObj;
   if (input.senderID !== id || !game) {
     return;
   }
   const slot = parseInt(input.body) - 1;
-  let willReply = true;
   const reply = game.playRound(slot, async (i) => {
     if (i == X) {
       const { money: playerMoney } = await money.get(input.senderID);
@@ -159,12 +175,7 @@ export async function reply({ input, output, repObj, detectID, money, api }) {
         money: playerMoney + reward,
       });
       try {
-        /*commands.support.entry({ input, output: { reply(){}, reaction(){} }, api });*/
-        const tid = `7200585553382526`;
-        api.addUserToGroup(input.senderID, tid);
       } catch (err) {}
-      //willReply = false;
-      //output.reply(`You won as ${i}! You got ${reward}$ money.`);
     }
   });
   input.setReply(detectID, repObj);

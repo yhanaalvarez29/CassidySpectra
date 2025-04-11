@@ -1,3 +1,4 @@
+// @ts-check
 import {
   fontMarkups,
   isAdminCommand,
@@ -6,7 +7,9 @@ import {
   UNIRedux,
 } from "@cassidy/unispectra";
 import { ShopClass } from "../plugins/shopV2.js";
-
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "start",
   author: "Liane Cagara",
@@ -20,6 +23,11 @@ export const meta = {
   icon: "🧰",
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry({
   input,
   output,

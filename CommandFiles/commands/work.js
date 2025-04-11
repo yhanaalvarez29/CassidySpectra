@@ -1,3 +1,4 @@
+// @ts-check
 const _6HOURS = 6 * 60 * 60 * 1000;
 const _2HOURS = 2 * 60 * 60 * 1000;
 const _3HOURS = 3 * 60 * 60 * 1000;
@@ -9,6 +10,10 @@ const extra = {
   max: 100,
   delay: [_30MINUTES, _1HOURS, _3HOURS, _2HOURS, _6HOURS],
 };
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "work",
   aliases: ["wk"],
@@ -25,29 +30,11 @@ export const style = {
   contentFont: "fancy",
 };
 
-const langData = {
-  en_US: {
-    "work.selfNoData": "Your data is not ready",
-    "work.alreadyWorked":
-      "You have already worked, you can work again in {time}",
-    "work.successfullyWorked": "You have worked and earned {amount}XC",
-    "work.failed": "Failed",
-  },
-  vi_VN: {
-    "work.selfNoData": "Dữ liệu của bạn chưa sẵn sàng",
-    "work.alreadyWorked": "Bạn đã làm việc, bạn có thể làm việc lại sau {time}",
-    "work.successfullyWorked": "Bạn đã làm việc và kiếm được {amount}XC",
-    "work.failed": "Thất bại",
-  },
-  ar_SY: {
-    "work.selfNoData": "البيانات الخاصة بك ليست جاهزة",
-    "work.alreadyWorked": "لقد عملت ، يمكنك العمل مرة أخرى لاحقًا {time}",
-    "work.successfullyWorked": "لقد عملت وكسبت {amount}XC",
-    "work.failed": "باءت بالفشل",
-  },
-};
-
-/** @type {CommandEntry} */
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({ output, input, money }) {
   const { min, max, delay } = extra;
   try {

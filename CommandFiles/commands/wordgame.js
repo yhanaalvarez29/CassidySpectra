@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "wordgame",
   author: "Liane Cagara",
@@ -14,21 +18,23 @@ const initialReward = 400;
 const minReward = 50;
 const penaltyPerSecond = 5;
 
-import axios from "axios";
-
 export const style = {
   title: "Word Game 🧩",
   titleFont: "bold",
   contentFont: "fancy",
 };
 
+/**
+ *
+ * @param {CommandContext & { repObj: any; detectID: any }} param0
+ * @returns
+ */
 export async function reply({
   api,
   input,
   output,
   repObj: receive,
   money: moneyH,
-  userInfos,
   detectID,
 }) {
   if (!receive) return;
@@ -78,7 +84,12 @@ export async function reply({
   }
 }
 
-export async function entry({ api, input, output, prefix, money: moneyH }) {
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ input, output, prefix, money: moneyH }) {
   if (input.arguments[0] == "guide") {
     return output.reply(`𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄
 Test your vocabulary skills with our engaging word game! Unscramble the shuffled word to earn rewards.
@@ -157,6 +168,9 @@ Test your vocabulary skills with our engaging word game! Unscramble the shuffled
   });
 }
 
+/**
+ * @param {string} word
+ */
 function shuffleWord(word) {
   const letters = word.split("");
   for (let i = letters.length - 1; i > 0; i--) {

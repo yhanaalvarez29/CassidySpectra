@@ -1,11 +1,10 @@
-// @ts-nocheck
 import fs from "fs";
 import axios from "axios";
 import { PasteClient } from "pastebin-api";
 const { compareCode } = global.utils;
 import path from "path";
 
-export const meta: { [key: string]: any } = {
+export const meta: CassidySpectra.CommandMeta = {
   name: "system",
   author: "Liane Cagara 🎀",
   noPrefix: false,
@@ -42,18 +41,10 @@ export async function entry({
   api,
   input,
   AutoEdit,
-}: {
-  api: any;
-  event: any;
-  args: string[];
-  output: any;
-  input: any;
-  AutoEdit: any;
-}): Promise<boolean> {
-  let args: string[] = input.arguments.original;
-  const systemOld: string = `⚙️ 𝗦𝗬𝗦𝗧𝗘𝗠
-━━━━━━━━━━━━━━━`;
-  const system: string = ``;
+}: CommandContext): Promise<boolean> {
+  let args = input.arguments;
+
+  const system = ``;
 
   const {
     loadAllCommands: loadAll,
@@ -176,7 +167,6 @@ React with 👍 to continue.`
         } else {
           delete require.cache[rKey];
         }
-        const backupCache = require.cache[rKey];
         const error = await loadCommand(key, commands, false, true);
         if (error) {
           throw error;

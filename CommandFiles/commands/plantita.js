@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "plantita",
   description: "Grow and sell plants and flowers to earn money!",
@@ -213,7 +217,6 @@ const plantitaSimulation = {
     },
   ],
   actionEmoji: "🌻",
-  initialStorage: 40,
   stoData: {
     price: 100,
   },

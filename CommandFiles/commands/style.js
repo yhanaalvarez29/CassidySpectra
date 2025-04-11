@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "design",
   description: "Create your own command design!",
@@ -19,6 +23,11 @@ export const style = {
   titleFont: "bold",
 };
 
+/**
+ * 
+ * @param {CommandContext} param0 
+ * @returns 
+ */
 export async function entry({ input, output, prefix }) {
   const [title, content] = input.splitArgs("|");
   if (!title || !content) {

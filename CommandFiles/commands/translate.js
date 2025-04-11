@@ -1,6 +1,8 @@
-const axios = require("axios");
-const defaultEmojiTranslate = "🌐";
-
+// @ts-check
+import axios from "axios";
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "translate",
   otherNames: ["trans"],
@@ -18,14 +20,12 @@ export const style = {
   contentFont: "none",
 };
 
-export async function entry({
-  output,
-  input,
-  event,
-  args,
-  commandName,
-  command,
-}) {
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ output, event, args, command }) {
   /**
    *
    * @type {{ body: string }}
@@ -73,6 +73,12 @@ export async function entry({
   );
 }
 
+/**
+ *
+ * @param {string} text
+ * @param {string} langCode
+ * @returns
+ */
 async function translate(text, langCode) {
   const res = await axios.get(
     `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${langCode}&dt=t&q=${encodeURIComponent(

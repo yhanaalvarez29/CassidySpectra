@@ -1,6 +1,10 @@
+// @ts-check
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { UNIRedux } from "@cassidy/unispectra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "vault",
   description:
@@ -26,8 +30,12 @@ export const style = {
   contentFont: "fancy",
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ */
 export async function entry(ctx) {
-  const { input, output, money, args, Inventory, prefix } = ctx;
+  const { input, output, money, args, Inventory } = ctx;
   const userData = await money.get(input.senderID);
   let userInventory = new Inventory(userData.inventory);
 
@@ -35,6 +43,9 @@ export async function entry(ctx) {
   let newActionArgs = [];
   for (let i = 0; i < actionArgs.length; i++) {
     const value = actionArgs[i];
+    /**
+     * @type {Array<string | number>}
+     */
     let [key, amount = "1"] = value.split("*");
     amount = parseInt(amount);
     if (isNaN(amount)) {

@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "resto",
   description: "Manage your restaurant, sell items, and earn money!",
@@ -176,7 +180,6 @@ const restoSimulation = {
     },
   ],
   actionEmoji: "🔥",
-  initialStorage: 40,
   stoData: {
     price: 100,
   },

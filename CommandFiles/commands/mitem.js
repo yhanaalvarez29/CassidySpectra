@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "mitem",
   description: "Make any items to add to your inventory.",
@@ -21,8 +25,13 @@ export const style = {
 
 const { invLimit } = global.Cassidy;
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry({ input, output, args, Inventory, money }) {
-  const userData = await money.get(input.senderID);
+  const userData = await money.queryItem(input.senderID, "inventory");
   let userInventory = new Inventory(userData.inventory);
 
   if (userData.inventory.length >= invLimit) {
@@ -68,7 +77,7 @@ export async function entry({ input, output, args, Inventory, money }) {
 
   userInventory.addOne(sanitizedItem);
 
-  await money.set(input.senderID, {
+  await money.setItem(input.senderID, {
     inventory: Array.from(userInventory),
   });
 

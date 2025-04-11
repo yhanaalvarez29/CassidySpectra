@@ -1,6 +1,10 @@
+// @ts-check
 import { UNIRedux } from "@cassidy/unispectra";
 import { Slicer } from "../plugins/utils-liane.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "nicadrive",
   description:
@@ -36,6 +40,9 @@ function normalizeArgAmount(args) {
   const newCopy = [];
   for (let i = 0; i < copy.length; i++) {
     const value = copy[i];
+    /**
+     * @type {Array<number | string>}
+     */
     let [key, amount = "1"] = value.split("*");
     amount = parseInt(amount);
     if (isNaN(amount)) {
@@ -52,10 +59,9 @@ function normalizeArgAmount(args) {
 }
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
 export async function entry({
-  api,
   input,
   output,
   prefix,
@@ -67,7 +73,6 @@ export async function entry({
   let [sub, ...subArgs] = args;
   subArgs = normalizeArgAmount(subArgs);
 
-  const subArgsStr = subArgs.join(" ");
   const userData = await money.get(input.senderID);
 
   let { ndrive } = userData;
@@ -155,7 +160,7 @@ export async function entry({
   const limit = ndrive.premium ? proLimit : ndriveLimit;
 
   /**
-   * @param {Inventory}
+   * @param {typeof nicaItems} items
    */
   async function createItemMenuOld(items = nicaItems) {
     const ndriveItemsList = items.getAll();
@@ -296,7 +301,10 @@ export async function entry({
       icon: "📦",
       desc: "View Stored Items",
       async callback() {
-        return output.replyStyled(await createItemMenu(subArgs[0]), style);
+        return output.replyStyled(
+          await createItemMenu(parseInt(subArgs[0])),
+          style
+        );
       },
     },
     {

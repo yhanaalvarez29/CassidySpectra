@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "quiz",
   author: "Liane Cagara",
@@ -11,20 +15,23 @@ export const meta = {
 };
 
 const reward = 200;
-import axios from "axios";
 
 export const style = {
   title: "Quiz 🎉",
   titleFont: "bold",
   contentFont: "fancy",
 };
+/**
+ *
+ * @param {CommandContext & { repObj: { author: string; correct: number; mid: string; timestamp: number; fail: any[]; public: any }; detectID: string }} param0
+ * @returns
+ */
 export async function reply({
   api,
   input,
   output,
   repObj: recieve,
   money: moneyH,
-  userInfos,
   detectID,
 }) {
   if (!recieve) return;
@@ -70,7 +77,7 @@ export async function reply({
     //api.unsendMessage(recieve.mid);
 
     input.delReply(recieve.mid);
-    const userInfo = await userInfos.get(input.senderID);
+    const userInfo = await moneyH.getItem(input.senderID);
     if (!recieve.fail) {
       recieve.fail = [];
     }
@@ -90,7 +97,13 @@ export async function reply({
     );
   }
 }
-export async function entry({ api, input, output, prefix }) {
+
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ input, output, prefix }) {
   if (input.arguments[0] == "guide") {
     return output.reply(`𝗢𝘃𝗲𝗿𝘃𝗶𝗲𝘄
 Test your skills with our engaging quiz! Answer questions to earn rewards and showcase your knowledge.
@@ -166,9 +179,4 @@ Test your skills with our engaging quiz! Answer questions to earn rewards and sh
     timestamp: Date.now(),
     fail: [],
   });
-}
-
-function getDiceSymbol(number) {
-  const diceSymbols = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-  return diceSymbols[number - 1];
 }

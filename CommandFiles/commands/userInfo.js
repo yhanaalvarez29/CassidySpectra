@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "userInfo",
   description: "Check user's info",
@@ -12,7 +16,12 @@ export const meta = {
   icon: "📛",
 };
 
-export async function entry({ input, output, userInfos, args }) {
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ input, output, money, args }) {
   const { fonts } = global.utils;
   let ID = input.detectID || input.senderID;
   if (args[0] === "raw") {
@@ -21,11 +30,12 @@ export async function entry({ input, output, userInfos, args }) {
   if (args[0] === "tid") {
     return output.reply(`${input.threadID}`);
   }
-  const info = await userInfos.get(ID);
-  await output.reply(`📛 ${fonts.bold(`${info.name}`)}${
-    info.vanity ? `\n📝 ${fonts.sans(`${info.vanity}`)}` : ""
-  }${info.alternateName ? `\n✨ ${fonts.sans(`${info.alternateName}`)}` : ""}
-${fonts.sans(`${info.gender === 1 ? "👧 Female" : "👦 Male"}`)}
+  await money.ensureUserInfo(ID);
+  const { userMeta: info } = await money.getItem(ID);
+  if (!info) {
+    return output.wentWrong();
+  }
+  await output.reply(`📛 ${fonts.bold(`${info.name}`)}
 
 𝙄𝘿: ${ID}
 𝙏𝙄𝘿: ${input.threadID}`);

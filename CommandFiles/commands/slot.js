@@ -1,5 +1,9 @@
+// @ts-check
 const fruits = ["🍒", "🍎", "🍓", "🍌", "🍊", "🍇", "🍐", "🍋"];
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "slot",
   description: "Play the slot machine game",
@@ -28,6 +32,11 @@ const highRollPass = {
 };
 global.items.push(highRollPass);
 
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
 export async function entry({
   input,
   output,
@@ -36,20 +45,20 @@ export async function entry({
   cancelCooldown,
   Inventory,
 }) {
-  const [bet] = input.arguments;
+  const [bet] = input.arguments.map((i) => Number(i));
   const senderID = input.senderID;
   let {
     money: playerMoney,
     slotWins = 0,
     slotLooses = 0,
     winStreak = 0,
-    inventory,
+    inventory: ri,
     slotLuck = false,
-  } = await money.get(senderID);
+  } = await money.getItem(senderID);
   if (slotLuck) {
     cancelCooldown();
   }
-  inventory = new Inventory(inventory);
+  const inventory = new Inventory(ri);
   const top = `𝖲𝗅𝗈𝗍 𝖱𝖾𝗌𝗎𝗅𝗍 | •~•`;
   const bottom = `𝗬𝗼𝘂 𝘄𝗼𝗻: x$
 𝗬𝗼𝘂 𝗹𝗼𝘀𝘁: y$`;
@@ -123,13 +132,13 @@ ${top}
 
 { ${result.join(" , ")} }
 
-${bottom.replace(/x/, won).replace(/y/, lost)}
+${bottom.replace(/x/, String(won)).replace(/y/, String(lost))}
 
 **Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$
 **Win Streak:** ${winStreak}${winStreak > 7 ? "" : "/7"}${
     isWinPass ? "\n🃏 You won a **HighRoll** pass!" : ""
   }`);
-  await money.set(senderID, {
+  await money.setItem(senderID, {
     money: playerMoney + won - lost,
     slotWins,
     slotLooses,

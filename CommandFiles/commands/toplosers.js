@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "toplosers",
   description: "Lists the top 10 unluckiest users.",
@@ -18,14 +22,18 @@ export class style {
 }
 const { parseCurrency: pCy } = global.utils;
 
+/**
+ *
+ * @param {CommandContext} param0
+ */
 export async function entry({ output, input, money, Slicer, args }) {
   const time = Date.now();
   const isLean = args.includes("--lean");
   const allUsers = await money[isLean ? "toLeanObject" : "getAll"]();
 
   const sortedUsers = Object.keys(allUsers).sort((a, b) => {
-    allUsers[a] ??= {};
-    allUsers[b] ??= {};
+    allUsers[a] ??= money.defaults;
+    allUsers[b] ??= money.defaults;
 
     const {
       slotWins: slotWinsA = 0,
@@ -66,8 +74,8 @@ export async function entry({ output, input, money, Slicer, args }) {
       slotLooses = 0,
       drLost: drLooses = 0,
     } = data;
-    const slot = parseInt(slotLooses - slotWins);
-    const dr = parseInt(drLooses - drWins);
+    const slot = parseInt(String(slotLooses - slotWins));
+    const dr = parseInt(String(drLooses - drWins));
     result += `${i}. **${data.name}**\n🍋 Slot ${
       slot > -1 ? "Loose" : "Win"
     }(s): **$${pCy(Math.abs(slot))}**💵\n💰 Doublerisk ${

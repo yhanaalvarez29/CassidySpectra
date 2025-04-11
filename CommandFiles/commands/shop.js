@@ -1,8 +1,13 @@
+// @ts-check
+
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { stoData } from "../modules/stoData.js";
 import { toTitleCase, UNIRedux } from "@cassidy/unispectra";
 import { ShopClass } from "../plugins/shopV2.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "shop",
   description: "Buy anything!",
@@ -24,13 +29,12 @@ export const style = {
   contentFont: "fancy",
 };
 global.stoData = stoData;
-const { UserSorter } = global.utils; //{ users, limit = null, sortBy = "money", defaultValue = 0 }
 
 /**
  * @type {{ [key: string]: CommandEntry }}
  */
 export const entryConfig = {
-  async top({ input, output, money }) {
+  async top({  output, money }) {
     const allData = await money.getAll();
     let usersCalc = {};
     let top = {};

@@ -1,6 +1,9 @@
+// @ts-check
 import { secureRandom } from "../modules/unisym.js";
 
-// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "roll",
   version: "2.0.4",
@@ -12,7 +15,9 @@ export const meta = {
   adminOnly: false,
   icon: "🎲",
   otherNames: ["dice"],
+  category: "Gambling Games"
 };
+
 export const style = {
   title: "🎲 Dice Roll",
   titleFont: "bold",

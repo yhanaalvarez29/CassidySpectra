@@ -411,7 +411,7 @@ export interface OutputProps {
     options: {
       authorOnly?: boolean;
       author?: string;
-      edit: string;
+      edit?: string;
       emoji?: string;
     }
   ) => Promise<CommandContext["input"]>;

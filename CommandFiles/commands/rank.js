@@ -1,5 +1,9 @@
+// @ts-check
 import { UNIRedux } from "../modules/unisym.js";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "rank",
   description: "Displays your in-game rank and experience.",
@@ -13,7 +17,7 @@ export const meta = {
   waitingTime: 0.1,
 };
 
-function formatNumber(number) {
+export function formatNumber(number) {
   const absNumber = Math.abs(number);
 
   if (absNumber >= 1e21) {
@@ -44,58 +48,10 @@ export const style = {
   },
 };
 
-function isBrokenMoney(playerMoney) {
-  return !!(
-    isNaN(playerMoney) ||
-    !isFinite(playerMoney) ||
-    playerMoney < 0 ||
-    playerMoney > Number.MAX_SAFE_INTEGER
-  );
-}
-
-function sortUsers(users, top) {
-  let result = {};
-  let sortedKeys = Object.keys(users).sort(
-    (a, b) => Number(users[b].money) - Number(users[a].money)
-  );
-  if (top) {
-    sortedKeys = sortedKeys.slice(0, top);
-  }
-  for (const key of sortedKeys) {
-    result[key] = users[key];
-  }
-  return result;
-}
-function getTop(id, users) {
-  const sorted = sortUsers(users);
-  return Object.keys(sorted).findIndex((key) => key === id) + 1;
-}
-function totalReducer(totalObj) {
-  return Object.values(totalObj).reduce((a, b) => {
-    const numA = Number(a);
-    const numB = Number(b);
-
-    if (!isNaN(numA) && !isNaN(numB)) {
-      return numA + numB;
-    } else {
-      return numA;
-    }
-  }, 0);
-}
-const { parseCurrency: pCy } = global.utils;
-
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} ctx
  */
-export async function entry({
-  money,
-  input,
-  output,
-  icon,
-  prefix,
-  clearCurrStack,
-  CassEXP,
-}) {
+export async function entry({ money, input, output, CassEXP }) {
   const progressBar = (prog, need, totalBars = 7) => {
     const bar = "🟨";
     const empty = "⬜";
@@ -130,8 +86,8 @@ export async function entry({
       )
       .slice(0, 10);
 
-    const formattedTopList = topList.map(([uid, data], index) => {
-      const { name, money: userMoney, cassEXP } = data;
+    const formattedTopList = topList.map(([, data], index) => {
+      const { name, cassEXP } = data;
       const cxp = new CassEXP(cassEXP);
 
       return `${UNIRedux.arrow} ${index + 1}. ${name} 🌟\n${
@@ -176,7 +132,7 @@ export async function entry({
       } are not yet registered in our system.`
     );
   }
-  const { name, cassEXP } = data;
+  const { cassEXP } = data;
   const cxp = new CassEXP(cassEXP);
 
   output.reply(

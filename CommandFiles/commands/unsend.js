@@ -1,36 +1,36 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "unsend",
-  aliases: ["uns"],
+  otherNames: ["uns"],
   version: "1.1.0",
   author: "NTKhang // converted By MrkimstersDev",
   permissions: [0],
   category: "Utilities",
   description: "Unsend bot's message",
   usage: "Reply to the bot's message and call the command",
-  guide: {
-    en: "Reply to the message you want to unsend and call the command `{pn}`.",
-  },
 };
 
-const langs = {
-  en: {
-    syntaxError: "Please reply to the bot's message you want to unsend.",
-  },
-};
-
-export async function entry({ input, output, event, api }) {
-  if (
-    !event.messageReply ||
-    event.messageReply.senderID !== api.getCurrentUserID()
-  ) {
-    return output.reply(langs.en.syntaxError);
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ output, input, api, replySystem }) {
+  if (!input.replier || input.replier.senderID !== api.getCurrentUserID()) {
+    return output.reply("❌ Please reply to a bot's message.");
+  }
+  if (replySystem.get(input.replier.messageID)) {
+    return output.reply(
+      "❌ This message has reply listener, you cannot unsend it."
+    );
   }
 
   try {
-    await api.unsendMessage(event.messageReply.messageID);
-    console.log("Message unsent successfully.");
+    await output.unsend(input.replier.messageID);
   } catch (error) {
-    console.error(`Failed to unsend message: ${error.message}`);
-    await output.reply("❌ | Failed to unsend the message. Please try again.");
+    await output.reply("❌ Failed to unsend the message. Please try again.");
   }
 }

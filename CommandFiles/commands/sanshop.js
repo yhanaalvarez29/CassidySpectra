@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "sanshop",
   description: "Welcome to Sanshop, where everything's priced with a grin!",

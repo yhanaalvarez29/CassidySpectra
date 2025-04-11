@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "pending",
   version: "1.0.0",
@@ -33,7 +37,7 @@ const langs = {
  * Polyfill so that GoatBot getLang will work.
  * Cassidy has no getLang pero soon magkakaron na.
  * @param {string} key
- * @param {string[]} args
+ * @param {any[]} args
  */
 function getLang(key, ...args) {
   let text = langs.en[key] || `❌ Language Key Missing for "${key}"`;
@@ -47,10 +51,9 @@ function getLang(key, ...args) {
  * Entry point for the pending command.
  * @param {CommandContext} param0
  */
-export async function entry({ api, event, input, output, prefix }) {
+export async function entry({ api, event, input, output }) {
   let msg = "",
     index = 1;
-  const approvalMessage = `✅ Your thread is finally **approved**!\n\nType **${prefix}start** to view available commands!`;
 
   try {
     const spam = (await api.getThreadList(100, null, ["OTHER"])) || [];
@@ -64,9 +67,14 @@ export async function entry({ api, event, input, output, prefix }) {
     }
 
     if (list.length !== 0) {
-      const replyMessage = getLang("returnListPending", list.length, msg);
+      const replyMessage = getLang(
+        "returnListPending",
+        String(list.length),
+        msg
+      );
       const sentMsg = await output.reply(replyMessage);
       input.setReply(sentMsg.messageID, {
+        // @ts-ignore
         callback: onReply,
         data: {
           author: event.senderID,
@@ -84,10 +92,11 @@ export async function entry({ api, event, input, output, prefix }) {
 /**
  * Handles reply to the pending list message.
  * Manually invoked ng input.setReply as callback
- * @type {CommandEntry}
+ * @param {CommandContext & { repObj: { data: any } }} ctx
  */
-export async function onReply({ api, event, input, output, repObj: { data } }) {
-  const { body, threadID, messageID, senderID } = event;
+export async function onReply({ api, event, output, repObj: { data } }) {
+  const { body, senderID } = event;
+  const approvalMessage = "Your thread has been approved!";
 
   if (!data || String(senderID) !== String(data.author)) return;
 
