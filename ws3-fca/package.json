@@ -33,6 +33,7 @@
         "axios": "^1.6.5",
         "chalk": "^3.0.0",
         "cheerio": "^0.22.0",
+        "duplexify": "github:lianecagara/duplexify",
         "gradient-string": "^1.1.0",
         "https-proxy-agent": "^4.0.0",
         "mqtt": "^3.0.0",
