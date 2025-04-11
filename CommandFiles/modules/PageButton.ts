@@ -260,7 +260,7 @@ export namespace PagePayload {
   export function isPageButton(
     attachment: any
   ): attachment is ReturnType<PagePayload["buildPayload"]> {
-    return "type" in attachment;
+    return "type" in (attachment ?? {});
   }
 
   export type ValidatorT = CassTypes.FromValidator<typeof validator>;
