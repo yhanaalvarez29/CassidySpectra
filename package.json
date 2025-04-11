@@ -49,6 +49,7 @@
     "lia-mongo": "^1.2.1",
     "lodash": "^4.17.21",
     "mathjs": "^12.4.2",
+    "mime-types": "^3.0.1",
     "moment-timezone": "^0.5.45",
     "pastebin-api": "^7.0.0",
     "pastebin-js": "^1.0.6",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.16",
+    "@types/mime-types": "^2.1.4",
     "@types/request": "^2.48.12",
     "@types/source-map-support": "^0.5.10",
     "@types/yt-search": "^2.10.3",

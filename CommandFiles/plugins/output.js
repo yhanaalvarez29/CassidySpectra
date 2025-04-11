@@ -9,6 +9,8 @@ import axios from "axios";
 import { CassEXP } from "../modules/cassEXP.js";
 import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 import { PagePayload } from "@cass-modules/PageButton";
+import { TempFile } from "../../handlers/page/sendMessage";
+import { base64ToStream, streamToBase64 } from "../../webSystem";
 
 export const meta = {
   name: "output",
@@ -260,7 +262,7 @@ export function use(obj) {
         if (global.Cassidy.config.censorOutput && options.body) {
           options.body = input.censor(options.body);
         }
-        console.log(options);
+        // console.log(options);
         const { UserStatsLocal, money, CassEncoder } = obj;
         const { replies = {} } = global.Cassidy;
         // @ts-ignore
@@ -331,23 +333,34 @@ export function use(obj) {
         }
 
         //console.log(options);
-        for (const kk of [input.webQ]) {
-          if (!kk || !global.webQuery[kk]) {
-            continue;
-          }
-          let modifiedData = null;
 
-          global.webQuery[kk].resolve({
-            status: "success",
-            result: { ...options, ...resultInfo, messageID: newMid },
-            newMid,
-            modifiedData,
-          });
-          //console.log(`Resolved message to ${input.webQ} with mid: ${newMid}`);
-        }
         if (options.referenceQ === input.webQ) {
         }
         if (input.isWeb) {
+          console.log("Q", input.webQ, global.webQuery);
+
+          let url = null;
+          if (
+            typeof options.attachment === "object" &&
+            options.attachment &&
+            "_readableState" in options.attachment
+          ) {
+            const temp = new TempFile();
+            const { fileTypeFromStream, fileTypeFromBuffer } =
+              await global.fileTypePromise;
+            const base64_ = await streamToBase64(options.attachment);
+            const buffer = Buffer.from(base64_, "base64");
+            const type = await fileTypeFromBuffer(buffer);
+            let format = type?.ext;
+            const newStream = base64ToStream(base64_);
+
+            temp.filename = temp.filename.replace("tmp", format);
+            await temp.save(newStream);
+            // url = `${
+            //   global.Cassidy.config.knownURL
+            // }/api/temp?id=${encodeURIComponent(temp.getFilename())}`;
+            url = `/api/temp?id=${encodeURIComponent(temp.getFilename())}`;
+          }
           /**
            * @type {import("output-cassidy").OutputResult}
            */
@@ -358,7 +371,23 @@ export function use(obj) {
             timestamp: Date.now(),
             senderID: api.getCurrentUserID(),
             threadID: options.threadID || event.threadID,
+            attachment: url ?? null,
           };
+          for (const kk of [input.webQ]) {
+            if (!kk || !global.webQuery[kk]) {
+              continue;
+            }
+            let modifiedData = null;
+
+            global.webQuery[kk].resolve({
+              status: "success",
+              result: { ...toR },
+              newMid,
+              modifiedData,
+            });
+            //console.log(`Resolved message to ${input.webQ} with mid: ${newMid}`);
+          }
+          console.log("WEB Res", toR);
           return new Promise((r) => {
             LASTID = toR.messageID;
             r(toR);
@@ -389,7 +418,7 @@ export function use(obj) {
                 body: options.body,
               };
               LASTID = resu.messageID;
-
+              console.log("API RESU", resu);
               res(resu);
             },
             optionsCopy.messageID ||

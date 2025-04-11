@@ -342,6 +342,13 @@ export const streamToBase64 = async (stream) => {
   });
 };
 
+import { Readable } from "stream";
+
+export const base64ToStream = (base64Str) => {
+  const buffer = Buffer.from(base64Str, "base64");
+  return Readable.from(buffer);
+};
+
 export class WssAPI {
   constructor(socket) {
     this._socket = socket;

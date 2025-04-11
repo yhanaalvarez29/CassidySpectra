@@ -11,6 +11,8 @@ import {
   ReadStream,
 } from "fs";
 import { randomUUID } from "node:crypto";
+import { base64ToStream, streamToBase64 } from "../../webSystem";
+import { writeFileSync } from "node:fs";
 
 const tempPath = (/** @type {string[]} */ ...x) =>
   join(process.cwd(), "temp", ...x);
@@ -24,8 +26,17 @@ export class TempFile {
    * @param {string | undefined} filename
    */
   constructor(filename = undefined) {
-    this.filename = filename || this.generateFilename();
-    this.path = tempPath(filename);
+    this._filename = filename || this.generateFilename();
+    this.path = tempPath(this._filename);
+  }
+
+  get filename() {
+    return this._filename;
+  }
+
+  set filename(val) {
+    this._filename = val;
+    this.path = tempPath(this._filename);
   }
 
   /**
@@ -49,7 +60,7 @@ export class TempFile {
    * @param {any} stream - Any readable stream (e.g. Axios, HTTP, Buffer)
    * @returns {Promise<void>}
    */
-  save(stream) {
+  saveOld(stream) {
     return new Promise((resolve, reject) => {
       const writeStream = createWriteStream(this.path);
       stream.pipe(writeStream);
@@ -57,6 +68,20 @@ export class TempFile {
       writeStream.on("error", reject);
       stream.on("error", reject);
     });
+  }
+  /**
+   * Save any readable stream to disk.
+   * @param {any} stream - Any readable stream (e.g. Axios, HTTP, Buffer)
+   * @returns {Promise<void>}
+   */
+  async save(stream) {
+    console.log("converting to base 64...");
+    const base64_ = await streamToBase64(stream);
+    console.log("converting to buffer...");
+    const buffer = Buffer.from(base64_, "base64");
+    console.log("writing to file....");
+    writeFileSync(this.path, new Uint8Array(buffer));
+    console.log("file done");
   }
 
   /**
@@ -105,7 +130,7 @@ export class APIPage {
     let body;
     let url = null;
     let type = null;
-    const { fileTypeFromStream } = await global.fileTypePromise;
+    const { fileTypeFromBuffer } = await global.fileTypePromise;
     if (typeof content === "string") {
       body = { text: content, attachment: undefined };
     } else {
@@ -123,12 +148,21 @@ export class APIPage {
         body.attachment = content.attachment;
       } else if (content.attachment.pipe) {
         const temp = new TempFile();
-        await temp.save(content.attachment);
+        const base64_ = await streamToBase64(content.attachment);
+        const buffer = Buffer.from(base64_, "base64");
+        // @ts-ignore
+        const ctype = await fileTypeFromBuffer(buffer);
+        let format = ctype?.ext;
+
+        const newStream = base64ToStream(base64_);
+
+        temp.filename = temp.filename.replace("tmp", format);
+
+        await temp.save(newStream);
         url = `${
           global.Cassidy.config.knownURL
         }/api/temp?id=${encodeURIComponent(temp.getFilename())}`;
-        let stream = temp.getStream();
-        let _type = (await fileTypeFromStream(stream)).mime;
+        let _type = ctype?.mime;
         const [__type] = String(_type).split("/");
         type = __type;
       }

@@ -507,6 +507,7 @@ import {
   aiPage,
   formatIP,
   takeScreenshot,
+  streamToBase64,
 } from "./webSystem.js";
 //import * as handleStat from "./handlers/database/handleStat.js";
 import express from "express";
@@ -528,7 +529,7 @@ const limit = {
     res.status(502).send(fs.readFileSync("public/502.html", "utf8"));
   },
 };
-
+import { lookup } from "mime-types";
 const fake502 = rateLimit(limit);
 function web(api, funcListen, settings) {
   let passKey = `${Math.random().toString(36).substring(2, 15)}`;
@@ -556,13 +557,15 @@ function web(api, funcListen, settings) {
         }
         const fileStream = temp.getStream();
 
-        const { fileTypeFromStream } = await global.fileTypePromise;
-        const x = (await fileTypeFromStream(fileStream))?.mime;
+        const type = lookup(temp.getFilename());
+
         res.setHeader(
           "Content-Disposition",
           `attachment; filename="${temp.getFilename()}"`
         );
-        res.setHeader("Content-Type", x);
+
+        res.setHeader("Content-Type", type);
+        const filename = temp.path;
         fileStream.pipe(res);
         res.on("finish", async () => {
           try {
