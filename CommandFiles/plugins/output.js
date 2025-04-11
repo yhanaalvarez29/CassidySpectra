@@ -240,11 +240,15 @@ export function use(obj) {
         Object.assign(options, {
           body: text,
         });
+      } else if (!text) {
+        Object.assign(options, {
+          body: "",
+        });
       }
       let resultInfo = {};
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
-        if (global.Cassidy.config.censorOutput) {
+        if (global.Cassidy.config.censorOutput && options.body) {
           options.body = input.censor(options.body);
         }
         console.log(options);
@@ -305,7 +309,10 @@ export function use(obj) {
             delete options[key];
           }
         }
-        if (!options.body) {
+        if (
+          !options.body ||
+          (options.body === "") | (String(options.body).trim() === "")
+        ) {
           delete options.body;
         }
 
