@@ -1,3 +1,4 @@
+import { PageButton } from "@cass-modules/PageButton";
 import { Pinger } from "@cass-modules/pinger";
 import { CassTypes } from "@cass-modules/type-validator";
 
@@ -62,7 +63,11 @@ const entryConf: Record<string, CommandEntry> = {
     await money.setItem(...payload);
     const ping2 = pinger2.getLastPing();
 
-    return output.reply(`money.set: ${ping1}\nmoney.setItem: ${ping2}`);
+    const pbtn = new PageButton();
+    pbtn.title(`money.set: ${ping1}\nmoney.setItem: ${ping2}`);
+    pbtn.button("https://cassidybot.onrender.com", "Old Cassidy");
+
+    return pbtn.sendBy(output);
   },
   async dbtest2({ money, input }) {
     const items = await money.getItem(input.sid);

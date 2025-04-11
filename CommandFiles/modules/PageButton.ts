@@ -140,13 +140,14 @@ export class PageButton {
 
   sendBy(output: PageButton.OutputLike, isReply: boolean = true) {
     const payload = this.buildPayload();
+
+    if (isReply && "reply" in output && typeof output.reply === "function") {
+      return output.reply(payload);
+    } else if ("send" in output && typeof output.send === "function") {
+      return output.send(payload);
+    }
     if (typeof output === "function") {
       return output(payload);
-    }
-    if (isReply && typeof output.reply === "function") {
-      return output.reply(payload);
-    } else if (typeof output.send === "function") {
-      return output.send(payload);
     }
     throw new TypeError(
       "Invalid OutputLike Object, it must have a reply or send method or a function"
