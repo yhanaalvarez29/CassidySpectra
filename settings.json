@@ -1,16 +1,21 @@
 {
   "FCA": {
+    "region": "PRN",
     "path": "./ws3-fca/index",
-    "forceLogin": true,
-    "listenEvents": true,
-    "logLevel": "silent",
-    "updatePresence": true,
     "selfListen": false,
-    "userAgent": "facebookexternalhit/1.1",
-    "online": true,
+    "selfListenEvent": false,
+    "listenEvents": true,
+    "listenTyping": false,
+    "updatePresence": false,
+    "forceLogin": true,
     "autoMarkDelivery": false,
-    "autoMarkRead": false,
-    "region": "PRN"
+    "autoMarkRead": true,
+    "autoReconnect": true,
+    "online": true,
+    "emitReady": false,
+    "userAgent": "utils.defaultUserAgent",
+    "randomUserAgent": false,
+    "bypassRegion": "PNB"
   },
   "defaultLang": "en",
   "CASS_WATCH": {
