@@ -1,6 +1,6 @@
 {
   "FCA": {
-    "path": "./node_modules/ws3-fca/index.js",
+    "path": "./ws3-fca/index",
     "forceLogin": true,
     "listenEvents": true,
     "logLevel": "silent",
