@@ -1,6 +1,10 @@
+// @ts-check
 import { UNIRedux } from "@cassidy/unispectra";
 import fs from "fs-extra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "encounter",
   description: "Pets Encounter",
@@ -59,12 +63,13 @@ const leaderSchema = {
   },
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ */
 export async function entry({
   input,
   output,
-  Shop,
-  args,
-  money,
   PetPlayer,
   GearsManage,
   Inventory,
@@ -97,6 +102,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
   function handleEnd(id, { ...extra } = {}) {
     input.setReply(id, {
       key: "encounter",
+      // @ts-ignore
       callback: handleGame,
       ...extra,
     });
@@ -106,6 +112,12 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     type: "start",
   });
   let isDefeat = false;
+
+  /**
+   *
+   * @param {CommandContext & { repObj: any }} ctx
+   * @returns
+   */
   async function handleGame(ctx) {
     if (isDefeat) {
       return;
@@ -114,9 +126,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     /*output.prepend = `⚠️ **Warn:** This is for testing only, this game might behave weird!\n\n`;*/
     output.prepend = `***Pet Encounter 🔱***\n${UNIRedux.standardLine}\n`;
     function handleEnd(id, { ...extra } = {}) {
-      input.delReply(detectID);
+      input.delReply(String(detectID));
       input.setReply(id, {
         key: "encounter",
+        // @ts-ignore
         callback: handleGame,
         ...extra,
       });
@@ -135,7 +148,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       return;
     }*/
     const userData = await money.get(input.senderID);
-    const { gearsManage, petsData, playersMap } = getInfos(userData);
+    const { petsData, playersMap } = getInfos(userData);
     let turnOption = String(input.words[0]).toLowerCase();
     const { type, author } = repObj;
     if (author !== input.senderID) {
@@ -227,7 +240,6 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       type === "start"
         ? opponent.flavor.encounter
         : opponent.getNeutralFlavor();
-    let isLeader = repObj.index === 0;
     function getCacheIcon(turn) {
       if (!turn) {
         return null;
@@ -241,7 +253,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
       };
       return mapping[turn] ?? null;
     }
-    function listPetsNormal({ ...options } = {}) {
+    function listPetsNormal({} = {}) {
       let result = `* ${repObj.flavorCache}\n\n`;
       for (let i = 0; i < pets.length; i++) {
         const pet = pets[i];
@@ -257,7 +269,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     }
     async function handleWin(isGood, flavor) {
       currentEnc = generateEnc();
-      input.delReply(detectID);
+      input.delReply(String(detectID));
       let dialogue;
       let multiplier = 1;
       const alivePets = pets.filter((i) => !i.isDown());
@@ -312,7 +324,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
         Math.random() < 0.1
       ) {
         let healing = Math.min(
-          pets.reduce((acc, pet) => pet.calculateAttack(opponent.DF - 2), 0),
+          pets.reduce((_, pet) => pet.calculateAttack(opponent.DF - 2), 0),
           opponent.maxHP - opponent.HP
         );
         healing = Math.round(healing * 2.5);
@@ -386,7 +398,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`);
     function handleDefeat() {
       isDefeat = true;
       currentEnc = generateEnc();
-      input.delReply(detectID);
+      input.delReply(String(detectID));
       return output.reply(
         `❌ **Game Over**\n\n* All your pet members have been fainted. But that's not the end! Stay determined. You can always **try** again.`
       );

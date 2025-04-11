@@ -1,6 +1,12 @@
-import { CassPuppet } from "../modules/CassPuppet.ts";
+// @ts-nocheck
+// THIS CODE IS NOT CHECKED!
+import { CassPuppet } from "../modules/CassPuppet";
 import { UNIRedux } from "../modules/unisym.js";
 import { Slicer } from "../plugins/utils-liane.js";
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "intellnica",
   description: "CassidyNica's Intelligence Capabilities.",
@@ -34,7 +40,6 @@ function formatDuration(ms) {
     : parts[0] || "0 seconds";
 }
 
-const { invLimit } = global.Cassidy;
 
 export const style = {
   title: "IntellNica™ ✨",
@@ -112,14 +117,22 @@ const dangerousContext = (ctx) => {
     GameSimulator: ctx.GameSimulator,
   };
   class GameSimulator2 extends ctx.GameSimulator {
+    /**
+     * 
+     * @param  {...any} args 
+     */
     constructor(...args) {
+      // @ts-ignore
       super(...args);
     }
 
+    // @ts-ignore
     simulateAction(ctx = dctx) {
+      // @ts-ignore
       return super.simulateAction(ctx);
     }
   }
+  // @ts-ignore
   dctx.GameSimulator = GameSimulator2;
   return dctx;
 };

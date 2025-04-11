@@ -9,7 +9,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 10,
   requirement: "3.0.0",
-  otherNames: ["shoti"],
+  otherNames: ["shoti_"],
   icon: "😋",
 };
 

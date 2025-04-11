@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "gift",
   description: "Claim your gift every hours.",
@@ -37,15 +41,17 @@ async function handlePaid({
   langParser,
 }) {
   const getLang = langParser.createGetLang(langs);
-  let { inventory = [], collectibles = [] } = await money.get(input.senderID);
+  let { inventory: rawInv = [], collectibles: rawCll = [] } = await money.get(
+    input.senderID
+  );
   if (String(input.words[0]).toLowerCase() !== "buy") {
     return;
   }
-  if (inventory.length >= invLimit) {
+  if (rawInv.length >= invLimit) {
     return output.reply(getLang("tooManyItems"));
   }
-  inventory = new Inventory(inventory);
-  collectibles = new Collectibles(collectibles);
+  const inventory = new Inventory(rawInv);
+  const collectibles = new Collectibles(rawCll);
   if (!collectibles.hasAmount("gems", diaCost)) {
     if (input.isAdmin && input.words[1] === "cheat") {
     } else {
@@ -77,8 +83,8 @@ async function handlePaid({
       "boughtGift",
       giftItem.icon,
       giftItem.name,
-      pCy(collectibles.getAmount("gems")),
-      diaCost
+      String(pCy(collectibles.getAmount("gems"))),
+      String(diaCost)
     )
   );
 }
@@ -122,15 +128,15 @@ export async function entry({
 }) {
   const getLang = langParser.createGetLang(langs);
   let {
-    inventory = [],
+    inventory: rawInv = [],
     lastGiftClaim,
-    collectibles = [],
-  } = await money.get(input.senderID);
-  if (inventory.length >= invLimit) {
+    collectibles: rawCll = [],
+  } = await money.getItem(input.senderID);
+  if (rawInv.length >= invLimit) {
     return output.reply(getLang("tooManyItems"));
   }
-  inventory = new Inventory(inventory);
-  collectibles = new Collectibles(collectibles);
+  const inventory = new Inventory(rawInv);
+  const collectibles = new Collectibles(rawCll);
   const currentTime = Date.now();
   const msWait = 20 * 60 * 1000;
 
@@ -155,7 +161,7 @@ export async function entry({
       const info = await output.reply(
         getLang(
           "alreadyClaimed",
-          hoursRemaining,
+          String(hoursRemaining),
           minutesRemaining,
           secondsRemaining,
           diaCost,
@@ -175,7 +181,7 @@ export async function entry({
     giftItem.cannotSend = true;
     inventory.addOne(giftItem);
 
-    await money.set(input.senderID, {
+    await money.setItem(input.senderID, {
       inventory: Array.from(inventory),
       lastGiftClaim: currentTime,
     });

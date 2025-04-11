@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "numberguess",
   otherNames: ["guessnumber", "numguess", "guessnum"],
@@ -23,6 +27,10 @@ const MAX_ATTEMPTS = 5;
 const MIN_RANGE = 1;
 const MAX_RANGE = 20;
 
+/**
+ *
+ * @param {CommandContext} ctx
+ */
 export async function entry({ input, output, commandName }) {
   const gameState = {
     secretNumber:
@@ -40,6 +48,11 @@ Reply with your answer.`
   input.setReply(i.messageID, gameState);
 }
 
+/**
+ *
+ * @param {CommandContext & { repObj: { secretNumber: number; attempts: number; author: string; key: string; }; detectID: string }} ctx
+ * @returns
+ */
 export async function reply({ input, output, repObj, detectID, money }) {
   const { body, senderID } = input;
   const gameState = repObj;

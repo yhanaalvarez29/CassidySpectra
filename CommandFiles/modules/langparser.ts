@@ -31,9 +31,7 @@ export class LangParser {
       entries = flattenObject(data);
     }
 
-    return entries
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
+    return entries.map(([key, value]) => `${key}=${value}`).join("\n");
   }
 
   public static parse(content: string): Map<string, string> {
@@ -98,12 +96,14 @@ export class LangParser {
   ) {
     langs ??= {};
     k1 ||= global.Cassidy.config.defaultLang ?? "en";
-    return (key: string, ...replacers: string[]) => {
+    return (key_: string, ...replacers_: any[]) => {
+      const replacers = replacers_.map(String);
+      let key = String(key_);
       const item =
         langs?.[k1]?.[key] ||
         langs?.[global.Cassidy.config.defaultLang]?.[key] ||
         this.get(key);
-      
+
       if (!item) {
         return `❌ Cannot find language properties: "${key}"`;
       }

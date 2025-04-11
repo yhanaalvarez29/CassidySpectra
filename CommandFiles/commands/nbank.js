@@ -39,7 +39,7 @@ export const meta = {
   description: "Liane's Bank",
   category: "banking",
   noPrefix: "both",
-  otherNames: ["nb", "bank", "nicabank"],
+  otherNames: ["nb", "nicabank"],
   // botAdmin: true,
 };
 
@@ -50,9 +50,9 @@ export const style = {
 };
 
 /**
- * 
- * @param {CommandContext} param0 
- * @returns 
+ *
+ * @param {CommandContext} param0
+ * @returns
  */
 export async function entry({
   args,

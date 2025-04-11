@@ -56,6 +56,9 @@ export async function entry({ ...ctx }) {
     // Collectibles,
   } = ctx;
   let userData = await money.get(input.senderID);
+  return output.reply(
+    "Inventory is getting deprecated!\n\nUse **briefcase** instead."
+  );
 
   const { inventory, petsData, gearsData, collectibles } = getDatas(userData);
   const extensions = getEnabledExtensions(userData).getCategorized("inventory");

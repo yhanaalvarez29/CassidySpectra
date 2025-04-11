@@ -2,6 +2,12 @@ import test from "node:test";
 import { OutputFileType } from "typescript";
 import { UNISpectra as UNISym } from "../modules/unisym";
 
+import {
+  VirtualFiles,
+  DirectoryNotFoundError,
+  FileNotFoundError,
+} from "@cass-modules/VF";
+
 export const meta = {
   name: "neax-ui",
   author: "Liane Cagara",
@@ -192,24 +198,6 @@ export class OptionsList {
   }
 }
 
-class FileNotFoundErrorOld extends Error {
-  constructor(path) {
-    super(
-      `File not found: "${path}". Please check the path and ensure the file exists.`
-    );
-    this.name = "FileNotFoundError";
-  }
-}
-
-class DirectoryNotFoundErrorOld extends Error {
-  constructor(path) {
-    super(
-      `Directory not found: "${path}". Please check the path and ensure the directory exists.`
-    );
-    this.name = "DirectoryNotFoundError";
-  }
-}
-
 export class VirtualFilesOld {
   static fileTypeEmojis = {
     pdf: "📄",
@@ -251,9 +239,6 @@ export class VirtualFilesOld {
     const extension = fileName.split(".").pop().toLowerCase();
     return this.fileTypeEmojis[extension] || "📁";
   }
-
-  static DirectoryNotFoundError = DirectoryNotFoundError;
-  static FileNotFoundError = FileNotFoundError;
 
   constructor(data = {}) {
     this.data = { mainDir: [], ...data };
@@ -520,12 +505,6 @@ export class VirtualFilesOld {
     return true;
   }
 }
-
-import {
-  VirtualFiles,
-  DirectoryNotFoundError,
-  FileNotFoundError,
-} from "@cass-modules/VF";
 
 export { VirtualFiles, DirectoryNotFoundError, FileNotFoundError };
 

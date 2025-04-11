@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "harvest",
   description: "Harvest crops and earn money!",
@@ -100,9 +104,6 @@ const harv = {
   },
 };
 
-/**
- * @type {CommandEntry}
- */
 export async function entry({ GameSimulator }) {
   const simu = new GameSimulator(harv);
   await simu.simulateAction();
