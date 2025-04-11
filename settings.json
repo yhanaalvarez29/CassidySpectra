@@ -17,6 +17,7 @@
     "randomUserAgent": false,
     "bypassRegion": "PNB"
   },
+  "railwayTips": "Use USA Oregon as region for railway, and render. ",
   "defaultLang": "en",
   "CASS_WATCH": {
     "enabled": false,
