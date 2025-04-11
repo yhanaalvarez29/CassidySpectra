@@ -330,7 +330,7 @@ export default class UserStatsManager {
     const queryResult = await this.#mongo.KeyValue.find({ key }).select(
       selectedFields
     );
-    const partialData = queryResult?.[0].value || {};
+    const partialData = queryResult?.[0]?.value || {};
 
     return this.processProperties(partialData, key, propertyNames);
   }
