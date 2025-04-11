@@ -20,13 +20,11 @@ export const meta = {
     "ItemPrompt",
     "GameSimulator",
     "isTimeAvailable",
-    "BulkUpdater",
     "ItemLister",
   ],
 };
 import axios from "axios";
 import fs from "fs";
-import { ReduxCMDHome } from "@cassidy/redux-home";
 import { stoData } from "../modules/stoData.js";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "@cassidy/unispectra";
@@ -1830,7 +1828,6 @@ export async function use(obj) {
   obj.GameSimulator = GameSimulator;
   obj.GameSimulatorRedux = GameSimulatorRedux;
   obj.isTimeAvailable = isTimeAvailable;
-  obj.BulkUpdater = BulkUpdater;
   obj.ItemLister = ItemLister;
   obj.next();
 }
