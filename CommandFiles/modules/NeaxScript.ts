@@ -145,16 +145,27 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
-    async *help({ nsxuCreated, nsxu }) {
+    async *print({ nsxuCreated }) {
+      if (nsxuCreated.args.length < 1) {
+        yield "[nothing]";
+        return Codes.MissingOrInvalidArgs;
+      }
+      yield nsxuCreated.args.join(" ");
+      return 0;
+    },
+    async *help({ nsxuCreated }) {
       const [cmd, ...flags] = nsxuCreated.args;
 
       if (!cmd) {
-        yield "Usage: help <command>\n\nAvailable commands:\n";
+        yield "More Usage: help <command>\n\nAvailable commands:\n";
 
         for (const [key, description] of Object.entries(NeaxScript.Helps)) {
           const shortDesc = description.trim().split("\n")[0];
           yield `  ${key} - ${shortDesc}`;
         }
+        yield "";
+        yield `Foundational Syntax:`;
+        yield "<command>::<target id> <arg1> <arg2>";
 
         return NeaxScript.Codes.Success;
       }
@@ -367,7 +378,7 @@ export namespace NeaxScript {
         return Codes.MissingOrInvalidArgs;
       }
       let keys = [...nsxuCreated.args];
-      if (keys.length < 1) {
+      if (keys.length < 1 && !nsxuCreated.hasFlag("all")) {
         yield "A nested keys (shallowest to deepest, separated by spaces.) is required.";
         return Codes.MissingOrInvalidArgs;
       }
@@ -375,9 +386,10 @@ export namespace NeaxScript {
         yield nsxu.notAllowed();
         return Codes.PermissionNeedRise;
       }
-      const data = await usersDB.queryItem(nsxTarget, keys[0]);
-      const item =
-        keys[0] === "all" ? data : nsxu.getNestedProperty(data, ...keys);
+      const data = nsxuCreated.hasFlag("all")
+        ? await usersDB.getItem(nsxTarget)
+        : await usersDB.queryItem(nsxTarget, keys[0]);
+      const item = nsxu.getNestedProperty(data, ...keys);
       let res = nsxuCreated.hasFlag("raw")
         ? ""
         : `Property => ${keys.join(".")}\n\n`;
@@ -387,7 +399,9 @@ export namespace NeaxScript {
         yield res +
           nsxu.inspect(
             item,
-            parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
+            nsxuCreated.hasFlag("all")
+              ? 0
+              : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
           );
       }
       return Codes.Success;
@@ -405,7 +419,7 @@ export namespace NeaxScript {
         return Codes.MissingOrInvalidArgs;
       }
       let keys = [...nsxuCreated.args];
-      if (keys.length < 1) {
+      if (keys.length < 1 && !nsxuCreated.hasFlag("all")) {
         yield "A nested keys (shallowest to deepest, separated by spaces.) is required.";
         return Codes.MissingOrInvalidArgs;
       }
@@ -413,9 +427,10 @@ export namespace NeaxScript {
         yield nsxu.notAllowed();
         return Codes.PermissionNeedRise;
       }
-      const data = await threadsDB.queryItem(nsxTarget, keys[0]);
-      const item =
-        keys[0] === "all" ? data : nsxu.getNestedProperty(data, ...keys);
+      const data = nsxuCreated.hasFlag("all")
+        ? await threadsDB.getItem(nsxTarget)
+        : await threadsDB.queryItem(nsxTarget, keys[0]);
+      const item = nsxu.getNestedProperty(data, ...keys);
       let res = nsxuCreated.hasFlag("raw")
         ? ""
         : `Property => ${keys.join(".")}\n\n`;
@@ -425,7 +440,9 @@ export namespace NeaxScript {
         yield res +
           nsxu.inspect(
             item,
-            parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
+            nsxuCreated.hasFlag("all")
+              ? 0
+              : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
           );
       }
       return Codes.Success;
@@ -466,7 +483,7 @@ export namespace NeaxScript {
         target = input.senderID;
       }
       const commandNameSplit = commandName.split(" ");
-      if (commandNameSplit.length > 2) {
+      if (commandNameSplit.length >= 2) {
         mod = commandNameSplit[0];
         commandName = commandNameSplit[1];
       }
@@ -583,7 +600,13 @@ export namespace NeaxScript {
     static parseVariables(ctx: CommandContext, script: ValidScript) {
       const reg = /%([^%]+)%/g;
       return String(script).replace(reg, (_, p1) => {
-        return `${ctx.input[p1] ?? "undefined"}`;
+        return `${
+          typeof ctx.input[p1] === "string"
+            ? String(ctx.input[p1])
+            : ctx.input[p1]
+            ? NXSUtil.json(ctx.input[p1])
+            : "undefined"
+        }`;
       });
     }
 

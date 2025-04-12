@@ -154,7 +154,7 @@ export function use(obj) {
         );
       },
       _isAdmin(uid) {
-        return xxa || ADMINBOT.includes(uid);
+        return uid === event.senderID ? inp.isAdmin : ADMINBOT.includes(uid);
       },
       _isModerator(uid) {
         return MODERATORBOT.includes(uid) && !ADMINBOT.includes(uid);
