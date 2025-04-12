@@ -11,6 +11,7 @@ import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 import { PagePayload } from "@cass-modules/PageButton";
 import { TempFile } from "../../handlers/page/sendMessage";
 import { base64ToStream, streamToBase64 } from "../../webSystem";
+import { NeaxScript } from "@cass-modules/NeaxScript";
 
 export const meta = {
   name: "output",
@@ -252,6 +253,13 @@ export function use(obj) {
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
         options.body ??= "";
+        const ns = new NeaxScript.Parser(obj);
+        const inline = await ns.neaxInline(options.body);
+        if (inline.codes.some((i) => i !== 0)) {
+          return obj.output.reply(inline.getIssues());
+        }
+        options.body = inline.result;
+
         if (PagePayload.isPageButton(options.attachment) && !obj.input.isPage) {
           const buttons = PagePayload.fromPayload(options.attachment);
           options.body = buttons.toString();
@@ -330,6 +338,10 @@ export function use(obj) {
           options.body === "undefined"
         ) {
           delete options.body;
+        }
+
+        if (options.rawBody) {
+          options.body = resultInfo.originalOptionsBody;
         }
 
         //console.log(options);

@@ -23,6 +23,7 @@ export interface StrictOutputForm {
     latitude: number;
     longitude: number;
   };
+  rawBody?: boolean;
   callback?: (info: OutputResult) => void | Promise<void>;
   isReply?: boolean;
   messageID?: string;

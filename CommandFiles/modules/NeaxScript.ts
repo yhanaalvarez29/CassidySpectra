@@ -26,6 +26,8 @@ export namespace NeaxScript {
   }
 
   export const Helps: Record<string, string> = {
+    print: `Prints a data.
+  Usage: print::self hello world!`,
     arg: `
   Displays command arguments, flags, and environment details.
   Usage: arg::self
@@ -145,6 +147,18 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
+    async *input({ nsxuCreated, input, nsxu }) {
+      if (nsxuCreated.args.length < 1) {
+        yield "[Invalid]";
+        return Codes.MissingOrInvalidArgs;
+      }
+      const item = nsxu.getNestedProperty(
+        input as Record<string, any>,
+        ...nsxuCreated.args
+      );
+      yield typeof item === "string" ? String(item) : nsxu.json(item);
+      return Codes.Success;
+    },
     async *print({ nsxuCreated }) {
       if (nsxuCreated.args.length < 1) {
         yield "[nothing]";
@@ -165,7 +179,9 @@ export namespace NeaxScript {
         }
         yield "";
         yield `Foundational Syntax:`;
-        yield "<command>::<target id> <arg1> <arg2>";
+        yield "<command>::<target id | 'self' | 'reply'> <arg1> <arg2>";
+        yield `%var_name% can be used for input variables.`;
+        yield `neax[example::idk] can be used to run nested neax script inline`;
 
         return NeaxScript.Codes.Success;
       }
@@ -397,12 +413,14 @@ export namespace NeaxScript {
         yield res + nsxu.json(item);
       } else {
         yield res +
-          nsxu.inspect(
-            item,
-            nsxuCreated.hasFlag("all")
-              ? 0
-              : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
-          );
+          (typeof item === "string"
+            ? item
+            : nsxu.inspect(
+                item,
+                nsxuCreated.hasFlag("all")
+                  ? 0
+                  : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
+              ));
       }
       return Codes.Success;
     },
@@ -438,12 +456,14 @@ export namespace NeaxScript {
         yield res + nsxu.json(item);
       } else {
         yield res +
-          nsxu.inspect(
-            item,
-            nsxuCreated.hasFlag("all")
-              ? 0
-              : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
-          );
+          (typeof item === "string"
+            ? item
+            : nsxu.inspect(
+                item,
+                nsxuCreated.hasFlag("all")
+                  ? 0
+                  : parseInt(nsxuCreated.flagValues.get("depth")) ?? undefined
+              ));
       }
       return Codes.Success;
     },
@@ -475,12 +495,22 @@ export namespace NeaxScript {
     ): Promise<Codes> {
       script = String(script) as ValidScript;
       script = Parser.parseVariables(this.context, script) as ValidScript;
+      const inline = await this.neaxInline(script);
+      if (inline.codes.some((i) => i !== 0)) {
+        callback(inline.getIssues());
+        return Codes.MalformedInput;
+      }
+      script = inline.result as ValidScript;
+
       const { input } = this.context;
       let mod: string | null = null;
       let [commandName, ...etc] = script.split("::");
       let [target, ...commandArgs] = etc.join(" ").split(" ");
       if (target === "self") {
-        target = input.senderID;
+        target = input.senderID ?? "";
+      }
+      if (target === "replied") {
+        target = input.detectID ?? "";
       }
       const commandNameSplit = commandName.split(" ");
       if (commandNameSplit.length >= 2) {
@@ -566,7 +596,7 @@ export namespace NeaxScript {
 
     public async neaxInline(body: string) {
       body = String(body);
-      const reg = /nsxu\[(.*?)\]/g;
+      const reg = /neax\[(.*?)\]/g;
       let result = body;
       const codes: Codes[] = [];
       const outputs: string[] = [];
@@ -574,7 +604,7 @@ export namespace NeaxScript {
       for (const [whole, match] of body.matchAll(reg)) {
         const res = await this.runAsync((match + " --raw") as ValidScript);
         if (res.code === 0) {
-          result = result.replace(whole, res.result);
+          result = result.replace(whole, res.result.trim());
         } else {
           result = result.replace(whole, "[x]");
         }
@@ -590,6 +620,7 @@ export namespace NeaxScript {
           return (
             `Issues: \n\n` +
             codes
+              .filter((i) => i !== 0)
               .map((i, j) => `Neax::${Codes[i]} =\n${outputs[j]}`)
               .join("\n\n")
           );

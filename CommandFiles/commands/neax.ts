@@ -37,7 +37,7 @@ export async function entry({ input, output, ctx }: CommandContext) {
   );
 
   if (code !== NeaxScript.Codes.Success) {
-    await output.reply(`Neax::${NeaxScript[code]} = ${result}`);
+    await output.reply(`Neax::${NeaxScript.Codes[code]} = ${result}`);
   } else {
     if (result) {
       await output.reply(result);
