@@ -457,6 +457,7 @@ export namespace NeaxScript {
       full: boolean = false
     ): Promise<Codes> {
       script = String(script) as ValidScript;
+      script = Parser.parseVariables(this.context, script) as ValidScript;
       const { input } = this.context;
       let mod: string | null = null;
       let [commandName, ...etc] = script.split("::");
@@ -577,6 +578,13 @@ export namespace NeaxScript {
           );
         },
       };
+    }
+
+    static parseVariables(ctx: CommandContext, script: ValidScript) {
+      const reg = /%([^%]+)%/g;
+      return String(script).replace(reg, (_, p1) => {
+        return `${ctx.input[p1] ?? "undefined"}`;
+      });
     }
 
     private async executeCommand(
