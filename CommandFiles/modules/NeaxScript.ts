@@ -1,6 +1,7 @@
 import * as nodeUtil from "util";
 
 export namespace NeaxScript {
+  const { Cassidy } = global;
   export interface NSXTra {
     nsxu: typeof NXSUtil;
     nsxTarget: string;
@@ -12,6 +13,7 @@ export namespace NeaxScript {
     isTargetAdmin: boolean;
     nsxAuthor: string;
     selfNSX: Parser;
+    nsxName: string;
   }
   export interface Command {
     (ctx: CommandContext & NSXTra): AsyncGenerator<string, number, string>;
@@ -22,6 +24,15 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
+    async *arg({ nsxu, nsxTarget, nsxName, nsxuCreated }) {
+      yield ``;
+      return 0;
+    },
+    async *promote({ nsxu, nsxTarget, isAllowed, isTargetAdmin }) {
+      if (!nsxTarget) {
+      }
+      return 0;
+    },
     async *uget({
       usersDB,
       nsxuCreated,
@@ -39,10 +50,12 @@ export namespace NeaxScript {
         yield nsxu.notAllowed();
         return 2;
       }
-      const data = await usersDB.getItem(nsxTarget);
+      const data = await usersDB.queryItem(nsxTarget, keys[0]);
       const item =
         keys[0] === "all" ? data : nsxu.getNestedProperty(data, ...keys);
-      let res = `Property => ${keys.join(".")}\n\n`;
+      let res = nsxuCreated.hasFlag("raw")
+        ? ""
+        : `Property => ${keys.join(".")}\n\n`;
       if (nsxuCreated.hasFlag("json")) {
         yield res + nsxu.json(item);
       } else {
@@ -71,10 +84,12 @@ export namespace NeaxScript {
         yield nsxu.notAllowed();
         return 2;
       }
-      const data = await threadsDB.getItem(nsxTarget);
+      const data = await threadsDB.queryItem(nsxTarget, keys[0]);
       const item =
         keys[0] === "all" ? data : nsxu.getNestedProperty(data, ...keys);
-      let res = `Property => ${keys.join(".")}\n\n`;
+      let res = nsxuCreated.hasFlag("raw")
+        ? ""
+        : `Property => ${keys.join(".")}\n\n`;
       if (nsxuCreated.hasFlag("json")) {
         yield res + nsxu.json(item);
       } else {
@@ -90,7 +105,7 @@ export namespace NeaxScript {
 
   export const Modifiers: Record<string, Modifier> = {
     async rise(ctx) {
-      const { input, nsxTarget } = ctx;
+      const { input } = ctx;
       if (input.isAdmin) {
         ctx.isAllowed = ctx.riseIsAllowed;
       }
@@ -108,12 +123,14 @@ export namespace NeaxScript {
 
     async run(
       command: ValidCommand,
-      callback: ParserCallback
+      callback: ParserCallback,
+      full: boolean = false
     ): Promise<number> {
+      command = String(command) as ValidCommand;
       const { input } = this.context;
       let mod = null;
       let [commandName, ...etc] = command.split("::");
-      let [target, ...commandArgs] = etc;
+      let [target, ...commandArgs] = etc.join(" ").split(" ");
       if (target === "self") {
         target = input.senderID;
       }
@@ -140,6 +157,7 @@ export namespace NeaxScript {
         nsxuCreated,
         nsxTarget,
         nsxu: NXSUtil,
+        nsxName: commandName,
         isAllowed(...args: [string?, string?]) {
           if (args.length === 0) {
             return input.senderID === nsxTarget;
@@ -162,8 +180,12 @@ export namespace NeaxScript {
             NeaxScript.Modifiers[mod as keyof typeof NeaxScript.Modifiers];
           await modFunc(commandContext);
         }
-        await this.executeCommand(commandFunc, commandContext, callback);
-
+        if (full) {
+          const result = await this.executeCommand(commandFunc, commandContext);
+          callback(result);
+        } else {
+          await this.executeCommand(commandFunc, commandContext, callback);
+        }
         return 0;
       } catch (error) {
         callback(NXSUtil.err(error));
@@ -172,16 +194,62 @@ export namespace NeaxScript {
       }
     }
 
+    public async runAsync(command: ValidCommand) {
+      let result: string = "";
+      const code = await this.run(
+        command,
+        (data) => {
+          result = data;
+        },
+        true
+      );
+      return {
+        result,
+        code,
+      };
+    }
+
+    public async replaceBody(body: string) {
+      body = String(body);
+      const reg = /nsxu\[(.*?)\]/g;
+      let result = body;
+      const codes: number[] = [];
+      const outputs: string[] = [];
+
+      for (const [whole, match] of body.matchAll(reg)) {
+        const res = await this.runAsync((match + " --raw") as ValidCommand);
+        if (res.code === 0) {
+          result = result.replace(whole, res.result);
+        } else {
+          result = result.replace(whole, "[x]");
+        }
+        outputs.push(res.result);
+        codes.push(res.code);
+      }
+      return {
+        codes,
+        result,
+        outputs,
+        getIssues() {
+          return (
+            `❌ NeaxScript Issues: \n\n` +
+            codes.map((i, j) => `[CODE:${i}]\n${outputs[j]}`).join("\n\n")
+          );
+        },
+      };
+    }
+
     private async executeCommand(
       commandFunc: Command,
       context: CommandContext & NSXTra,
-      callback: ParserCallback
+      callback?: ParserCallback
     ): Promise<string> {
       let result = "";
-      for await (const output of commandFunc(context)) {
+      for await (const _output of commandFunc(context)) {
+        let output = `${_output}\n`;
         result += output;
         try {
-          callback(output);
+          callback?.(_output);
         } catch (error) {
           console.error(error);
         }
