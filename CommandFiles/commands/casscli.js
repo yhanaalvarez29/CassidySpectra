@@ -1,5 +1,5 @@
 // @ts-check
-import { CLIParser } from "../modules/cliparser";
+import { CLIParser } from "@cass-modules/cliparser";
 
 /**
  * @type {CassidySpectra.CommandMeta}

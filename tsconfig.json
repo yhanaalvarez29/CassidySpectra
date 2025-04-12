@@ -58,7 +58,8 @@
       "@cassidy/output-types": ["./CommandFiles/types/output.d.ts"],
       "@cassidy/input-types": ["./CommandFiles/types/input.d.ts"],
       "@cassidy/polyfills/*": ["./handlers/polyfills/*"],
-      "cassidy-userData": ["./CommandFiles/modules/cassidyUser.d.ts"]
+      "cassidy-userData": ["./CommandFiles/modules/cassidyUser.d.ts"],
+      "neax-script": ["./CommandFiles/modules/NeaxScript"]
     }
   },
   "exclude": ["node_modules"],
