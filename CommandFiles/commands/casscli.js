@@ -66,6 +66,9 @@ export async function entry({ input, output, money }) {
     description:
       "Retrieve information about the specified user's state from the database. You can query either your own state or the state of another user using their UID. The query returns the value associated with the given key.",
     async handler({ args }) {
+      if (!input.isAdmin) {
+        return `error not admin`;
+      }
       if (args.length < 3) {
         return `error: missing arguments. Usage: ${this.usage}`;
       }
