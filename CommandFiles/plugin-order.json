@@ -194,32 +194,6 @@
       "orderLast": 0
     },
     {
-      "name": "reactSystem",
-      "status": "processed",
-      "isCircular": false,
-      "computedOrder": 799,
-      "originalOrder": 799,
-      "before": [],
-      "after": [
-        "input",
-        "output"
-      ],
-      "orderLast": 0
-    },
-    {
-      "name": "replySystem",
-      "status": "processed",
-      "isCircular": false,
-      "computedOrder": 800,
-      "originalOrder": 800,
-      "before": [],
-      "after": [
-        "input",
-        "output"
-      ],
-      "orderLast": 0
-    },
-    {
       "name": "handleEvent",
       "status": "processed",
       "isCircular": false,

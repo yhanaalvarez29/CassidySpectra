@@ -188,6 +188,13 @@ export class InputClass implements InputProps {
         return reacts[detectID] as ReactObj<T>;
       },
     };
+
+    for (const method of Reflect.ownKeys(this)) {
+      const m = this[method];
+      if (typeof m === "function") {
+        this[method] = (m as Function).bind(this);
+      }
+    }
   }
 
   public get setReply() {
@@ -214,6 +221,7 @@ export class InputClass implements InputProps {
     ctx.censor = censor;
     ctx.replySystem = this.ReplySystem;
     ctx.reactSystem = this.ReactSystem;
+    ctx.args = this.arguments;
   }
 
   private processEvent(event: Partial<InputProps>, autoCensor: boolean): void {
