@@ -40,12 +40,11 @@ export async function use(obj) {
         );
       }
       obj.event.body = inline.result;
-      const input = new InputClass(obj);
-      input.attachToContext(obj);
-
-   
-      console.log(obj.input);
     }
+    const input = new InputClass(obj);
+    input.attachToContext(obj);
+
+    console.log(obj.input);
   } catch (error) {
     console.error(error);
   } finally {
