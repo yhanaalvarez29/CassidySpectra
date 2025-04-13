@@ -423,6 +423,9 @@ export async function use(obj) {
    * @returns
    */
   obj.getInflationRate = async function (usersData) {
+    if (global.Cassidy.config.disableInflation) {
+      return 0;
+    }
     usersData ??= await obj.money.getAll();
     let sum = Object.values(usersData)
       .filter((i) => !isNaN(i?.money))

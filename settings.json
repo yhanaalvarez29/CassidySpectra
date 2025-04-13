@@ -60,5 +60,6 @@
     "enabled": true,
     "interval": 3600000
   },
-  "forceWebUID": false
+  "forceWebUID": false,
+  "disableInflation": true
 }
