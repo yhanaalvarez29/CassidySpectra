@@ -11,6 +11,8 @@ import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
 import { PagePayload } from "@cass-modules/PageButton";
 import { TempFile } from "../../handlers/page/sendMessage";
 import { base64ToStream, streamToBase64 } from "../../webSystem";
+import { NeaxScript } from "@cass-modules/NeaxScript";
+import InputClass from "@cass-modules/InputClass";
 
 export const meta = {
   name: "output",
@@ -159,7 +161,7 @@ export class CassidyIO {
  *
  * @type {CommandEntry}
  */
-export function use(obj) {
+export async function use(obj) {
   let LASTID = null;
   try {
     obj.CassidyIO = CassidyIO;
@@ -749,6 +751,7 @@ export function use(obj) {
   const cassIO = new CassidyIO(obj.input, obj.output, obj.command?.style);
   obj.cassIO = cassIO;
   obj.input.attachSystemsToOutput(obj.output);
+  
   obj.next();
 }
 

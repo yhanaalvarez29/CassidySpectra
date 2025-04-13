@@ -493,17 +493,17 @@ export namespace NeaxScript {
       script: ValidScript,
       callback: ParserCallback,
       full: boolean = false
-    ): Promise<Codes> {
+    ): Promise<{ code: Codes; result: string }> {
       script = String(script) as ValidScript;
       script = Parser.parseVariables(this.context, script) as ValidScript;
       const inline = await this.neaxInline(script);
       if (inline.codes.some((i) => i !== 0)) {
         callback(inline.getIssues());
-        return Codes.MalformedInput;
+        return { code: Codes.MalformedInput, result: inline.getIssues() };
       }
       script = inline.result as ValidScript;
 
-      const input = new InputClass(this.context);
+      const { input } = this.context;
       let mod: string | null = null;
       let [commandName, ...etc] = script.split("::");
       let [target, ...commandArgs] = etc.join(" ").split(" ");
@@ -521,7 +521,10 @@ export namespace NeaxScript {
 
       if (!(commandName in NeaxScript.Commands)) {
         callback(`Neax::CommandNotFound = ${commandName}`);
-        return Codes.CommandNotFound;
+        return {
+          code: Codes.CommandNotFound,
+          result: `Neax::CommandNotFound = ${commandName}`,
+        };
       }
 
       const commandFunc: NeaxScript.Command | undefined =
@@ -563,35 +566,35 @@ export namespace NeaxScript {
             await modFunc(commandContext);
           } else {
             callback(`Neax::ModNotFound = ${mod}`);
-            return Codes.CommandNotFound;
+            return {
+              code: Codes.CommandNotFound,
+              result: `Neax::ModNotFound = ${mod}`,
+            };
           }
         }
         if (full) {
           const result = await this.executeCommand(commandFunc, commandContext);
-          callback(result);
+          callback(result.result);
+          return { result: result.result, code: result.code };
         } else {
-          await this.executeCommand(commandFunc, commandContext, callback);
+          const result = await this.executeCommand(
+            commandFunc,
+            commandContext,
+            callback
+          );
+          return { result: result.result, code: result.code };
         }
-        return Codes.Success;
       } catch (error) {
         callback(NXSUtil.err(error));
         console.error(error);
-        return Codes.ExecError;
+        return { code: Codes.ExecError, result: NXSUtil.err(error) };
       }
     }
 
     public async runAsync(script: ValidScript) {
-      let result: string = "";
-      const code = await this.run(
-        script,
-        (data) => {
-          result = data;
-        },
-        true
-      );
+      const res = await this.run(script, () => {}, true);
       return {
-        result,
-        code,
+        ...res,
       };
     }
 
@@ -646,18 +649,24 @@ export namespace NeaxScript {
       commandFunc: Command,
       context: CommandContext & NSXTra,
       callback?: ParserCallback
-    ): Promise<string> {
+    ) {
       let result = "";
-      for await (const _output of commandFunc(context)) {
-        let output = `${_output}\n`;
-        result += output;
+      const iterator = commandFunc(context);
+
+      while (true) {
+        const { value, done } = await iterator.next();
+        if (done || typeof value !== "string") {
+          return { result, code: value as Codes, done };
+        }
+
+        result += `${value}\n`;
+
         try {
-          callback?.(_output);
+          callback?.(value);
         } catch (error) {
           console.error(error);
         }
       }
-      return result;
     }
   }
 

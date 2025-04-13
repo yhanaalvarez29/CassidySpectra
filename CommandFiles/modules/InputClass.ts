@@ -744,7 +744,7 @@ export class InputClass implements InputProps {
 
   [inspect.custom]() {
     return inspect(this.toJSON(), {
-      depth: null,
+      depth: 1,
     });
   }
 

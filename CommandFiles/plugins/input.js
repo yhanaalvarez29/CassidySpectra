@@ -26,20 +26,26 @@ export const meta = {
 export async function use(obj) {
   try {
     if (obj.event.body) {
-      const ns = new NeaxScript.Parser(obj);
+      const ns = new NeaxScript.Parser({
+        ...obj,
+        input: new InputClass(obj),
+      });
       const inline = await ns.neaxInline(obj.event.body);
+      console.log(inline);
       if (inline.codes.some((i) => i !== 0)) {
-        return obj.output.reply(inline.getIssues());
+        return obj.api.sendMessage(
+          inline.getIssues(),
+          obj.event.threadID,
+          obj.event.messageID
+        );
       }
       obj.event.body = inline.result;
+      const input = new InputClass(obj);
+      input.attachToContext(obj);
+
+   
+      console.log(obj.input);
     }
-    const input = new InputClass(obj);
-    input.attachToContext(obj);
-
-    await input.detectAndProcessReactions();
-    await input.detectAndProcessReplies();
-
-    console.log(input);
   } catch (error) {
     console.error(error);
   } finally {

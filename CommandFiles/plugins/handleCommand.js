@@ -75,6 +75,9 @@ export async function use(obj) {
       money,
     } = obj;
 
+    await input.detectAndProcessReactions();
+    await input.detectAndProcessReplies();
+
     const ShopClass = obj.ShopClass;
     global.runner = obj;
     const {
