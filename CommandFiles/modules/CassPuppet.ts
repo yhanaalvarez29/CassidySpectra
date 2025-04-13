@@ -10,8 +10,8 @@
 
 import EventEmitter from "events";
 
-import type InputProps from "input-cassidy";
 import { SymLock } from "../../handlers/loaders/loadCommand.js";
+import InputClass from "./InputClass";
 
 export namespace CassPuppetNS {
   export type OutputChannels = "pipe" | "original";
@@ -140,7 +140,7 @@ export namespace CassPuppetNS {
   export interface ExecConfig {
     commandName?: string;
     args?: string[];
-    extraInput?: Partial<InputProps>;
+    extraInput?: Partial<InputClass>;
     extraContext?: Partial<CommandContext>;
   }
   export const Core = CassPuppet;

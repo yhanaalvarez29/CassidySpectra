@@ -740,3 +740,68 @@ export function clamp(min, desired, max) {
   }
   return Math.min(Math.max(desired, min), max);
 }
+
+/**
+ * @param {any} obj
+ */
+export function generateTSInterface(obj, name = 'Root') {
+  const interfaces = {};
+  const visited = new Set();
+
+  /**
+   * @param {string} str
+   */
+  function toTitleCase(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  /**
+   * @param {string | any[]} value
+   * @param {string} keyHint
+   */
+  function getType(value, keyHint) {
+    if (value === null) return 'null';
+    const type = typeof value;
+    if (type === 'string') return 'string';
+    if (type === 'number') return 'number';
+    if (type === 'boolean') return 'boolean';
+    if (type === 'undefined') return 'undefined';
+    if (Array.isArray(value)) {
+      if (value.length === 0) return 'any[]';
+      const elementType = getType(value[0], keyHint);
+      return `${elementType}[]`;
+    }
+    if (type === 'object') {
+      if (value.constructor && value.constructor.name !== 'Object') {
+        return value.constructor.name;
+      }
+      const interfaceName = toTitleCase(keyHint || 'Anon');
+      return createInterface(value, interfaceName);
+    }
+    return 'any';
+  }
+
+  /**
+   * @param {string | { [s: string]: any; } | ArrayLike<any>} o
+   * @param {string} interfaceName
+   */
+  function createInterface(o, interfaceName) {
+    const inferredName = interfaceName || `Anon${Math.floor(Math.random() * 10000)}`;
+    if (visited.has(o)) return inferredName;
+    visited.add(o);
+
+    const fields = Object.entries(o).map(([key, val]) => {
+      const type = getType(val, key);
+      return `  ${key}: ${type};`;
+    });
+
+    const interfaceBody = `interface ${inferredName} {\n${fields.join('\n')}\n}`;
+    interfaces[inferredName] = interfaceBody;
+
+    return inferredName;
+  }
+
+  createInterface(obj, name);
+
+  return Object.values(interfaces).reverse().join('\n\n');
+}

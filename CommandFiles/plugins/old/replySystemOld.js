@@ -12,8 +12,7 @@ export const meta = {
 };
 global.currData = {};
 
-let replies = {};
-global.Cassidy.replies = replies;
+const { replies } = global.Cassidy;
 export async function use(obj) {
   const { next, commandName, input, commands, output } = obj;
   obj.replySystem = {
@@ -118,7 +117,6 @@ export async function use(obj) {
         commands[commandKey] || commands[commandKey.toLowerCase()] || {};
       obj.repCommand = command;
       const targetFunc = callback || command.reply;
-      //global.currData = command;
       if (typeof targetFunc === "function") {
         try {
           await targetFunc({

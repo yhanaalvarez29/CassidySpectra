@@ -99,7 +99,7 @@ export class CassidyIO {
   output;
 
   /**
-   * @param {import("input-cassidy").InputProps} input
+   * @param {import("@cass-modules/InputClass").InputClass} input
    * @param {import("output-cassidy").OutputProps} output
    * @param {any} style
    */
@@ -756,6 +756,7 @@ export function use(obj) {
   }
   const cassIO = new CassidyIO(obj.input, obj.output, obj.command?.style);
   obj.cassIO = cassIO;
+  obj.input.attachSystemsToOutput(obj.output);
   obj.next();
 }
 

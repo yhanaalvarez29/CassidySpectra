@@ -1,6 +1,10 @@
-interface InpProperty {
+export interface InpProperty {
   [key: string]: boolean | InpProperty;
 }
+
+/**
+ * @deprecated
+ */
 export interface InputProps {
   messageID?: string;
   xQ?: any;
@@ -13,15 +17,15 @@ export interface InputProps {
   author: string;
   reaction: string;
   password?: string;
-  messageReply: any;
-  mentions: { [key: string]: any };
+  messageReply?: InputReplier;
+  mentions: { [key: string]: string };
   attachments: Array<any>;
-  timestamp: string;
+  timestamp: number;
   isGroup: boolean;
   participantIDs?: string[];
   isWeb: boolean;
   isWss: boolean;
-  arguments: string[];
+  arguments: string[] & { original: string[] };
   argPipe: string[];
   argPipeArgs: string[][];
   argArrow: string[];
@@ -43,18 +47,21 @@ export interface InputProps {
   isModerator: boolean;
   _isAdmin(uid: string): boolean;
   _isModerator(uid: string): boolean;
+  /**
+   * @deprecated
+   */
   userInfo(): Promise<any>;
   sid: string;
   tid: string;
-  replier: any;
+  replier?: InputReplier;
   hasMentions: boolean;
   firstMention: {
     name: string;
     [key: string]: any;
   } | null;
   isThread: boolean;
-  detectUID: string | undefined;
-  detectID: string | undefined;
+  detectUID?: string | undefined;
+  detectID?: string | undefined;
   censor: (text: string) => string;
   setReply?: ReplySystem["set"];
   delReply?: ReplySystem["delete"];
@@ -65,6 +72,20 @@ export interface InputProps {
   style?: import("output-cassidy").StrictOutputForm["style"];
   isThreadAdmin(uid: string): Promise<boolean>;
   isFacebook?: boolean;
+  originalBody?: string;
+}
+
+export interface InputReplier {
+  threadID: string;
+  messageID: string;
+  senderID: string;
+  attachments: any[];
+  args: string[];
+  body: string;
+  isGroup: boolean;
+  mentions: { [key: string]: string };
+  timestamp: number;
+  participantIDs: string[];
 }
 
 export interface RepliesObj<T extends Record<string, any>> {
@@ -103,4 +124,12 @@ export interface ReactSystem {
   get<T extends StandardReactArg>(detectID: string): ReactObj<T> | null;
 }
 
-export default InputProps;
+import { InputClass } from "@cass-modules/InputClass";
+
+type InputCP = typeof InputClass;
+
+export interface InputConstructor extends InputCP {}
+
+export interface InputInstance extends InputClass {}
+
+export default InputInstance;

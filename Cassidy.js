@@ -161,6 +161,8 @@ global.Cassidy = {
   accessToken: null,
   redux: true,
   hostedFilenames: [],
+  replies: {},
+  reacts: {},
 };
 const login = require(global.Cassidy.config.FCA.path);
 

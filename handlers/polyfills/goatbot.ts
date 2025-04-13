@@ -204,7 +204,7 @@ export class MessageHandler {
   }
 }
 
-export async function createCTX(ctx: CommandContext) {
+export async function createCTX(ctx: CassidySpectra.CommandContext) {
   const isThreadAdmin = await ctx.input.isThreadAdmin(ctx.input.sid);
   const isBotAdmin = ctx.input._isAdmin(ctx.input.sid);
   return {

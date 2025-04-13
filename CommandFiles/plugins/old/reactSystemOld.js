@@ -12,8 +12,7 @@ export const meta = {
 };
 global.currData = {};
 
-let reacts = {};
-global.Cassidy.reacts = reacts;
+const { reacts } = global.Cassidy.reacts;
 export async function use(obj) {
   const { next, commandName, input, commands, output } = obj;
   obj.reactSystem = {

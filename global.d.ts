@@ -87,7 +87,7 @@ declare global {
     /**
      * Represents input data and utilities for commands.
      */
-    input: InputX;
+    input: InputClass;
 
     /**
      * Handles output operations and responses.
@@ -132,7 +132,9 @@ declare global {
     /**
      * Represents the current command being executed.
      */
-    command?: CassidySpectra.CassidyCommand;
+    command?:
+      | CassidySpectra.CassidyCommand
+      | Partial<CassidySpectra.CassidyCommand>;
 
     /**
      * Caches user data for the current session.
@@ -614,6 +616,12 @@ declare global {
           import("input-cassidy").StandardReplyArg
         >
       >;
+      reacts: Record<
+        string,
+        import("input-cassidy").ReactObj<
+          import("input-cassidy").StandardReactArg
+        >
+      >;
       presets: Map<any, any>;
       loadCommand: Function;
       loadPlugins: Function;
@@ -766,6 +774,7 @@ import {
   TagParser,
 } from "@cass-plugins/utils-liane.js";
 import { TempFile } from "./handlers/page/sendMessage.js";
+import InputClass from "@cass-modules/InputClass.js";
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
