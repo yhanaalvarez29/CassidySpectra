@@ -66,22 +66,22 @@ export class InputClass implements InputProps {
   public style?: any;
   public isFacebook?: boolean;
   public originalBody?: string;
-  private __context: CommandContext;
+  #__context: CommandContext;
 
-  private __api: any;
-  private __threadsDB: UserStatsManager;
+  #__api: any;
+  #__threadsDB: UserStatsManager;
   public ReplySystem: ReplySystem;
   public ReactSystem: ReactSystem;
 
   constructor(obj: CommandContext) {
     const { replies, reacts } = global.Cassidy;
-    this.__api = obj.api;
-    this.__threadsDB = obj.threadsDB;
+    this.#__api = obj.api;
+    this.#__threadsDB = obj.threadsDB;
     this.censor = censor;
 
     this.processEvent(obj.event, obj.command?.meta?.autoCensor ?? false);
 
-    this.__context = obj;
+    this.#__context = obj;
     const self = this;
 
     this.ReplySystem = {
@@ -89,23 +89,23 @@ export class InputClass implements InputProps {
         detectID: string,
         repObj: T
       ): RepliesObj<T> {
-        if (!self.__context.commandName && !repObj.key && !repObj.callback) {
+        if (!self.#__context.commandName && !repObj.key && !repObj.callback) {
           throw new Error("No command detected");
         }
         if (!detectID) {
           return;
         }
-        let key = repObj.key || self.__context.commandName;
+        let key = repObj.key || self.#__context.commandName;
         if (
-          !self.__context.commands[key] &&
-          !self.__context.commands[key.toLowerCase()] &&
+          !self.#__context.commands[key] &&
+          !self.#__context.commands[key.toLowerCase()] &&
           !repObj.callback
         ) {
           return;
         }
         global.currData =
-          self.__context.commands[key] ||
-          self.__context.commands[key.toLowerCase()];
+          self.#__context.commands[key] ||
+          self.#__context.commands[key.toLowerCase()];
         replies[detectID] = {
           repObj,
           commandKey: key,
@@ -141,7 +141,7 @@ export class InputClass implements InputProps {
         reactObj: T
       ): ReactObj<T> {
         if (
-          !self.__context.commandName &&
+          !self.#__context.commandName &&
           !reactObj.key &&
           !reactObj.callback
         ) {
@@ -150,16 +150,16 @@ export class InputClass implements InputProps {
         if (!detectID) {
           throw new Error("Invalid Detect ID");
         }
-        let key = reactObj.key || self.__context.commandName;
+        let key = reactObj.key || self.#__context.commandName;
         if (
-          !self.__context.commands[key] &&
-          !self.__context.commands[key.toLowerCase()]
+          !self.#__context.commands[key] &&
+          !self.#__context.commands[key.toLowerCase()]
         ) {
           throw new Error("Command not found.");
         }
         global.currData =
-          self.__context.commands[key] ||
-          self.__context.commands[key.toLowerCase()];
+          self.#__context.commands[key] ||
+          self.#__context.commands[key.toLowerCase()];
         reacts[detectID] = {
           reactObj,
           commandKey: key,
@@ -218,12 +218,13 @@ export class InputClass implements InputProps {
     return this.ReactSystem.get;
   }
 
-  public attachToContext(ctx = this.__context) {
+  public attachToContext(ctx: CommandContext = this.#__context) {
     ctx.input = this;
     ctx.censor = censor;
     ctx.replySystem = this.ReplySystem;
     ctx.reactSystem = this.ReactSystem;
     ctx.args = this.arguments;
+    ctx.InputClass = InputClass;
   }
 
   private processEvent(event: Partial<InputProps>, autoCensor: boolean): void {
@@ -409,8 +410,8 @@ export class InputClass implements InputProps {
   }
 
   public async userInfo(): Promise<UserData["userMeta"] | undefined> {
-    await this.__context.usersDB.ensureUserInfo(this.senderID);
-    const data = await this.__context.usersDB.queryItem(
+    await this.#__context.usersDB.ensureUserInfo(this.senderID);
+    const data = await this.#__context.usersDB.queryItem(
       this.senderID,
       "userMeta"
     );
@@ -419,18 +420,18 @@ export class InputClass implements InputProps {
 
   public async isThreadAdmin(uid: string, refresh = false): Promise<boolean> {
     if (refresh) {
-      await this.__threadsDB.saveThreadInfo(this.threadID, this.__api);
+      await this.#__threadsDB.saveThreadInfo(this.threadID, this.#__api);
     } else {
-      await this.__threadsDB.ensureThreadInfo(this.threadID, this.__api);
+      await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
-    const { threadInfo } = await this.__threadsDB.getItem(this.threadID);
+    const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
     return Boolean(
       threadInfo && threadInfo.adminIDs.some((i: any) => i.id === uid)
     );
   }
 
   public attachSystemsToOutput(output: OutputProps) {
-    const obj = this.__context;
+    const obj = this.#__context;
     const { replies } = global.Cassidy;
     const input = this;
     if (!output) {
@@ -567,8 +568,8 @@ export class InputClass implements InputProps {
   public async detectAndProcessReplies() {
     try {
       const input = this;
-      const { commands } = this.__context;
-      const obj = this.__context;
+      const { commands } = this.#__context;
+      const obj = this.#__context;
       const { replies } = global.Cassidy;
 
       if (input.replier && replies[input.replier.messageID]) {
@@ -603,8 +604,8 @@ export class InputClass implements InputProps {
   public async detectAndProcessReactions() {
     try {
       const input = this;
-      const { commands } = this.__context;
-      const obj = this.__context;
+      const { commands } = this.#__context;
+      const obj = this.#__context;
       const { reacts } = global.Cassidy;
       if (input.type == "message_reaction" && reacts[input.messageID]) {
         console.log(`Handling reaction for ${input.messageID}`);

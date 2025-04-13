@@ -88,6 +88,10 @@ declare global {
      * Represents input data and utilities for commands.
      */
     input: InputClass;
+    /**
+     * A special and relatively new class to create an input data for commands.
+     */
+    InputClass: typeof InputClass;
 
     /**
      * Handles output operations and responses.
