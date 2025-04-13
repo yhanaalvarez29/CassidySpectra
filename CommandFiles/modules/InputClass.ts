@@ -37,6 +37,7 @@ export class InputClass implements InputProps {
   public isWeb: boolean = false;
   public isWss: boolean = false;
   public arguments: string[] & { original: string[] };
+  public args: string[] & { original: string[] };
   public argPipe: string[];
   public argPipeArgs: string[][];
   public argArrow: string[];
@@ -276,6 +277,12 @@ export class InputClass implements InputProps {
       this.detectUID = this.__getDetectUID();
       this.detectID = this.detectUID;
       this.text = this.body;
+
+      this.replier = new InputClass({
+        ...this.#__context,
+        event: this.replier,
+      });
+      this.messageReply = this.replier;
     } catch (error) {
       console.error("Error processing event:", error);
     }
@@ -321,6 +328,7 @@ export class InputClass implements InputProps {
         .filter((i) => !!i)
         .slice(1)
     );
+    this.args = this.arguments;
 
     this.argPipe = stringArrayProxy(
       this.arguments
@@ -633,6 +641,104 @@ export class InputClass implements InputProps {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  public is(): string;
+  public is(type: string): boolean;
+  public is(...types: string[]): boolean;
+
+  public is(...args: string[]) {
+    if (args.length === 0) {
+      return this.type;
+    }
+    return args.includes(this.type);
+  }
+
+  hasWordOR(...words: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return words.some((word) => this.body.includes(word));
+  }
+
+  get has() {
+    return this.hasOR;
+  }
+
+  get hasWord() {
+    return this.hasWordOR;
+  }
+
+  isMessage() {
+    return this.is("message", "message_reply");
+  }
+
+  hasOR(...chars: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return chars.some((char) => this.body.includes(char));
+  }
+
+  hasWordAND(...words: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return words.every((word) => this.body.includes(word));
+  }
+
+  hasAND(...chars: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return chars.every((char) => this.body.includes(char));
+  }
+
+  starts(...chars: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return chars.some((char) => this.body.startsWith(char));
+  }
+
+  ends(...chars: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return chars.some((char) => this.body.endsWith(char));
+  }
+
+  equal(...strs: string[]): boolean {
+    if (!this.isMessage()) {
+      return false;
+    }
+    return strs.some((i) => i === this.body);
+  }
+
+  lower(): InputClass {
+    if (!this.isMessage()) {
+      return this.clone();
+    }
+    return new InputClass({
+      ...this.#__context,
+      event: {
+        ...this.#__context.event,
+        body: String(this.#__context.event.body).toLowerCase(),
+      },
+    });
+  }
+
+  clone() {
+    return new InputClass(this.#__context);
+  }
+
+  toJSON() {
+    let ignored = ["ReplySystem", "ReactSystem"];
+    return Object.fromEntries(
+      Object.entries(this)
+        .filter((i) => typeof i[1] !== "function")
+        .filter((i) => !ignored.includes(i[0]))
+    );
   }
 }
 

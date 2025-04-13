@@ -172,11 +172,13 @@ declare global {
 
     /**
      * Provides access to the API for external operations.
+     * @deprecated
      */
     api: any;
 
     /**
      * Represents the event data for the current command.
+     * @deprecated
      */
     event: any;
 

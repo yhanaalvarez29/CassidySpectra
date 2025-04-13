@@ -77,15 +77,15 @@ export interface InputProps {
 
 export interface InputReplier {
   threadID: string;
-  messageID: string;
+  messageID?: string;
   senderID: string;
-  attachments: any[];
-  args: string[];
+  attachments?: any[];
+  args?: string[];
   body: string;
   isGroup: boolean;
-  mentions: { [key: string]: string };
+  mentions?: { [key: string]: string };
   timestamp: number;
-  participantIDs: string[];
+  participantIDs?: string[];
 }
 
 export interface RepliesObj<T extends Record<string, any>> {
