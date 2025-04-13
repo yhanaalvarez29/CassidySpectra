@@ -1,4 +1,5 @@
 import * as nodeUtil from "util";
+import InputClass from "./InputClass";
 
 export namespace NeaxScript {
   const { Cassidy } = global;
@@ -502,7 +503,7 @@ export namespace NeaxScript {
       }
       script = inline.result as ValidScript;
 
-      const { input } = this.context;
+      const input = new InputClass(this.context);
       let mod: string | null = null;
       let [commandName, ...etc] = script.split("::");
       let [target, ...commandArgs] = etc.join(" ").split(" ");

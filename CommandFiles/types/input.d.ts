@@ -8,7 +8,7 @@ export interface InpProperty {
 export interface InputProps {
   messageID?: string;
   xQ?: any;
-  isPage?: true | undefined;
+  isPage?: boolean | undefined;
   strictPrefix?: boolean;
   body: string;
   senderID: string;

@@ -30,7 +30,7 @@ function runChildProcess() {
       return;
     }
     console.log(`Cassidy exited with code ${code}`);
-    if (code === 3 || code === 134) {
+    if (code === 3 || code === 134 || code === 137) {
       console.log("Recalling Cassidy...");
       runChildProcess();
     }

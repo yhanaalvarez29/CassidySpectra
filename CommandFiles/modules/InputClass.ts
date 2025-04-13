@@ -3,7 +3,6 @@ import { censor } from "fca-liane-utils";
 const { stringArrayProxy } = global.utils;
 import {
   InputProps,
-  InputReplier,
   ReactObj,
   ReactSystem,
   RepliesObj,
@@ -14,34 +13,35 @@ import {
 } from "input-cassidy";
 import UserStatsManager from "../../handlers/database/handleStat";
 import OutputProps, { OutputResult } from "output-cassidy";
+import { inspect } from "node:util";
 
 export class InputClass implements InputProps {
-  public messageID?: string;
-  public xQ?: any;
-  public isPage?: true;
-  public strictPrefix?: boolean;
+  public messageID?: string = null;
+  public xQ?: any = null;
+  public isPage?: boolean = false;
+  public strictPrefix?: boolean = false;
   public body: string = "";
-  public senderID: string;
-  public userID: string;
-  public type: string;
-  public threadID: string;
-  public author: string;
-  public reaction: string;
-  public password?: string;
-  public messageReply?: InputReplier;
-  public mentions: { [key: string]: string };
-  public attachments: any[];
-  public timestamp: number;
-  public isGroup: boolean;
-  public participantIDs?: string[];
+  public senderID: string = null;
+  public userID: string = null;
+  public type: string = null;
+  public threadID: string = null;
+  public author: string = null;
+  public reaction: string = null;
+  public password?: string = null;
+  public messageReply?: InputClass = null;
+  public mentions: { [key: string]: string } = null;
+  public attachments: any[] = null;
+  public timestamp: number = null;
+  public isGroup: boolean = null;
+  public participantIDs?: string[] = null;
   public isWeb: boolean = false;
   public isWss: boolean = false;
-  public arguments: string[] & { original: string[] };
-  public args: string[] & { original: string[] };
-  public argPipe: string[];
-  public argPipeArgs: string[][];
-  public argArrow: string[];
-  public argArrowArgs: string[][];
+  public arguments: string[] & { original: string[] } = null;
+  public args: string[] & { original: string[] } = null;
+  public argPipe: string[] = null;
+  public argPipeArgs: string[][] = null;
+  public argArrow: string[] = null;
+  public argArrowArgs: string[][] = null;
   public wordCount: number = 0;
   public property: InpProperty = {};
   public propertyArray: string[] = [];
@@ -50,23 +50,23 @@ export class InputClass implements InputProps {
   public links: string[] | null = null;
   public mentionNames: string[] | null = null;
   public numbers: string[] | null = null;
-  public words: string[];
+  public words: string[] = null;
   public text: string = "";
-  public sid: string;
-  public tid: string;
-  public replier?: InputReplier;
+  public sid: string = null;
+  public tid: string = null;
+  public replier?: InputClass = null;
   public hasMentions: boolean = false;
   public firstMention: { name: string; [key: string]: any } | null = null;
   public isThread: boolean = false;
-  public detectUID?: string;
-  public detectID?: string;
+  public detectUID?: string = null;
+  public detectID?: string = null;
   public censor: (text: string) => string;
 
-  public webQ?: string;
-  public defStyle?: any;
-  public style?: any;
-  public isFacebook?: boolean;
-  public originalBody?: string;
+  public webQ?: string = null;
+  public defStyle?: any = null;
+  public style?: any = null;
+  public isFacebook?: boolean = false;
+  public originalBody?: string = null;
   #__context: CommandContext;
 
   #__api: any;
@@ -248,6 +248,7 @@ export class InputClass implements InputProps {
       }
 
       this.originalBody = event.body ?? "";
+
       this.body = event.body ?? "";
 
       const { forceWebUID = false } = global.Cassidy.config;
@@ -739,6 +740,16 @@ export class InputClass implements InputProps {
         .filter((i) => typeof i[1] !== "function")
         .filter((i) => !ignored.includes(i[0]))
     );
+  }
+
+  [inspect.custom]() {
+    return inspect(this.toJSON(), {
+      depth: null,
+    });
+  }
+
+  [Symbol.toStringTag]() {
+    return InputClass.name;
   }
 }
 

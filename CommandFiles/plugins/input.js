@@ -1,5 +1,6 @@
 // @ts-check
 import { InputClass } from "@cass-modules/InputClass";
+import { NeaxScript } from "neax-script";
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -18,13 +19,20 @@ export const meta = {
   type: "plugin",
   expect: ["censor", "args", "input", "replySystem", "reactSystem"],
 };
-
 /**
  *
  * @param {CommandContext} obj
  */
 export async function use(obj) {
   try {
+    if (obj.event.body) {
+      const ns = new NeaxScript.Parser(obj);
+      const inline = await ns.neaxInline(obj.event.body);
+      if (inline.codes.some((i) => i !== 0)) {
+        return obj.output.reply(inline.getIssues());
+      }
+      obj.event.body = inline.result;
+    }
     const input = new InputClass(obj);
     input.attachToContext(obj);
 
