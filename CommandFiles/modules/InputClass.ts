@@ -189,11 +189,13 @@ export class InputClass implements InputProps {
       },
     };
 
-    for (const method of Reflect.ownKeys(this)) {
+    for (const method of Reflect.ownKeys(InputClass.prototype)) {
       const m = this[method];
-      if (typeof m === "function") {
-        this[method] = (m as Function).bind(this);
-      }
+      try {
+        if (typeof m === "function") {
+          this[method] = (m as Function).bind(this);
+        }
+      } catch (error) {}
     }
   }
 
