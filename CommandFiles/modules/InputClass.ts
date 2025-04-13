@@ -75,6 +75,7 @@ export class InputClass implements InputProps {
 
   constructor(obj: CommandContext) {
     const { replies, reacts } = global.Cassidy;
+    Object.assign(this, obj.event);
     this.__api = obj.api;
     this.__threadsDB = obj.threadsDB;
     this.censor = censor;
