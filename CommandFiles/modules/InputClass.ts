@@ -238,7 +238,6 @@ export class InputClass implements InputProps {
       this.reaction = event.reaction;
       this.messageID = event.messageID;
       this.password = event.password;
-      this.messageReply = event.messageReply;
       this.mentions = event.mentions ?? {};
       this.attachments = event.attachments ?? [];
       this.timestamp = event.timestamp;
@@ -266,7 +265,6 @@ export class InputClass implements InputProps {
 
       this.sid = this.senderID;
       this.tid = this.threadID;
-      this.replier = this.messageReply;
       this.hasMentions = Object.keys(this.mentions).length > 0;
       this.firstMention = this.hasMentions
         ? {
@@ -278,11 +276,13 @@ export class InputClass implements InputProps {
       this.detectID = this.detectUID;
       this.text = this.body;
 
-      this.replier = new InputClass({
-        ...this.#__context,
-        event: this.replier,
-      });
-      this.messageReply = this.replier;
+      if (event.messageReply) {
+        this.replier = new InputClass({
+          ...this.#__context,
+          event: event.messageReply,
+        });
+        this.messageReply = this.replier;
+      }
     } catch (error) {
       console.error("Error processing event:", error);
     }

@@ -30,6 +30,8 @@ export async function use(obj) {
 
     await input.detectAndProcessReactions();
     await input.detectAndProcessReplies();
+
+    console.log(input);
   } catch (error) {
     console.error(error);
   } finally {
