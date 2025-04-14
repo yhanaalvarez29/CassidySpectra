@@ -11,6 +11,7 @@ import type * as CassidyStylerNPM from "cassidy-styler";
 
 import type InputX from "input-cassidy";
 import type { ReplySystem, ReactSystem } from "input-cassidy";
+import { Express } from "express";
 
 import type OutputX from "output-cassidy";
 import type {
@@ -29,7 +30,7 @@ import GlobalUtilsX from "./utils-type";
 
 declare global {
   var package: typeof import("./package.json");
-  var logger: (text: any, title?: string, valueOnly?: boolean) => void;
+  var logger: typeof import("./Cassidy.js").logger;
   interface FactoryConfig {
     title: string;
     key: string;
@@ -1256,4 +1257,10 @@ declare global {
   var GoatBot: typeof GoatFill.GoatBot;
   var client: typeof GoatFill.client;
   var db: typeof GoatFill.db;
+
+  namespace Express {
+    interface Request {
+      trueIP: string;
+    }
+  }
 }

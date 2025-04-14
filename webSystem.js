@@ -13,7 +13,7 @@ const WebSocket = require("ws");
 export class Listener {
   /**
    *
-   * @param {{ app: import("express").Express }} param0
+   * @param {{ app: import("express").Express; api: any }} param0
    */
   constructor({ api, app }) {
     this.api = api;

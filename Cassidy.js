@@ -1,16 +1,51 @@
+// @ts-check
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
   can result in severe consequences, including a global ban from my server.
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
-require("dotenv").config();
+import "dotenv/config";
+
+import utils from "./utils.js";
+// @ts-ignore;
+global.utils = new Proxy(utils, {
+  get(target, prop) {
+    if (!(prop in target)) {
+      throw new Error(
+        `The "global.utils.${String(prop)}" property does not exist in Cassidy!`
+      );
+    }
+    return target[prop];
+  },
+  set() {
+    throw new Error(`The "global.utils" cannot be modified!`);
+  },
+});
+
+import extend from "./extends.js";
+extend();
 
 const MEMORY_THRESHOLD = 500;
 const WARNING_THRESHOLD = MEMORY_THRESHOLD * 0.75;
-import { registeredExtensions } from "./CommandFiles/modules/cassXTensions";
 import { fontTag } from "./handlers/styler.js/main";
 import cors from "cors";
+import * as fs from "fs";
+
+import __pkg from "./package.json";
+global.package = __pkg;
+global.logger = logger;
+
+import { loadCommand } from "./handlers/loaders/loadCommand.js";
+import { loadPlugins } from "./handlers/loaders/loadPlugins.js";
+import { middleware } from "./handlers/middleware/middleware.js";
+let commands = {};
+const allPlugins = {};
+
+import {
+  removeCommandAliases,
+  UNISpectra,
+} from "./CommandFiles/modules/unisym.js";
 
 const checkMemoryUsage = (normal) => {
   const memoryUsage = process.memoryUsage();
@@ -32,10 +67,6 @@ const checkMemoryUsage = (normal) => {
 setInterval(() => checkMemoryUsage(false), 1000);
 global.checkMemoryUsage = checkMemoryUsage;
 
-import { createRequire } from "module";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 process.on("unhandledRejection", (err) => {
   console.log(err);
 });
@@ -43,22 +74,7 @@ process.on("uncaughtException", (err) => {
   console.log(err);
 });
 global.items = [];
-import utils from "./utils.js";
-global.utils = new Proxy(utils, {
-  get(target, prop) {
-    if (!(prop in target)) {
-      throw new Error(
-        `The "global.utils.${prop}" property does not exist in Cassidy!`
-      );
-    }
-    return target[prop];
-  },
-  set() {
-    throw new Error(`The "global.utils" cannot be modified!`);
-  },
-});
-// global.lia = `https://liaspark.chatbotcommunity.ltd`;
-global.lia = "https://lianetheultimateserver.onrender.com";
+
 global.webQuery = new Proxy(
   {},
   {
@@ -80,44 +96,18 @@ global.webQuery = new Proxy(
   }
 );
 const upt = Date.now();
-// Even __dirname needs a freaking fix
-/*const __dirname = path.dirname(fileURLToPath(import.meta.url));*/
-/*const require = createRequire(import.meta.url);*/
 
-//Bro it's cheating! Talino mo talaga liyannnn
-/*require.extensions['.js'] = (module, filename) => {
-    const content = require('fs').readFileSync(filename, 'utf8');
-    module._compile(content, filename);
-};*/
 global.require = require;
 
 global.import = (m) => {
   return require("./" + m);
 };
 
-const __pkg = require("./package.json");
-global.package = __pkg;
-global.logger = logger;
-// For future ts files.
-//require('ts-node').register();
-import { loadCommand } from "./handlers/loaders/loadCommand.js";
-import { loadPlugins } from "./handlers/loaders/loadPlugins.js";
-import { middleware } from "./handlers/middleware/middleware.js";
-let commands = {};
-const allPlugins = {};
-
-import extend from "./extends.js";
-extend();
-import {
-  removeCommandAliases,
-  UNIRedux,
-  UNISpectra,
-} from "./CommandFiles/modules/unisym.js";
-
 /**
  * @global
  */
 global.Cassidy = {
+  // @ts-ignore
   get config() {
     return new Proxy(
       {},
@@ -135,16 +125,20 @@ global.Cassidy = {
       }
     );
   },
+  // @ts-ignore
   set config(data) {
+    // @ts-ignore
     saveSettings(data);
   },
   get uptime() {
     return Date.now() - upt;
   },
   plugins: allPlugins,
+  // @ts-ignore
   get commands() {
     return commands;
   },
+  // @ts-ignore
   set commands(data) {
     commands = data;
   },
@@ -177,22 +171,18 @@ function clearObj(obj) {
     }
   }
 }
-const { betterLog } = global.utils;
 
-function logger(text, title = "log", valueOnly = false, log = console.log) {
+/**
+ * @param {string} text
+ */
+export function logger(text, title = "log") {
   const now = new Date();
   const options = { timeZone: "Asia/Manila", hour12: false };
   const time = now.toLocaleTimeString("en-PH", options);
-  const message = `${time} [ ${title.toUpperCase()} ] - ${text}`.toFonted(
-    "auto"
-  );
-  if (valueOnly) {
-    return message;
-  }
-  const replaceLog = log(message) || log;
-  return function (text, title = "log") {
-    return logger(text, title, false, replaceLog);
-  };
+  const message = `${time} [ ${title.toUpperCase()} ] - ${text}`;
+
+  console.log(message);
+  return logger;
 }
 
 function loginHandler(obj) {
@@ -231,6 +221,11 @@ async function loginHelper(obj) {
     }
   }
 }
+
+/**
+ *
+ * @returns {typeof import("./settings.json")}
+ */
 function loadSettings() {
   try {
     const data = fs.readFileSync("settings.json", "utf8");
@@ -239,6 +234,9 @@ function loadSettings() {
     return null;
   }
 }
+/**
+ * @param {typeof import("./settings.json")} data
+ */
 function saveSettings(data) {
   try {
     fs.writeFileSync("settings.json", JSON.stringify(data, null, 2));
@@ -252,15 +250,14 @@ function loadCookie() {
   try {
     try {
       return JSON.parse(process.env.APPSTATE ?? process.env.COOKIE);
-    } catch {
-      // do nothing lol
-    }
+    } catch {}
     const file = fs.readFileSync("cookie.json", "utf8");
     return JSON.parse(file);
   } catch ({ message, stack }) {
     return null;
   }
 }
+
 async function loadAllCommands(callback = async () => {}) {
   commands = {};
   global.Cassidy.commands = {};
@@ -272,11 +269,11 @@ async function loadAllCommands(callback = async () => {}) {
   Object.keys(require.cache).forEach((i) => {
     delete require.cache[i];
   });
-  // await registeredExtensions.downloadRemoteExtensions();
 
   const commandPromises = fileNames.map(async (fileName) => {
     try {
       const e = await loadCommand(fileName, commands);
+      // @ts-ignore
       await callback(e, fileName);
       checkMemoryUsage(true);
       if (e) {
@@ -292,49 +289,23 @@ async function loadAllCommands(callback = async () => {}) {
   return Object.keys(errs).length === 0 ? false : errs;
 }
 
-async function loadAllCommandsOld(callback = async () => {}) {
-  //clearObj(commands);
-  commands = {};
-  global.Cassidy.commands = {};
-  let errs = {};
-  const fileNames = fs
-    .readdirSync("CommandFiles/commands")
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
-  Object.keys(require.cache).forEach((i) => {
-    delete require.cache[i];
-  });
-  for (const fileName of fileNames) {
-    const e = await loadCommand(fileName, commands);
-    await callback(e, fileName);
-    checkMemoryUsage(true);
-    if (e) {
-      errs["command:" + fileName] = e;
-    }
-  }
-  return Object.keys(errs).length === 0 ? false : errs;
-}
-
-function delay(ms = 1000) {
-  return new Promise((res) => setTimeout(res, ms));
-}
-
 let willAccept = false;
 async function main() {
-  const interval = 60 * 1000;
-
-  /*cleanRequireCache();
-
-  setInterval(cleanRequireCache, interval);*/
   logger(`Cassidy ${__pkg.version}`, "Info");
   logger(
     `The CassidySpectra is currently in development and is also unstable. Some features might not work as expected.`,
     "WARN"
   );
   const loadLog = logger("Loading settings...", "Info");
+
+  /**
+   * @type {import("./settings.json")}
+   */
+  // @ts-ignore
   const settings = new Proxy(
     {},
     {
-      get(target, prop) {
+      get(_, prop) {
         return loadSettings()[prop];
       },
     }
@@ -344,14 +315,12 @@ async function main() {
       "No settings found, please check if the settings are properly configured.",
       "Info"
     );
-    // process.exit(1);
   }
   loadLog("Loading cookie...", "Cookie");
   const cookie = loadCookie();
   if (!cookie) {
     loadLog("No cookie found.", "Cookie");
     loadLog("Please check if cookie.json exists or a valid json.", "Cookie");
-    // process.exit(1);
   }
   loadLog("Found cookie.", "Cookie");
   logger("Logging in...", "FCA");
@@ -504,14 +473,10 @@ async function setupCommands() {
 import {
   Listener,
   genericPage,
-  pageParse,
-  postEvent,
   aiPage,
   formatIP,
   takeScreenshot,
-  streamToBase64,
 } from "./webSystem.js";
-//import * as handleStat from "./handlers/database/handleStat.js";
 import express from "express";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
@@ -520,6 +485,7 @@ import requestIp from "request-ip";
 import bodyParser from "body-parser";
 import fetchMeta from "./CommandFiles/modules/fetchMeta.js";
 import { TempFile } from "./handlers/page/sendMessage";
+const { UTYPlayer } = global.utils;
 
 const limit = {
   windowMs: 60 * 1000,
@@ -533,15 +499,13 @@ const limit = {
 };
 import { lookup } from "mime-types";
 const fake502 = rateLimit(limit);
-function web(api, funcListen, settings) {
-  let passKey = `${Math.random().toString(36).substring(2, 15)}`;
+function web(api, funcListen, _) {
   const app = express();
   app.use(cors());
   app.use(express.json({ limit: "200mb" }));
 
   const listener = new Listener({ api, app });
   listener.startListen(funcListen);
-  //app.use(fake502);
   app.use(bodyParser.json());
   app.use(cookieParser());
   app.use((req, _, next) => {
@@ -552,7 +516,7 @@ function web(api, funcListen, settings) {
     try {
       const { id } = req.query;
       if (id) {
-        const temp = new TempFile(id);
+        const temp = new TempFile(String(id));
         if (!temp.exists()) {
           res.status(404).end("File not found");
           return;
@@ -566,8 +530,9 @@ function web(api, funcListen, settings) {
           `attachment; filename="${temp.getFilename()}"`
         );
 
-        res.setHeader("Content-Type", type);
+        res.setHeader("Content-Type", String(type));
         const filename = temp.path;
+        // @ts-ignore
         fileStream.pipe(res);
         res.on("finish", async () => {
           try {
@@ -586,7 +551,7 @@ function web(api, funcListen, settings) {
       res.status(500).end("Server error");
     }
   });
-  app.get("/", fake502, (req, res) => {
+  app.get("/", fake502, (_, res) => {
     const page = genericPage({
       title: "Cassidy Homepage",
       content: "fs:public/home.html",
@@ -605,14 +570,19 @@ function web(api, funcListen, settings) {
 
     res.json({ ...cache, userMeta });
   });
-  app.get("/api/stat", async (req, res) => {
-    const { UTYPlayer } = global.utils;
-    const data = await global.handleStat.getAll();
+  app.get("/api/stat", async (_, res) => {
+    let data = await global.handleStat.getAll();
+    /**
+     * @type {Record<string, InstanceType<typeof UTYPlayer>>}
+     */
+    const final = {};
     for (const key in data) {
       const value = data[key];
-      data[key] = new UTYPlayer({ ...data[key], gold: value.money });
+      // @ts-ignore
+      let a = new UTYPlayer({ ...data[key], gold: value.money });
+      final[key] = a;
     }
-    res.json(data);
+    res.json(final);
   });
   app.get("/api/underpic", async (req, res) => {
     try {
@@ -629,21 +599,15 @@ function web(api, funcListen, settings) {
       res.send(error.response.data);
     }
   });
-  app.get("/api/commands", (req, res) => res.json(commands));
+  app.get("/api/commands", (_, res) => {
+    res.json(commands);
+    return;
+  });
 
-  const authWare = async (req, res, next) => {
-    const { WEB_PASSWORD } = settings;
-    const { specilKey } = req.cookies;
-    if (specilKey !== passKey) {
-      return res.redirect("/f:password");
-    } else {
-      return next();
-    }
-  };
   app.get("/api/files", (req, res) => {
     const { ADMINBOT } = global.Cassidy.config;
     if (!ADMINBOT.includes(formatIP(req.trueIP))) {
-      return res.json({
+      res.json({
         files: [
           {
             name: "Nice Try :)",
@@ -652,6 +616,7 @@ function web(api, funcListen, settings) {
           },
         ],
       });
+      return;
     }
     if (req.query.fileName) {
       const fileData = fs.readFileSync(
@@ -659,13 +624,14 @@ function web(api, funcListen, settings) {
         "utf8"
       );
       const stat = fs.statSync(`CommandFiles/commands/${req.query.fileName}`);
-      return res.json({
+      res.json({
         file: {
           content: fileData,
           size: global.utils.formatBits(stat.size),
           mtime: stat.mtime,
         },
       });
+      return;
     }
     let result = [];
     const files = fs.readdirSync("CommandFiles/commands");
@@ -680,10 +646,10 @@ function web(api, funcListen, settings) {
         name: file,
       });
     }
-    return res.json({ files: result });
+    res.json({ files: result });
   });
   app.get("/ai-site", async (req, res) => {
-    return res.send(await aiPage(JSON.stringify(req.query)));
+    res.send(await aiPage(JSON.stringify(req.query)));
   });
   app.use(async (req, res, next) => {
     const { originalUrl: x = "" } = req;
@@ -696,18 +662,13 @@ function web(api, funcListen, settings) {
           ? `fs:public/${url}.html`
           : `${await aiPage(fs.readFileSync("public/404.html", "utf8"))}`,
       });
-      return res.send(page);
+      res.send(page);
+      return;
     } else {
       return next();
     }
   });
-  /*app.get("/auth", (req, res) => {
-    const page = genericPage({
-      title: "Login",
-      content: "fs:public/password.html"
-    });
-    res.send(page);
-  });*/
+
   app.post("/chat", async (req, res) => {
     const { body } = req;
     const { method = "sendMessage", args = [] } = body;
@@ -738,11 +699,15 @@ function web(api, funcListen, settings) {
     const key = `${Date.now()}`;
     if (!willAccept) {
       const { prefixes = [], body = "" } = req.query || {};
-      const idk = [...prefixes, global.Cassidy.config.PREFIX];
-      if (!idk.some((i) => body.startsWith(i))) {
-        return res.json({
+      const idk = [
+        ...(Array.isArray(prefixes) ? Array.from(prefixes) : [prefixes]),
+        global.Cassidy.config.PREFIX,
+      ];
+      if (!idk.some((i) => String(body).startsWith(String(i)))) {
+        res.json({
           status: "fail",
         });
+        return;
       }
       const total = fs
         .readdirSync("CommandFiles/commands")
@@ -792,11 +757,15 @@ function web(api, funcListen, settings) {
     const key = `${Date.now()}`;
     if (!willAccept) {
       const { prefixes = [], body = "" } = req.body || {};
-      const idk = [...prefixes, global.Cassidy.config.PREFIX];
-      if (!idk.some((i) => body.startsWith(i))) {
-        return res.json({
+      const idk = [
+        ...(Array.isArray(prefixes) ? Array.from(prefixes) : [prefixes]),
+        global.Cassidy.config.PREFIX,
+      ];
+      if (!idk.some((i) => String(body).startsWith(i))) {
+        res.json({
           status: "fail",
         });
+        return;
       }
       const total = fs
         .readdirSync("CommandFiles/commands")
@@ -854,7 +823,7 @@ function web(api, funcListen, settings) {
     res.json({ okay: true, req: req.query });
   });
   app.use(fake502);
-  app.use((req, res, next) => {
+  app.use((_, res, __) => {
     const page = genericPage({
       title: "Cassidy BoT Page",
       content: "fs:public/404.html",
@@ -866,13 +835,3 @@ function web(api, funcListen, settings) {
   });
 }
 main();
-async function cleanRequireCache() {
-  const keys = Object.keys(require.cache);
-
-  for (const key of keys) {
-    delete require.cache[key];
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  console.log("Require cache cleaned at: " + new Date());
-}
