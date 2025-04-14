@@ -116,13 +116,13 @@ export async function event({ input, output, money }: CommandContext) {
   for (const userID of arrayMentions) {
     const { busyReason: reason, name } = await money.getCache(userID);
     if (reason) {
-      res.push(`👤 **${name}**: "${reason}"`);
+      res.push(`🗨️ 👤 **${name}**: "${reason}"`);
     }
   }
 
   if (res.length > 0) {
     return output.replyStyled(
-      `${UNISpectra.arrow} ***Busy Notification**\n\n${res.join("\n\n")}`,
+      `${UNISpectra.arrow} ***Busy Notification***\n\n${res.join("\n\n")}`,
       style
     );
   }
