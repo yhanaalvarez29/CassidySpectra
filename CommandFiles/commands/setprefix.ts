@@ -11,7 +11,7 @@ export const meta: CassidySpectra.CommandMeta = {
   otherNames: ["pfx", "changeprefix", "sprefix", "pref"],
   version: "1.0.0",
   usage: "{prefix}{name} [newPrefix]",
-  category: "Utility",
+  category: "Thread",
   author: "Liane Cagara",
   permissions: [0],
   noPrefix: "both",

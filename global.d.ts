@@ -26,7 +26,7 @@ import type {
   GameSimulatorProps,
   Item,
 } from "./CommandFiles/types/gamesimu.d.ts";
-import GlobalUtilsX from "./utils-type";
+import GlobalUtilsX from "./CommandFiles/types/utils-type";
 
 declare global {
   var package: typeof import("./package.json");

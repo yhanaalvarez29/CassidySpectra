@@ -61,5 +61,6 @@
     "interval": 3600000
   },
   "forceWebUID": false,
-  "disableInflation": true
+  "disableInflation": true,
+  "standardSpectra": false
 }

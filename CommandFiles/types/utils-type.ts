@@ -498,7 +498,7 @@ declare class Toggle {
   swap(key: any): boolean;
   nextFree(): number;
 }
-import MusicTheory from "./handlers/music-theory-js.js";
+import MusicTheory from "../.././handlers/music-theory-js.js";
 declare function stringArrayProxy(optionalArray: any): any;
 declare class FileControl {
   constructor(
@@ -570,7 +570,7 @@ declare class Tiles {
   toStringOld(): string;
   toString(): string;
 }
-import StylerGlobal = require("./handlers/styler.js/main.js");
+import StylerGlobal = require("../.././handlers/styler.js/main.js");
 declare class CustomError extends Error {
   constructor(obj: any);
 }

@@ -5,7 +5,7 @@ export const meta = {
   author: "Liane",
   version: "1.0.0",
   usage: "{prefix}{name} <text>",
-  category: "Fun",
+  category: "Media",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 5,

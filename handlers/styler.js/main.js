@@ -4,7 +4,8 @@ import {
   emojiEnd,
 } from "../../CommandFiles/modules/unisym.js";
 
-const { fonts } = require("./fonts");
+import FontSystem from "./fonts";
+const { fonts } = FontSystem;
 
 // FUCK DO NOT OWN, ENTIRELY MADE BY LIANE CAGARA.
 

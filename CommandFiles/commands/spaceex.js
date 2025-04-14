@@ -8,7 +8,7 @@ export const meta = {
   version: "1.0.1",
   author: "MrkimstersDev",
   usage: "{prefix}explorer",
-  category: "Fun",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: "both",
   shopPrice: 500,

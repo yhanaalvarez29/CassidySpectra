@@ -8,7 +8,7 @@ export const meta = {
   author: "0xVoid",
   version: "1.0.0",
   usage: "{prefix}{name}",
-  category: "bold",
+  category: "Media",
   permissions: [0],
   noPrefix: "both",
   waitingTime: 10,

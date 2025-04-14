@@ -8,13 +8,14 @@ export const meta = {
   version: "1.0.2",
   author: "JenicaDev",
   usage: "{prefix}fashionista",
-  category: "Chic Idle Games",
+  category: "Idle Accumulation Games",
   permissions: [0],
   noPrefix: "both",
   otherNames: ["runway", "fashion"],
   shopPrice: 200,
   requirement: "1.0.2",
   icon: "🛍️",
+  waitingTime: 0.01,
 };
 
 export const style = {

@@ -12,7 +12,7 @@ export const meta = {
   author: "Jenica",
   version: "1.1.1",
   usage: "{prefix}buy <command>",
-  category: "Shop",
+  category: "Shopping",
   permissions: [0],
   noPrefix: false,
   waitingTime: 0.01,

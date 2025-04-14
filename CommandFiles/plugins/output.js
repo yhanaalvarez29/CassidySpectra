@@ -306,7 +306,7 @@ export async function use(obj) {
         if (options.noStyle) {
           delete options.noStyle;
         }
-        if (options.body) {
+        if (options.body && global.Cassidy.config.standardSpectra) {
           options.body = UNISpectra.standardizeLines(options.body);
         }
 
@@ -751,7 +751,7 @@ export async function use(obj) {
   const cassIO = new CassidyIO(obj.input, obj.output, obj.command?.style);
   obj.cassIO = cassIO;
   obj.input.attachSystemsToOutput(obj.output);
-  
+
   obj.next();
 }
 
