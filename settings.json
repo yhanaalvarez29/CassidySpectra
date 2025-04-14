@@ -62,5 +62,6 @@
   },
   "forceWebUID": false,
   "disableInflation": true,
-  "standardSpectra": false
+  "standardSpectra": false,
+  "autoGoogleTranslate": ""
 }

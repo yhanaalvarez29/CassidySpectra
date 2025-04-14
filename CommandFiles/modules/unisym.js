@@ -1,5 +1,6 @@
 // @ts-check
 import crypto from "crypto";
+import axios from "axios";
 
 /**
  * Generates a highly secure random number in the range [0, 1).
@@ -807,4 +808,23 @@ export function generateTSInterface(obj, name = "Root") {
   createInterface(obj, name);
 
   return Object.values(interfaces).reverse().join("\n\n");
+}
+
+
+/**
+ *
+ * @param {string} text
+ * @param {string} langCode
+ * @returns
+ */
+export async function translate(text, langCode) {
+  const res = await axios.get(
+    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${langCode}&dt=t&q=${encodeURIComponent(
+      text
+    )}`
+  );
+  return {
+    text: res.data[0].map((item) => item[0]).join(""),
+    lang: res.data[2],
+  };
 }

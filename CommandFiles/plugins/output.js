@@ -7,7 +7,7 @@
 
 import axios from "axios";
 import { CassEXP } from "../modules/cassEXP.js";
-import { UNIRedux, UNISpectra } from "@cassidy/unispectra";
+import { translate, UNIRedux, UNISpectra } from "@cassidy/unispectra";
 import { PagePayload } from "@cass-modules/PageButton";
 import { TempFile } from "../../handlers/page/sendMessage";
 import { base64ToStream, streamToBase64 } from "../../webSystem";
@@ -254,6 +254,15 @@ export async function use(obj) {
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
         options.body ??= "";
+        if (Cassidy.config.autoGoogleTranslate) {
+          try {
+            options.body = (
+              await translate(options.body, Cassidy.config.autoGoogleTranslate)
+            )?.text;
+          } catch (error) {
+            console.error(error);
+          }
+        }
         if (PagePayload.isPageButton(options.attachment) && !obj.input.isPage) {
           const buttons = PagePayload.fromPayload(options.attachment);
           options.body = buttons.toString();

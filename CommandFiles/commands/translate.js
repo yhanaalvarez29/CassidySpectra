@@ -1,5 +1,5 @@
 // @ts-check
-import axios from "axios";
+import { translate } from "@cassidy/unispectra";
 /**
  * @type {CassidySpectra.CommandMeta}
  */
@@ -71,22 +71,4 @@ export async function entry({ output, event, args, command }) {
   return output.reply(
     `${text}\n\n🌐 Translate from ${lang} to ${langCodeTrans}`
   );
-}
-
-/**
- *
- * @param {string} text
- * @param {string} langCode
- * @returns
- */
-async function translate(text, langCode) {
-  const res = await axios.get(
-    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${langCode}&dt=t&q=${encodeURIComponent(
-      text
-    )}`
-  );
-  return {
-    text: res.data[0].map((item) => item[0]).join(""),
-    lang: res.data[2],
-  };
 }

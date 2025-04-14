@@ -93,7 +93,7 @@ export async function event({ input, event, output, threadsDB }) {
     if (estatus === "fail") {
       return null;
     }
-    const info = await output.reply({ body: result.body, noLevelUI: true });
+    const info = await output.reply({ body: result.body, rawBody: true });
     global.Cassidy.replies[info.messageID] = {
       repObj: {
         callback(ctx) {
