@@ -62,6 +62,6 @@
       "neax-script": ["./CommandFiles/modules/NeaxScript"]
     }
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "public"],
   "include": ["**/*"]
 }

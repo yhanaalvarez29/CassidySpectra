@@ -15,7 +15,7 @@ import UserStatsManager from "../../handlers/database/handleStat";
 import OutputProps, { OutputResult } from "output-cassidy";
 import { inspect } from "node:util";
 
-export class InputClass implements InputProps {
+export class InputClass extends String implements InputProps {
   public messageID?: string = null;
   public xQ?: any = null;
   public isPage?: boolean = false;
@@ -76,6 +76,7 @@ export class InputClass implements InputProps {
 
   constructor(obj: CommandContext) {
     const { replies, reacts } = global.Cassidy;
+    super(String(obj.event?.body || ""));
     Object.assign(this, obj.event);
     this.#__api = obj.api;
     this.#__threadsDB = obj.threadsDB;

@@ -65,6 +65,7 @@ export async function entry({
   money: usersData,
   api,
 }) {
+  return message.reply("Bruh it is deprecated, use a different bank");
   const { money: userMoney, name = "Chara" } = await usersData.get(
     event.senderID
   );

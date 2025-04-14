@@ -810,7 +810,6 @@ export function generateTSInterface(obj, name = "Root") {
   return Object.values(interfaces).reverse().join("\n\n");
 }
 
-
 /**
  *
  * @param {string} text
@@ -827,4 +826,24 @@ export async function translate(text, langCode) {
     text: res.data[0].map((item) => item[0]).join(""),
     lang: res.data[2],
   };
+}
+
+/**
+ *
+ * @param {string} str
+ * @param {number} amount
+ */
+export function pluralize(str = "", amount = 0) {
+  return `${str}${amount > 1 ? "s" : ""}`;
+}
+
+/**
+ *
+ * @param {string} str
+ * @param {number} length
+ */
+export function limitString(str = "", length = 0) {
+  return String(str).length > length
+    ? String(str).slice(0, Number(length))
+    : String(str);
 }
