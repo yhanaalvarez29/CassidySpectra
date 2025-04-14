@@ -218,7 +218,7 @@ export class UNISpectra {
   static get spectraMark() {
     return `${this.spectra} ${this.charm}\n[font=fancy_italic]Simplicity, and Innovation.[:font=fancy_italic]`;
   }
-  static spectra = `☄️🪐 [font=redux]Cass${this.nextArrow}dy[:font=redux][font=bold]Spectra[:font=bold]`;
+  static spectra = `⚡ [font=bold_italic]Cass${this.nextArrow}dy[:font=bold_italic][font=fancy_italic]Spectra[:font=fancy_italic]`;
 
   static emojiRegex = /\p{Emoji}/gu;
 }
@@ -744,7 +744,7 @@ export function clamp(min, desired, max) {
 /**
  * @param {any} obj
  */
-export function generateTSInterface(obj, name = 'Root') {
+export function generateTSInterface(obj, name = "Root") {
   const interfaces = {};
   const visited = new Set();
 
@@ -760,25 +760,25 @@ export function generateTSInterface(obj, name = 'Root') {
    * @param {string} keyHint
    */
   function getType(value, keyHint) {
-    if (value === null) return 'null';
+    if (value === null) return "null";
     const type = typeof value;
-    if (type === 'string') return 'string';
-    if (type === 'number') return 'number';
-    if (type === 'boolean') return 'boolean';
-    if (type === 'undefined') return 'undefined';
+    if (type === "string") return "string";
+    if (type === "number") return "number";
+    if (type === "boolean") return "boolean";
+    if (type === "undefined") return "undefined";
     if (Array.isArray(value)) {
-      if (value.length === 0) return 'any[]';
+      if (value.length === 0) return "any[]";
       const elementType = getType(value[0], keyHint);
       return `${elementType}[]`;
     }
-    if (type === 'object') {
-      if (value.constructor && value.constructor.name !== 'Object') {
+    if (type === "object") {
+      if (value.constructor && value.constructor.name !== "Object") {
         return value.constructor.name;
       }
-      const interfaceName = toTitleCase(keyHint || 'Anon');
+      const interfaceName = toTitleCase(keyHint || "Anon");
       return createInterface(value, interfaceName);
     }
-    return 'any';
+    return "any";
   }
 
   /**
@@ -786,7 +786,8 @@ export function generateTSInterface(obj, name = 'Root') {
    * @param {string} interfaceName
    */
   function createInterface(o, interfaceName) {
-    const inferredName = interfaceName || `Anon${Math.floor(Math.random() * 10000)}`;
+    const inferredName =
+      interfaceName || `Anon${Math.floor(Math.random() * 10000)}`;
     if (visited.has(o)) return inferredName;
     visited.add(o);
 
@@ -795,7 +796,9 @@ export function generateTSInterface(obj, name = 'Root') {
       return `  ${key}: ${type};`;
     });
 
-    const interfaceBody = `interface ${inferredName} {\n${fields.join('\n')}\n}`;
+    const interfaceBody = `interface ${inferredName} {\n${fields.join(
+      "\n"
+    )}\n}`;
     interfaces[inferredName] = interfaceBody;
 
     return inferredName;
@@ -803,5 +806,5 @@ export function generateTSInterface(obj, name = 'Root') {
 
   createInterface(obj, name);
 
-  return Object.values(interfaces).reverse().join('\n\n');
+  return Object.values(interfaces).reverse().join("\n\n");
 }
