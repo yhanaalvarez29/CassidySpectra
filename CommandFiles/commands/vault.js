@@ -1,4 +1,5 @@
 // @ts-check
+import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { UNIRedux } from "@cassidy/unispectra";
 
@@ -113,9 +114,12 @@ export async function entry(ctx) {
     );
   }
 
-  const home = new ReduxCMDHome(
+  const home = new BriefcaseAPI(
     {
       isHypen: true,
+      ignoreFeature: ["use", "list"],
+      inventoryKey: "boxItems",
+      inventoryName: "Vault",
     },
     [
       {
@@ -134,10 +138,10 @@ export async function entry(ctx) {
         async handler() {
           const {
             inventory = [],
-            vaultItems = [],
+            boxItems = [],
             name = "Unregistered",
           } = await money.get(actionArgs[0]);
-          vaultInventory = new Inventory(vaultItems, 100);
+          vaultInventory = new Inventory(boxItems, 100);
           userInventory = new Inventory(inventory);
           return output.reply(`✅ Checking ${name}\n\n${await createList()}`);
         },
