@@ -127,7 +127,7 @@ export async function entry(ctx) {
       {
         key: "status",
         description: "Lists all items in your vault inventory",
-        aliases: ["-l"],
+        aliases: ["-st"],
         async handler() {
           return output.reply(`${await createList()}`);
         },

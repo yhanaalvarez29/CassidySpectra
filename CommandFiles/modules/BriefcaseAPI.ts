@@ -8,6 +8,7 @@ import {
   SpectraMainConfig,
 } from "./spectralCMDHome";
 import { InventoryItem } from "./cassidyUser";
+import { UNISpectra } from "./unisym";
 const { parseCurrency: pCy } = global.utils;
 
 export function listItem(
@@ -250,7 +251,9 @@ export class BriefcaseAPI {
             a[0].localeCompare(b[0])
           );
           for (const [_, items] of sorted) {
-            itemList += ``;
+            itemList += `${UNISpectra.charm} ${String(_)
+              .toTitleCase()
+              .toFonted("typewriter")}\n`;
 
             const itemCounts = new Map();
 
@@ -289,7 +292,9 @@ export class BriefcaseAPI {
             a[0].localeCompare(b[0])
           );
           for (const [_, items] of sorted2) {
-            cllList += ``;
+            itemList += `${UNISpectra.charm} ${String(_)
+              .toTitleCase()
+              .toFonted("typewriter")}\n`;
             cllList += items
               .map(
                 ({ metadata, amount }) =>
@@ -306,7 +311,9 @@ export class BriefcaseAPI {
               : "") +
             `👤 **${userData.name}** (**${
               inventory.getAll().length
-            }/${invLimit}**)\n\n${UNIRedux.arrow} ***Items***\n\n${
+            }/${invLimit}**)\n\n${
+              UNIRedux.arrow
+            } ***${inventoryName} Items***\n\n${
               itemList.trim() || "No items available."
             }\n\n${UNIRedux.standardLine}\n${
               UNIRedux.arrow
@@ -1073,7 +1080,7 @@ export class BriefcaseAPI {
           const allUsers = await money.getAll();
           const page = parseInt(actionArgs[1] || "1") || 1;
           const perPage = 10;
-          if (!isNaN(Number(actionArgs[0]))) {
+          if (!Number.isNaN(parseInt(actionArgs[0]))) {
             return output.reply(
               `👤 **${
                 userData?.name || "Unregistered"

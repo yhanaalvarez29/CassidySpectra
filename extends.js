@@ -1,7 +1,8 @@
 // @ts-check
 // Check global.d.ts this all has types now lmao.
 import { CassTypes } from "@cass-modules/type-validator";
-import { fonts } from "./handlers/styler.js/fonts.js";
+import __f from "./handlers/styler.js/fonts.js";
+const { fonts } = __f;
 import { createCallable } from "@cass-modules/callable-obj";
 const { ExtendClass, randArrValue, randArrIndex } = global.utils;
 
