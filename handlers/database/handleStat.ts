@@ -266,7 +266,7 @@ export default class UserStatsManager {
       getChequeAmount(userData?.boxItems) +
       getChequeAmount(userData?.tradeVentory);
 
-    const cars = new Inventory(userData.carData ?? []);
+    const cars = new Inventory(userData.carsData ?? []);
     const pets = new Inventory(userData.petsData ?? []);
     let carsAssets = 0;
 
