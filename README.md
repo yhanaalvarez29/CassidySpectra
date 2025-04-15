@@ -1,6 +1,6 @@
 # CassidySpectra
 
-CassidySpectra is a fork of CassidyRedux which is a revamped version of CassidyBoT with enhanced features and improved performance created by Liane Cagara (lianecagara in github). This project aims to provide a robust and flexible bot framework with a variety of commands and functionalities.
+CassidySpectra is the first ever all-around (Personal Fb bot, Page Bot, Discord Bot, Web Bot) chatbot with the best Typescript Tooling and Rich Libraries. CassidySpectra is also a fork of CassidyRedux which is a revamped version of CassidyBoT with enhanced features and improved performance, created and well-maintained by Liane Cagara (lianecagara in github).
 
 ## Table of Contents
 
