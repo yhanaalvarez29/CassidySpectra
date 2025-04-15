@@ -64,7 +64,6 @@ type BaseInventoryItem = {
    * @deprecated
    */
   index?: number;
-  [key: string]: unknown;
 };
 
 type WeaponInventoryItem = {
@@ -102,11 +101,12 @@ type PetUncaged = {
   lastFoodEaten: string;
 };
 
-type InventoryItem =
+type InventoryItem = (
   | (BaseInventoryItem & WeaponInventoryItem)
   | (BaseInventoryItem & ArmorInventoryItem)
   | (BaseInventoryItem & ChequeItem)
-  | BaseInventoryItem;
+  | BaseInventoryItem
+) & { [key: string]: unknown };
 
 type UserData = {
   nameMeta?:

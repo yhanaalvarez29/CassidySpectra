@@ -66,7 +66,7 @@ export const entry = defineHome(
         const reason = (await money.queryItem(input.sid, "busyReason"))
           ?.busyReason;
         return output.reply(
-          `${UNISpectra.arrow} ***Busy Reason**\n\n${UNISpectra.arrowFromT} ${
+          `${UNISpectra.arrow} ***Busy Reason***\n\n${UNISpectra.arrowFromT} ${
             reason ||
             `No busy reason configured. Use ${prefix}${commandName}-${key} to add a reason.`
           }`

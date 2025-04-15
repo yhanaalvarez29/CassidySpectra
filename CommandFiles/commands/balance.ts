@@ -113,9 +113,9 @@ const configs: Config[] = [
       const outputText = [
         `${
           cooldown ? `🕒 Oops, **Cooling Down**!\n\n` : ""
-        } 💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
+        } 💵 **Cash** (x**${utils.parseCurrency(Math.floor(playerMoney.money))}**)`,
         `⚔️ **Battle Points** (x**${utils.parseCurrency(
-          playerMoney.battlePoints || 0
+          Math.floor(playerMoney.battlePoints || 0)
         )}**)`,
         `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
         `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,

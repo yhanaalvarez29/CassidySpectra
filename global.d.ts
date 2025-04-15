@@ -5,6 +5,7 @@ import type {
   generateGift,
   generateTrash,
   treasures,
+  treasureInv,
 } from "./CommandFiles/plugins/ut-shop.js";
 
 import type * as CassidyStylerNPM from "cassidy-styler";
@@ -452,7 +453,7 @@ declare global {
     /**
      * Retrieves the current inflation rate.
      */
-    getInflationRate?: () => Promise<number>;
+    getInflationRate?: (usersData?: Record<string, UserData>) => Promise<number>;
 
     /**
      * Selects a random item based on probabilities.
@@ -477,7 +478,7 @@ declare global {
     /**
      * Provides access to the treasures utility.
      */
-    treasures?: typeof treasures;
+    treasures?: typeof treasureInv;
 
     /**
      * Maps pet player data to relevant utilities.

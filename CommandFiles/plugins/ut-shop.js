@@ -1,3 +1,4 @@
+// @ts-check
 import { readFileSync } from "fs";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp } from "@cassidy/unispectra";
@@ -406,7 +407,7 @@ export const treasures = [
 const treasuresCopy = [...treasures];
 
 /**
- * @type {CommandEntry}
+ * @param {CommandContext} obj
  */
 export async function use(obj) {
   const treasures = [
@@ -454,7 +455,9 @@ export async function use(obj) {
     const ll = lendAmounts / lendUsers.length;
     !isNaN(ll) ? (mean += ll) : null;
 
-    const getChequeAmount = (items) =>
+    const getChequeAmount = (
+      /** @type {import("@cass-modules/cassidyUser").InventoryItem[]} */ items
+    ) =>
       items.reduce(
         (acc, j) =>
           j.type === "cheque" &&
@@ -688,12 +691,13 @@ export async function use(obj) {
         .join("\n\n");
       return result;
     }
-    stringItemData({
-      inventory,
-      boxInventory,
-      userMoney = 0,
-      playersMap,
-    } = {}) {
+    stringItemData(
+      { inventory, boxInventory, userMoney = 0, playersMap } = {
+        inventory: undefined,
+        boxInventory: undefined,
+        playersMap: undefined,
+      }
+    ) {
       let isLegacy = true;
       if (inventory instanceof Inventory && boxInventory instanceof Inventory) {
         isLegacy = false;
@@ -733,7 +737,7 @@ export async function use(obj) {
               (item.type === "weapon" || item.type === "armor")
             ) {
               let hasLine = false;
-              for (const [key, petPlayer] of playersMap) {
+              for (const [, petPlayer] of playersMap) {
                 const clone = petPlayer.clone();
                 let isHead = false;
                 const applyHead = () => {
@@ -874,6 +878,7 @@ export async function use(obj) {
           exp = 0,
           inventory = [],
         } = await money.get(input.senderID);
+        // @ts-ignore
         const player = new UTYPlayer({
           gold,
           kills,
@@ -905,14 +910,14 @@ ${this.optionText()}
       }
     }
     /**
-     * @type {CommandEntry}
+     * @param {CommandContext & { repObj?: Record<string, any> }} context
      */
     async onReply(context = obj) {
       try {
         const { invLimit } = global.Cassidy;
 
-        const { input, output, money, args, repObj } = context;
-        const { author, detectID, player } = repObj;
+        const { input, output, money, repObj } = context;
+        const { author, player } = repObj;
         const inventoryLimit = invLimit;
         const self = this;
         if (input.senderID !== author) {
@@ -1033,11 +1038,11 @@ ${this.optionText()}
           }
           let {
             money: cash,
-            inventory = [],
-            boxItems = [],
+            inventory: rI = [],
+            boxItems: rB = [],
           } = await money.get(input.senderID);
-          inventory = new Inventory(inventory);
-          boxItems = new Inventory(boxItems, 100);
+          const inventory = new Inventory(rI);
+          const boxItems = new Inventory(rB, 100);
           const dialogue = self.rand(self.askSellTexts);
           const i = await output.reply(
             `✦ ${dialogue}\n\n**A.** Sell **Items** **(${inventory.size()}/${invLimit})**\n**B**. Sell **Box** Items **(${boxItems.size()}/100)**\n\n**Back**\n**${cash}**$`
@@ -1051,9 +1056,10 @@ ${this.optionText()}
           const magicSize = isBox ? 100 : global.Cassidy.invLimit;
 
           try {
-            let { [magicKey]: inventory = [], money: cash = 0 } =
-              await money.get(input.senderID);
-            inventory = new Inventory(sanitizeSellInv(inventory), magicSize);
+            let { [magicKey]: inI = [], money: cash = 0 } = await money.get(
+              input.senderID
+            );
+            const inventory = new Inventory(sanitizeSellInv(inI), magicSize);
             let items = self.stringSellData([...inventory]);
             const dialogue = self.rand(self.askSellTexts);
             const i = await output.reply(
@@ -1072,7 +1078,7 @@ ${this.optionText()}
         }
         async function handleTrade() {
           if (self.allowTrade) {
-            return handleRealTrade();
+            // return handleRealTrade();
           }
           const dialogue = self.rand(self.tradeRefuses) ?? "...";
           const i = await output.reply(`✦ ${dialogue}\n\n**Back**`);
@@ -1183,8 +1189,7 @@ ${this.optionText()}
             money: cash = 0,
             inventory = [],
             boxItems: boxInventory = [],
-            petsData = [],
-            gearsData = [],
+
             cassEXP: cxp,
           } = userInfo;
 
@@ -1199,7 +1204,7 @@ ${this.optionText()}
             playersMap,
           });
           const num = parseInt(input.words[0]);
-          let amount = parseInt(input.words[1] || 1);
+          let amount = parseInt(String(input.words[1] || 1));
           if (isNaN(amount) || amount <= 0) {
             amount = 1;
           }
@@ -1278,13 +1283,13 @@ ${this.optionText()}
         async function handleSellItem(isBox) {
           const magicKey = isBox ? "boxItems" : "inventory";
           const magicSize = isBox ? 100 : global.Cassidy.invLimit;
-          let { money: cash, [magicKey]: inventory = [] } = await money.get(
+          let { money: cash, [magicKey]: iI = [] } = await money.get(
             input.senderID
           );
-          inventory = new Inventory(sanitizeSellInv(inventory), magicSize);
+          const inventory = new Inventory(sanitizeSellInv(iI), magicSize);
 
           const num = parseInt(input.words[0]);
-          let amount = parseInt(input.words[1] || 1);
+          let amount = parseInt(String(input.words[1] || 1));
           if (isNaN(amount) || amount <= 0) {
             amount = 1;
           }
@@ -1310,8 +1315,10 @@ ${this.optionText()}
           let price = 0;
           for (let i = 0; i < amount; i++) {
             const targetItem = targetItems[i];
-            let { sellPrice: indivPrice = 0, shopDisallowed } =
-              targetItem ?? {};
+            let { sellPrice: indivPrice = 0, shopDisallowed = false } =
+              targetItem ?? {
+                shopDisallowed: false,
+              };
             if (shopDisallowed) {
               disallowed.push(targetItem);
               continue;
@@ -1319,6 +1326,7 @@ ${this.optionText()}
             price += indivPrice;
             if (typeof self.onSell === "function") {
               try {
+                // @ts-ignore
                 await self.onSell({ ...context, targetItem });
               } catch (error) {
                 console.error(error);
@@ -1340,7 +1348,7 @@ ${this.optionText()}
 
           const dialogue = self.rand(self.askSellTexts);
           const items = self.stringSellData([
-            ...new Inventory(inventory, magicSize).getAll(),
+            ...new Inventory(inventory.raw(), magicSize).getAll(),
           ]);
 
           const i = await output.reply(
@@ -1381,7 +1389,7 @@ ${this.optionText()}
               isTalkNext: true,
               talkIndex: index + 1,
               targetTalk,
-              isBox,
+              isBox: repObj.isBox,
             });
           } else {
             repObj.isTalkNext = false;
@@ -1445,6 +1453,11 @@ ${self.optionText()}
  */
 
 export class Inventory {
+  /**
+   *
+   * @param {CInventoryItem[]} inventory
+   * @param {number?} limit
+   */
   constructor(inventory = [], limit = global.Cassidy.invLimit) {
     inventory ??= [];
 
@@ -1490,6 +1503,9 @@ export class Inventory {
       if (!key) {
         return;
       }
+      /**
+       * @type {import("@cass-modules/cassidyUser").InventoryItem}
+       */
       let result = {
         ...item,
         name: String(name),
@@ -1498,18 +1514,18 @@ export class Inventory {
         icon: String(icon),
         type: String(type),
         index: Number(index),
-        sellPrice: parseInt(sellPrice),
+        sellPrice: parseInt(String(sellPrice)),
         cannotToss: !!cannotToss,
       };
       if (type === "food") {
         result.heal ??= 0;
-        result.heal = parseInt(result.heal);
+        result.heal = parseInt(String(result.heal));
       }
       if (type === "weapon" || type === "armor") {
         result.atk ??= 0;
         result.def ??= 0;
-        result.atk = parseFloat(result.atk);
-        result.def = parseFloat(result.def);
+        result.atk = parseFloat(String(result.atk));
+        result.def = parseFloat(String(result.def));
       }
       return result;
     });
@@ -1522,7 +1538,7 @@ export class Inventory {
    *
    */
   at(index) {
-    const parsedIndex = parseInt(index);
+    const parsedIndex = parseInt(String(index));
     return isNaN(parsedIndex) ? undefined : this.inv.at(parsedIndex - 1);
   }
 
@@ -1532,7 +1548,7 @@ export class Inventory {
    * @returns {CInventoryItem}
    */
   getOne(key) {
-    return this.inv.find((item) => item.key === key) || this.at(key);
+    return this.inv.find((item) => item.key === key) || this.at(Number(key));
   }
 
   /**
@@ -1559,10 +1575,13 @@ export class Inventory {
    * @param {CInventoryItem | string | number} item
    */
   deleteRef(item) {
-    let index = this.inv.indexOf(item);
+    let index =
+      typeof item === "string" || typeof item === "number"
+        ? -1
+        : this.inv.indexOf(item);
 
     if (index === -1) {
-      index = parseInt(item) - 1;
+      index = parseInt(String(item)) - 1;
     }
 
     if (index !== -1 && !isNaN(index)) {
@@ -1586,6 +1605,7 @@ export class Inventory {
    * @returns
    */
   findKey(callback) {
+    // @ts-ignore
     const result = this.inv.find((item) => callback(item) || this.keyAt(item));
     if (result) {
       return result.key;
@@ -1596,7 +1616,7 @@ export class Inventory {
 
   /**
    *
-   * @param {CInventoryItem[]} item
+   * @param {CInventoryItem} item
    * @returns {number}
    */
   indexOf(item) {
@@ -1637,7 +1657,7 @@ export class Inventory {
       (item) => item.key === key || item.key === this.keyAt(key)
     );
     if (index === -1) {
-      index = parseInt(key) - 1;
+      index = parseInt(String(key)) - 1;
     }
     if (index === -1 || isNaN(index)) {
       return false;
@@ -1651,7 +1671,7 @@ export class Inventory {
    * @returns {string}
    */
   keyAt(index) {
-    return this.at(index)?.key;
+    return this.at(Number(index))?.key;
   }
 
   /**
@@ -1968,3 +1988,5 @@ export class Collectibles {
     return data.amount;
   }
 }
+
+export const treasureInv = new Inventory(treasures, 10000000);
