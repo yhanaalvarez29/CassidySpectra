@@ -9,7 +9,6 @@ import {
 } from "./spectralCMDHome";
 import { InventoryItem } from "./cassidyUser";
 const { parseCurrency: pCy } = global.utils;
-const { invLimit } = Cassidy;
 
 export function listItem(
   item: Partial<InventoryItem> = {},
@@ -74,6 +73,7 @@ export type BriefcaseAPIExtraConfig = Partial<SpectraMainConfig> & {
   ignoreFeature?: string[];
   inventoryName?: string;
   inventoryIcon?: string;
+  inventoryLimit: number;
 };
 
 export class BriefcaseAPI {
@@ -86,6 +86,7 @@ export class BriefcaseAPI {
     extraConfig.inventoryKey ??= "inventory";
     extraConfig.ignoreFeature ??= [];
     extraConfig.inventoryName ??= "Inventory";
+    extraConfig.inventoryLimit ??= 36;
     extraConfig.inventoryIcon ??= "🎒";
     this.extraConfig = extraConfig;
     this.extraItems = extraItems ?? [];
@@ -93,7 +94,12 @@ export class BriefcaseAPI {
 
   async runInContext(ctx: CommandContext) {
     const style = ctx.command.style ?? {};
-    const { inventoryName, inventoryIcon } = this.extraConfig;
+    const {
+      inventoryName,
+      inventoryIcon,
+      inventoryLimit,
+      inventoryLimit: invLimit,
+    } = this.extraConfig;
     const { input, output, money, prefix, generateTreasure, commandName } = ctx;
     const ikey = this.extraConfig.inventoryKey;
 
@@ -102,7 +108,7 @@ export class BriefcaseAPI {
     const getDatas: BriefcaseAPIContext["getDatas"] = function getDatas({
       ...data
     }) {
-      const customInventory = new Inventory(data[ikey]);
+      const customInventory = new Inventory(data[ikey] ?? [], inventoryLimit);
       data.petsData ??= [];
       const petsData = new Inventory(data.petsData);
       const gearsData = new GearsManage(data.gearsData);
@@ -162,7 +168,9 @@ export class BriefcaseAPI {
         .join("\n" + a + "\n\n");
     };
 
-    const [, ...actionArgs] = input.arguments;
+    const actionArgs = this.extraConfig.isHypen
+      ? input.arguments
+      : input.arguments.slice(0);
 
     const bcContext: BriefcaseAPIContext = {
       actionArgs,
@@ -891,7 +899,7 @@ export class BriefcaseAPI {
                 `❌ Recipient’s nameless! Can’t send to a ghost.`
             );
           }
-          const rInventory = new Inventory(recipientData[ikey]);
+          const rInventory = new Inventory(recipientData[ikey], inventoryLimit);
           if (rInventory.getAll().length >= invLimit) {
             return output.reply(
               `👤 **${
@@ -1077,7 +1085,10 @@ export class BriefcaseAPI {
           if (!actionArgs[0] || actionArgs[0].toLowerCase() === "all") {
             const totals = new Map();
             for (const user of Object.values(allUsers)) {
-              const userInventory = new Inventory(user[ikey] ?? []);
+              const userInventory = new Inventory(
+                user[ikey] ?? [],
+                inventoryLimit
+              );
               const unique = [
                 ...new Set(userInventory.getAll().map((i) => i.key)),
               ].map((key) => userInventory.getOne(key));
@@ -1091,11 +1102,11 @@ export class BriefcaseAPI {
             const sorted = Array.from(totals.entries())
               .map(([key, amount]) => {
                 const userWithItem = Object.values(allUsers).find((user) => {
-                  const inv = new Inventory(user[ikey] ?? []);
+                  const inv = new Inventory(user[ikey] ?? [], inventoryLimit);
                   return inv.has(key);
                 });
                 const userInventory = userWithItem
-                  ? new Inventory(userWithItem[ikey] ?? [])
+                  ? new Inventory(userWithItem[ikey] ?? [], inventoryLimit)
                   : null;
                 const item = userInventory?.getOne(key) || {
                   name: key,
@@ -1139,7 +1150,10 @@ export class BriefcaseAPI {
             const key = actionArgs[0];
             const usersWithKey = Object.entries(allUsers)
               .map(([uid, data]) => {
-                const userInventory = new Inventory(data[ikey] ?? []);
+                const userInventory = new Inventory(
+                  data[ikey] ?? [],
+                  inventoryLimit
+                );
                 const amount = userInventory.getAmount(key);
                 if (isNaN(amount) || amount <= 0) return null;
                 const item = userInventory.getOne(key) || {
@@ -1196,6 +1210,7 @@ export class BriefcaseAPI {
     const home = new SpectralCMDHome(
       {
         isHypen: false,
+        ...this.extraConfig,
       },
       [...defaultFeatures, ...mappedExtra]
     );

@@ -1,6 +1,5 @@
 // @ts-check
 import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
-import { ReduxCMDHome } from "@cassidy/redux-home";
 import { UNIRedux } from "@cassidy/unispectra";
 
 /**
@@ -63,6 +62,7 @@ export async function entry(ctx) {
 
   let vaultItems = userData.boxItems || [];
   let vaultInventory = new Inventory(vaultItems, 100);
+  let name = userData.name;
 
   async function createList() {
     const vaultItemsList = vaultInventory.getAll();
@@ -105,7 +105,7 @@ export async function entry(ctx) {
 
     return (
       `👤 **${
-        userData.name || "Unregistered"
+        name || "Unregistered"
       }** (**${userInventory.size()}/${invLimit}**)\n\n` +
       `${invItemList}\n\n` +
       `${UNIRedux.standardLine}\n` +
@@ -117,13 +117,15 @@ export async function entry(ctx) {
   const home = new BriefcaseAPI(
     {
       isHypen: true,
-      ignoreFeature: ["use", "list"],
+      ignoreFeature: ["use"],
       inventoryKey: "boxItems",
       inventoryName: "Vault",
+      inventoryIcon: "🗃️",
+      inventoryLimit: 100,
     },
     [
       {
-        key: "list",
+        key: "status",
         description: "Lists all items in your vault inventory",
         aliases: ["-l"],
         async handler() {
@@ -131,18 +133,19 @@ export async function entry(ctx) {
         },
       },
       {
-        key: "check",
+        key: "peek",
         description: "Check someone's items.",
         args: ["<uid>"],
-        aliases: ["-c"],
+        aliases: ["-p"],
         async handler() {
           const {
             inventory = [],
             boxItems = [],
-            name = "Unregistered",
+            name: name2 = "Unregistered",
           } = await money.get(actionArgs[0]);
           vaultInventory = new Inventory(boxItems, 100);
           userInventory = new Inventory(inventory);
+          name = name2;
           return output.reply(`✅ Checking ${name}\n\n${await createList()}`);
         },
       },

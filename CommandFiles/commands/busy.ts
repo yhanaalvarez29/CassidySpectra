@@ -61,7 +61,7 @@ export const entry = defineHome(
       description: "Checks your existing busy message.",
       args: ["...<reasons>"],
       icon: "❔",
-      aliases: ["-s"],
+      aliases: ["-ch"],
       async handler({ input, output, money, prefix, commandName }, { key }) {
         const reason = (await money.queryItem(input.sid, "busyReason"))
           ?.busyReason;
@@ -78,7 +78,7 @@ export const entry = defineHome(
       description: "Permanently resets/disables a busy message.",
       args: ["...<reasons>"],
       icon: "❌",
-      aliases: ["-s"],
+      aliases: ["-r"],
       async handler({ input, output }) {
         await output.reply(
           `${UNISpectra.arrow} ***Confirmation Required**\n\nThis action will **erase** your existing busy reason. Reply with **yes** to proceed.`
