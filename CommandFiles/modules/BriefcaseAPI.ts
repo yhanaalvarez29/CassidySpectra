@@ -70,11 +70,12 @@ export interface BriefcaseAPIContext {
 }
 
 export type BriefcaseAPIExtraConfig = Partial<SpectraMainConfig> & {
-  inventoryKey?: string;
+  inventoryKey: string;
   ignoreFeature?: string[];
-  inventoryName?: string;
-  inventoryIcon?: string;
+  inventoryName: string;
+  inventoryIcon: string;
   inventoryLimit: number;
+  showCollectibles: boolean;
 };
 
 export class BriefcaseAPI {
@@ -85,10 +86,12 @@ export class BriefcaseAPI {
     extraItems?: BriefcaseAPIConfig[] | undefined
   ) {
     extraConfig.inventoryKey ??= "inventory";
+    extraConfig.isHypen ??= false;
     extraConfig.ignoreFeature ??= [];
     extraConfig.inventoryName ??= "Inventory";
     extraConfig.inventoryLimit ??= 36;
     extraConfig.inventoryIcon ??= "🎒";
+    extraConfig.showCollectibles ??= true;
     this.extraConfig = extraConfig;
     this.extraItems = extraItems ?? [];
   }
@@ -171,7 +174,7 @@ export class BriefcaseAPI {
 
     const actionArgs = this.extraConfig.isHypen
       ? input.arguments
-      : input.arguments.slice(0);
+      : input.arguments.slice(1);
 
     const bcContext: BriefcaseAPIContext = {
       actionArgs,
@@ -194,6 +197,7 @@ export class BriefcaseAPI {
         },
       };
     });
+    const self = this;
 
     const defaultFeatures: Config[] = [
       {
@@ -253,7 +257,7 @@ export class BriefcaseAPI {
           for (const [_, items] of sorted) {
             itemList += `${UNISpectra.charm} ${String(_)
               .toTitleCase()
-              .toFonted("typewriter")}\n`;
+              .toFonted("fancy_italic")}\n`;
 
             const itemCounts = new Map();
 
@@ -277,33 +281,34 @@ export class BriefcaseAPI {
 
             itemList += `\n\n`;
           }
-
-          const cllMap = new Map();
-          for (const item of collectibles) {
-            const category = item.metadata.type ?? "Uncategorized";
-            if (!cllMap.has(category)) {
-              cllMap.set(category, []);
-            }
-            const map = cllMap.get(category);
-            map.push(item);
-          }
           let cllList = ``;
-          const sorted2 = Array.from(cllMap).sort((a, b) =>
-            a[0].localeCompare(b[0])
-          );
-          for (const [_, items] of sorted2) {
-            itemList += `${UNISpectra.charm} ${String(_)
-              .toTitleCase()
-              .toFonted("typewriter")}\n`;
-            cllList += items
-              .map(
-                ({ metadata, amount }) =>
-                  `${metadata.icon} **${metadata.name}** ${
-                    amount > 1 ? `(x${pCy(amount)}) ` : ""
-                  }[${metadata.key}]`
-              )
-              .join("\n");
-            cllList += "\n\n";
+          if (self.extraConfig.showCollectibles) {
+            const cllMap = new Map();
+            for (const item of collectibles) {
+              const category = item.metadata.type ?? "Uncategorized";
+              if (!cllMap.has(category)) {
+                cllMap.set(category, []);
+              }
+              const map = cllMap.get(category);
+              map.push(item);
+            }
+            const sorted2 = Array.from(cllMap).sort((a, b) =>
+              a[0].localeCompare(b[0])
+            );
+            for (const [_, items] of sorted2) {
+              cllList += `${UNISpectra.charm} ${String(_)
+                .toTitleCase()
+                .toFonted("fancy_italic")}\n`;
+              cllList += items
+                .map(
+                  ({ metadata, amount }) =>
+                    `${metadata.icon} **${metadata.name}** ${
+                      amount > 1 ? `(x${pCy(amount)}) ` : ""
+                    }[${metadata.key}]`
+                )
+                .join("\n");
+              cllList += "\n\n";
+            }
           }
           const finalRes =
             (otherTarget
@@ -315,9 +320,13 @@ export class BriefcaseAPI {
               UNIRedux.arrow
             } ***${inventoryName} Items***\n\n${
               itemList.trim() || "No items available."
-            }\n\n${UNIRedux.standardLine}\n${
-              UNIRedux.arrow
-            } ***Collectibles***\n\n${cllList.trim()}`;
+            }${
+              self.extraConfig.showCollectibles
+                ? `\n\n${UNIRedux.standardLine}\n${
+                    UNIRedux.arrow
+                  } ***Collectibles***\n\n${cllList.trim()}`
+                : ""
+            }`;
 
           let newRes = finalRes;
 

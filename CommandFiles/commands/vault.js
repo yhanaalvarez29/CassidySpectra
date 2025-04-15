@@ -117,11 +117,11 @@ export async function entry(ctx) {
   const home = new BriefcaseAPI(
     {
       isHypen: true,
-      ignoreFeature: ["use"],
       inventoryKey: "boxItems",
       inventoryName: "Vault",
       inventoryIcon: "🗃️",
       inventoryLimit: 100,
+      showCollectibles: false,
     },
     [
       {
