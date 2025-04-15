@@ -4,6 +4,8 @@ import { CassMongo, CassMongoManager } from "./cass-mongo";
 type UserData = import("cassidy-userData").UserData;
 
 type Nullable = import("cassidy-userData").NullableUserData;
+import * as carSys from "@cass-commands/car";
+import * as petSys from "@cass-commands/pet";
 
 import mongoose from "mongoose";
 
@@ -14,6 +16,7 @@ global.cassMongoManager = cassMongoManager;
 import type { InventoryItem } from "cassidy-userData";
 import fetchMeta from "../../CommandFiles/modules/fetchMeta";
 import { UNISpectra } from "@cassidy/unispectra";
+import { Inventory } from "@cassidy/ut-shop";
 
 export function init(
   this: unknown,
@@ -238,13 +241,7 @@ export default class UserStatsManager {
   /**
    * Calculates their money based on other factors (e.g. bank, lend amount, cheques, inventory cheques)
    */
-  extractMoney(userData: UserData): {
-    money: number;
-    total: number;
-    bank: number;
-    lendAmount: number;
-    cheques: number;
-  } {
+  extractMoney(userData: UserData) {
     const safeNumber = (value: any) =>
       typeof value === "number" && !isNaN(value) ? value : 0;
 
@@ -269,7 +266,35 @@ export default class UserStatsManager {
       getChequeAmount(userData?.boxItems) +
       getChequeAmount(userData?.tradeVentory);
 
-    const total = money + bank + lendAmount + cheques;
+    const cars = new Inventory(userData.carData ?? []);
+    const pets = new Inventory(userData.petsData ?? []);
+    let carsAssets = 0;
+
+    for (const car_ of cars) {
+      try {
+        const car = carSys.updateCarData(car_);
+
+        const worth = carSys.calculateWorth(car);
+        if (typeof worth === "number" && !isNaN(worth)) {
+          carsAssets += worth;
+        }
+      } catch (error) {}
+    }
+
+    let petsAssets = 0;
+
+    for (const pet_ of pets) {
+      try {
+        const pet = petSys.autoUpdatePetData(pet_);
+
+        const worth = petSys.calculateWorth(pet);
+        if (typeof worth === "number" && !isNaN(worth)) {
+          petsAssets += worth;
+        }
+      } catch (error) {}
+    }
+
+    const total = money + bank + lendAmount + cheques + petsAssets + carsAssets;
 
     return {
       money,
@@ -277,6 +302,8 @@ export default class UserStatsManager {
       lendAmount,
       cheques,
       total,
+      carsAssets,
+      petsAssets,
     };
   }
 

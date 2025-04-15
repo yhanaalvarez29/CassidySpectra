@@ -797,7 +797,7 @@ const petFoods = [
     },
   },
 ];
-function calculateWorth(pet) {
+export function calculateWorth(pet) {
   pet = autoUpdatePetData(pet);
   const { sellPrice, level, lastExp = 0 } = pet;
   return Math.floor(sellPrice * 2 + lastExp * 9 * 2 ** (level - 1));
@@ -820,7 +820,7 @@ function petHungryAfter(pet) {
   const timeSinceLastFeed = currentTime - lastFeed;
   return lastSaturation - timeSinceLastFeed;
 }
-function autoUpdatePetData(petData) {
+export function autoUpdatePetData(petData) {
   const { lastExp = 0 } = petData;
 
   petData.level = lastExp < 10 ? 1 : Math.floor(Math.log2(lastExp / 10)) + 1;

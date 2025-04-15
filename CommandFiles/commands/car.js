@@ -351,7 +351,7 @@ const carShopItems = [
   },
 ];
 
-function calculateWorth(car) {
+export function calculateWorth(car) {
   const updatedCar = updateCarData(car);
   const { sellPrice, level, distance, upgrades, condition } = updatedCar;
   const upgradeValue = upgrades.length * 500;
@@ -362,17 +362,17 @@ function calculateWorth(car) {
   );
 }
 
-function isCarLowOnFuel(car) {
+export function isCarLowOnFuel(car) {
   const updatedCar = updateCarData(car);
   return updatedCar.fuel <= 20;
 }
 
-function isCarDamaged(car) {
+export function isCarDamaged(car) {
   const updatedCar = updateCarData(car);
   return updatedCar.condition <= 30;
 }
 
-function updateCarData(carData) {
+export function updateCarData(carData) {
   const cleanedCarData = {};
   for (const key in carData) {
     if (carData[key] !== null) {

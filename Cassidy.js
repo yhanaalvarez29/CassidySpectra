@@ -36,9 +36,6 @@ import __pkg from "./package.json";
 global.package = __pkg;
 global.logger = logger;
 
-import { loadCommand } from "./handlers/loaders/loadCommand.js";
-import { loadPlugins } from "./handlers/loaders/loadPlugins.js";
-import { middleware } from "./handlers/middleware/middleware.js";
 let commands = {};
 const allPlugins = {};
 
@@ -146,9 +143,9 @@ global.Cassidy = {
   invLimit: 36,
   highRoll: 10_000_000,
   presets: new Map(),
-  loadCommand,
-  loadPlugins,
-  loadAllCommands,
+  loadCommand: null,
+  loadPlugins: null,
+  loadAllCommands: null,
   reduxlogo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
   logo: fontTag(UNISpectra.spectra),
   oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
@@ -159,6 +156,14 @@ global.Cassidy = {
   reacts: {},
 };
 const login = require(global.Cassidy.config.FCA.path);
+
+import { loadCommand } from "./handlers/loaders/loadCommand.js";
+import { loadPlugins } from "./handlers/loaders/loadPlugins.js";
+import { middleware } from "./handlers/middleware/middleware.js";
+
+global.Cassidy.loadCommand = loadCommand;
+global.Cassidy.loadAllCommands = loadAllCommands;
+global.Cassidy.loadPlugins = loadPlugins;
 
 global.allPlugins = allPlugins;
 global.commands = commands;

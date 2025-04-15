@@ -107,7 +107,7 @@ export class BriefcaseAPI {
     const { input, output, money, prefix, generateTreasure, commandName } = ctx;
     const ikey = this.extraConfig.inventoryKey;
 
-    let userData = await money.getItem(input.senderID);
+    let userData = await money.getCache(input.senderID);
 
     const getDatas: BriefcaseAPIContext["getDatas"] = function getDatas({
       ...data
@@ -210,9 +210,8 @@ export class BriefcaseAPI {
           let { inventory, collectibles } = getDatas(userData);
           let otherTarget = null;
           if (actionArgs[0]) {
-            const allUsers = await money.getAll();
-            const target = allUsers[actionArgs[0]];
-            if (!target) {
+            const target = await money.getCache(actionArgs[0]);
+            if (!(await money.exists(actionArgs[0]))) {
               return output.reply(`User not found.`);
             }
             ({ inventory, petsData, gearsData, collectibles } =
@@ -897,9 +896,9 @@ export class BriefcaseAPI {
                 )}** of "**${keyT}**"! Adjust your gift amount.`
             );
           }
-          const allUsers = await money.getAll();
-          const recipientData = allUsers[recipientID];
-          if (!recipientData) {
+
+          const recipientData = await money.getCache(recipientID);
+          if (!(await money.exists(recipientID))) {
             return output.reply(
               `👤 **${
                 userData.name || "Unregistered"

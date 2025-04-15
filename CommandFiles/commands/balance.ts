@@ -113,12 +113,16 @@ const configs: Config[] = [
       const outputText = [
         `${
           cooldown ? `🕒 Oops, **Cooling Down**!\n\n` : ""
-        } 💵 **Cash** (x**${utils.parseCurrency(Math.floor(playerMoney.money))}**)`,
-        `⚔️ **Battle Points** (x**${utils.parseCurrency(
+        } 💵 **Cash** (x**${utils.parseCurrency(
+          Math.floor(playerMoney.money)
+        )}**)`,
+        `💷 **Battle Points** (x**${utils.parseCurrency(
           Math.floor(playerMoney.battlePoints || 0)
         )}**)`,
         `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
         `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
+        `🚗 **Cars** (x**${utils.parseCurrency(otherMoney.carsAssets || 0)}**)`,
+        `🐈 **Pets** (x**${utils.parseCurrency(otherMoney.petsAssets || 0)}**)`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.standardLine}`,
         `${UNIRedux.arrow} ***All Options***`,
@@ -184,11 +188,13 @@ const configs: Config[] = [
 
       const outputText = [
         `💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
-        `⚔️ **Battle Points** (x**${utils.parseCurrency(
+        `💷 **Battle Points** (x**${utils.parseCurrency(
           playerMoney.battlePoints || 0
         )}**)`,
         `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
         `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
+        `🚗 **Cars** (x**${utils.parseCurrency(otherMoney.carsAssets || 0)}**)`,
+        `🐈 **Pets** (x**${utils.parseCurrency(otherMoney.petsAssets || 0)}**)`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.arrowFromT} **Rank**: ${
           top <= 10 ? `🏅 **#${top}**` : `🌱 **Rising**`
@@ -242,9 +248,11 @@ const configs: Config[] = [
           }**`,
           `💸 **Total**: $${abbreviateNumber(otherMoney.total || 0)}`,
           `💵 Cash: $${abbreviateNumber(user.money || 0)}`,
-          `⚔️ Battle: $${abbreviateNumber(user.battlePoints || 0)}`,
+          `💷 Battle: $${abbreviateNumber(user.battlePoints || 0)}`,
           `🏦 Bank: $${abbreviateNumber(otherMoney.bank || 0)}`,
           `🎒 Cheques: $${abbreviateNumber(otherMoney.cheques || 0)}`,
+          `🚗 Cars: $${abbreviateNumber(otherMoney.carsAssets || 0)}`,
+          `🐈 Pets: $${abbreviateNumber(otherMoney.petsAssets || 0)}`,
           items ? items : "",
           lastMoney
             ? `📉 Gap: $${abbreviateNumber(lastMoney - (user.money || 0))}`
