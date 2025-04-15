@@ -1,19 +1,21 @@
 import { UNIRedux } from "@cass/unispectra";
 
+export type Extra = {
+  targets: Config[];
+  key: string;
+  itemList?: string | undefined;
+  cancelCooldown?: () => void;
+  spectralArgs?: string[];
+  cooldown?: number | undefined;
+  self: SpectralCMDHome;
+} & Record<string, unknown>;
+
 export type Config = {
   key: string;
   handler: (
     this: Config,
     ctx: CommandContext,
-    extra?: {
-      targets: Config[];
-      key: string;
-      itemList?: string | undefined;
-      cancelCooldown?: () => void;
-      spectralArgs?: string[];
-      cooldown?: number | undefined;
-      self: SpectralCMDHome;
-    } & Record<string, unknown>
+    extra?: Extra
   ) => any | Promise<any>;
   description?: string | null;
   args?: string[] | null;
@@ -146,6 +148,23 @@ export class CassCheckly {
   }
 }
 
+export type SpectraMainConfig = {
+  home?: Config["handler"];
+  isHypen?: boolean;
+  argIndex?: number;
+  setup?: Config["handler"];
+  entryConfig?: Record<string, Config["handler"]>;
+  entryInfo?: {
+    [key: string]: Partial<Config>;
+  };
+  globalCooldown?: number;
+  errorHandler?: (error: any, ctx: CommandContext) => void;
+  validator?: CassCheckly;
+  defaultCategory?: string;
+  defaultKey?: string | null;
+  allowDefaultOnCooldown?: boolean;
+};
+
 export class SpectralCMDHome {
   configs: Config[];
   options: {
@@ -176,20 +195,7 @@ export class SpectralCMDHome {
       validator,
       defaultCategory = "General",
       allowDefaultOnCooldown = false,
-    }: {
-      home?: Config["handler"];
-      isHypen?: boolean;
-      argIndex?: number;
-      setup?: Config["handler"];
-      entryConfig?: Record<string, Config["handler"]>;
-      entryInfo?: { [key: string]: Partial<Config> };
-      globalCooldown?: number;
-      errorHandler?: (error: any, ctx: CommandContext) => void;
-      validator?: CassCheckly;
-      defaultCategory?: string;
-      defaultKey?: string | null;
-      allowDefaultOnCooldown?: boolean;
-    },
+    }: SpectraMainConfig,
     configs?: Config[]
   ) {
     if (entryConfig) {
