@@ -665,7 +665,7 @@ export class BriefcaseAPI {
             customInventory.deleteOne(chequeKey);
             userData.money += chequeAmount;
             await money.set(input.senderID, {
-              inventory: Array.from(customInventory),
+              [ikey]: Array.from(customInventory),
               money: userData.money,
             });
             return output.reply(
