@@ -500,7 +500,7 @@ export async function entry(ctx) {
       inventoryKey: "carsData",
       inventoryLimit: 36,
       showCollectibles: false,
-      ignoreFeature: ["use", "top", "toss"],
+      ignoreFeature: ["use", "top", "toss", "sell"],
     },
     [
       {

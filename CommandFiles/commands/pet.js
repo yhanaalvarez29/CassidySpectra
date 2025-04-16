@@ -1107,7 +1107,7 @@ export async function entry(ctx) {
       inventoryLimit: 36,
       inventoryName: "Pets",
       showCollectibles: false,
-      ignoreFeature: ["use", "top", "toss"],
+      ignoreFeature: ["use", "top", "toss", "sell"],
     },
     [
       {
