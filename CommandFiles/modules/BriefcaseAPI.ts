@@ -15,7 +15,7 @@ export function listItem(
   item: Partial<InventoryItem> = {},
   count: number = undefined
 ) {
-  `${item.icon} **${item.name}**${
+  return `${item.icon} **${item.name}**${
     typeof count === "number" && count > 1 ? ` (x${count})` : ""
   } [${item.key}]`;
 }
@@ -1219,6 +1219,304 @@ export class BriefcaseAPI {
                 `${UNIRedux.arrowFromT} See more with '${prefix}${commandName} top ${key} <page>'`
             );
           }
+        },
+      },
+      {
+        key: "trade",
+        description: "Propose a trade of items with another user or anyone.",
+        aliases: ["-tr"],
+        args: ["<uid|'any'>", "<your_item_id>*<num>", "<their_item_id>*<num>"],
+        async handler() {
+          if (actionArgs.length < 3) {
+            return output.reply(
+              [
+                `${prefix}${commandName}-trade`,
+                "<uid|'any'>",
+                "<your_item_id>*<num>",
+                "<their_item_id>*<num>",
+              ].join(" ")
+            );
+          }
+          const [recipientID = "", yourItem = "", theirItem = ""] = actionArgs;
+          const [yourKey, yourAmount = "1"] = yourItem.split("*");
+          const [theirKey, theirAmount = "1"] = theirItem.split("*");
+
+          const yourNum = parseInt(yourAmount);
+          const theirNum = parseInt(theirAmount);
+
+          if (!yourKey || customInventory.getAmount(yourKey) === 0) {
+            return output.reply(
+              `❌ Item "${yourKey}" is missing or not in your ${inventoryIcon}!`
+            );
+          }
+
+          if (!customInventory.hasAmount(yourKey, yourNum)) {
+            return output.reply(
+              `❌ You don't have enough "${yourKey}" (have ${customInventory.getAmount(
+                yourKey
+              )}) in your ${inventoryIcon}!`
+            );
+          }
+
+          if (!theirKey) {
+            return output.reply(`❌ Specify an item to receive!`);
+          }
+
+          const isAnyTrade = recipientID === "any";
+          let recipientData: UserData = null;
+          let rInventory: Inventory = null;
+
+          if (!isAnyTrade) {
+            if (recipientID === input.senderID) {
+              return output.reply(`❌ Can't trade with yourself!`);
+            }
+            recipientData = await money.getCache(recipientID);
+            if (!(await money.exists(recipientID))) {
+              return output.reply(`❌ User "${recipientID}" not found!`);
+            }
+            rInventory = new Inventory(
+              recipientData[bcContext.iKey],
+              self.extraConfig.inventoryLimit
+            );
+            if (rInventory.getAmount(theirKey) === 0) {
+              return output.reply(
+                `❌ Recipient doesn't have "${theirKey}" in their ${inventoryIcon}!`
+              );
+            }
+            if (!rInventory.hasAmount(theirKey, theirNum)) {
+              return output.reply(
+                `❌ Recipient doesn't have enough "${theirKey}" (has ${rInventory.getAmount(
+                  theirKey
+                )}) in their ${inventoryIcon}!`
+              );
+            }
+          }
+
+          const tradeMessage = await output.reply(
+            `📬 **Trade Proposal** ${
+              isAnyTrade ? "to anyone" : `to ${recipientData.name}`
+            }!\n` +
+              `You give: ${listItem(
+                customInventory.getOne(yourKey),
+                yourNum
+              )}\n` +
+              `You get: ${listItem(
+                rInventory?.getOne(theirKey) ||
+                  customInventory.getOne(theirKey) || {
+                    key: theirKey,
+                    name: "(Unknown ???)",
+                    icon: "❓",
+                  },
+                theirNum
+              )}\n` +
+              `Reply "accept" or "decline".`
+          );
+
+          input.setReply(tradeMessage.messageID, {
+            key: "trade",
+            callback: async (ctxRep) => {
+              const responderID = ctxRep.input.senderID;
+              if (responderID === input.senderID) {
+                return ctxRep.output.replyStyled(
+                  `❌ You can't accept your own trade!`,
+                  style
+                );
+              }
+
+              if (!isAnyTrade && responderID !== recipientID) {
+                return ctxRep.output.replyStyled(
+                  `❌ Only ${recipientData.name} can accept this trade!`,
+                  style
+                );
+              }
+
+              const senderInventory = new Inventory(
+                (await money.getCache(input.senderID))[bcContext.iKey],
+                self.extraConfig.inventoryLimit
+              );
+              const responderData = await money.getCache(responderID);
+              if (!(await money.exists(responderID))) {
+                return ctxRep.output.replyStyled(
+                  `❌ User ${responderData?.name || "Unregistered"} not found!`,
+                  style
+                );
+              }
+
+              if (ctxRep.input.words[0].toLowerCase() !== "accept") {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade declined by ${
+                    responderData?.name || "Unregistered"
+                  }.`,
+                  style
+                );
+              }
+              const responderInventory = new Inventory(
+                responderData[bcContext.iKey],
+                self.extraConfig.inventoryLimit
+              );
+
+              if (!senderInventory.hasAmount(yourKey, yourNum)) {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade failed: You no longer have enough "${yourKey}" (have ${senderInventory.getAmount(
+                    yourKey
+                  )}) in your ${inventoryIcon}!`,
+                  style
+                );
+              }
+
+              if (responderInventory.getAmount(theirKey) === 0) {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade failed: ${responderData.name} doesn't have "${theirKey}" in their ${inventoryIcon}!`,
+                  style
+                );
+              }
+              if (!responderInventory.hasAmount(theirKey, theirNum)) {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade failed: ${
+                    responderData.name
+                  } doesn't have enough "${theirKey}" (has ${responderInventory.getAmount(
+                    theirKey
+                  )}) in their ${inventoryIcon}!`,
+                  style
+                );
+              }
+
+              if (
+                senderInventory.getAll().length + theirNum >
+                self.extraConfig.inventoryLimit
+              ) {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade failed: Your ${inventoryIcon} can't hold ${theirNum} more items (limit: ${self.extraConfig.inventoryLimit})!`,
+                  style
+                );
+              }
+              if (
+                responderInventory.getAll().length + yourNum >
+                self.extraConfig.inventoryLimit
+              ) {
+                return ctxRep.output.replyStyled(
+                  `❌ Trade failed: ${responderData.name}'s ${inventoryIcon} can't hold ${yourNum} more items (limit: ${self.extraConfig.inventoryLimit})!`,
+                  style
+                );
+              }
+
+              for (let i = 0; i < yourNum; i++) {
+                responderInventory.addOne(senderInventory.getOne(yourKey));
+                senderInventory.deleteOne(yourKey);
+              }
+
+              for (let i = 0; i < theirNum; i++) {
+                senderInventory.addOne(responderInventory.getOne(theirKey));
+                responderInventory.deleteOne(theirKey);
+              }
+
+              await money.setItem(input.senderID, {
+                [bcContext.iKey]: Array.from(senderInventory),
+              });
+              await money.setItem(responderID, {
+                [bcContext.iKey]: Array.from(responderInventory),
+              });
+              input.delReply(String(ctxRep.detectID));
+
+              return ctxRep.output.replyStyled(
+                `✅ Trade completed!\n` +
+                  `${userData.name} got ${listItem(
+                    senderInventory.getOne(theirKey),
+                    theirNum
+                  )}\n` +
+                  `${responderData.name} got ${listItem(
+                    responderInventory.getOne(yourKey),
+                    yourNum
+                  )}`,
+                style
+              );
+            },
+          });
+        },
+      },
+      {
+        key: "sell",
+        description: "Sell one or more items for their monetary value.",
+        aliases: ["-s"],
+        args: ["<item_id>*<num|'all'>..."],
+        async handler() {
+          if (!actionArgs.length) {
+            return output.reply(`❌ Specify an item to sell!`);
+          }
+
+          let totalMoney = 0;
+          const soldItems = [];
+          const errors = [];
+
+          for (const arg of actionArgs) {
+            let [key, amount_ = "1"] = arg?.split("*") || [];
+            let amount = parseInt(amount_);
+
+            if (!key) {
+              errors.push(`❌ Specify an item to sell!`);
+              continue;
+            }
+
+            const items = customInventory.get(key);
+            if (!items.length) {
+              errors.push(`❌ No "${key}" in your ${inventoryIcon}!`);
+              continue;
+            }
+
+            if (amount_ === "all") amount = items.length;
+            amount = parseInt(String(amount));
+            if (isNaN(amount) || amount < 1 || amount > items.length) {
+              errors.push(
+                `❌ Invalid amount! You have ${items.length}x ${key} in your ${inventoryIcon}!`
+              );
+              continue;
+            }
+
+            const sellItems = items.slice(0, amount);
+            let itemMoney = 0;
+            sellItems.forEach((item) => {
+              if (item.cannotSell) {
+                return;
+              }
+              if (isNaN(item.sellPrice)) {
+                return;
+              }
+              itemMoney += item.sellPrice || 0;
+              customInventory.deleteRef(item);
+            });
+
+            if (itemMoney === 0) {
+              errors.push(`❌ These "${key}" items can't be sold!`);
+              continue;
+            }
+
+            totalMoney += itemMoney;
+            soldItems.push(
+              `${listItem(items[0], amount)} - **$${itemMoney}💵**`
+            );
+          }
+
+          if (!soldItems.length && errors.length) {
+            return output.reply(errors.join("\n"));
+          }
+
+          if (totalMoney > 0) {
+            userData.money += totalMoney;
+            await money.setItem(input.senderID, {
+              [ikey]: Array.from(customInventory),
+              money: userData.money,
+            });
+          }
+
+          let response =
+            `${UNISpectra.arrow} ***Sold***\n\n${soldItems.join("\n")}\n\n` +
+            `✅ Total: **$${totalMoney}**\n` +
+            `💰 Your new balance: **$${userData.money}💵**.`;
+          if (errors.length) {
+            response += `\n\n${errors.join("\n")}`;
+          }
+
+          return output.reply(response);
         },
       },
     ].filter((i) => !this.extraConfig.ignoreFeature.includes(i.key));
