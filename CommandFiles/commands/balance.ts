@@ -17,6 +17,9 @@ export const meta: CassidySpectra.CommandMeta = {
   icon: "💰",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Balance 💰",
   titleFont: "bold",

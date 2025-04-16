@@ -1,5 +1,9 @@
+// @ts-check
 const moment = require("moment-timezone");
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "accept",
   otherNames: ["acp"],
@@ -14,6 +18,10 @@ export const meta = {
   noPrefix: false,
   icon: "💗",
 };
+
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "💗 Accept Users",
   titleFont: "bold",
@@ -22,17 +30,10 @@ export const style = {
 
 /**
  *
- * @param {CommandContext} param0
+ * @param {CommandContext  & { repObj: {messageID: string; listRequest: any; author: string; unsendTimeout: any }}} param0
  * @returns
  */
-export async function onReply({
-  output: message,
-  repObj: Reply,
-  event,
-  api,
-  input,
-  commandName,
-}) {
+export async function onReply({ output: message, repObj: Reply, event, api }) {
   const { author, listRequest, messageID } = Reply;
   if (author !== event.senderID) return;
   const args = event.body.replace(/ +/g, " ").toLowerCase().split(" ");
@@ -87,11 +88,13 @@ export async function onReply({
       continue;
     }
     form.variables.input.friend_requester_id = u.node.id;
+    // @ts-ignore
     form.variables = JSON.stringify(form.variables);
     newTargetIDs.push(u);
     promiseFriends.push(
       api.httpPost("https://www.facebook.com/api/graphql/", form)
     );
+    // @ts-ignore
     form.variables = JSON.parse(form.variables);
   }
 
@@ -136,9 +139,9 @@ export async function onReply({
 }
 /**
  *
- * @param {CommandContext} param0
+ * @param {CommandContext } ctx
  */
-export async function entry({ event, api, commandName, output, input }) {
+export async function entry({ event, api, output, input }) {
   const form = {
     av: api.getCurrentUserID(),
     fb_api_req_friendly_name:
@@ -171,6 +174,7 @@ export async function entry({ event, api, commandName, output, input }) {
     unsendTimeout: setTimeout(() => {
       api.unsendMessage(info.messageID);
     }, 60 * 1000),
+    // @ts-ignore
     callback: onReply,
   });
 }

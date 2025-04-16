@@ -453,7 +453,9 @@ declare global {
     /**
      * Retrieves the current inflation rate.
      */
-    getInflationRate?: (usersData?: Record<string, UserData>) => Promise<number>;
+    getInflationRate?: (
+      usersData?: Record<string, UserData>
+    ) => Promise<number>;
 
     /**
      * Selects a random item based on probabilities.
@@ -705,6 +707,43 @@ declare global {
       params?: any[];
       legacyMode?: boolean;
       [name: string]: any;
+    }
+
+    export type FontTypes =
+      | "bold"
+      | "fancy"
+      | "bold_italic"
+      | "fancy_italic"
+      | "redux"
+      | "widespace"
+      | "serif"
+      | "handwriting"
+      | "scriptbold"
+      | "script"
+      | "typewriter"
+      | "none"
+      | "moody"
+      | "double_struck";
+    export interface CommandStyle {
+      title?: string | StylerItem;
+      titleFont?: FontTypes;
+      contentFont?: FontTypes;
+      [key: string]: StylerItem | string;
+    }
+
+    export interface StylerItem {
+      preset?: string | string[];
+      content_template?: any[];
+      number_font?: FontTypes;
+      new_line?: boolean;
+      line_top?: "hidden" | "whiteline" | string;
+      line_bottom?: "hidden" | "whiteline" | string;
+      line_bottom_inside_x?: string;
+      text_font?: FontTypes;
+      text_trim?: boolean;
+      text?: string | null;
+      line_replacer?: string;
+      line_replace?: string;
     }
 
     export type CommandHandler = (

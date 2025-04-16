@@ -18,6 +18,9 @@ export const meta = {
   waitingTime: 0.01,
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "💵 Buy Command",
   titleFont: "fancy",

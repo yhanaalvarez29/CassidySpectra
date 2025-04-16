@@ -16,6 +16,9 @@ export const meta = {
   category: "User Management",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export class style {
   title = "Most Active Users ⚡";
   titleFont = "bold";

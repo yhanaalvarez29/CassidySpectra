@@ -17,6 +17,10 @@ export const meta = {
   requirement: "3.0.0",
   icon: "💻",
 };
+
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Calculator 💻",
   titleFont: "bold",

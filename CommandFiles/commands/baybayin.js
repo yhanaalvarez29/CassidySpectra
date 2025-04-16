@@ -19,6 +19,9 @@ export const meta = {
   icon: "✏️",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Baybayin ✏️",
   titleFont: "bold",

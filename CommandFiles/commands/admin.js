@@ -15,6 +15,10 @@ export const meta = {
   category: "User Management",
 };
 const { Cassidy } = global;
+
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Admins 👑",
   titleFont: "bold",

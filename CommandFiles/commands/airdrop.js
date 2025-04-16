@@ -20,6 +20,9 @@ export const meta = {
   icon: "✈️",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Airdrop ✈️",
   titleFont: "bold",

@@ -23,6 +23,9 @@ export const meta = {
   deku: true,
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "⬛ Blackbox",
   titleFont: "bold",
