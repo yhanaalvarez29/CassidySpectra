@@ -2,6 +2,7 @@
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "../modules/unisym.js";
+import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -1098,9 +1099,15 @@ export async function entry(ctx) {
     cassEXP: cxp,
   } = await money.get(input.senderID);
 
-  const home = new SpectralCMDHome(
+  const home = new BriefcaseAPI(
     {
       isHypen: true,
+      inventoryKey: "petsData",
+      inventoryIcon: "🐈",
+      inventoryLimit: 36,
+      inventoryName: "Pets",
+      showCollectibles: false,
+      ignoreFeature: ["use", "top", "toss"],
     },
     [
       {
@@ -1625,9 +1632,9 @@ export async function entry(ctx) {
         },
       },
       {
-        key: "list",
+        key: "status",
         description: "List your pets",
-        aliases: ["-l"],
+        aliases: ["-st"],
         async handler() {
           const petsData = new Inventory(rawPetsData);
           const pets = petsData.getAll();

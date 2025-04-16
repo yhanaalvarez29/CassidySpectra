@@ -2,6 +2,7 @@
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "../modules/unisym.js";
+import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -491,737 +492,753 @@ export async function entry(ctx) {
     cassEXP: cxp,
   } = await money.get(input.senderID);
 
-  const home = new SpectralCMDHome({ isHypen: true }, [
+  const home = new BriefcaseAPI(
     {
-      key: "status",
-      description: "Inspect your car’s diagnostics",
-      aliases: ["-s"],
-      args: ["[car_name]"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        if (args[0]) {
-          const car = carsData
-            .getAll()
-            .find(
-              (car) =>
-                String(car.name).toLowerCase().trim() ===
-                String(args[0]).toLowerCase().trim()
-            );
-          if (!car) {
+      isHypen: true,
+      inventoryIcon: "🚗",
+      inventoryName: "Car",
+      inventoryKey: "carsData",
+      inventoryLimit: 36,
+      showCollectibles: false,
+      ignoreFeature: ["use", "top", "toss"],
+    },
+    [
+      {
+        key: "status",
+        description: "Inspect your car’s diagnostics",
+        aliases: ["-s"],
+        args: ["[car_name]"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          if (args[0]) {
+            const car = carsData
+              .getAll()
+              .find(
+                (car) =>
+                  String(car.name).toLowerCase().trim() ===
+                  String(args[0]).toLowerCase().trim()
+              );
+            if (!car) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ No car named "${args[0]}"!`
+              );
+            }
+            const updatedCar = updateCarData(car);
             return output.reply(
-              `👤 **${name}** (Car)\n\n❌ No car named "${args[0]}"!`
+              `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Diagnostics***\n\n` +
+                `${updatedCar.icon} **${updatedCar.name}** (${updatedCar.carType})\n` +
+                `Speed: ${updatedCar.currentSpeed}/${updatedCar.maxSpeed} mph\n` +
+                `Gear: ${updatedCar.gear}/6\n` +
+                `Fuel: ${updatedCar.fuel.toFixed(1)}%\n` +
+                `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
+                `Distance: ${updatedCar.distance.toFixed(1)} miles\n` +
+                `Level: ${updatedCar.level}\n` +
+                `Next Level: ${updatedCar.distance}/${calculateNextLevel(
+                  updatedCar
+                )} miles\n` +
+                `Upgrades: ${
+                  updatedCar.upgrades.length
+                    ? updatedCar.upgrades.join(", ")
+                    : "None"
+                }\n` +
+                `Crew: ${
+                  updatedCar.crew.length ? updatedCar.crew.join(", ") : "None"
+                }\n` +
+                `Achievements: ${
+                  updatedCar.achievements.length
+                    ? updatedCar.achievements.join(", ")
+                    : "None"
+                }\n` +
+                `Worth: $${calculateWorth(updatedCar)}\n` +
+                `Engine: ${updatedCar.isRunning ? "Revving" : "Idle"}\n` +
+                `${isCarLowOnFuel(updatedCar) ? "⛽ Fuel critical!\n" : ""}` +
+                `${isCarDamaged(updatedCar) ? "🛠️ Needs repairs!\n" : ""}` +
+                `ID: ${updatedCar.key}`
             );
           }
-          const updatedCar = updateCarData(car);
-          return output.reply(
-            `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Diagnostics***\n\n` +
+
+          let result = `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Garage***\n\n`;
+          for (const car of carsData.getAll()) {
+            const updatedCar = updateCarData(car);
+            result +=
               `${updatedCar.icon} **${updatedCar.name}** (${updatedCar.carType})\n` +
-              `Speed: ${updatedCar.currentSpeed}/${updatedCar.maxSpeed} mph\n` +
-              `Gear: ${updatedCar.gear}/6\n` +
+              `Fuel: ${updatedCar.fuel.toFixed(
+                1
+              )}% | Condition: ${updatedCar.condition.toFixed(1)}%\n` +
+              `Distance: ${updatedCar.distance.toFixed(1)} miles\n\n`;
+          }
+          result += `Use "${prefix}car status <car_name>" for details!`;
+          return output.reply(result);
+        },
+      },
+      {
+        key: "sell",
+        description: "Cash out a car",
+        aliases: ["-sl"],
+        args: ["<car_name>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const nameToSell = String(args[0]);
+          if (!nameToSell) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Specify a car to sell!`
+            );
+          }
+
+          const carToSell =
+            carsData
+              .getAll()
+              .find(
+                (car) =>
+                  car.name.toLowerCase().trim() ===
+                  nameToSell.toLowerCase().trim()
+              ) || carsData.getOne(nameToSell);
+          if (!carToSell) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${nameToSell}"!`
+            );
+          }
+          const updatedCar = updateCarData(carToSell);
+          if (updatedCar.level < 2) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ "${updatedCar.name}" needs level 2+ to sell!`
+            );
+          }
+
+          const price = calculateWorth(updatedCar);
+          const newMoney = playerMoney + price;
+          const code = global.utils.generateCaptchaCode(12);
+          const i = await output.reply(
+            `👤 **${name}** (Car)\n\n🚨 Confirm sale of ${updatedCar.icon} **${updatedCar.name}** for $${price}💵\n` +
+              `Condition: ${updatedCar.condition.toFixed(1)}% | Upgrades: ${
+                updatedCar.upgrades.length
+              }\n` +
+              `Reply with code: [${code}]`
+          );
+          input.setReply(i.messageID, {
+            carsData,
+            newMoney,
+            code,
+            price,
+            author: input.senderID,
+            carToSell: updatedCar,
+            key: "car",
+            // @ts-ignore
+            callback: confirmSell,
+          });
+        },
+      },
+      {
+        key: "shop",
+        description: "Visit the elite dealership",
+        aliases: ["-sh"],
+        async handler() {
+          const shop = new UTShop({ ...carShop, itemData: carShopItems });
+          await shop.onPlay();
+        },
+      },
+      {
+        key: "drive",
+        description: "Burn rubber on the open road",
+        aliases: ["-d"],
+        args: ["<car_name>", "<distance>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const cassEXP = new CassEXP(cxp);
+          const [targetCar, distanceStr] = args;
+          let distance = parseFloat(distanceStr) || 10;
+
+          if (!targetCar) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car drive <car_name> <distance>`
+            );
+          }
+
+          const rawTargetCarData = carsData
+            .getAll()
+            .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
+          if (!rawTargetCarData) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
+            );
+          }
+          const targetCarData = updateCarData(rawTargetCarData);
+          if (targetCarData.fuel <= 0) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is out of gas! Refuel it.`
+            );
+          }
+          if (targetCarData.condition <= 10) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too wrecked to drive!`
+            );
+          }
+
+          const weather = getRandomWeather();
+          const { speedMod, fuelMod, conditionMod } = weatherEffects[weather];
+          const maxSpeed = targetCarData.maxSpeed * speedMod;
+          if (distance * 5 > maxSpeed) {
+            distance = maxSpeed / 5;
+          }
+
+          const fuelCost = distance * targetCarData.fuelEfficiency * fuelMod;
+          const conditionDamage =
+            distance * 0.1 * conditionMod * (1 - targetCarData.durability);
+          targetCarData.distance += distance;
+          targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
+          targetCarData.condition = Math.max(
+            targetCarData.condition - conditionDamage,
+            0
+          );
+          targetCarData.isRunning = targetCarData.fuel > 0;
+          targetCarData.currentSpeed = clamp(distance * 5, 0, maxSpeed);
+          targetCarData.gear = Math.min(
+            Math.floor(targetCarData.currentSpeed / 20) + 1,
+            6
+          );
+
+          const updatedCar = updateCarData(targetCarData);
+          const expGain = clamp(3, Math.floor(updatedCar.distance / 100), 50);
+          cassEXP.expControls.raise(expGain);
+          const moneyEarned = Math.floor(distance * updatedCar.level * 0.5);
+
+          checkAchievements(updatedCar);
+          carsData.deleteOne(updatedCar.key);
+          // @ts-ignore
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, {
+            carsData: Array.from(carsData),
+            cassEXP: cassEXP.raw(),
+            money: playerMoney + moneyEarned,
+          });
+
+          return output.reply(
+            `👤 **${name}** (Car)\n\n✅ Drove ${updatedCar.icon} **${updatedCar.name}** for ${distance} miles!\n` +
+              `Weather: ${weather}\n\n` +
+              `${UNIRedux.arrow} ***Status***\n` +
+              `${updatedCar.icon} **${updatedCar.name}**\n` +
+              `Speed: ${updatedCar.currentSpeed} mph\n` +
               `Fuel: ${updatedCar.fuel.toFixed(1)}%\n` +
               `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
               `Distance: ${updatedCar.distance.toFixed(1)} miles\n` +
               `Level: ${updatedCar.level}\n` +
-              `Next Level: ${updatedCar.distance}/${calculateNextLevel(
-                updatedCar
-              )} miles\n` +
-              `Upgrades: ${
-                updatedCar.upgrades.length
-                  ? updatedCar.upgrades.join(", ")
-                  : "None"
-              }\n` +
-              `Crew: ${
-                updatedCar.crew.length ? updatedCar.crew.join(", ") : "None"
-              }\n` +
-              `Achievements: ${
-                updatedCar.achievements.length
-                  ? updatedCar.achievements.join(", ")
-                  : "None"
-              }\n` +
               `Worth: $${calculateWorth(updatedCar)}\n` +
-              `Engine: ${updatedCar.isRunning ? "Revving" : "Idle"}\n` +
-              `${isCarLowOnFuel(updatedCar) ? "⛽ Fuel critical!\n" : ""}` +
-              `${isCarDamaged(updatedCar) ? "🛠️ Needs repairs!\n" : ""}` +
-              `ID: ${updatedCar.key}`
+              `Earnings: $${moneyEarned}💵 | EXP: +${expGain}\n` +
+              `${isCarLowOnFuel(updatedCar) ? "⛽ Fuel low!\n" : ""}` +
+              `${isCarDamaged(updatedCar) ? "🛠️ Needs repairs!\n" : ""}`
           );
-        }
-
-        let result = `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Garage***\n\n`;
-        for (const car of carsData.getAll()) {
-          const updatedCar = updateCarData(car);
-          result +=
-            `${updatedCar.icon} **${updatedCar.name}** (${updatedCar.carType})\n` +
-            `Fuel: ${updatedCar.fuel.toFixed(
-              1
-            )}% | Condition: ${updatedCar.condition.toFixed(1)}%\n` +
-            `Distance: ${updatedCar.distance.toFixed(1)} miles\n\n`;
-        }
-        result += `Use "${prefix}car status <car_name>" for details!`;
-        return output.reply(result);
+        },
       },
-    },
-    {
-      key: "sell",
-      description: "Cash out a car",
-      aliases: ["-sl"],
-      args: ["<car_name>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const nameToSell = String(args[0]);
-        if (!nameToSell) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Specify a car to sell!`
-          );
-        }
-
-        const carToSell =
-          carsData
-            .getAll()
-            .find(
-              (car) =>
-                car.name.toLowerCase().trim() ===
-                nameToSell.toLowerCase().trim()
-            ) || carsData.getOne(nameToSell);
-        if (!carToSell) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${nameToSell}"!`
-          );
-        }
-        const updatedCar = updateCarData(carToSell);
-        if (updatedCar.level < 2) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ "${updatedCar.name}" needs level 2+ to sell!`
-          );
-        }
-
-        const price = calculateWorth(updatedCar);
-        const newMoney = playerMoney + price;
-        const code = global.utils.generateCaptchaCode(12);
-        const i = await output.reply(
-          `👤 **${name}** (Car)\n\n🚨 Confirm sale of ${updatedCar.icon} **${updatedCar.name}** for $${price}💵\n` +
-            `Condition: ${updatedCar.condition.toFixed(1)}% | Upgrades: ${
-              updatedCar.upgrades.length
-            }\n` +
-            `Reply with code: [${code}]`
-        );
-        input.setReply(i.messageID, {
-          carsData,
-          newMoney,
-          code,
-          price,
-          author: input.senderID,
-          carToSell: updatedCar,
-          key: "car",
-          // @ts-ignore
-          callback: confirmSell,
-        });
-      },
-    },
-    {
-      key: "shop",
-      description: "Visit the elite dealership",
-      aliases: ["-sh"],
-      async handler() {
-        const shop = new UTShop({ ...carShop, itemData: carShopItems });
-        await shop.onPlay();
-      },
-    },
-    {
-      key: "drive",
-      description: "Burn rubber on the open road",
-      aliases: ["-d"],
-      args: ["<car_name>", "<distance>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const cassEXP = new CassEXP(cxp);
-        const [targetCar, distanceStr] = args;
-        let distance = parseFloat(distanceStr) || 10;
-
-        if (!targetCar) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car drive <car_name> <distance>`
-          );
-        }
-
-        const rawTargetCarData = carsData
-          .getAll()
-          .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
-        if (!rawTargetCarData) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
-          );
-        }
-        const targetCarData = updateCarData(rawTargetCarData);
-        if (targetCarData.fuel <= 0) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is out of gas! Refuel it.`
-          );
-        }
-        if (targetCarData.condition <= 10) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too wrecked to drive!`
-          );
-        }
-
-        const weather = getRandomWeather();
-        const { speedMod, fuelMod, conditionMod } = weatherEffects[weather];
-        const maxSpeed = targetCarData.maxSpeed * speedMod;
-        if (distance * 5 > maxSpeed) {
-          distance = maxSpeed / 5;
-        }
-
-        const fuelCost = distance * targetCarData.fuelEfficiency * fuelMod;
-        const conditionDamage =
-          distance * 0.1 * conditionMod * (1 - targetCarData.durability);
-        targetCarData.distance += distance;
-        targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
-        targetCarData.condition = Math.max(
-          targetCarData.condition - conditionDamage,
-          0
-        );
-        targetCarData.isRunning = targetCarData.fuel > 0;
-        targetCarData.currentSpeed = clamp(distance * 5, 0, maxSpeed);
-        targetCarData.gear = Math.min(
-          Math.floor(targetCarData.currentSpeed / 20) + 1,
-          6
-        );
-
-        const updatedCar = updateCarData(targetCarData);
-        const expGain = clamp(3, Math.floor(updatedCar.distance / 100), 50);
-        cassEXP.expControls.raise(expGain);
-        const moneyEarned = Math.floor(distance * updatedCar.level * 0.5);
-
-        checkAchievements(updatedCar);
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, {
-          carsData: Array.from(carsData),
-          cassEXP: cassEXP.raw(),
-          money: playerMoney + moneyEarned,
-        });
-
-        return output.reply(
-          `👤 **${name}** (Car)\n\n✅ Drove ${updatedCar.icon} **${updatedCar.name}** for ${distance} miles!\n` +
-            `Weather: ${weather}\n\n` +
-            `${UNIRedux.arrow} ***Status***\n` +
-            `${updatedCar.icon} **${updatedCar.name}**\n` +
-            `Speed: ${updatedCar.currentSpeed} mph\n` +
-            `Fuel: ${updatedCar.fuel.toFixed(1)}%\n` +
-            `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
-            `Distance: ${updatedCar.distance.toFixed(1)} miles\n` +
-            `Level: ${updatedCar.level}\n` +
-            `Worth: $${calculateWorth(updatedCar)}\n` +
-            `Earnings: $${moneyEarned}💵 | EXP: +${expGain}\n` +
-            `${isCarLowOnFuel(updatedCar) ? "⛽ Fuel low!\n" : ""}` +
-            `${isCarDamaged(updatedCar) ? "🛠️ Needs repairs!\n" : ""}`
-        );
-      },
-    },
-    {
-      key: "race",
-      description: "Challenge a rival crew",
-      aliases: ["-rc"],
-      args: ["<car_name>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const cassEXP = new CassEXP(cxp);
-        const targetCar = args[0];
-
-        if (!targetCar) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car race <car_name>`
-          );
-        }
-
-        const rawTargetCarData = carsData
-          .getAll()
-          .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
-        if (!rawTargetCarData) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
-          );
-        }
-        const targetCarData = updateCarData(rawTargetCarData);
-        if (targetCarData.fuel < 20) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** needs 20%+ fuel to race!`
-          );
-        }
-        if (targetCarData.condition < 30) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too damaged to race!`
-          );
-        }
-
-        const raceDistance = 50;
-        const weather = getRandomWeather();
-        const { speedMod } = weatherEffects[weather];
-        const playerSpeed =
-          targetCarData.maxSpeed * (targetCarData.level / 10 + 0.9) * speedMod;
-        const opponentSpeed =
-          130 + Math.random() * 50 + Math.min(targetCarData.level * 10, 50);
-        const fuelCost = raceDistance * targetCarData.fuelEfficiency;
-        const conditionDamage =
-          raceDistance * 0.15 * (1 - targetCarData.durability);
-
-        if (targetCarData.fuel < fuelCost) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${
-              targetCarData.name
-            }** needs ${fuelCost.toFixed(1)}% fuel for the race!`
-          );
-        }
-
-        const playerTime = (raceDistance / playerSpeed) * 60;
-        const opponentTime = (raceDistance / opponentSpeed) * 60;
-        const playerWins = playerTime < opponentTime;
-        const crewBonus = targetCarData.crew.length * 0.05;
-        const reward = playerWins
-          ? Math.floor((150 + targetCarData.level * 40) * (1 + crewBonus))
-          : Math.floor(30 * (1 + crewBonus));
-        targetCarData.distance += raceDistance;
-        targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
-        targetCarData.condition = Math.max(
-          targetCarData.condition - conditionDamage,
-          0
-        );
-
-        const updatedCar = updateCarData(targetCarData);
-        const expGain = playerWins ? 20 + targetCarData.crew.length * 5 : 10;
-        cassEXP.expControls.raise(expGain);
-        const newMoney = playerMoney + reward;
-
-        checkAchievements(updatedCar);
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, {
-          carsData: Array.from(carsData),
-          cassEXP: cassEXP.raw(),
-          money: newMoney,
-        });
-
-        const resultText = playerWins
-          ? `🏁 Victory! Beat them by ${(opponentTime - playerTime).toFixed(
-              2
-            )} minutes!`
-          : `🏁 Defeat. They finished ${(playerTime - opponentTime).toFixed(
-              2
-            )} minutes ahead.`;
-        return output.reply(
-          `👤 **${name}** (Car)\n\n🏎️ **Race Mode** - ${updatedCar.icon} **${updatedCar.name}**\n\n` +
-            `Weather: ${weather}\n` +
-            `Distance: ${raceDistance} miles\n` +
-            `Your Speed: ${playerSpeed.toFixed(1)} mph\n` +
-            `Rival Speed: ${opponentSpeed.toFixed(1)} mph\n` +
-            `Your Time: ${playerTime.toFixed(2)} min\n` +
-            `Rival Time: ${opponentTime.toFixed(2)} min\n` +
-            `${resultText}\n` +
-            `Reward: $${reward}💵 | EXP: +${expGain}\n` +
-            `Fuel Left: ${updatedCar.fuel.toFixed(1)}%\n` +
-            `Condition: ${updatedCar.condition.toFixed(1)}%`
-        );
-      },
-    },
-    {
-      key: "refuel",
-      description: "Pump some gas",
-      aliases: ["-r"],
-      args: ["<car_name>", "<fuel_key>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const inventory = new Inventory(rawInventory);
-        const [targetCar, fuelKey] = args;
-
-        if (!targetCar) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car refuel <car_name> <fuel_key>`
-          );
-        }
-
-        const rawTargetCarData = carsData
-          .getAll()
-          .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
-        if (!rawTargetCarData) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
-          );
-        }
-        const targetCarData = updateCarData(rawTargetCarData);
-        if (targetCarData.fuel >= 100) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is already full!`
-          );
-        }
-        if (isCooldownActive(targetCarData.lastAction)) {
-          const timeLeft =
-            5 -
-            Math.floor(
-              (new Date().getTime() -
-                new Date(targetCarData.lastAction).getTime()) /
-                (1000 * 60)
-            );
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** on refuel cooldown. Wait ${timeLeft} min.`
-          );
-        }
-
-        const fuel = inventory.getOne(fuelKey);
-        if (!fuel || fuel.type !== "fuel") {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No valid fuel "${fuelKey}"! Check the shop.`
-          );
-        }
-
-        targetCarData.fuel = Math.min(
-          targetCarData.fuel + Number(fuel.fuelAmount),
-          100
-        );
-        targetCarData.maxSpeed =
-          targetCarData.maxSpeed + Number(fuel.speedBoost || 0);
-        targetCarData.lastAction = new Date().toISOString();
-        inventory.deleteOne(fuel.key);
-        const updatedCar = updateCarData(targetCarData);
-
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, {
-          carsData: Array.from(carsData),
-          inventory: Array.from(inventory),
-        });
-
-        return output.reply(
-          `👤 **${name}** (Car)\n\n✅ Refueled ${updatedCar.icon} **${updatedCar.name}** with ${fuel.icon} **${fuel.name}**!\n` +
-            `Fuel: ${updatedCar.fuel.toFixed(1)}%\n` +
-            `Max Speed: ${updatedCar.maxSpeed} mph\n` +
-            `Cooldown: 5 min started`
-        );
-      },
-    },
-    {
-      key: "top",
-      description: "Check the top car legends",
-      aliases: ["-t"],
-      async handler() {
-        const allPlayers = await money.getAll();
-        if (!allPlayers || Object.keys(allPlayers).length === 0) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No cars registered yet!`
-          );
-        }
-
-        let allCars = [];
-        for (const [playerID, playerData] of Object.entries(allPlayers)) {
-          const {
-            name: playerName = "Unregistered",
-            carsData: rawCarsData = [],
-          } = playerData;
+      {
+        key: "race",
+        description: "Challenge a rival crew",
+        aliases: ["-rc"],
+        args: ["<car_name>"],
+        async handler() {
           const carsData = new Inventory(rawCarsData);
-          const playerCars = carsData.getAll().map((car) => {
-            const updatedCar = updateCarData(car);
-            return {
-              owner: playerName,
-              ownerID: playerID,
-              car: updatedCar,
-              worth: calculateWorth(updatedCar),
-            };
-          });
-          allCars = allCars.concat(playerCars);
-        }
+          const cassEXP = new CassEXP(cxp);
+          const targetCar = args[0];
 
-        if (allCars.length === 0) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No cars in the system!`
+          if (!targetCar) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car race <car_name>`
+            );
+          }
+
+          const rawTargetCarData = carsData
+            .getAll()
+            .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
+          if (!rawTargetCarData) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
+            );
+          }
+          const targetCarData = updateCarData(rawTargetCarData);
+          if (targetCarData.fuel < 20) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** needs 20%+ fuel to race!`
+            );
+          }
+          if (targetCarData.condition < 30) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too damaged to race!`
+            );
+          }
+
+          const raceDistance = 50;
+          const weather = getRandomWeather();
+          const { speedMod } = weatherEffects[weather];
+          const playerSpeed =
+            targetCarData.maxSpeed *
+            (targetCarData.level / 10 + 0.9) *
+            speedMod;
+          const opponentSpeed =
+            130 + Math.random() * 50 + Math.min(targetCarData.level * 10, 50);
+          const fuelCost = raceDistance * targetCarData.fuelEfficiency;
+          const conditionDamage =
+            raceDistance * 0.15 * (1 - targetCarData.durability);
+
+          if (targetCarData.fuel < fuelCost) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${
+                targetCarData.name
+              }** needs ${fuelCost.toFixed(1)}% fuel for the race!`
+            );
+          }
+
+          const playerTime = (raceDistance / playerSpeed) * 60;
+          const opponentTime = (raceDistance / opponentSpeed) * 60;
+          const playerWins = playerTime < opponentTime;
+          const crewBonus = targetCarData.crew.length * 0.05;
+          const reward = playerWins
+            ? Math.floor((150 + targetCarData.level * 40) * (1 + crewBonus))
+            : Math.floor(30 * (1 + crewBonus));
+          targetCarData.distance += raceDistance;
+          targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
+          targetCarData.condition = Math.max(
+            targetCarData.condition - conditionDamage,
+            0
           );
-        }
 
-        allCars.sort((a, b) => b.worth - a.worth);
-        const topCars = allCars.slice(0, Math.min(10, allCars.length));
+          const updatedCar = updateCarData(targetCarData);
+          const expGain = playerWins ? 20 + targetCarData.crew.length * 5 : 10;
+          cassEXP.expControls.raise(expGain);
+          const newMoney = playerMoney + reward;
 
-        let leaderboard = `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Top Car Legends***\n\n`;
-        topCars.forEach((entry, index) => {
-          const { owner, car, worth } = entry;
-          leaderboard +=
-            `${index + 1}. ${car.icon} **${car.name}** (${car.carType})\n` +
-            `   Owner: ${owner}\n` +
-            `   Worth: $${worth}\n` +
-            `   Level: ${car.level} | Distance: ${car.distance.toFixed(
-              1
-            )} miles\n\n`;
-        });
-
-        return output.reply(leaderboard);
-      },
-    },
-    {
-      key: "uncage",
-      description: "Unleash a car from the garage",
-      aliases: ["-u"],
-      async handler() {
-        const inventory = new Inventory(rawInventory);
-        const carVentory = new Inventory(
-          rawInventory.filter((item) => item.type === "car")
-        );
-        const cars = carVentory.getAll();
-        if (cars.length === 0) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No cars in the garage! Hit the shop!`
-          );
-        }
-
-        let carList = `${UNIRedux.arrow} ***Garaged Rides***\n\n`;
-        cars.forEach((car, index) => {
-          carList += `${index + 1}. ${car.icon} **${car.name}** [${car.key}]\n`;
-        });
-        carList += `\nReply with a number to unleash a car!`;
-        const i = await output.reply(`👤 **${name}** (Car)\n\n${carList}`);
-        input.setReply(i.messageID, {
-          author: input.senderID,
+          checkAchievements(updatedCar);
+          carsData.deleteOne(updatedCar.key);
           // @ts-ignore
-          callback: uncageReply,
-          key: "car",
-          inventory,
-          carVentory,
-          type: "uncaging",
-          detectID: i.messageID,
-        });
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, {
+            carsData: Array.from(carsData),
+            cassEXP: cassEXP.raw(),
+            money: newMoney,
+          });
+
+          const resultText = playerWins
+            ? `🏁 Victory! Beat them by ${(opponentTime - playerTime).toFixed(
+                2
+              )} minutes!`
+            : `🏁 Defeat. They finished ${(playerTime - opponentTime).toFixed(
+                2
+              )} minutes ahead.`;
+          return output.reply(
+            `👤 **${name}** (Car)\n\n🏎️ **Race Mode** - ${updatedCar.icon} **${updatedCar.name}**\n\n` +
+              `Weather: ${weather}\n` +
+              `Distance: ${raceDistance} miles\n` +
+              `Your Speed: ${playerSpeed.toFixed(1)} mph\n` +
+              `Rival Speed: ${opponentSpeed.toFixed(1)} mph\n` +
+              `Your Time: ${playerTime.toFixed(2)} min\n` +
+              `Rival Time: ${opponentTime.toFixed(2)} min\n` +
+              `${resultText}\n` +
+              `Reward: $${reward}💵 | EXP: +${expGain}\n` +
+              `Fuel Left: ${updatedCar.fuel.toFixed(1)}%\n` +
+              `Condition: ${updatedCar.condition.toFixed(1)}%`
+          );
+        },
       },
-    },
-    {
-      key: "upgrade",
-      description: "Mod your car",
-      aliases: ["-up"],
-      args: ["<car_name>", "<upgrade_key>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const inventory = new Inventory(rawInventory);
-        const [carName, upgradeKey] = args;
+      {
+        key: "refuel",
+        description: "Pump some gas",
+        aliases: ["-r"],
+        args: ["<car_name>", "<fuel_key>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const inventory = new Inventory(rawInventory);
+          const [targetCar, fuelKey] = args;
 
-        if (!carName || !upgradeKey) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car upgrade <car_name> <upgrade_key>`
-          );
-        }
+          if (!targetCar) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car refuel <car_name> <fuel_key>`
+            );
+          }
 
-        const rawCar = carsData
-          .getAll()
-          .find((c) => c.name.toLowerCase() === carName.toLowerCase());
-        if (!rawCar) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${carName}"!`
-          );
-        }
-        const car = updateCarData(rawCar);
-        const upgrade = inventory.getOne(upgradeKey);
-        if (
-          !upgrade ||
-          (upgrade.type !== "upgrade" && upgrade.type !== "repair")
-        ) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No valid upgrade/repair "${upgradeKey}"!`
-          );
-        }
+          const rawTargetCarData = carsData
+            .getAll()
+            .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
+          if (!rawTargetCarData) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
+            );
+          }
+          const targetCarData = updateCarData(rawTargetCarData);
+          if (targetCarData.fuel >= 100) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is already full!`
+            );
+          }
+          if (isCooldownActive(targetCarData.lastAction)) {
+            const timeLeft =
+              5 -
+              Math.floor(
+                (new Date().getTime() -
+                  new Date(targetCarData.lastAction).getTime()) /
+                  (1000 * 60)
+              );
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** on refuel cooldown. Wait ${timeLeft} min.`
+            );
+          }
 
-        if (upgrade.type === "upgrade") {
-          car.maxSpeed = car.maxSpeed + Number(upgrade.speedBoost || 0);
-          car.durability =
-            car.durability + Number(upgrade.durabilityBoost || 0);
-          car.upgrades.push(upgrade.name);
-        } else if (upgrade.type === "repair") {
-          car.condition = Math.min(
-            car.condition + Number(upgrade.conditionBoost),
+          const fuel = inventory.getOne(fuelKey);
+          if (!fuel || fuel.type !== "fuel") {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No valid fuel "${fuelKey}"! Check the shop.`
+            );
+          }
+
+          targetCarData.fuel = Math.min(
+            targetCarData.fuel + Number(fuel.fuelAmount),
             100
           );
-        }
-        inventory.deleteOne(upgrade.key);
-        const updatedCar = updateCarData(car);
-        checkAchievements(updatedCar);
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, {
-          carsData: Array.from(carsData),
-          inventory: Array.from(inventory),
-        });
+          targetCarData.maxSpeed =
+            targetCarData.maxSpeed + Number(fuel.speedBoost || 0);
+          targetCarData.lastAction = new Date().toISOString();
+          inventory.deleteOne(fuel.key);
+          const updatedCar = updateCarData(targetCarData);
 
-        return output.reply(
-          `👤 **${name}** (Car)\n\n✅ Modded ${updatedCar.icon} **${updatedCar.name}** with ${upgrade.icon} **${upgrade.name}**!\n` +
-            `Max Speed: ${updatedCar.maxSpeed} mph\n` +
-            `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
-            `Worth: $${calculateWorth(updatedCar)}`
-        );
+          carsData.deleteOne(updatedCar.key);
+          // @ts-ignore
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, {
+            carsData: Array.from(carsData),
+            inventory: Array.from(inventory),
+          });
+
+          return output.reply(
+            `👤 **${name}** (Car)\n\n✅ Refueled ${updatedCar.icon} **${updatedCar.name}** with ${fuel.icon} **${fuel.name}**!\n` +
+              `Fuel: ${updatedCar.fuel.toFixed(1)}%\n` +
+              `Max Speed: ${updatedCar.maxSpeed} mph\n` +
+              `Cooldown: 5 min started`
+          );
+        },
       },
-    },
-    {
-      key: "roadtrip",
-      description: "Embark on an epic journey",
-      aliases: ["-rt"],
-      args: ["<car_name>", "<destination>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const cassEXP = new CassEXP(cxp);
-        const [targetCar, destination] = args;
+      {
+        key: "top",
+        description: "Check the top car legends",
+        aliases: ["-t"],
+        async handler() {
+          const allPlayers = await money.getAll();
+          if (!allPlayers || Object.keys(allPlayers).length === 0) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No cars registered yet!`
+            );
+          }
 
-        if (!targetCar || !destination) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car roadtrip <car_name> <destination>`
-          );
-        }
+          let allCars = [];
+          for (const [playerID, playerData] of Object.entries(allPlayers)) {
+            const {
+              name: playerName = "Unregistered",
+              carsData: rawCarsData = [],
+            } = playerData;
+            const carsData = new Inventory(rawCarsData);
+            const playerCars = carsData.getAll().map((car) => {
+              const updatedCar = updateCarData(car);
+              return {
+                owner: playerName,
+                ownerID: playerID,
+                car: updatedCar,
+                worth: calculateWorth(updatedCar),
+              };
+            });
+            allCars = allCars.concat(playerCars);
+          }
 
-        const rawTargetCarData = carsData
-          .getAll()
-          .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
-        if (!rawTargetCarData) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
-          );
-        }
-        const targetCarData = updateCarData(rawTargetCarData);
-        if (targetCarData.fuel < 50) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** needs 50%+ fuel for a road trip!`
-          );
-        }
-        if (targetCarData.condition < 50) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too beat up for a trip!`
-          );
-        }
+          if (allCars.length === 0) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No cars in the system!`
+            );
+          }
 
-        const destinations = {
-          city: { distance: 100, reward: 500, exp: 50 },
-          mountains: { distance: 200, reward: 1000, exp: 100 },
-          desert: { distance: 300, reward: 1500, exp: 150 },
-        };
-        const trip = destinations[destination.toLowerCase()];
-        if (!trip) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Valid destinations: city, mountains, desert`
-          );
-        }
+          allCars.sort((a, b) => b.worth - a.worth);
+          const topCars = allCars.slice(0, Math.min(10, allCars.length));
 
-        const weather = getRandomWeather();
-        const { fuelMod, conditionMod } = weatherEffects[weather];
-        const fuelCost = trip.distance * targetCarData.fuelEfficiency * fuelMod;
-        const conditionDamage =
-          trip.distance * 0.1 * conditionMod * (1 - targetCarData.durability);
-        if (targetCarData.fuel < fuelCost) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\nt**${
-              targetCarData.name
-            }** needs ${fuelCost.toFixed(1)}% fuel!`
-          );
-        }
+          let leaderboard = `👤 **${name}** (Car)\n\n${UNIRedux.arrow} ***Top Car Legends***\n\n`;
+          topCars.forEach((entry, index) => {
+            const { owner, car, worth } = entry;
+            leaderboard +=
+              `${index + 1}. ${car.icon} **${car.name}** (${car.carType})\n` +
+              `   Owner: ${owner}\n` +
+              `   Worth: $${worth}\n` +
+              `   Level: ${car.level} | Distance: ${car.distance.toFixed(
+                1
+              )} miles\n\n`;
+          });
 
-        targetCarData.distance += trip.distance;
-        targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
-        targetCarData.condition = Math.max(
-          targetCarData.condition - conditionDamage,
-          0
-        );
-        const updatedCar = updateCarData(targetCarData);
-        cassEXP.expControls.raise(trip.exp);
-        const newMoney = playerMoney + trip.reward;
-
-        checkAchievements(updatedCar);
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, {
-          carsData: Array.from(carsData),
-          cassEXP: cassEXP.raw(),
-          money: newMoney,
-        });
-
-        return output.reply(
-          `👤 **${name}** (Car)\n\n🌍 **Road Trip** - ${updatedCar.icon} **${updatedCar.name}**\n\n` +
-            `Destination: ${destination}\n` +
-            `Distance: ${trip.distance} miles\n` +
-            `Weather: ${weather}\n` +
-            `Fuel Left: ${updatedCar.fuel.toFixed(1)}%\n` +
-            `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
-            `Reward: $${trip.reward}💵 | EXP: +${trip.exp}`
-        );
+          return output.reply(leaderboard);
+        },
       },
-    },
-    {
-      key: "crew",
-      description: "Manage your car crew",
-      aliases: ["-cr"],
-      args: ["<car_name>", "<add|remove>", "<member>"],
-      async handler() {
-        const carsData = new Inventory(rawCarsData);
-        const [carName, action, member] = args;
-
-        if (!carName || !action) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car crew <car_name> <add|remove> <member>`
+      {
+        key: "uncage",
+        description: "Unleash a car from the garage",
+        aliases: ["-u"],
+        async handler() {
+          const inventory = new Inventory(rawInventory);
+          const carVentory = new Inventory(
+            rawInventory.filter((item) => item.type === "car")
           );
-        }
+          const cars = carVentory.getAll();
+          if (cars.length === 0) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No cars in the garage! Hit the shop!`
+            );
+          }
 
-        const rawCar = carsData
-          .getAll()
-          .find((c) => c.name.toLowerCase() === carName.toLowerCase());
-        if (!rawCar) {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ No car named "${carName}"!`
-          );
-        }
-        const car = updateCarData(rawCar);
-        if (action === "add") {
-          if (!member) {
-            return output.reply(
-              `👤 **${name}** (Car)\n\n❌ Specify a member to add!`
-            );
-          }
-          if (car.crew.length >= 3) {
-            return output.reply(
-              `👤 **${name}** (Car)\n\n❌ **${car.name}** crew is full (max 3)!`
-            );
-          }
-          if (car.crew.includes(member)) {
-            return output.reply(
-              `👤 **${name}** (Car)\n\n❌ **${member}** is already in the crew!`
-            );
-          }
-          car.crew.push(member);
-        } else if (action === "remove") {
-          if (!member) {
-            return output.reply(
-              `👤 **${name}** (Car)\n\n❌ Specify a member to remove!`
-            );
-          }
-          const index = car.crew.indexOf(member);
-          if (index === -1) {
-            return output.reply(
-              `👤 **${name}** (Car)\n\n❌ **${member}** not in **${car.name}** crew!`
-            );
-          }
-          car.crew.splice(index, 1);
-        } else {
-          return output.reply(
-            `👤 **${name}** (Car)\n\n❌ Use "add" or "remove"!`
-          );
-        }
-
-        const updatedCar = updateCarData(car);
-        checkAchievements(updatedCar);
-        carsData.deleteOne(updatedCar.key);
-        // @ts-ignore
-        carsData.addOne(updatedCar);
-        await money.set(input.senderID, { carsData: Array.from(carsData) });
-
-        return output.reply(
-          `👤 **${name}** (Car)\n\n✅ Updated crew for ${updatedCar.icon} **${updatedCar.name}**!\n` +
-            `Crew: ${
-              updatedCar.crew.length ? updatedCar.crew.join(", ") : "None"
-            }`
-        );
+          let carList = `${UNIRedux.arrow} ***Garaged Rides***\n\n`;
+          cars.forEach((car, index) => {
+            carList += `${index + 1}. ${car.icon} **${car.name}** [${
+              car.key
+            }]\n`;
+          });
+          carList += `\nReply with a number to unleash a car!`;
+          const i = await output.reply(`👤 **${name}** (Car)\n\n${carList}`);
+          input.setReply(i.messageID, {
+            author: input.senderID,
+            // @ts-ignore
+            callback: uncageReply,
+            key: "car",
+            inventory,
+            carVentory,
+            type: "uncaging",
+            detectID: i.messageID,
+          });
+        },
       },
-    },
-  ]);
+      {
+        key: "upgrade",
+        description: "Mod your car",
+        aliases: ["-up"],
+        args: ["<car_name>", "<upgrade_key>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const inventory = new Inventory(rawInventory);
+          const [carName, upgradeKey] = args;
+
+          if (!carName || !upgradeKey) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car upgrade <car_name> <upgrade_key>`
+            );
+          }
+
+          const rawCar = carsData
+            .getAll()
+            .find((c) => c.name.toLowerCase() === carName.toLowerCase());
+          if (!rawCar) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${carName}"!`
+            );
+          }
+          const car = updateCarData(rawCar);
+          const upgrade = inventory.getOne(upgradeKey);
+          if (
+            !upgrade ||
+            (upgrade.type !== "upgrade" && upgrade.type !== "repair")
+          ) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No valid upgrade/repair "${upgradeKey}"!`
+            );
+          }
+
+          if (upgrade.type === "upgrade") {
+            car.maxSpeed = car.maxSpeed + Number(upgrade.speedBoost || 0);
+            car.durability =
+              car.durability + Number(upgrade.durabilityBoost || 0);
+            car.upgrades.push(upgrade.name);
+          } else if (upgrade.type === "repair") {
+            car.condition = Math.min(
+              car.condition + Number(upgrade.conditionBoost),
+              100
+            );
+          }
+          inventory.deleteOne(upgrade.key);
+          const updatedCar = updateCarData(car);
+          checkAchievements(updatedCar);
+          carsData.deleteOne(updatedCar.key);
+          // @ts-ignore
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, {
+            carsData: Array.from(carsData),
+            inventory: Array.from(inventory),
+          });
+
+          return output.reply(
+            `👤 **${name}** (Car)\n\n✅ Modded ${updatedCar.icon} **${updatedCar.name}** with ${upgrade.icon} **${upgrade.name}**!\n` +
+              `Max Speed: ${updatedCar.maxSpeed} mph\n` +
+              `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
+              `Worth: $${calculateWorth(updatedCar)}`
+          );
+        },
+      },
+      {
+        key: "roadtrip",
+        description: "Embark on an epic journey",
+        aliases: ["-rt"],
+        args: ["<car_name>", "<destination>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const cassEXP = new CassEXP(cxp);
+          const [targetCar, destination] = args;
+
+          if (!targetCar || !destination) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car roadtrip <car_name> <destination>`
+            );
+          }
+
+          const rawTargetCarData = carsData
+            .getAll()
+            .find((car) => car.name.toLowerCase() === targetCar.toLowerCase());
+          if (!rawTargetCarData) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${targetCar}"!`
+            );
+          }
+          const targetCarData = updateCarData(rawTargetCarData);
+          if (targetCarData.fuel < 50) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** needs 50%+ fuel for a road trip!`
+            );
+          }
+          if (targetCarData.condition < 50) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** is too beat up for a trip!`
+            );
+          }
+
+          const destinations = {
+            city: { distance: 100, reward: 500, exp: 50 },
+            mountains: { distance: 200, reward: 1000, exp: 100 },
+            desert: { distance: 300, reward: 1500, exp: 150 },
+          };
+          const trip = destinations[destination.toLowerCase()];
+          if (!trip) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Valid destinations: city, mountains, desert`
+            );
+          }
+
+          const weather = getRandomWeather();
+          const { fuelMod, conditionMod } = weatherEffects[weather];
+          const fuelCost =
+            trip.distance * targetCarData.fuelEfficiency * fuelMod;
+          const conditionDamage =
+            trip.distance * 0.1 * conditionMod * (1 - targetCarData.durability);
+          if (targetCarData.fuel < fuelCost) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\nt**${
+                targetCarData.name
+              }** needs ${fuelCost.toFixed(1)}% fuel!`
+            );
+          }
+
+          targetCarData.distance += trip.distance;
+          targetCarData.fuel = Math.max(targetCarData.fuel - fuelCost, 0);
+          targetCarData.condition = Math.max(
+            targetCarData.condition - conditionDamage,
+            0
+          );
+          const updatedCar = updateCarData(targetCarData);
+          cassEXP.expControls.raise(trip.exp);
+          const newMoney = playerMoney + trip.reward;
+
+          checkAchievements(updatedCar);
+          carsData.deleteOne(updatedCar.key);
+          // @ts-ignore
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, {
+            carsData: Array.from(carsData),
+            cassEXP: cassEXP.raw(),
+            money: newMoney,
+          });
+
+          return output.reply(
+            `👤 **${name}** (Car)\n\n🌍 **Road Trip** - ${updatedCar.icon} **${updatedCar.name}**\n\n` +
+              `Destination: ${destination}\n` +
+              `Distance: ${trip.distance} miles\n` +
+              `Weather: ${weather}\n` +
+              `Fuel Left: ${updatedCar.fuel.toFixed(1)}%\n` +
+              `Condition: ${updatedCar.condition.toFixed(1)}%\n` +
+              `Reward: $${trip.reward}💵 | EXP: +${trip.exp}`
+          );
+        },
+      },
+      {
+        key: "crew",
+        description: "Manage your car crew",
+        aliases: ["-cr"],
+        args: ["<car_name>", "<add|remove>", "<member>"],
+        async handler() {
+          const carsData = new Inventory(rawCarsData);
+          const [carName, action, member] = args;
+
+          if (!carName || !action) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Usage: ${prefix}car crew <car_name> <add|remove> <member>`
+            );
+          }
+
+          const rawCar = carsData
+            .getAll()
+            .find((c) => c.name.toLowerCase() === carName.toLowerCase());
+          if (!rawCar) {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ No car named "${carName}"!`
+            );
+          }
+          const car = updateCarData(rawCar);
+          if (action === "add") {
+            if (!member) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ Specify a member to add!`
+              );
+            }
+            if (car.crew.length >= 3) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ **${car.name}** crew is full (max 3)!`
+              );
+            }
+            if (car.crew.includes(member)) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ **${member}** is already in the crew!`
+              );
+            }
+            car.crew.push(member);
+          } else if (action === "remove") {
+            if (!member) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ Specify a member to remove!`
+              );
+            }
+            const index = car.crew.indexOf(member);
+            if (index === -1) {
+              return output.reply(
+                `👤 **${name}** (Car)\n\n❌ **${member}** not in **${car.name}** crew!`
+              );
+            }
+            car.crew.splice(index, 1);
+          } else {
+            return output.reply(
+              `👤 **${name}** (Car)\n\n❌ Use "add" or "remove"!`
+            );
+          }
+
+          const updatedCar = updateCarData(car);
+          checkAchievements(updatedCar);
+          carsData.deleteOne(updatedCar.key);
+          // @ts-ignore
+          carsData.addOne(updatedCar);
+          await money.set(input.senderID, { carsData: Array.from(carsData) });
+
+          return output.reply(
+            `👤 **${name}** (Car)\n\n✅ Updated crew for ${updatedCar.icon} **${updatedCar.name}**!\n` +
+              `Crew: ${
+                updatedCar.crew.length ? updatedCar.crew.join(", ") : "None"
+              }`
+          );
+        },
+      },
+    ]
+  );
 
   return home.runInContext(ctx);
 }
