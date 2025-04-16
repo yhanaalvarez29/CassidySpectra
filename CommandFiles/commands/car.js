@@ -351,7 +351,23 @@ const carShopItems = [
   },
 ];
 
+/**
+ * @param {{ distance: number; level: number; fuel: number; condition: number; maxSpeed: number; fuelEfficiency: number; durability: number; currentSpeed: number; gear: number; isRunning: boolean; lastAction: any; upgrades: any[]; crew: any[]; achievements: any[]; sellPrice: number; carType: any; icon: any; name: any; key: any; }} car
+ */
 export function calculateWorth(car) {
+  const updatedCar = updateCarData(car);
+  const { sellPrice, level, distance, upgrades, condition } = updatedCar;
+  const upgradeValue = upgrades.length * 500;
+  const conditionFactor = condition / 100;
+  return Math.floor(
+    (sellPrice * 2 + distance * 0.1 * level + upgradeValue) * conditionFactor
+  );
+}
+
+/**
+ * @param {{ distance: number; level: number; fuel: number; condition: number; maxSpeed: number; fuelEfficiency: number; durability: number; currentSpeed: number; gear: number; isRunning: boolean; lastAction: any; upgrades: any[]; crew: any[]; achievements: any[]; sellPrice: number; carType: any; icon: any; name: any; key: any; }} car
+ */
+export function calculateWorthOld(car) {
   const updatedCar = updateCarData(car);
   const { sellPrice, level, distance, upgrades, condition } = updatedCar;
   const upgradeValue = upgrades.length * 500;
@@ -460,16 +476,13 @@ const achievements = {
   "Crew Master": { condition: (car) => car.crew.length >= 3, reward: 750 },
 };
 
+/**
+ *
+ * @param {CommandContext} ctx
+ * @returns
+ */
 export async function entry(ctx) {
-  const {
-    input,
-    output,
-    money,
-    Inventory,
-    UTShop,
-    prefix,
-    args,
-  } = ctx;
+  const { input, output, money, Inventory, UTShop, prefix, args } = ctx;
   const {
     name = "Unregistered",
     carsData: rawCarsData = [],
@@ -599,6 +612,7 @@ export async function entry(ctx) {
           author: input.senderID,
           carToSell: updatedCar,
           key: "car",
+          // @ts-ignore
           callback: confirmSell,
         });
       },
@@ -679,6 +693,7 @@ export async function entry(ctx) {
 
         checkAchievements(updatedCar);
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, {
           carsData: Array.from(carsData),
@@ -779,6 +794,7 @@ export async function entry(ctx) {
 
         checkAchievements(updatedCar);
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, {
           carsData: Array.from(carsData),
@@ -842,7 +858,9 @@ export async function entry(ctx) {
           const timeLeft =
             5 -
             Math.floor(
-              (new Date().getTime() - new Date(targetCarData.lastAction).getTime()) / (1000 * 60)
+              (new Date().getTime() -
+                new Date(targetCarData.lastAction).getTime()) /
+                (1000 * 60)
             );
           return output.reply(
             `👤 **${name}** (Car)\n\n❌ **${targetCarData.name}** on refuel cooldown. Wait ${timeLeft} min.`
@@ -857,16 +875,17 @@ export async function entry(ctx) {
         }
 
         targetCarData.fuel = Math.min(
-          targetCarData.fuel + fuel.fuelAmount,
+          targetCarData.fuel + Number(fuel.fuelAmount),
           100
         );
         targetCarData.maxSpeed =
-          targetCarData.maxSpeed + (fuel.speedBoost || 0);
+          targetCarData.maxSpeed + Number(fuel.speedBoost || 0);
         targetCarData.lastAction = new Date().toISOString();
         inventory.deleteOne(fuel.key);
         const updatedCar = updateCarData(targetCarData);
 
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, {
           carsData: Array.from(carsData),
@@ -960,6 +979,7 @@ export async function entry(ctx) {
         const i = await output.reply(`👤 **${name}** (Car)\n\n${carList}`);
         input.setReply(i.messageID, {
           author: input.senderID,
+          // @ts-ignore
           callback: uncageReply,
           key: "car",
           inventory,
@@ -1005,16 +1025,21 @@ export async function entry(ctx) {
         }
 
         if (upgrade.type === "upgrade") {
-          car.maxSpeed = car.maxSpeed + (upgrade.speedBoost || 0);
-          car.durability = car.durability + (upgrade.durabilityBoost || 0);
+          car.maxSpeed = car.maxSpeed + Number(upgrade.speedBoost || 0);
+          car.durability =
+            car.durability + Number(upgrade.durabilityBoost || 0);
           car.upgrades.push(upgrade.name);
         } else if (upgrade.type === "repair") {
-          car.condition = Math.min(car.condition + upgrade.conditionBoost, 100);
+          car.condition = Math.min(
+            car.condition + Number(upgrade.conditionBoost),
+            100
+          );
         }
         inventory.deleteOne(upgrade.key);
         const updatedCar = updateCarData(car);
         checkAchievements(updatedCar);
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, {
           carsData: Array.from(carsData),
@@ -1102,6 +1127,7 @@ export async function entry(ctx) {
 
         checkAchievements(updatedCar);
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, {
           carsData: Array.from(carsData),
@@ -1183,6 +1209,7 @@ export async function entry(ctx) {
         const updatedCar = updateCarData(car);
         checkAchievements(updatedCar);
         carsData.deleteOne(updatedCar.key);
+        // @ts-ignore
         carsData.addOne(updatedCar);
         await money.set(input.senderID, { carsData: Array.from(carsData) });
 
