@@ -225,7 +225,10 @@ export function sortPlugin(allPlugins) {
   return finalGroups;
 }
 export async function middleware({ allPlugins }) {
-  handleStat = init();
+  handleStat = init({
+    collection: process.env.collection ?? "reduxcassstats",
+    filepath: "handlers/database/userStat.json",
+  });
   threadsDB = init({
     collection: "spectrathreads",
     filepath: "handlers/database/threadsDB.json",

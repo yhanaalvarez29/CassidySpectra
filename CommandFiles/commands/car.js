@@ -360,7 +360,7 @@ export function calculateWorth(car) {
   const upgradeValue = upgrades.length * 500;
   const conditionFactor = condition / 100;
   return Math.floor(
-    (sellPrice * 2 + distance * 0.1 * level + upgradeValue) * conditionFactor
+    (sellPrice * 2 + distance ** 0.7 * level + upgradeValue) * conditionFactor
   );
 }
 
