@@ -631,9 +631,11 @@ export function styledForHTML(text = "", StyleClass) {
       txt = txt.replace(
         /\[font=(.*?)\]\s*(.*?)\s*\[:font=(.*?)\]/g,
         (_, font, content, font2) =>
-          font === font2 && font === "bold"
-            ? `<b>${content}</b>`
-            : fonts[font](content)
+          font === font2
+            ? font === "bold"
+              ? `<b>${content}</b>`
+              : fonts[font](content)
+            : content
       );
       return txt;
     }
@@ -650,19 +652,27 @@ export function styledForHTML(text = "", StyleClass) {
 
       let styledText = value;
       const font = ownStyling.text_font || "none";
+      let iii = false;
+
       if (styling && font === "bold") {
         styledText = `<b>${styledText}</b>`;
       } else if (styling && font === "fancy_italic") {
         styledText = `<i>${styledText}</i>`;
       } else if (styling && font === "bold_italic") {
         styledText = `<b><i>${styledText}</i></b>`;
-      } else {
+      } else if (styling && font === "fancy") {
+      } else if (styling && font === "typewriter") {
+      } else if (styling && font) {
+        styledText = styling ? autoFontHTML(styledText) : styledText;
+        styledText = styling ? autoBoldHTML(styledText) : styledText;
+        iii = true;
         styledText = fonts[font](styledText);
       }
 
-      styledText = styling ? autoFontHTML(styledText) : styledText;
-      styledText = styling ? autoBoldHTML(styledText) : styledText;
-
+      if (!iii) {
+        styledText = styling ? autoFontHTML(styledText) : styledText;
+        styledText = styling ? autoBoldHTML(styledText) : styledText;
+      }
       const topLine = ownStyling.line_top || "hidden";
       const bottomLine = ownStyling.line_bottom || "hidden";
       let output = "";
