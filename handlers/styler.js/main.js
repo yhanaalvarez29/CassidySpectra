@@ -44,18 +44,24 @@ export function convertLegacyStyling(style) {
     ...style,
     titleStyle: undefined,
     contentStyle: undefined,
-    title: {
-      text_font: style.titleFont ?? "bold",
-      content:
-        typeof style.title === "object"
-          ? "Title Invalid"
-          : emojiEnd(String(style.title)),
-      line_bottom: "default",
-      ...(typeof style.title === "object" && style.title ? style.title : {}),
-      ...(typeof style.titleStyle === "object" && style.titleStyle
-        ? style.titleStyle
-        : {}),
-    },
+    ...(style.title
+      ? {
+          title: {
+            text_font: style.titleFont ?? "bold",
+            content:
+              typeof style.title === "object"
+                ? "Title Invalid"
+                : emojiEnd(String(style.title)),
+            line_bottom: "default",
+            ...(typeof style.title === "object" && style.title
+              ? style.title
+              : {}),
+            ...(typeof style.titleStyle === "object" && style.titleStyle
+              ? style.titleStyle
+              : {}),
+          },
+        }
+      : {}),
     content: {
       text_font: style.contentFont ?? "none",
       content: null,
@@ -625,7 +631,9 @@ export function styledForHTML(text = "", StyleClass) {
       txt = txt.replace(
         /\[font=(.*?)\]\s*(.*?)\s*\[:font=(.*?)\]/g,
         (_, font, content, font2) =>
-          font === font2 && font === "bold" ? `<b>${content}</b>` : content
+          font === font2 && font === "bold"
+            ? `<b>${content}</b>`
+            : fonts[font](content)
       );
       return txt;
     }
@@ -648,6 +656,8 @@ export function styledForHTML(text = "", StyleClass) {
         styledText = `<i>${styledText}</i>`;
       } else if (styling && font === "bold_italic") {
         styledText = `<b><i>${styledText}</i></b>`;
+      } else {
+        styledText = fonts[font](styledText);
       }
 
       styledText = styling ? autoFontHTML(styledText) : styledText;
