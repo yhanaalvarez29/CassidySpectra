@@ -118,9 +118,9 @@ export default class UserStatsManager {
     data.money ??= 0;
     data.money = data.money <= 0 ? 0 : parseInt(String(data.money));
 
-    if (data.money > Number.MAX_SAFE_INTEGER) {
-      data.money = Number.MAX_SAFE_INTEGER;
-    }
+    // if (data.money > Number.MAX_SAFE_INTEGER) {
+    //   data.money = Number.MAX_SAFE_INTEGER;
+    // }
     data.battlePoints ??= 0;
     data.battlePoints =
       data.battlePoints <= 0 ? 0 : parseInt(String(data.battlePoints));
@@ -235,7 +235,7 @@ export default class UserStatsManager {
       await this.getItem(key);
     }
 
-    return JSON.parse(JSON.stringify(this.cache[key]));
+    return this.process(JSON.parse(JSON.stringify(this.cache[key])), key);
   }
 
   /**
