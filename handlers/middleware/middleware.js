@@ -414,16 +414,16 @@ async function handleMiddleWare({
     const runObjects = {
       api: new Proxy(api || {}, {
         get(target, key) {
-          if (event.isWss && key in wssApi) {
+          if (event.isWss && key in (wssApi ?? {})) {
             return wssApi[key];
           }
-          if (event.isTph && key in tphApi) {
+          if (event.isTph && key in (tphApi ?? {})) {
             return tphApi[key];
           }
-          if (event.isPage && key in pageApi) {
+          if (event.isPage && key in (pageApi ?? {})) {
             return pageApi[key];
           }
-          if (event.isDiscord && key in discordApi) {
+          if (event.isDiscord && key in (discordApi ?? {})) {
             return discordApi[key];
           }
           if (key in target && !event.isDiscord) {
