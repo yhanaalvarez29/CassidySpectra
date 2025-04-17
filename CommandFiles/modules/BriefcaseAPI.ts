@@ -866,6 +866,14 @@ export class BriefcaseAPI {
             ...a: any[]
           ] = keyTX.split("*");
 
+          if (!recipientID) {
+            return output.reply(
+              `👤 **${
+                userData.name || "Unregistered"
+              }** (${inventoryName})\n\n` + `❌ Missing recipient ID!`
+            );
+          }
+
           if (recipientID === input.senderID) {
             return output.reply(
               `👤 **${
