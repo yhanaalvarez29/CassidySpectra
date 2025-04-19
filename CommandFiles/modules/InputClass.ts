@@ -486,7 +486,7 @@ export class InputClass extends String implements InputProps {
       });
     };
     obj.output.quickWaitReact = async (body, options = {}) => {
-      if (input.isWeb) {
+      if (input.isWeb || input.isPage) {
         return input;
       }
 
