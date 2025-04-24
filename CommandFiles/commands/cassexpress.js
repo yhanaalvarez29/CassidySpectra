@@ -10,7 +10,7 @@ export const meta = {
   waitingTime: 1,
   description: "Advanced and Sophisticated way of managing bank system.",
   category: "Finance",
-  noPrefix: "both",
+  noPrefix: false,
   otherNames: ["cexpress", "cbank"],
   requirement: "3.0.0",
   icon: "💵",
