@@ -196,39 +196,39 @@ const stackFrameReg = [
 ];
 
 let origStack = Error.prepareStackTrace;
+if (require("./settings.json").verboseErrorStacks) {
+  Error.prepareStackTrace = (error, structuredStack) => {
+    const defaultStack = origStack(error, structuredStack);
+    const lines = defaultStack.split("\n");
 
-Error.prepareStackTrace = (error, structuredStack) => {
-  const defaultStack = origStack(error, structuredStack);
-  const lines = defaultStack.split("\n");
-
-  let errMsg = lines[0];
-  for (const { regex, callback } of genericErrReg) {
-    const match = errMsg.match(regex);
-    if (match) {
-      errMsg = callback(match);
-      break;
-    }
-  }
-
-  const transformedStack = lines.slice(1).map((line, index) => {
-    let transformed = line;
-    for (const { regex, callback } of stackFrameReg) {
-      const match = line.match(regex);
+    let errMsg = lines[0];
+    for (const { regex, callback } of genericErrReg) {
+      const match = errMsg.match(regex);
       if (match) {
-        transformed = callback(match, index);
+        errMsg = callback(match);
         break;
       }
     }
-    return transformed;
-  });
 
-  return `${errMsg}\n[STACK TRACE] (Most Recent Call First):\n\n${transformedStack
-    .map((i) => String(i).trimStart().trimEnd())
-    .join("\n\n")}\n[TRACE END]\n\nCassidySpectra v${
-    require("./package.json").version
-  }`;
-};
+    const transformedStack = lines.slice(1).map((line, index) => {
+      let transformed = line;
+      for (const { regex, callback } of stackFrameReg) {
+        const match = line.match(regex);
+        if (match) {
+          transformed = callback(match, index);
+          break;
+        }
+      }
+      return transformed;
+    });
 
+    return `${errMsg}\n[STACK TRACE] (Most Recent Call First):\n\n${transformedStack
+      .map((i) => String(i).trimStart().trimEnd())
+      .join("\n\n")}\n[TRACE END]\n\nCassidySpectra v${
+      require("./package.json").version
+    }`;
+  };
+}
 require("./hidestate");
 
 require("./Cassidy");

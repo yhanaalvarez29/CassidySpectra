@@ -64,5 +64,6 @@
   "disableInflation": true,
   "standardSpectra": false,
   "autoGoogleTranslate": "",
-  "silentNotiMode": true
+  "silentNotiMode": true,
+  "verboseErrorStacks": false
 }
