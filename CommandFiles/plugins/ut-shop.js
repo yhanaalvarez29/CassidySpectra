@@ -1514,7 +1514,7 @@ export class Inventory {
         icon: String(icon),
         type: String(type),
         index: Number(index),
-        sellPrice: parseInt(String(sellPrice)),
+        sellPrice: Number(sellPrice),
         cannotToss: !!cannotToss,
       };
       if (type === "food") {
@@ -1524,8 +1524,8 @@ export class Inventory {
       if (type === "weapon" || type === "armor") {
         result.atk ??= 0;
         result.def ??= 0;
-        result.atk = parseFloat(String(result.atk));
-        result.def = parseFloat(String(result.def));
+        result.atk = Number(result.atk);
+        result.def = Number(result.def);
       }
       return result;
     });

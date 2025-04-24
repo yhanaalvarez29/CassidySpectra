@@ -116,14 +116,19 @@ export default class UserStatsManager {
   process(data: UserData, userID: string | number) {
     data ??= this.defaults;
     data.money ??= 0;
-    data.money = data.money <= 0 ? 0 : parseInt(String(data.money));
+    data.money = data.money <= 0 ? 0 : parseFloat(String(data.money));
 
+    // LMAO
     // if (data.money > Number.MAX_SAFE_INTEGER) {
     //   data.money = Number.MAX_SAFE_INTEGER;
     // }
+
+    if (data.money > Number.MAX_VALUE) {
+      data.money = Number.MAX_VALUE;
+    }
     data.battlePoints ??= 0;
     data.battlePoints =
-      data.battlePoints <= 0 ? 0 : parseInt(String(data.battlePoints));
+      data.battlePoints <= 0 ? 0 : parseFloat(String(data.battlePoints));
     data.exp ??= 0;
     data.inventory ??= [];
     if (isNaN(data.exp)) {
@@ -131,6 +136,10 @@ export default class UserStatsManager {
     }
     if (data.name) {
       data.name = data.name.trim();
+    }
+
+    if (data.bankData?.bank) {
+      data.bankData.bank = Math.min(Number.MAX_VALUE, data.bankData.bank);
     }
 
     if (isNaN(data.battlePoints)) {

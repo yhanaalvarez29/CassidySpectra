@@ -1,5 +1,4 @@
 // @ts-check
-import { parseBet } from "@cass-modules/ArielUtils";
 import { secureRandom } from "../modules/unisym.js";
 
 /**
@@ -16,7 +15,7 @@ export const meta = {
   adminOnly: false,
   icon: "🎲",
   otherNames: ["dice"],
-  category: "Gambling Games",
+  category: "Gambling Games"
 };
 
 export const style = {
@@ -47,17 +46,10 @@ export async function cooldown({ input, output, cooldown, money: botData }) {
  * @param {CommandContext} param0
  * @returns
  */
-export async function entry({
-  input,
-  output,
-  money: botData,
-  cancelCooldown,
-  prefix,
-  commandName,
-}) {
+export async function entry({ input, output, money: botData, cancelCooldown }) {
+  const bet = parseInt(input.arguments[0]);
   const times = parseInt(input.arguments[1]);
   const data = await botData.get(input.senderID);
-  const bet = parseBet(input.arguments[0], data.money);
   const { money, diceWins } = data;
 
   if (input.isAdmin) {
@@ -68,7 +60,7 @@ export async function entry({
     return output.reply(
       `Minimum bet per dice is 20 coins. Please enter a valid bet as first argument.\nPlease enter a valid number of dice as second argument (1-30). The more dice, the more risk!\n\nTotal Wins: ${
         diceWins ?? 0
-      }\n\nExample: ${prefix}${commandName} 10000 20`
+      }`
     );
   }
 
@@ -99,9 +91,9 @@ export async function entry({
 
   const devRoll = (aiRoll) => {
     if (secureRandom() < 0.7) {
-      return Math.floor(secureRandom() * (6 - aiRoll)) + aiRoll + 1;
+      return getDieNum();
     }
-    return getDieNum();
+    return Math.floor(secureRandom() * aiRoll) + 1;
   };
 
   for (let i = 0; i < times; i++) {

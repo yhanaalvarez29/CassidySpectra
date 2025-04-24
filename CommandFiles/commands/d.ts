@@ -33,6 +33,9 @@ export async function entry({
   threadsDB,
   args,
 }: CommandContext) {
+  if (!input.isAdmin) {
+    return output.reply("You cannot enable/disable this feature.");
+  }
   const isEna = (await threadsDB.queryItem(input.threadID, "autodl"))?.autodl;
   let choice =
     args[0] === "on" ? true : args[0] === "off" ? false : isEna ? !isEna : true;

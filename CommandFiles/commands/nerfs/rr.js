@@ -1,7 +1,4 @@
 // @ts-check
-
-import { abbreviateNumber, parseBet } from "@cass-modules/ArielUtils";
-
 /**
  * @type {CassidySpectra.CommandMeta}
  */
@@ -10,14 +7,13 @@ export const meta = {
   description:
     "Roll your way to riches as you test your luck in a high-stakes game of fortune.",
   version: "1.1.5",
-  author:
-    "inspired from Duke Agustin's shoot command, but originally created by Liane Cagara",
+  author: "Liane Cagara",
   otherNames: ["rr"],
   usage: "{prefix}{name}",
   category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
-  waitingTime: 0.1,
+  waitingTime: 30,
   icon: "🌪️",
   shopPrice: 2500,
   requiredLevel: 10,
@@ -65,8 +61,8 @@ export async function entry({
     inventory: r,
     rrWins = 0,
     rrLooses = 0,
-    badLuck = false,
-  } = await money.getItem(input.senderID);
+    prizePool = 0,
+  } = await money.get(input.senderID);
   const inventory = new Inventory(r);
   let hasPass = inventory.has("highRollPass");
 
@@ -74,16 +70,13 @@ export async function entry({
 
   const [bet] = input.arguments;
 
-  let amount = parseBet(bet, userMoney);
+  let amount = parseInt(bet);
+  const isAffordable = prizePool * 2 >= amount;
   let outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
-  const basis = Math.random();
-
-  while (basis < 0.3 ? outcome.includes(" lose") : false) {
-    outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
-  }
-
-  while (badLuck && !outcome.includes(" lose")) {
-    outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
+  if (!isAffordable) {
+    outcome = outcomes
+      .toSorted(() => Math.random() - 0.5)
+      .find((i) => i.includes(" lose"));
   }
 
   if (!hasPass && amount > global.Cassidy.highRoll) {
@@ -104,38 +97,40 @@ export async function entry({
     amount = Math.min(amount, userMoney);
 
     cashField.applyTemplate({
-      cash: abbreviateNumber(amount),
+      cash: +amount,
     });
     rrLooses += amount;
+    prizePool += amount;
 
     resultText.changeContent("You lost:");
 
-    await money.setItem(input.senderID, {
+    await money.set(input.senderID, {
       money: userMoney - amount,
       rrLooses,
       rrWins,
+      prizePool,
     });
   } else {
     rrWins += amount;
-
+    prizePool -= amount;
+    prizePool = Math.max(0, prizePool);
     cashField.applyTemplate({
-      cash: abbreviateNumber(amount),
+      cash: +amount,
     });
 
     resultText.changeContent("You Won:");
-    await money.setItem(input.senderID, {
+    await money.set(input.senderID, {
       money: userMoney + amount,
       rrWins,
       rrLooses,
+      prizePool,
     });
   }
 
   output.reply(
     `💥 ` +
-      outcome.replace("<amount>", abbreviateNumber(amount)) +
+      outcome.replace("<amount>", String(amount)) +
       xText +
-      ` Your new balance is $${abbreviateNumber(
-        (await money.getItem(input.senderID)).money
-      )}💵`
+      ` Your new balance is $${(await money.get(input.senderID)).money}💵`
   );
 }
