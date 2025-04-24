@@ -1,6 +1,5 @@
+// @ts-check
 import {
-  getCommandByFileName,
-  getLatestCommands,
   isAdminCommand,
   ObjectX,
   removeCommandAliases,
@@ -18,17 +17,20 @@ export const meta = {
   after: ["input", "output"],
 };
 
+/**
+ *
+ * @param {CommandContext} obj
+ * @returns
+ */
 export async function use(obj) {
   const {
     input,
     output,
-    icon,
     prefix,
     popularCMD,
     recentCMD,
     prefixes,
     commands: origCommands,
-    commandName,
   } = obj;
   if (
     input.text?.toLowerCase() === "prefix" ||
@@ -43,9 +45,6 @@ export async function use(obj) {
       }
     );
 
-    // const latestCommands = await getLatestCommands(
-    //   process.cwd() + "/CommandFiles/commands"
-    // );
     const randomCommands = Object.keys(
       ObjectX.slice(
         ObjectX.toSorted(commands, (a, b) => Math.random() - 0.5),
@@ -54,17 +53,23 @@ export async function use(obj) {
       )
     );
     const populars = Object.entries(popularCMD)
-      .sort((a, b) => b[1] > a[1])
+      .sort((a, b) => b[1] - a[1])
       .map((i) => i[0]);
 
-    // const cutLatest = latestCommands
-    //   .slice(0, 10)
-    //   .map((i) => getCommandByFileName(i, commands)?.meta?.name)
-    //   .filter(Boolean);
-
-    // console.log(cutLatest);
-
     const myRecent = recentCMD[input.senderID] ?? [];
+    if (!global.Cassidy.config.verboseBotMode) {
+      return output.replyStyled(
+        `✨ | **System Prefix:** [ ${prefix} ]
+🌠 | **Other Prefixes:** [ ${prefixes.slice(1).join(", ")} ]\n${
+          UNIRedux.standardLine
+        }\nUse '**${prefix}start**' to list available commands and some concept guides.`,
+        {
+          title: global.Cassidy.logo,
+          titleFont: "none",
+          contentFont: "none",
+        }
+      );
+    }
     output.reply(`${global.Cassidy.logo}
 ${UNIRedux.standardLine}
 ✨ | **System Prefix:** [ ${prefix} ]

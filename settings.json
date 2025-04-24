@@ -65,5 +65,6 @@
   "standardSpectra": false,
   "autoGoogleTranslate": "",
   "silentNotiMode": true,
-  "verboseErrorStacks": false
+  "verboseErrorStacks": false,
+  "verboseBotMode": false
 }
