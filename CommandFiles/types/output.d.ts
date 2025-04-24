@@ -305,6 +305,8 @@ export interface OutputProps {
     style?: any
   ): Promise<boolean>;
 
+  dispatch(body: OutputForm, options: StrictOutputForm): Promise<OutputResult>;
+
   /**
    * Creates frames from the specified arguments.
    * @param args - The arguments to create frames from.

@@ -297,7 +297,7 @@ declare global {
     /**
      * Sends an old-style output response.
      */
-    outputOld?: (body: OutputForm, options: StrictOutputForm) => OutputResult;
+    outputOld?: OutputProps["dispatch"];
 
     /**
      * Retrieves the language-specific text for the context.

@@ -561,6 +561,7 @@ export async function use(obj) {
         }
         api.setMessageReaction(emoji, mid, (err) => {}, true);
       },
+      dispatch: output,
       get prepend() {
         return prepend;
       },
@@ -648,7 +649,7 @@ export async function use(obj) {
         );
       }
     };
-    outputProps.syntaxError = async (commandX) => {
+    outputProps.syntaxError = async function syntaxError(commandX) {
       let cmdName = null;
       if (obj.command || commandX) {
         const { metadata = {} } = obj.command || commandX;
@@ -661,17 +662,29 @@ export async function use(obj) {
       );
     };
     //Only works to Fca of NicaBoT:
-    outputProps.edit = async (text, mid, delay, style = {}, options = {}) => {
+    outputProps.edit = async function edit(
+      text,
+      mid,
+      delay,
+      style = {},
+      options = {}
+    ) {
       //const refStyle = { ...(cmd && cmd.style ? cmd.style : {}), ...style };
       const { styler } = obj;
       const stylerShallow = styler.shallowMake({}, style);
 
       let result = prepend + "\n" + text + "\n" + append;
       result = result.trim();
+
+      if (global.Cassidy.config.censorOutput && result) {
+        result = obj.input.censor(result);
+      }
+
       /*if (Object.keys(refStyle).length > 0) {
         result = await styled(result, refStyle);
       }*/
       result = await processOutput({ ...options, body: result });
+
       result = input.isWss
         ? stylerShallow.html(result)
         : stylerShallow.text(result);
@@ -684,7 +697,7 @@ export async function use(obj) {
         }
       });
     };
-    outputProps.frames = async (...args) => {
+    outputProps.frames = async function frames(...args) {
       let texts = [];
       let mss = [];
       args.forEach((item, index) => {
