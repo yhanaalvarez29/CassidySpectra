@@ -115,7 +115,21 @@ export async function use(obj) {
       return;
     }
 
+    if (hasPrefix) {
+      if (global.Cassidy.config.maintenanceMode && !input.isAdmin) {
+        await output.reaction("🚀");
+        if (Cassidy.config.silentNotiMode) {
+          return handleNo();
+        }
+        return reply(`🚀 | Maintenance Mode. Only bot admins can use the bot.`);
+      }
+    }
+
     if (hasPrefix && String(commandName).includes(".")) {
+      await output.reaction("⚠️");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
+      }
       return reply(
         `⚠️ | Commands with dot notation are **no longer supported** and even discouraged, instead use "${prefix}${String(
           commandName
@@ -129,17 +143,14 @@ export async function use(obj) {
         return;
       }
       if (prefix === "/") {
-        return;
-      }
-
-      if (!commandName) {
-        return commands.start?.entry({ ...obj, body: "start", args: [] });
+        return handleNo();
       }
 
       const suggestedCommand = getSuggestedCommand(commandName, commands);
 
-      if (global.Cassidy.config.maintenanceMode && !input.isAdmin) {
-        return reply(`🚀 | Maintenance Mode. Only bot admins can use the bot.`);
+      await output.reaction("❓");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
       }
       return output.replyStyled(
         `🔍 cassidy: ${commandName}: command not found\n\n` +
@@ -279,6 +290,10 @@ export async function use(obj) {
       if (isFn(banned)) {
         return await banned(obj);
       }
+      await output.reaction("🚫");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
+      }
       return reply(`⚠️ | You have been banned from using the bot!
 UID: ${senderID}
 Reason: ${user.banned?.reason || "No reason provided"}
@@ -288,6 +303,10 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
     if (meta.noPrefix === false && !hasPrefix) {
       if (isFn(needPrefix)) {
         return await needPrefix(obj);
+      }
+      await output.reaction("💡");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
       }
       if (Cassidy.config.warnWhenNoPrefix) {
         return reply(
@@ -337,6 +356,10 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       if (isFn(noPermission)) {
         return await noPermission(obj);
       }
+      await output.reaction("👑");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
+      }
       return reply(
         `❌ | You are not allowed to use this command, contact the admin to add you to the whitelist.`
       );
@@ -352,6 +375,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         if (isFn(noPermission)) {
           return await noPermission(obj);
         }
+
         return reply(`❌ | Only gc admins are allowed to use this command.`);
       }
     }
@@ -378,6 +402,10 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         if (isFn(noPermission)) {
           return await noPermission(obj);
         }
+        await output.reaction("👑");
+        if (Cassidy.config.silentNotiMode) {
+          return handleNo();
+        }
         return reply(`❌ | Only bot admins are allowed to use this command.`);
       }
     }
@@ -391,6 +419,10 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
       if (isFn(cooldown)) {
         obj.cooldown = handleCD.remainingTime(cooldownKey);
         return await cooldown(obj);
+      }
+      await output.reaction("🕒");
+      if (Cassidy.config.silentNotiMode) {
+        return handleNo();
       }
       return reply(
         `⏱️ | Please wait for ${handleCD.remainingTime(

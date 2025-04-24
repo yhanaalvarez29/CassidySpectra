@@ -33,7 +33,7 @@
   "discordClientID": "",
   "pageAccessToken": "",
   "pageVerifyToken": "",
-  "noFB": true,
+  "noFB": false,
   "credentials": {
     "email": "",
     "password": "",
@@ -63,5 +63,6 @@
   "forceWebUID": false,
   "disableInflation": true,
   "standardSpectra": false,
-  "autoGoogleTranslate": ""
+  "autoGoogleTranslate": "",
+  "silentNotiMode": true
 }
