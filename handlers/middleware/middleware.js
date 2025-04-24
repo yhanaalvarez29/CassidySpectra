@@ -327,7 +327,7 @@ async function handleMiddleWare({
     if (event.body && global.Cassidy.config.censorInput) {
       event.body = censor(event.body);
     }
-    let prefixes = ["/", prefix, ...global.Cassidy.config.EXTRAPREFIX];
+    let prefixes = [prefix, ...global.Cassidy.config.EXTRAPREFIX];
     const cache = await threadsDB.getCache(event.threadID);
     if (typeof cache.threadPrefix === "string") {
       prefixes = [cache.threadPrefix];
@@ -377,10 +377,15 @@ async function handleMiddleWare({
       console.log(`Linking '${command.meta.name}' to ${commandName}`);
     }
     let property = [];
+    let startsHypen = String(commandName).startsWith("-");
     [commandName, ...property] = commandName
       .split("-")
       .map((i) => i.trim())
       .filter(Boolean);
+
+    if (startsHypen && !commandName.startsWith("-")) {
+      commandName = `-${commandName}`;
+    }
     event.propertyArray = property;
     for (const prop of property) {
       property[prop] = `${property[prop] ?? ""}`;
