@@ -310,6 +310,11 @@ declare global {
     langParser: LangParser;
 
     /**
+     * User roles (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
+     */
+    role: InputRoles;
+
+    /**
      * @deprecated Tracks popular commands used by users.
      */
     popularCMD?: AnyRecord;
@@ -821,7 +826,7 @@ import {
   TagParser,
 } from "@cass-plugins/utils-liane.js";
 import { TempFile } from "./handlers/page/sendMessage.js";
-import InputClass from "@cass-modules/InputClass.js";
+import InputClass, { InputRoles } from "@cass-modules/InputClass.js";
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;

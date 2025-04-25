@@ -15,6 +15,14 @@ import UserStatsManager from "../../handlers/database/handleStat";
 import OutputProps, { OutputResult } from "output-cassidy";
 import { inspect } from "node:util";
 
+export enum InputRoles {
+  VIP = 3,
+  ADMINBOT = 2,
+  MODERATORBOT = 1.5,
+  ADMINBOX = 1,
+  EVERYONE = 0,
+}
+
 export class InputClass extends String implements InputProps {
   public messageID?: string = null;
   public xQ?: any = null;
@@ -61,6 +69,10 @@ export class InputClass extends String implements InputProps {
   public detectUID?: string = null;
   public detectID?: string = null;
   public censor: (text: string) => string;
+  /**
+   * User roles (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
+   */
+  public role: InputRoles = 0;
 
   public webQ?: string = null;
   public defStyle?: any = null;
@@ -228,6 +240,7 @@ export class InputClass extends String implements InputProps {
     ctx.reactSystem = this.ReactSystem;
     ctx.args = this.arguments;
     ctx.InputClass = InputClass;
+    ctx.role = this.role;
   }
 
   private processEvent(event: Partial<InputProps>, autoCensor: boolean): void {
@@ -436,9 +449,24 @@ export class InputClass extends String implements InputProps {
       await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
     const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
+    if (!threadInfo) {
+      throw new TypeError("Cannot find or save thread data.");
+    }
     return Boolean(
       threadInfo && threadInfo.adminIDs.some((i: any) => i.id === uid)
     );
+  }
+
+  public async updateRole() {
+    if (this.isAdmin) {
+      this.role = InputRoles.ADMINBOT;
+    } else if (this.isModerator) {
+      this.role = InputRoles.MODERATORBOT;
+    } else if (await this.isThreadAdmin(this.senderID)) {
+      this.role = InputRoles.ADMINBOX;
+    } else {
+      this.role = InputRoles.EVERYONE;
+    }
   }
 
   public attachSystemsToOutput(output: OutputProps) {

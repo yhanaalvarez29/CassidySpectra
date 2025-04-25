@@ -42,6 +42,7 @@ export async function use(obj) {
       obj.event.body = inline.result;
     }
     const input = new InputClass(obj);
+    await input.updateRole();
     input.attachToContext(obj);
 
     console.log(obj.input);
