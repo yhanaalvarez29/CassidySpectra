@@ -54,5 +54,5 @@ export const entry = defineEntry(async ({ input, output }) => {
   if (errS?.length > 0) {
     return output.reply(`❌ ${errS}`);
   }
-  return output.reply(`${input.detectID ?? input.senderID}`);
+  return output.reply(`${ID}`);
 });
