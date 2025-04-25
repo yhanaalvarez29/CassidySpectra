@@ -763,7 +763,7 @@ export class InputClass extends String implements InputProps {
     return new InputClass(this.#__context);
   }
 
-  hasRole(role: InputRoles) {
+  hasRole<R extends InputRoles>(role: R) {
     return this.role >= role;
   }
 

@@ -18,7 +18,13 @@ export const style: CassidySpectra.CommandStyle = {
   contentFont: "fancy",
 };
 
-export async function entry({ input, api, output, args }: CommandContext) {
+export async function entry({
+  input,
+  api,
+  output,
+  args,
+  InputRoles,
+}: CommandContext) {
   const success = [
     {
       type: "success",
