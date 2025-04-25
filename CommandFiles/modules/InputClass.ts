@@ -769,7 +769,7 @@ export class InputClass extends String implements InputProps {
     let ignored = ["ReplySystem", "ReactSystem"];
     return Object.fromEntries(
       Object.entries(this)
-        .filter((i) => typeof i[1] !== "function")
+        .filter((i) => typeof i[1] !== "function" && isNaN(Number(i[0])))
         .filter((i) => !ignored.includes(i[0]))
     );
   }
