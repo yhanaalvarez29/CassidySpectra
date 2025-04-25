@@ -100,10 +100,10 @@ export class OutputResult {
 
   /**
    * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[0]} text
-   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[2]?} delay
-   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[3]?} style
+   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[2]} delay
+   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[3]} style
    */
-  editSelf(text, delay, style) {
+  editSelf(text, delay = undefined, style = undefined) {
     return this.#ctx.output.edit(text, this.messageID, delay, style);
   }
 

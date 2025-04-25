@@ -117,8 +117,11 @@ export async function entry(context) {
     }
 
     const info = await output.reply(result.trimEnd());
-    info.atReply(({ output }) => {
-      return output.replyStyled("We do not support replies, thank you!", style);
+    info.atReply(async ({ output }) => {
+      const info2 = await output.replyStyled(
+        "We do not support replies, thank you!",
+        style
+      );
     });
   }
 }
