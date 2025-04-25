@@ -13,6 +13,7 @@ import { TempFile } from "../../handlers/page/sendMessage";
 import { base64ToStream, streamToBase64 } from "../../webSystem";
 import { NeaxScript } from "@cass-modules/NeaxScript";
 import InputClass from "@cass-modules/InputClass";
+import { inspect } from "util";
 
 export const meta = {
   name: "output",
@@ -805,7 +806,7 @@ function formatError(error) {
       }
     }
   } else {
-    errorMessage = "Invalid error object provided";
+    errorMessage += inspect(error, { depth: null, showHidden: true });
   }
 
   return errorMessage;
