@@ -692,7 +692,7 @@ declare global {
       description: string;
       usage?: string;
       category: string;
-      version: string;
+      version: `${string}.${string}.${string}`;
       permissions?: number[];
       author?: string;
       otherNames?: string[];

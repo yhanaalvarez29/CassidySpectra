@@ -3,7 +3,7 @@ const { delay } = global.utils;
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "adduser",
-  version: "1.5",
+  version: "1.5.0",
   author: "@ntkhang03 | @lianecagara",
   waitingTime: 5,
   description: "Add a user to your group chat.",
@@ -18,13 +18,7 @@ export const style: CassidySpectra.CommandStyle = {
   contentFont: "fancy",
 };
 
-export async function entry({
-  input,
-  api,
-  output,
-  args,
-  InputRoles,
-}: CommandContext) {
+export async function entry({ input, api, output, args }: CommandContext) {
   const success = [
     {
       type: "success",
