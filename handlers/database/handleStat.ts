@@ -727,15 +727,23 @@ export default class UserStatsManager {
   ) {
     try {
       if (this.ignoreQueue.includes(threadID)) {
+        console.log(
+          new Error("saveThreadInfo request ignored because of queue")
+        );
+
         return false;
       }
       if (isNaN(parseInt(threadID))) {
         return false;
       }
-      if (typeof api?.getThreadInfo === "function") {
+      if (
+        "getThreadInfo" in (api ?? {}) &&
+        typeof api?.getThreadInfo === "function"
+      ) {
         this.ignoreQueue.push(threadID);
         const threadInfo = await api.getThreadInfo(threadID);
         if (!threadInfo) {
+          console.log(new Error("Missing thread info on api.getThreadInfo"));
           return false;
         }
         const data = {
@@ -755,6 +763,7 @@ export default class UserStatsManager {
         this.ignoreQueue = this.ignoreQueue.filter((i) => i !== threadID);
         return true;
       }
+
       return false;
     } catch (error) {
       console.error(error);

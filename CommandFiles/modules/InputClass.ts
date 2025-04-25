@@ -450,9 +450,7 @@ export class InputClass extends String implements InputProps {
       await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
     const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
-    if (!threadInfo) {
-      throw new TypeError("Cannot find or save thread data.");
-    }
+
     return Boolean(
       threadInfo && threadInfo.adminIDs.some((i: any) => i.id === uid)
     );

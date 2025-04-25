@@ -35,10 +35,9 @@ export const style = {
 export async function entry(context) {
   const { input, output, args, money, prefix } = context;
   if (isNaN(Number(args[0]))) {
-    const {
-      shopInv = {},
-      money: userMoney,
-    } = await money.getItem(input.senderID);
+    const { shopInv = {}, money: userMoney } = await money.getItem(
+      input.senderID
+    );
     const shop = new ShopClass(shopInv);
 
     async function buyReply(item, price) {
@@ -117,6 +116,9 @@ export async function entry(context) {
         `${UNIRedux.standardLine}\n`;
     }
 
-    return output.reply(result.trimEnd());
+    const info = await output.reply(result.trimEnd());
+    info.atReply(({ output }) => {
+      return output.replyStyled("We do not support replies, thank you!", style);
+    });
   }
 }

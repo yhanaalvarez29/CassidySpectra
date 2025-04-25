@@ -6,6 +6,7 @@
 */
 
 type Readable = import("stream").Readable;
+type OutputResultNew = import("@cass-plugins/output").OutputResult;
 
 export interface StrictOutputForm {
   body?: string;
@@ -24,7 +25,7 @@ export interface StrictOutputForm {
     longitude: number;
   };
   rawBody?: boolean;
-  callback?: (info: OutputResult) => void | Promise<void>;
+  callback?: (info: OutputResultNew) => void | Promise<void>;
   isReply?: boolean;
   messageID?: string;
   noLevelUI?: boolean;
@@ -40,6 +41,7 @@ export interface OutputResult extends StrictOutputForm {
   originalOptionsBody?: string;
 }
 export type OutputResultInf = OutputResult;
+export { OutputResultNew };
 
 export type OutputForm = string | StrictOutputForm;
 /**
@@ -85,8 +87,8 @@ export interface OutputProps {
    */
   reply(
     body: OutputForm,
-    callback?: (info: OutputResult) => void
-  ): Promise<OutputResult>;
+    callback?: (info: OutputResultNew) => void
+  ): Promise<OutputResultNew>;
 
   /**
    * Registers a reply listener to handle replies asynchronously.
@@ -137,8 +139,8 @@ export interface OutputProps {
   send(
     body: OutputForm,
     id?: string,
-    callback?: (info: OutputResult) => void
-  ): Promise<OutputResult>;
+    callback?: (info: OutputResultNew) => void
+  ): Promise<OutputResultNew>;
 
   /**
    * Adds a user to a thread.
@@ -205,7 +207,7 @@ export interface OutputProps {
     form: OutputForm,
     style: any,
     thread?: string
-  ): Promise<OutputResult>;
+  ): Promise<OutputResultNew>;
 
   /**
    * Sends a styled message with the specified form, style, and optional thread.
@@ -218,7 +220,7 @@ export interface OutputProps {
     form: OutputForm,
     style: any,
     thread?: string
-  ): Promise<OutputResult>;
+  ): Promise<OutputResultNew>;
 
   /**
    * Attaches a stream to a message with optional style.
@@ -231,7 +233,7 @@ export interface OutputProps {
     form: OutputForm,
     stream: string | Readable[] | Readable | any,
     style?: any
-  ): Promise<OutputResult>;
+  ): Promise<OutputResultNew>;
 
   /**
    * A class for creating styled messages.
@@ -257,14 +259,14 @@ export interface OutputProps {
        * @param body - The content of the reply.
        * @returns A promise resolving to the result of the reply.
        */
-      reply(body: string): Promise<OutputResult>;
+      reply(body: string): Promise<OutputResultNew>;
 
       /**
        * Sends a message with the specified body.
        * @param body - The content of the message.
        * @returns A promise resolving to the result of the message.
        */
-      send(body: string): Promise<OutputResult>;
+      send(body: string): Promise<OutputResultNew>;
 
       /**
        * Edits a message with the specified body and message ID.
@@ -281,14 +283,14 @@ export interface OutputProps {
    * Handles a generic error scenario.
    * @returns A promise resolving to the result of the operation.
    */
-  wentWrong(): Promise<OutputResult>;
+  wentWrong(): Promise<OutputResultNew>;
 
   /**
    * Handles a syntax error in a command.
    * @param commandX - Optional command context or details.
    * @returns A promise resolving to the result of the operation.
    */
-  syntaxError(commandX?: any): Promise<OutputResult>;
+  syntaxError(commandX?: any): Promise<OutputResultNew>;
 
   /**
    * Edits a message with the specified text, message ID, and optional delay and style.
@@ -305,7 +307,10 @@ export interface OutputProps {
     style?: any
   ): Promise<boolean>;
 
-  dispatch(body: OutputForm, options: StrictOutputForm): Promise<OutputResult>;
+  dispatch(
+    body: OutputForm,
+    options: StrictOutputForm
+  ): Promise<OutputResultNew>;
 
   /**
    * Creates frames from the specified arguments.

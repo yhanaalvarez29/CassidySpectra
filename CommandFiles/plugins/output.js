@@ -40,15 +40,18 @@ export const style = {
  */
 export class OutputResult {
   /**
+   * @type {CommandContext}
+   */
+  #ctx;
+  /**
    *
    * @param {CommandContext} ctx
    * @param {import("output-cassidy").OutputResultInf} result
    */
-
   constructor(ctx, result) {
-    Object.assign(result, this);
+    Object.assign(this, result);
 
-    this.ctx = ctx;
+    this.#ctx = ctx;
     this.result = result;
     this.messageID = this.result.messageID;
     this.body = this.result.body;
@@ -75,24 +78,37 @@ export class OutputResult {
    *
    * @param {Parameters<import("output-cassidy").OutputProps["addReplyListener"]>[1]} callback
    */
-  reply(callback) {
+  atReply(callback) {
     if (typeof callback !== "function") {
       throw new TypeError("Callback is not a function.");
     }
 
-    return this.ctx.output.addReplyListener(this.messageID, callback);
+    return this.#ctx.output.addReplyListener(this.messageID, callback);
   }
 
   /**
    *
    * @param {Parameters<import("output-cassidy").OutputProps["addReactionListener"]>[1]} callback
    */
-  reaction(callback) {
+  atReaction(callback) {
     if (typeof callback !== "function") {
       throw new TypeError("Callback is not a function.");
     }
 
-    return this.ctx.output.addReactionListener(this.messageID, callback);
+    return this.#ctx.output.addReactionListener(this.messageID, callback);
+  }
+
+  /**
+   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[0]} text
+   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[2]?} delay
+   * @param {Parameters<import("output-cassidy").OutputProps["edit"]>[3]?} style
+   */
+  editSelf(text, delay, style) {
+    return this.#ctx.output.edit(text, this.messageID, delay, style);
+  }
+
+  unsendSelf() {
+    return this.#ctx.output.unsend(this.messageID);
   }
 }
 
@@ -255,6 +271,7 @@ export async function use(obj) {
       let isStr = (str) => typeof str === "string";
       if (!isStr(options)) {
         options.body ??= "";
+        resultInfo.originalOptionsBody = options.body;
         if (Cassidy.config.autoGoogleTranslate) {
           try {
             options.body = (
@@ -297,8 +314,6 @@ export async function use(obj) {
         if (options.body) {
           options.body = await processOutput(options);
         }
-
-        resultInfo.originalOptionsBody = options.body;
 
         if (!options.noStyle && options.body) {
           options.body = UNISpectra.standardizeLines(options.body);
@@ -377,10 +392,8 @@ export async function use(obj) {
             // }/api/temp?id=${encodeURIComponent(temp.getFilename())}`;
             url = `/api/temp?id=${encodeURIComponent(temp.getFilename())}`;
           }
-          /**
-           * @type {import("output-cassidy").OutputResult}
-           */
-          const toR = {
+
+          const toR = new OutputResult(obj, {
             ...options,
             ...resultInfo,
             messageID: newMid,
@@ -388,7 +401,8 @@ export async function use(obj) {
             senderID: api.getCurrentUserID(),
             threadID: options.threadID || event.threadID,
             attachment: url ?? null,
-          };
+          });
+
           for (const kk of [input.webQ]) {
             if (!kk || !global.webQuery[kk]) {
               continue;
@@ -423,16 +437,13 @@ export async function use(obj) {
                 //return rej(err);
               }
 
-              /**
-               * @type {import("output-cassidy").OutputResult}
-               */
-              const resu = {
+              const resu = new OutputResult(obj, {
                 ...options,
                 ...info,
                 ...resultInfo,
                 senderID: api.getCurrentUserID() || "",
                 body: options.body,
-              };
+              });
               LASTID = resu.messageID;
               console.log("API RESU", resu);
               res(resu);
