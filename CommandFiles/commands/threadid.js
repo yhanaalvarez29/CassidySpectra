@@ -3,8 +3,8 @@
  * @type {CassidySpectra.CommandMeta}
  */
 export const meta = {
-  name: "gameid",
-  description: "Check game senderID",
+  name: "threadid",
+  description: "Check threadID",
   author: "Liane",
   version: "1.0.1",
   usage: "{prefix}{name}",
@@ -13,13 +13,13 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 10,
   requirement: "3.0.0",
-  otherNames: ["uid"],
-  icon: "🎮",
+  otherNames: ["tid"],
+  icon: "💬",
   noLevelUI: true,
 };
 
 import { defineEntry } from "@cass/define";
 
 export const entry = defineEntry(async ({ input, output }) => {
-  return output.reply(`${input.detectID ?? input.senderID}`);
+  return output.reply(`${input.threadID}`);
 });
