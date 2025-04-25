@@ -43,6 +43,7 @@ const handleCD = new Cooldown();
  */
 export async function use(obj) {
   try {
+    let snotiMode = Cassidy.config.silentNotiMode && obj.input.isFacebook;
     const { setAwaitStack, delAwaitStack } = obj;
     obj.isCommand = true;
     function handleNo() {
@@ -118,7 +119,7 @@ export async function use(obj) {
     if (hasPrefix) {
       if (global.Cassidy.config.maintenanceMode && !input.isAdmin) {
         await output.reaction("🚀");
-        if (Cassidy.config.silentNotiMode) {
+        if (snotiMode) {
           return handleNo();
         }
         return reply(`🚀 | Maintenance Mode. Only bot admins can use the bot.`);
@@ -127,7 +128,7 @@ export async function use(obj) {
 
     if (hasPrefix && String(commandName).includes(".")) {
       await output.reaction("⚠️");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       return reply(
@@ -149,7 +150,7 @@ export async function use(obj) {
       const suggestedCommand = getSuggestedCommand(commandName, commands);
 
       await output.reaction("❓");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       return output.replyStyled(
@@ -291,7 +292,7 @@ export async function use(obj) {
         return await banned(obj);
       }
       await output.reaction("🚫");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       return reply(`⚠️ | You have been banned from using the bot!
@@ -305,7 +306,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return await needPrefix(obj);
       }
       await output.reaction("💡");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       if (Cassidy.config.warnWhenNoPrefix) {
@@ -357,7 +358,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return await noPermission(obj);
       }
       await output.reaction("👑");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       return reply(
@@ -403,7 +404,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
           return await noPermission(obj);
         }
         await output.reaction("👑");
-        if (Cassidy.config.silentNotiMode) {
+        if (snotiMode) {
           return handleNo();
         }
         return reply(`❌ | Only bot admins are allowed to use this command.`);
@@ -421,7 +422,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         return await cooldown(obj);
       }
       await output.reaction("🕒");
-      if (Cassidy.config.silentNotiMode) {
+      if (snotiMode) {
         return handleNo();
       }
       return reply(
