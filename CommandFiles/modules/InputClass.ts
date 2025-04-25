@@ -241,6 +241,7 @@ export class InputClass extends String implements InputProps {
     ctx.args = this.arguments;
     ctx.InputClass = InputClass;
     ctx.role = this.role;
+    ctx.InputRoles = InputRoles;
   }
 
   private processEvent(event: Partial<InputProps>, autoCensor: boolean): void {
@@ -760,6 +761,10 @@ export class InputClass extends String implements InputProps {
 
   clone() {
     return new InputClass(this.#__context);
+  }
+
+  hasRole(role: InputRoles) {
+    return this.role >= role;
   }
 
   toJSON() {

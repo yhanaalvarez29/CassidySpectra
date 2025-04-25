@@ -315,6 +315,11 @@ declare global {
     role: InputRoles;
 
     /**
+     * User roles as enum.
+     */
+    InputRoles: typeof InputRoles;
+
+    /**
      * @deprecated Tracks popular commands used by users.
      */
     popularCMD?: AnyRecord;
