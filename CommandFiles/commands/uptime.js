@@ -4,22 +4,25 @@
  */
 export const meta = {
   name: "uptime",
-  description: "Check Uptime Status.",
+  description: "Check the bot's uptime status.",
   otherNames: ["upt", "up"],
-  version: "1.0.0",
+  version: "2.0.0",
   author: "Liane Cagara",
   usage: "{prefix}{name}",
   category: "System",
   permissions: [0],
   noPrefix: "both",
-  waitingTime: 5,
+  waitingTime: 0,
   requirement: "3.0.0",
-  icon: "🌏",
+  icon: "🌍",
 };
+
+import { OutputResult } from "@cass-plugins/output";
+import { UNISpectra } from "@cassidy/unispectra";
 import os from "os";
 
 export const style = {
-  title: "Uptime 🌏",
+  title: "Uptime 🌍",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -27,52 +30,87 @@ export const style = {
 const { formatTimeDiff, formatBits } = global.utils;
 
 /**
- *
  * @param {CommandContext} param0
  */
-export async function entry({ output }) {
+export async function entry({ output, usersDB, threadsDB, input }) {
   /**
    * @param {number} value
    * @param {string} unit
    */
   function formatTimeUnit(value, unit) {
-    return value ? `${value} ${unit}${value > 1 ? "s" : ""}, ` : "";
+    return value || unit === "minute"
+      ? `${value} ${unit}${value > 1 ? "s" : ""}, `
+      : "";
+  }
+
+  /**
+   * @type {OutputResult | undefined}
+   */
+  let sent;
+  if (!input.isWeb) {
+    sent = await output.reply("⏳ Loading...");
   }
 
   const { uptime } = global.Cassidy;
   const { years, months, days, hours, minutes, seconds } =
     formatTimeDiff(uptime);
 
-  const uptimeString = `The bot is running for ${formatTimeUnit(
-    years,
-    "year"
-  )}${formatTimeUnit(months, "month")}${formatTimeUnit(
-    days,
-    "day"
-  )}${formatTimeUnit(hours, "hour")}${formatTimeUnit(
-    minutes,
-    "minute"
-  )}and ${seconds} second${seconds > 1 ? "s" : ""}.`;
+  const uptimeString = `${formatTimeUnit(years, "year")}${formatTimeUnit(
+    months,
+    "month"
+  )}${formatTimeUnit(days, "day")}${formatTimeUnit(
+    hours,
+    "hour"
+  )}${formatTimeUnit(minutes, "minute")}and ${seconds} second${
+    seconds > 1 ? "s" : ""
+  } 🚀`;
+
   const osInfo = {
-    platform: os.platform(), // this is the operating system platform (e.g., "win32", "linux", "darwin")
-    type: os.type(), // the operating system name (e.g., "Windows_NT", "Linux", "Darwin")
-    release: os.release(), // operating system release version (e.g., "10.0.19041", "4.19.0-16-amd64")
-    uptime: os.uptime(), // The system uptime in seconds, is this different than process.uptime!?
-    hostname: os.hostname(), // obviously, the hostname of the operating system
-    arch: os.arch(), // The CPU architecture (e.g., "x64", "arm", "ia32") as defined by gogol
-    totalMemory: formatBits(os.totalmem()), // Total system memory in bytes
-    freeMemory: formatBits(os.freemem()), // Free system memory in bytes
-    cpus: os.cpus().length, // Number of CPU cores..
-    usedMemory: formatBits(os.totalmem() - os.freemem()), // I realized I need this too.
+    platform: os.platform(),
+    type: os.type(),
+    release: os.release(),
+    uptime: os.uptime(),
+    hostname: os.hostname(),
+    arch: os.arch(),
+    totalMemory: formatBits(os.totalmem()),
+    freeMemory: formatBits(os.freemem()),
+    cpus: os.cpus().length,
+    usedMemory: formatBits(os.totalmem() - os.freemem()),
   };
-  // os.uptime is a better choice than process.uptime if your bost restarts mostly lmao
-  const resultText = `**Platform**: ${osInfo.platform}
-**Type**: ${osInfo.type}
-**Release**: ${osInfo.release}
-**Hostname**: ${osInfo.hostname}
-**Architecture**: ${osInfo.arch}
-**Memory**: ${osInfo.usedMemory}/${osInfo.totalMemory} (Free: ${osInfo.freeMemory})
-**CPU Cores**: ${osInfo.cpus}
-**Uptime**: ${uptimeString}`;
-  output.reply(resultText);
+
+  const usersLength = await usersDB.getMongo().size();
+  const threadsLength = await threadsDB.getMongo().size();
+  const mqttPing = Date.now() - (input.timestamp ?? Date.now());
+
+  const resultText = [
+    `⏰ **Uptime**: ${uptimeString}`,
+    `🕒 **MQTT Ping**: ${mqttPing}ms`,
+    ``,
+    `${UNISpectra.arrow} ***CASSIDY*** 📊`,
+    ``,
+    `👥 **Users**: ${usersLength}`,
+    `💬 **Threads**: ${threadsLength}`,
+    `🔍 **Reply Listeners**: ${Reflect.ownKeys(Cassidy.replies).length}`,
+    `😆 **Reaction Listeners**: ${Reflect.ownKeys(Cassidy.reacts).length}`,
+    `🗑️ **Users Cache**: ${Reflect.ownKeys(usersDB.cache).length}`,
+    `🗑️ **Threads Cache**: ${Reflect.ownKeys(threadsDB.cache).length}`,
+    `🗃️ **Commands**: ${Reflect.ownKeys(Cassidy.commands).length}`,
+    `📥 **Plugins**: ${Reflect.ownKeys(Cassidy.plugins).length}`,
+    `🎨 **Style Presets**: ${Cassidy.presets.size}`,
+    ``,
+    `${UNISpectra.arrow} ***SPECS*** 🖥️`,
+    ``,
+    `💻 **Type**: ${osInfo.type} (${osInfo.platform})`,
+    `📦 **Release**: ${osInfo.release}`,
+    `🏠 **Hostname**: ${osInfo.hostname}`,
+    `🔧 **Architecture**: ${osInfo.arch}`,
+    `💾 **Memory**: ${osInfo.usedMemory}/${osInfo.totalMemory} (Free: ${osInfo.freeMemory})`,
+    `⚡ **CPU Cores**: ${osInfo.cpus}`,
+  ].join("\n");
+
+  if (sent) {
+    sent.editSelf(`${resultText}`);
+  } else {
+    output.reply(`${resultText}`);
+  }
 }

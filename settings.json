@@ -49,7 +49,7 @@
   "WEB_PASSWORD": "liaSS-web",
   "maintenanceMode": false,
   "noLevelUI": true,
-  "noRibbonUI": false,
+  "noRibbonUI": true,
   "logPluginChange": false,
   "warnWhenNoPrefix": false,
   "strictNoPrefix": false,

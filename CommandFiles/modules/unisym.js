@@ -811,3 +811,15 @@ export function limitString(str = "", length = 0) {
     ? String(str).slice(0, Number(length))
     : String(str);
 }
+
+/**
+ *
+ * @param {number} ms
+ * @returns
+ */
+export function formatTime(ms) {
+  const secs = Math.floor(ms / 1000) % 60;
+  const mins = Math.floor(ms / (1000 * 60)) % 60;
+  const hrs = Math.floor(ms / (1000 * 60 * 60));
+  return hrs > 0 ? `${hrs}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
+}
