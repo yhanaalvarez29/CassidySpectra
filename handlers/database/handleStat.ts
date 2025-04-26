@@ -771,11 +771,11 @@ export default class UserStatsManager {
     }
   }
 
-  async ensureUserInfo(userID: string) {
+  async ensureUserInfo(userID: string, refUID?: string) {
     const { userMeta } = await this.getCache(userID);
 
     if (!userMeta) {
-      return this.saveUserInfo(userID);
+      return this.saveUserInfo(userID, refUID);
     }
 
     return true;
@@ -797,17 +797,17 @@ export default class UserStatsManager {
   /**
    * Use with caution.
    */
-  async saveUserInfo(userID: string) {
+  async saveUserInfo(userID: string, refUID?: string) {
     try {
       if (this.ignoreQueue.includes(userID)) {
         return false;
       }
-      if (isNaN(parseInt(userID))) {
+      if (isNaN(parseInt(refUID ?? userID))) {
         return false;
       }
       this.ignoreQueue.push(userID);
       const data = {
-        userMeta: await fetchMeta(userID, true),
+        userMeta: await fetchMeta(refUID ?? userID, true),
       };
 
       if (

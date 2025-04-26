@@ -524,11 +524,13 @@ api.${
     // LMAO autoCreateDB finally got purpose.
     const { autoCreateDB } = global.Cassidy.config;
     if (
-      handleStat.isNumKey(event.senderID) &&
-      autoCreateDB &&
-      event.isFacebook
+      handleStat.isNumKey(event.originalEvent?.senderID ?? event.senderID) &&
+      autoCreateDB
     ) {
-      let i = await handleStat.ensureUserInfo(event.senderID);
+      let i = await handleStat.ensureUserInfo(
+        event.senderID,
+        event.originalEvent?.senderID ?? event.senderID
+      );
 
       if (i) {
         console.log("[AutoCreateDB]", `Created userMeta for ${event.senderID}`);
