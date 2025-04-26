@@ -1,5 +1,5 @@
 // @ts-check
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { PetPlayer } from "@cass-plugins/pet-fight";
 
@@ -138,9 +138,9 @@ export const langs = {
 };
 
 /**
- * 
- * @param {CommandContext} param0 
- * @returns 
+ *
+ * @param {CommandContext} param0
+ * @returns
  */
 export async function entry({
   args,
@@ -167,7 +167,7 @@ export async function entry({
  * @type {Record<string, CommandEntry>}
  */
 const handlers = {
-  async redux_demo({  langParser, ctx }) {
+  async redux_demo({ langParser, ctx }) {
     const getLang = langParser.createGetLang(langs);
     const home = new ReduxCMDHome(
       {
@@ -236,7 +236,7 @@ const handlers = {
     const jsonStr = JSON.stringify(targetItem, null, 2);
     return output.reply(getLang("invjsonResult", jsonStr));
   },
-  async style({  output, args, langParser }) {
+  async style({ output, args, langParser }) {
     const getLang = langParser.createGetLang(langs);
     const jsonData = JSON.parse(args.join(" "));
     const styled = new output.Styled({
@@ -286,7 +286,7 @@ const handlers = {
   },
   async eventjson({ input: { ...input }, output, langParser }) {
     const getLang = langParser.createGetLang(langs);
-    delete input.password;
+    "password" in input ? delete input.password : 0;
     return output.reply(
       getLang("eventjsonResult", JSON.stringify(input, null, 2))
     );
@@ -327,13 +327,7 @@ const handlers = {
     });
     return output.reply(getLang("reqitemSuccess", jsonStr));
   },
-  async reqitemlist({
-    output,
-    money,
-    Slicer,
-    args,
-    langParser,
-  }) {
+  async reqitemlist({ output, money, Slicer, args, langParser }) {
     const getLang = langParser.createGetLang(langs);
     const adminData = await money.get("wss:admin");
     const allData = await money.getAll();
@@ -494,7 +488,6 @@ ${item.flavorText ?? "Not Configured"}
         player.HP -= damage;
         const i = await output.replyStyled(
           getLang(
-            
             "petTestTakeDamage",
             // @ts-ignore
             player.petIcon,
@@ -538,71 +531,103 @@ ${item.flavorText ?? "Not Configured"}
       return output.reply(getLang("testNoUrl"));
     }
 
+    /**
+     * @type {import("axios").AxiosResponse | undefined}
+     */
+    let res;
+
+    /**
+     * @type {AxiosError | undefined}
+     */
+    let err;
+
     try {
-      const res = await axios({
+      res = await axios({
         method: String(method).toLowerCase(),
         url,
         responseType: "stream",
         params,
       });
-
-      const contentType = res.headers["content-type"]?.toLowerCase();
-      const stream = res.data;
-
-      if (
-        contentType?.startsWith("image/") ||
-        contentType?.startsWith("video/") ||
-        contentType?.startsWith("audio/")
-      ) {
-        if (!input.isAdmin && !input.isWss) {
-          return output.reply(getLang("testAdminOnlyAttachment"));
-        }
-        return output.reply({
-          body: getLang("testMediaContent"),
-          attachment: stream,
-        });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        res = error.response;
+        err = error;
       }
-      let dataBuffer = "";
+      if (!res) {
+        return output.error(error);
+      }
+    }
 
-      stream.on("data", (chunk) => {
-        dataBuffer += chunk.toString();
+    const contentType = res.headers["content-type"]?.toLowerCase();
+    const stream = res.data;
+
+    if (
+      contentType?.startsWith("image/") ||
+      contentType?.startsWith("video/") ||
+      contentType?.startsWith("audio/")
+    ) {
+      if (!input.isAdmin && !input.isWss) {
+        return output.reply(getLang("testAdminOnlyAttachment"));
+      }
+      return output.reply({
+        body: getLang("testMediaContent"),
+        attachment: stream,
       });
+    }
+    let dataBuffer = "";
 
-      stream.on("end", () => {
-        if (
-          contentType?.includes("application/json") ||
-          contentType?.includes("text/plain") ||
-          contentType?.includes("text/html")
-        ) {
-          if (contentType?.includes("application/json")) {
-            try {
-              const jsonData = JSON.parse(dataBuffer);
-              output.reply({
-                body: getLang(
-                  "testApiResponse",
-                  JSON.stringify(jsonData, null, 2)
-                ),
-              });
-            } catch (error) {
-              output.error(error);
-            }
-          } else {
+    stream.on("data", (chunk) => {
+      dataBuffer += chunk.toString();
+    });
+
+    stream.on("end", () => {
+      if (
+        contentType?.includes("application/json") ||
+        contentType?.includes("text/plain") ||
+        contentType?.includes("text/html")
+      ) {
+        const statusSymbol =
+          res.status >= 500
+            ? "❌"
+            : res.status >= 400
+            ? "❌"
+            : res.status >= 300
+            ? "🔁"
+            : res.status >= 200
+            ? "✅"
+            : "❓";
+
+        let status = `${statusSymbol} **${res.status} (${res.statusText})**\n\n`;
+        if (contentType?.includes("application/json")) {
+          try {
+            const jsonData = JSON.parse(dataBuffer);
+
             output.reply({
-              body: getLang("testApiResponse", dataBuffer.slice(0, 1500)),
+              body: getLang(
+                "testApiResponse",
+                status + JSON.stringify(jsonData, null, 2)
+              ),
             });
+          } catch (error) {
+            output.error(error);
           }
         } else {
           output.reply({
-            body: getLang("testUnrecognizedContent"),
+            body: getLang(
+              "testApiResponse",
+              status + dataBuffer.slice(0, 1500)
+            ),
           });
         }
-      });
+      } else {
+        output.reply({
+          body: getLang("testUnrecognizedContent"),
+        });
+      }
+    });
 
-      stream.on("error", (error) => {
-        output.error(error);
-      });
-    } catch (error) {
-      return output.error(error);
-    }
+    stream.on("error", (error) => {
+      output.error(error);
+    });
   },
 };
