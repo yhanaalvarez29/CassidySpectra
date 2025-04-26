@@ -27,6 +27,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "🟨",
   category: "Chance Games",
+  cmdType: "arl_g",
 };
 
 // Created by Liane Cagara, do not own.

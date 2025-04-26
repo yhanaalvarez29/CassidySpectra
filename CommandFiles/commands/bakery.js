@@ -14,6 +14,7 @@ export const meta = {
   noPrefix: false,
   requirement: "3.0.0",
   icon: "🍰",
+  cmdType: "cplx_g",
 };
 
 const bakery = {
@@ -89,7 +90,7 @@ const bakery = {
         "These cookies are filled with randomness and uncertainty, make sure to **open** it.",
       key: "fortCookie",
       price: 500,
-      onPurchase({ moneySet, generateGift, }) {
+      onPurchase({ moneySet, generateGift }) {
         moneySet.inventory.push({
           ...generateGift(),
           name: "Fortune Cookie",
@@ -109,9 +110,7 @@ const bakery = {
     "🍪 Sorry, I can’t buy from you, but my goods are here.",
     "🍩 I have lots of baked goods, but no room to buy from you.",
   ],
-  tradeRefuses: [
-    "🍪 I’m afraid I can’t trade with you, despite wanting to.",
-  ],
+  tradeRefuses: ["🍪 I’m afraid I can’t trade with you, despite wanting to."],
   talkTexts: [
     {
       name: "Baker's Trick",

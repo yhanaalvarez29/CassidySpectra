@@ -19,6 +19,7 @@ export const meta = {
   shopPrice: 50000,
   requirement: "3.0.0",
   icon: "💥",
+  cmdType: "arl_g",
 };
 
 export class style {

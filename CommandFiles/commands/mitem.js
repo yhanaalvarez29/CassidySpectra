@@ -15,6 +15,7 @@ export const meta = {
   botAdmin: true,
   requirement: "3.0.0",
   icon: "🛠️",
+  cmdType: "cplx_g",
 };
 
 export const style = {

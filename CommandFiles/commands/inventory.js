@@ -22,6 +22,7 @@ export const meta = {
   otherNames: ["inv", "items"],
   requirement: "3.0.0",
   icon: "🎒",
+  cmdType: "cplx_g",
 };
 
 const { invLimit } = global.Cassidy;

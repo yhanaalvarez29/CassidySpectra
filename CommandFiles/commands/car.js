@@ -20,6 +20,7 @@ export const meta = {
   waitingTime: 1,
   requirement: "2.5.0",
   icon: "🚗",
+  cmdType: "cplx_g",
 };
 
 const { invLimit } = global.Cassidy;

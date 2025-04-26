@@ -18,6 +18,7 @@ export const meta = {
   otherNames: [],
   requirement: "3.0.0",
   icon: "⚔️",
+  cmdType: "cplx_g",
 };
 
 export const style = {

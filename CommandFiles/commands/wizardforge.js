@@ -16,6 +16,7 @@ export const meta = {
   icon: "🪄",
   otherNames: ["wizardf"],
   shopPrice: 1000000,
+  cmdType: "cplx_g",
 };
 
 export const style = {

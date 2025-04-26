@@ -15,6 +15,7 @@ export const meta = {
   noPrefix: false,
   requirement: "3.0.0",
   icon: "📝",
+  cmdType: "arl_g",
 };
 const prize = 70;
 export const style = {

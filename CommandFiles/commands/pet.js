@@ -21,6 +21,7 @@ export const meta = {
   shopPrice: 200,
   requirement: "3.0.0",
   icon: "🐕",
+  cmdType: "cplx_g",
 };
 const { invLimit } = global.Cassidy;
 

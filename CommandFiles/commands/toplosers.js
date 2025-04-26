@@ -13,6 +13,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "🤣",
   category: "Utilities",
+  cmdType: "arl_g",
 };
 
 export class style {

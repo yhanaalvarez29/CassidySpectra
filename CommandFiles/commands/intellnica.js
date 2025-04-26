@@ -21,6 +21,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "✨",
   shopPrice: 1_000_000,
+  cmdType: "cplx_g",
 };
 
 function formatDuration(ms) {

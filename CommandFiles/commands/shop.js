@@ -21,6 +21,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "🛒",
   requiredLevel: 3,
+  cmdType: "cplx_g",
 };
 
 export const style = {
@@ -34,7 +35,7 @@ global.stoData = stoData;
  * @type {{ [key: string]: CommandEntry }}
  */
 export const entryConfig = {
-  async top({  output, money }) {
+  async top({ output, money }) {
     const allData = await money.getAll();
     let usersCalc = {};
     let top = {};

@@ -13,6 +13,7 @@ export const meta = {
   noPrefix: "both",
   shopPrice: 250,
   icon: "⛏️",
+  cmdType: "cplx_g",
 };
 
 export const style = {

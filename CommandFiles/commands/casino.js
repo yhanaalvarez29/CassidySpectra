@@ -43,6 +43,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "🎲",
   requiredLevel: 3,
+  cmdType: "arl_g",
 };
 
 const { randArrValue } = global.utils;

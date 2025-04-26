@@ -15,6 +15,7 @@ export const meta = {
   otherNames: ["temshop", "temstore", "temmie"],
   requirement: "3.0.0",
   icon: "🍣",
+  cmdType: "cplx_g",
 };
 
 export async function entry({ UTShop, money, input }) {

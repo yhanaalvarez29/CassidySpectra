@@ -12,6 +12,7 @@ export const meta = {
   usage: "{prefix}{name}",
   requirement: "3.0.0",
   icon: "🎉",
+  cmdType: "arl_g",
 };
 
 const reward = 200;

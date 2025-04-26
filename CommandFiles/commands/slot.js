@@ -17,6 +17,7 @@ export const meta = {
   shopPrice: 1000,
   requirement: "3.0.0",
   icon: "🍒",
+  cmdType: "arl_g",
 };
 const { randArrValue } = global.utils;
 

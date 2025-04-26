@@ -41,10 +41,11 @@ export const meta = {
   author: "Liane Cagara | JenicaDev",
   waitingTime: 5,
   description: "Liane's Bank",
-  category: "banking",
+  category: "Finance",
   noPrefix: "both",
   otherNames: ["nb", "nicabank"],
   // botAdmin: true,
+  cmdType: "arl_g",
 };
 
 export const style = {

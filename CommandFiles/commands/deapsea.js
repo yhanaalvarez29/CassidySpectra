@@ -17,6 +17,7 @@ export const meta = {
   icon: "🌊",
   otherNames: ["deepsea"],
   shopPrice: 1000000,
+  cmdType: "cplx_g",
 };
 
 export const style = {

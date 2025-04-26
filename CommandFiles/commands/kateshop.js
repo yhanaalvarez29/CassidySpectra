@@ -12,6 +12,7 @@ export const meta = {
   category: "Shopping",
   permissions: [0],
   noPrefix: false,
+  cmdType: "cplx_g",
 };
 
 const kateShop = {

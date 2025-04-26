@@ -4,6 +4,9 @@ import { UNIRedux } from "../modules/unisym.js";
 import { Inventory, Collectibles } from "../plugins/ut-shop.js";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "airdrop",
   description:
@@ -18,6 +21,7 @@ export const meta = {
   otherNames: ["drop"],
   requirement: "3.0.0",
   icon: "✈️",
+  cmdType: "cplx_g",
 };
 
 /**

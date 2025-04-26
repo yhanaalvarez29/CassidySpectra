@@ -22,6 +22,7 @@ export const meta = {
   shopPrice: 2500,
   requiredLevel: 10,
   requirement: "3.0.0",
+  cmdType: "arl_g",
 };
 
 const outcomes = [

@@ -12,6 +12,7 @@ export const meta: CassidySpectra.CommandMeta = {
   category: "Thread",
   usage: `{prefix} [link profile | uid]`,
   fbOnly: true,
+  cmdType: "fb_utl",
 };
 
 export const style: CassidySpectra.CommandStyle = {

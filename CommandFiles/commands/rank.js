@@ -15,6 +15,7 @@ export const meta = {
   noPrefix: "both",
   otherNames: ["level", "exp"],
   waitingTime: 0.1,
+  cmdType: "cplx_g",
 };
 
 export function formatNumber(number) {

@@ -65,6 +65,7 @@ export async function entry({
         icon: cmdIcon = "📄",
         version = "N/A",
         requirement = "N/A",
+        role,
       } = command.meta;
       const status = shop.isUnlocked(name)
         ? "✅ Unlocked"
@@ -93,7 +94,11 @@ export async function entry({
 │ 
 │   🔐 **Permissions**:
 │   ${UNISpectra.charm} ${
-        permissions.length ? permissions.join(", ") : "None required"
+        typeof role === "number"
+          ? role
+          : permissions.length
+          ? permissions.join(", ")
+          : "None required"
       }
 │ 
 │   ⏳ **Cooldown**:
@@ -122,29 +127,54 @@ export async function entry({
     return;
   }
 
-  const categorizedCommands = Object.values(commands).reduce(
-    (categories, command) => {
+  const categorizedCommands: Record<string, CassidySpectra.CassidyCommand[]> =
+    Object.values(commands).reduce((categories, command) => {
       const category = command.meta.category || "Miscellaneous";
       if (!categories[category]) categories[category] = [];
       categories[category].push(command);
       return categories;
-    },
-    {}
-  );
+    }, {});
+  const dontPrio: CassidySpectra.CommandTypes[] = ["arl_g", "cplx_g"];
+
+  // const sortedCategories = Object.keys(categorizedCommands).sort((a, b) => {
+  //   const aContainsGame = a.toLowerCase().includes("game");
+  //   const bContainsGame = b.toLowerCase().includes("game");
+
+  //   const aCommands = categorizedCommands[a];
+  //   const bCommands = categorizedCommands[b];
+
+  //   if (aContainsGame && bContainsGame) {
+  //     return a.localeCompare(b);
+  //   }
+
+  //   if (aContainsGame) {
+  //     return -1;
+  //   }
+  //   if (bContainsGame) {
+  //     return 1;
+  //   }
+
+  //   return a.localeCompare(b);
+  // });
+
+  const getSumPrioIndex = (commands: CassidySpectra.CassidyCommand[]) => {
+    if (!commands.length) return 0;
+
+    return commands.reduce((sum, cmd) => {
+      const idx = dontPrio.indexOf(cmd.meta.cmdType) * 5;
+      return sum + (idx === -1 ? 0 : idx);
+    }, 0);
+  };
 
   const sortedCategories = Object.keys(categorizedCommands).sort((a, b) => {
-    const aContainsGame = a.toLowerCase().includes("game");
-    const bContainsGame = b.toLowerCase().includes("game");
+    const aCommands = categorizedCommands[a];
+    const bCommands = categorizedCommands[b];
 
-    if (aContainsGame && bContainsGame) {
-      return a.localeCompare(b);
-    }
+    const aPrio = getSumPrioIndex(aCommands);
+    const bPrio = getSumPrioIndex(bCommands);
 
-    if (aContainsGame) {
-      return -1;
-    }
-    if (bContainsGame) {
-      return 1;
+    if (aPrio !== bPrio) {
+      return aPrio - bPrio;
     }
 
     return a.localeCompare(b);
@@ -168,13 +198,7 @@ export async function entry({
   pageCategories.forEach((category) => {
     result += `\n╭─────────────❍\n${preff} ${UNISpectra.arrow} ***${category}*** 📁\n${preff}\n`;
     categorizedCommands[category].forEach((command) => {
-      const {
-        name,
-        description,
-        icon,
-        otherNames,
-        shopPrice = 0,
-      } = command.meta;
+      const { name, icon, shopPrice = 0 } = command.meta;
       const statusIcon = isAdminCommand(command)
         ? "👑"
         : shop.isUnlocked(name)

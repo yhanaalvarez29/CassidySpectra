@@ -14,6 +14,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "⚡",
   category: "User Management",
+  cmdType: "smpl_g",
 };
 
 /**

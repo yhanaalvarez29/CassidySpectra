@@ -22,6 +22,7 @@ export const meta = {
   author: "XaviaTeam | Liane (Adapted to Cassidy)",
   waitingTime: 10,
   category: "Chance Games",
+  cmdType: "arl_g",
 };
 
 export const style = {

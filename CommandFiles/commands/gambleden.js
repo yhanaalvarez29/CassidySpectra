@@ -25,6 +25,7 @@ export const meta = {
   requirement: "2.5.0",
   icon: "🎰",
   requiredLevel: 2,
+  cmdType: "arl_g",
 };
 
 const gameDescriptions = {

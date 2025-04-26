@@ -19,6 +19,7 @@ export const meta = {
   // botAdmin: true,
   requirement: "3.0.0",
   icon: "🔱",
+  cmdType: "cplx_g",
 };
 
 // Lahat ng encounter data nalipat na sa /CommandFiles/resources/spinoff/encounters.json

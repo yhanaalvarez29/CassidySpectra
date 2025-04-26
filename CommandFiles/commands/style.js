@@ -24,9 +24,9 @@ export const style = {
 };
 
 /**
- * 
- * @param {CommandContext} param0 
- * @returns 
+ *
+ * @param {CommandContext} param0
+ * @returns
  */
 export async function entry({ input, output, prefix }) {
   const [title, content] = input.splitArgs("|");

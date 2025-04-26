@@ -16,6 +16,7 @@ export const meta = {
   requirement: "1.0.2",
   icon: "🛍️",
   waitingTime: 0.01,
+  cmdType: "cplx_g",
 };
 
 export const style = {

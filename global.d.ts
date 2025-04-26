@@ -724,7 +724,16 @@ declare global {
       params?: any[];
       legacyMode?: boolean;
       [name: string]: any;
+      cmdType?: CommandTypes;
     }
+
+    export type CommandTypes =
+      | "cplx_g"
+      | "arl_g"
+      | "fb_utl"
+      | "smpl_g"
+      | "mdia_utl"
+      | "etc_xcmd";
 
     export type FontTypes =
       | "bold"

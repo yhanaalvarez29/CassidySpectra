@@ -14,6 +14,7 @@ export const meta = {
   waitingTime: 20,
   requirement: "3.0.0",
   icon: "🤣",
+  cmdType: "arl_g",
 };
 const { randArrValue } = global.utils;
 const winTexts = [

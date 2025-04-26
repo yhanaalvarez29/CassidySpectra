@@ -12,6 +12,7 @@ export const meta = {
   permissions: [0],
   noPrefix: "both",
   shopPrice: 500,
+  cmdType: "cplx_g",
 };
 
 export const style = {

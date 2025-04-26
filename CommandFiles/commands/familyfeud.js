@@ -18,6 +18,7 @@ export const meta = {
   otherNames: ["ff", "feud"],
   requirement: "3.0.0",
   icon: "🔎",
+  cmdType: "arl_g",
 };
 
 const logo = `🔎 [ **FAMILY FEUD** ] 🔍\n${UNIRedux.standardLine}\n`;

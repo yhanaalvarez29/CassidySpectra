@@ -2,6 +2,9 @@
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { UNISpectra } from "@cassidy/unispectra";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "admin",
   author: "Liane Cagara 🎀",
@@ -13,6 +16,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "",
   category: "User Management",
+  cmdType: "etc_xcmd",
 };
 const { Cassidy } = global;
 

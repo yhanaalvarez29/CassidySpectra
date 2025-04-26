@@ -13,6 +13,7 @@ export const meta = {
   permissions: [2],
   waitingTime: 5,
   noPrefix: false,
+  fbOnly: true,
 };
 
 export const style = {

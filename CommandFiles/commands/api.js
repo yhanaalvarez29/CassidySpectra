@@ -2,6 +2,7 @@
 import axios, { AxiosError } from "axios";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { PetPlayer } from "@cass-plugins/pet-fight";
+import { UNISpectra } from "@cassidy/unispectra";
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -19,6 +20,7 @@ export const meta = {
   otherNames: ["devapi", "cassapi"],
   requirement: "3.0.0",
   icon: "💻",
+  cmdType: "etc_xcmd",
 };
 
 /**
@@ -78,7 +80,7 @@ export const langs = {
     testNoUrl: "Enter a URL.",
     testAdminOnlyAttachment: "❌ Only admins and ws users can send attachment.",
     testMediaContent: "✅ Media Content:",
-    testApiResponse: "✅ API Response:\n\n%1",
+    testApiResponse: "%1",
     testUnrecognizedContent: "❌ Unrecognized content type",
   },
   tl: {
@@ -540,6 +542,7 @@ ${item.flavorText ?? "Not Configured"}
      * @type {AxiosError | undefined}
      */
     let err;
+    const timeA = performance.now();
 
     try {
       res = await axios({
@@ -597,7 +600,11 @@ ${item.flavorText ?? "Not Configured"}
             ? "✅"
             : "❓";
 
-        let status = `${statusSymbol} **${res.status} (${res.statusText})**\n\n`;
+        let status = `${statusSymbol} **${res.status} (${
+          res.statusText
+        })**\n***Ping*** ${UNISpectra.arrow} ${(
+          performance.now() - timeA
+        ).toFixed(2)}ms\n\n`;
         if (contentType?.includes("application/json")) {
           try {
             const jsonData = JSON.parse(dataBuffer);

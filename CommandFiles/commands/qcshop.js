@@ -14,6 +14,7 @@ export const meta = {
   otherNames: ["snowdinshop", "bunnyshop"],
   requirement: "3.0.0",
   icon: "👒",
+  cmdType: "cplx_g",
 };
 
 const qcShop = {

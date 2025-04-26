@@ -15,6 +15,7 @@ export const meta = {
   shopPrice: 250,
   requirement: "1.0.0",
   icon: "⚓",
+  cmdType: "cplx_g",
 };
 
 export const style = {

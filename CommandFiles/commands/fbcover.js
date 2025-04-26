@@ -17,6 +17,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "📷",
   deku: true,
+  noWeb: true,
 };
 
 export const style = {

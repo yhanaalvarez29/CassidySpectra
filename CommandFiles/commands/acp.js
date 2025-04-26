@@ -18,6 +18,7 @@ export const meta = {
   noPrefix: false,
   icon: "💗",
   fbOnly: true,
+  cmdType: "fb_utl",
 };
 
 /**

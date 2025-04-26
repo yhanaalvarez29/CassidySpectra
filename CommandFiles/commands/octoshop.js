@@ -15,6 +15,7 @@ export const meta = {
   otherNames: ["krakenshop", "deepstore"],
   requirement: "3.0.0",
   icon: "🐙",
+  cmdType: "cplx_g",
 };
 export async function entry({ UTShop }) {
   const shop = new UTShop(octoShop);

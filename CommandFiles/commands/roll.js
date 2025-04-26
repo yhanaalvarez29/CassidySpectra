@@ -17,6 +17,7 @@ export const meta = {
   icon: "🎲",
   otherNames: ["dice"],
   category: "Gambling Games",
+  cmdType: "arl_g",
 };
 
 export const style = {

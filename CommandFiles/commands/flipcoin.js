@@ -14,6 +14,7 @@ module.exports = {
     requirement: "3.0.0",
     icon: "🪙",
     category: "Gambling Games",
+    cmdType: "cplx_g",
   },
   style: class {
     title = {

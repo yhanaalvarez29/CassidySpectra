@@ -15,6 +15,7 @@ export const meta = {
   requirement: "3.0.0",
   icon: "💵",
   requiredLevel: 5,
+  cmdType: "cplx_g",
 };
 const charm = "✦";
 const circle = "⦿";

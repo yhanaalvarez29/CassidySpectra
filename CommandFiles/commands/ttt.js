@@ -14,6 +14,7 @@ export const meta = {
   waitingTime: 60,
   requirement: "3.0.0",
   icon: "⭕",
+  cmdType: "arl_g",
 };
 const reward = 50;
 const X = "❌";

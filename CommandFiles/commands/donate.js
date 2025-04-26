@@ -16,6 +16,7 @@ export const meta = {
   noPrefix: "both",
   waitingTime: 0,
   icon: "🎁",
+  cmdType: "cplx_g",
 };
 
 export const style = {

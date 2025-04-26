@@ -17,6 +17,7 @@ export const meta: CassidySpectra.CommandMeta = {
   requirement: "3.0.0",
   icon: "🏦",
   requiredLevel: 5,
+  cmdType: "arl_g",
 };
 
 export interface Award {

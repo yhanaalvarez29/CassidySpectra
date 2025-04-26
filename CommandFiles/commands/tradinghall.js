@@ -18,6 +18,7 @@ export const meta = {
   otherNames: ["tradehall", "trade"],
   requirement: "3.0.0",
   icon: "🛒",
+  cmdType: "cplx_g",
 };
 const { parseCurrency: pCy } = global.utils;
 const { invLimit } = global.Cassidy;

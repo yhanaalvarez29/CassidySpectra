@@ -15,6 +15,7 @@ export const meta: CassidySpectra.CommandMeta = {
   waitingTime: 0,
   requirement: "3.0.0",
   icon: "💰",
+  cmdType: "cplx_g",
 };
 
 /**

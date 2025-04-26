@@ -16,6 +16,7 @@ export const meta = {
   waitingTime: 24,
   requirement: "3.0.0",
   icon: "🔖",
+  cmdType: "arl_g",
 };
 export const style = {
   title: "Lotto 🔖",
