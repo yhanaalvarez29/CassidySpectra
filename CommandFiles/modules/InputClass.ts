@@ -88,7 +88,10 @@ export class InputClass extends String implements InputProps {
 
   constructor(obj: CommandContext) {
     const { replies, reacts } = global.Cassidy;
+
     super(String(obj.event?.body || ""));
+    this.#__context = obj;
+
     Object.assign(this, obj.event);
     this.#__api = obj.api;
     this.#__threadsDB = obj.threadsDB;
@@ -96,7 +99,6 @@ export class InputClass extends String implements InputProps {
 
     this.processEvent(obj.event, obj.command?.meta?.autoCensor ?? false);
 
-    this.#__context = obj;
     const self = this;
 
     this.ReplySystem = {
@@ -293,6 +295,7 @@ export class InputClass extends String implements InputProps {
       this.text = this.body;
 
       if (event.messageReply) {
+        console.log(Reflect.ownKeys(this.#__context), new Error());
         this.replier = new InputClass({
           ...this.#__context,
           event: event.messageReply,
@@ -447,6 +450,7 @@ export class InputClass extends String implements InputProps {
     if (refresh) {
       await this.#__threadsDB.saveThreadInfo(this.threadID, this.#__api);
     } else {
+      console.log(Reflect.ownKeys(this.#__context), new Error());
       await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
     const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
