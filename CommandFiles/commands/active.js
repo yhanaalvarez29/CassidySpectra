@@ -60,12 +60,19 @@ export async function entry({ output, input, money, Slicer, args }) {
 
   for (const userID of slicer.getPage(args[0])) {
     i++;
-
     const data = allUsers[userID];
+
     const { lastModified = 0 } = data;
     const lastActiveDate = new Date(lastModified).toLocaleDateString();
-    result += `${i}. **${data.name}**\n🕒 Last Active: **${lastActiveDate}**\n\n`;
+    result += `${i}. **${data.userMeta?.name ?? data.name}${
+      data.userMeta?.name && data.name ? ` (${data.name})` : ""
+    }**\n🕒 Last Active: **${lastActiveDate}**\n\n`;
   }
 
-  output.reply(result + `\n\n${input.words[0]} <page> - View a specific page.`);
+  output.reply(
+    result +
+      `\n\n${input.words[0]} <page> - View a specific page.\n${
+        input.words[0]
+      } ${slicer.pagesLength + 1} - View the last page.`
+  );
 }

@@ -386,9 +386,13 @@ export async function entry({
       sortedUsers.forEach(([_, user], index) => {
         result += `━━━━━━ ${
           index + 1 + (page - 1) * per
-        } ━━━━━━\n☐ ${fonts.bold("name")}: ${user.name}\n➥ ${formatTrophy(
-          user
-        )}\n${abbreviateNumber(user.bankData.bank, 2, true)}\n`;
+        } ━━━━━━\n☐ ${fonts.bold("name")}: ${
+          user.userMeta?.name ?? user.name
+        }\n➥ ${formatTrophy(user)}\n${abbreviateNumber(
+          user.bankData.bank,
+          2,
+          true
+        )}\n`;
       });
       return output.reply(result);
     },
