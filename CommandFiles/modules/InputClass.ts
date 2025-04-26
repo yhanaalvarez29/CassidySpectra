@@ -92,6 +92,9 @@ export class InputClass extends String implements InputProps {
     this.#__context = obj;
 
     Object.assign(this, obj.event);
+    if ("password" in this) {
+      delete this.password;
+    }
     this.#__api = obj.api;
     this.#__threadsDB = obj.threadsDB;
     this.censor = censor;
