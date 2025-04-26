@@ -16,9 +16,9 @@ import OutputProps, { OutputResult } from "output-cassidy";
 import { inspect } from "node:util";
 
 export enum InputRoles {
-  VIP = 3,
   ADMINBOT = 2,
   MODERATORBOT = 1.5,
+  VIP = 1.2,
   ADMINBOX = 1,
   EVERYONE = 0,
 }
@@ -466,6 +466,9 @@ export class InputClass extends String implements InputProps {
     } else {
       this.role = InputRoles.EVERYONE;
     }
+    if (this.replier instanceof InputClass) {
+      await this.replier.updateRole();
+    }
   }
 
   public attachSystemsToOutput(output: OutputProps) {
@@ -762,6 +765,11 @@ export class InputClass extends String implements InputProps {
   }
 
   hasRole<R extends InputRoles>(role: R) {
+    const specials = [InputRoles.VIP];
+    if (specials.includes(role) || specials.includes(this.role)) {
+      return this.role === role;
+    }
+
     return this.role >= role;
   }
 

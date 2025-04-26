@@ -691,6 +691,7 @@ declare global {
       name: string;
       description: string;
       usage?: string;
+      role?: InputRoles;
       category: string;
       version: `${string}.${string}.${string}`;
       permissions?: number[];
