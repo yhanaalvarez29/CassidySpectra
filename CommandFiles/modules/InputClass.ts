@@ -35,7 +35,6 @@ export class InputClass extends String implements InputProps {
   public threadID: string = null;
   public author: string = null;
   public reaction: string = null;
-  public password?: string = null;
   public messageReply?: InputClass = null;
   public mentions: { [key: string]: string } = null;
   public attachments: any[] = null;
@@ -254,7 +253,8 @@ export class InputClass extends String implements InputProps {
       this.author = event.author;
       this.reaction = event.reaction;
       this.messageID = event.messageID;
-      this.password = event.password;
+      // this.password = event.password;
+
       this.mentions = event.mentions ?? {};
       this.attachments = event.attachments ?? [];
       this.timestamp = event.timestamp;
@@ -415,7 +415,10 @@ export class InputClass extends String implements InputProps {
   public get isAdmin(): boolean {
     const { ADMINBOT, WEB_PASSWORD } = global.Cassidy?.config ?? {};
     const webPassword = process.env.WEB_PASSWORD ?? WEB_PASSWORD;
-    return this.password === webPassword || ADMINBOT?.includes(this.senderID);
+    return (
+      this.#__context.event.password === webPassword ||
+      ADMINBOT?.includes(this.senderID)
+    );
   }
 
   public get isModerator(): boolean {
