@@ -68,6 +68,7 @@ export class InputClass extends String implements InputProps {
   public detectUID?: string = null;
   public detectID?: string = null;
   public censor: (text: string) => string;
+  public isCommand?: boolean = false;
   /**
    * User roles (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
    */
@@ -256,6 +257,7 @@ export class InputClass extends String implements InputProps {
       this.author = event.author;
       this.reaction = event.reaction;
       this.messageID = event.messageID;
+      this.isCommand = false;
       // this.password = event.password;
 
       this.mentions = event.mentions ?? {};
@@ -617,6 +619,7 @@ export class InputClass extends String implements InputProps {
   }
 
   public async detectAndProcessReplies() {
+    let isCancelCommand = false;
     try {
       const input = this;
       const { commands } = this.#__context;
@@ -624,6 +627,7 @@ export class InputClass extends String implements InputProps {
       const { replies } = global.Cassidy;
 
       if (input.replier && replies[input.replier.messageID]) {
+        isCancelCommand = true;
         const { repObj, commandKey, detectID } =
           replies[input.replier.messageID];
         console.log("ReplySystem", replies[input.replier.messageID]);
@@ -650,6 +654,7 @@ export class InputClass extends String implements InputProps {
     } catch (error) {
       console.log(error);
     }
+    return isCancelCommand;
   }
 
   public async detectAndProcessReactions() {

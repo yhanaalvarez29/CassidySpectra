@@ -254,7 +254,7 @@ export async function use(obj) {
      * @returns {Promise<import("output-cassidy").OutputResult>}
      */
     async function output(text, options = { body: "" }) {
-      const { styler } = obj;
+      const styler = obj.input.isCommand ? obj.styler : obj.stylerDummy;
       const newMid = `web:mid-${Date.now()}`;
       if (typeof text === "object") {
         Object.assign(options, text);
@@ -306,6 +306,7 @@ export async function use(obj) {
         let command = cmd || repCommand || currData;
         options.body = `${prepend}\n${options.body}\n${append}`;
         options.body = options.body.trim();
+
         const stylerShallow = styler.shallowMake(
           Object.assign({}, options.defStyle ?? {}, input.defStyle ?? {}),
           Object.assign({}, options.style ?? {}, input.style ?? {})

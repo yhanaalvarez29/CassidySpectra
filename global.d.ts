@@ -280,6 +280,11 @@ declare global {
     styler?: CassidyResponseStylerControl;
 
     /**
+     * @deprecated Provides styling utilities for responses.
+     */
+    stylerDummy?: CassidyResponseStylerControl;
+
+    /**
      * Represents the current command context.
      */
     ctx: CommandContext;

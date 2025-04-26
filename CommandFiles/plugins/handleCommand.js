@@ -78,7 +78,7 @@ export async function use(obj) {
     } = obj;
 
     await input.detectAndProcessReactions();
-    await input.detectAndProcessReplies();
+    const willCancelCommand = await input.detectAndProcessReplies();
 
     const ShopClass = obj.ShopClass;
     global.runner = obj;
@@ -115,6 +115,10 @@ export async function use(obj) {
     if (!eventTypes.includes(event.type)) {
       handleNo();
       return;
+    }
+
+    if (willCancelCommand) {
+      return handleNo();
     }
 
     if (hasPrefix) {
@@ -163,6 +167,8 @@ export async function use(obj) {
         { title: global.Cassidy.logo, titleFont: "bold", contentFont: "none" }
       );
     }
+
+    input.isCommand = true;
 
     obj.isThreadAdmin = isThreadAdmin;
 

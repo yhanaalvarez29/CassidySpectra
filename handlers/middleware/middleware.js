@@ -516,8 +516,10 @@ api.${
       }
     }
     const styler = new CassidyResponseStylerControl(command?.style ?? {});
+    const stylerDummy = new CassidyResponseStylerControl({});
     styler.activateAllPresets();
     runObjects.styler = styler;
+    runObjects.stylerDummy = stylerDummy;
 
     // LMAO autoCreateDB finally got purpose.
     const { autoCreateDB } = global.Cassidy.config;
