@@ -14,6 +14,7 @@ export const meta = {
   noWeb: true,
   requirement: "3.0.0",
   icon: "📛",
+  fbOnly: true,
 };
 
 /**

@@ -9,6 +9,8 @@ export const meta: CassidySpectra.CommandMeta = {
   requirement: "2.5.0",
   icon: "📥",
   category: "Media",
+  role: 1,
+  noWeb: true,
 };
 
 function formatDuration(durationMs: number) {

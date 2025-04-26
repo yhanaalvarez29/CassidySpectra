@@ -11,6 +11,7 @@ export const meta: CassidySpectra.CommandMeta = {
   icon: "👥",
   category: "Thread",
   usage: `{prefix} [link profile | uid]`,
+  fbOnly: true,
 };
 
 export const style: CassidySpectra.CommandStyle = {
@@ -19,12 +20,7 @@ export const style: CassidySpectra.CommandStyle = {
   contentFont: "fancy",
 };
 
-export async function entry({
-  input,
-  api,
-  output,
-  args,
-}: CommandContext) {
+export async function entry({ input, api, output, args }: CommandContext) {
   const success = [
     {
       type: "success",

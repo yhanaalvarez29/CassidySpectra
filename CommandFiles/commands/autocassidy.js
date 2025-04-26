@@ -11,12 +11,13 @@ export const meta = {
   version: "1.0.0",
   usage: "{prefix}{name}",
   category: "Utilities",
-  permissions: [0],
+  role: 1,
   noPrefix: false,
   waitingTime: 10,
   requirement: "3.0.0",
   icon: "🎮",
   noLevelUI: true,
+  noWeb: true,
 };
 
 const url = process.env.AUTOCASS ?? "https://cassidybot.onrender.com";

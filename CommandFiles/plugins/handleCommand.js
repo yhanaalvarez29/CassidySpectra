@@ -354,6 +354,11 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         `⚠️ | The command "${commandName}" is not available in web.`
       );
     }
+    if (meta.fbOnly && !input.isFacebook) {
+      return reply(
+        `⚠️ | The command "${commandName}" is exclusive on facebook.`
+      );
+    }
     if (Array.isArray(meta.whiteList) && !meta.whiteList.includes(senderID)) {
       if (isFn(noPermission)) {
         return await noPermission(obj);

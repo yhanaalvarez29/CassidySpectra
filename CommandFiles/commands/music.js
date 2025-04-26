@@ -7,7 +7,7 @@ export const meta = {
   usage: "{prefix}{name}",
   category: "Media",
   permissions: [0],
-  noPrefix: "both",
+  noPrefix: false,
   waitingTime: 10,
   requirement: "3.0.0",
   otherNames: ["ms"],
@@ -63,4 +63,3 @@ export const entry = defineEntry(
     return;
   }
 );
-

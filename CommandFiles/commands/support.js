@@ -12,7 +12,7 @@ export const meta = {
   category: "Social",
   permissions: [0],
   waitingTime: 5,
-  noPrefix: "both",
+  noPrefix: false,
   whiteList: null,
   noWeb: true,
   ext_plugins: {},

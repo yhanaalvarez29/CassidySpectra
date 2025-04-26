@@ -689,6 +689,7 @@ declare global {
 
     export interface CommandMeta {
       name: string;
+      fbOnly?: boolean;
       description: string;
       usage?: string;
       role?: InputRoles;

@@ -11,6 +11,7 @@ export const meta = {
   category: "Utilities",
   description: "Unsend bot's message",
   usage: "Reply to the bot's message and call the command",
+  fbOnly: true,
 };
 
 /**

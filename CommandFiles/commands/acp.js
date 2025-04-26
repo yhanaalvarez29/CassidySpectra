@@ -17,6 +17,7 @@ export const meta = {
   requirement: "3.0.0",
   noPrefix: false,
   icon: "💗",
+  fbOnly: true,
 };
 
 /**
