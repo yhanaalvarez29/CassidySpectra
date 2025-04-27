@@ -99,10 +99,14 @@ export async function entry({
   const getDieNum = () => Math.floor(secureRandom() * 6) + 1;
 
   const devRoll = (aiRoll) => {
+    // if (secureRandom() < 0.7) {
+    //   return Math.floor(secureRandom() * (6 - aiRoll)) + aiRoll + 1;
+    // }
+    // return getDieNum();
     if (secureRandom() < 0.7) {
-      return Math.floor(secureRandom() * (6 - aiRoll)) + aiRoll + 1;
+      return getDieNum();
     }
-    return getDieNum();
+    return Math.floor(secureRandom() * aiRoll) + 1;
   };
 
   for (let i = 0; i < times; i++) {
