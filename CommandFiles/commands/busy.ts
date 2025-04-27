@@ -1,6 +1,6 @@
 // @ts-check
 
-import { defineEntry, defineHome } from "@cass/define";
+import { defineHome } from "@cass/define";
 import { limitString, UNISpectra } from "@cassidy/unispectra";
 
 export const meta: CassidySpectra.CommandMeta = {
@@ -104,8 +104,13 @@ export const entry = defineHome(
   ]
 );
 
-export async function event({ input, output, money }: CommandContext) {
-  if (input.isWeb) {
+export async function event({
+  input,
+  output,
+  money,
+  hasPrefix,
+}: CommandContext) {
+  if (input.isWeb || hasPrefix) {
     return;
   }
   const { mentions } = input;

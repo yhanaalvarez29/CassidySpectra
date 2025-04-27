@@ -70,7 +70,15 @@ const home = new ReduxCMDHome(
             userData.name ??= "Unregistered";
             userData.userID = userId;
 
-            if (userData.name.toLowerCase().includes(query)) {
+            if (
+              userData.name.toLowerCase().includes(query) ||
+              String(userData.userMeta?.name ?? "")
+                .toLowerCase()
+                .includes(query) ||
+              String(userData.bankData?.nickname ?? "")
+                .toLowerCase()
+                .includes(query)
+            ) {
               matchedUsers.push(userData);
             }
           }
@@ -81,7 +89,9 @@ const home = new ReduxCMDHome(
             matchedUsers.forEach((userData, index) => {
               response += `${index < 10 ? `0` + (index + 1) : index + 1}. **${
                 userData.name
-              }**\n💌 ${userData.userID}\n`;
+              }**${
+                userData.userMeta ? ` (${userData.userMeta?.name})` : ""
+              }\n💌 ${userData.userID}\n`;
               response += `💰 $${userData.money}💵\n\n`;
             });
           } else {
