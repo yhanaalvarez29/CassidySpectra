@@ -103,7 +103,7 @@ export async function entry({
     //   return Math.floor(secureRandom() * (6 - aiRoll)) + aiRoll + 1;
     // }
     // return getDieNum();
-    if (secureRandom() < 0.7) {
+    if (secureRandom() < 0.5) {
       return getDieNum();
     }
     return Math.floor(secureRandom() * aiRoll) + 1;
