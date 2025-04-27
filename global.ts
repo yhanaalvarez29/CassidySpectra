@@ -4,29 +4,16 @@ import type {
   Collectibles,
   generateGift,
   generateTrash,
-  treasures,
   treasureInv,
 } from "./CommandFiles/plugins/ut-shop.js";
 
-import type * as CassidyStylerNPM from "cassidy-styler";
-
 import type InputX from "input-cassidy";
 import type { ReplySystem, ReactSystem } from "input-cassidy";
-import { Express } from "express";
 
 import type OutputX from "output-cassidy";
-import type {
-  OutputForm,
-  OutputProps,
-  OutputResult,
-  StrictOutputForm,
-} from "output-cassidy";
+import type { OutputProps, StrictOutputForm } from "output-cassidy";
 import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
-import type {
-  GameSimulator,
-  GameSimulatorProps,
-  Item,
-} from "./CommandFiles/types/gamesimu.d.ts";
+import type { GameSimulator } from "./CommandFiles/types/gamesimu.d.ts";
 import GlobalUtilsX from "./CommandFiles/types/utils-type";
 
 declare global {
@@ -833,7 +820,6 @@ import {
   Quest,
   WildPlayer,
 } from "@cass-plugins/pet-fight.js";
-import { ShopClass } from "@cass-plugins/shopV2.js";
 import { CassidyIO } from "@cass-plugins/output.js";
 import { JsonMap } from "@cass-plugins/JsonMap.js";
 import { CassExpress, CustomAI } from "@cass-plugins/cassexpress.js";
@@ -1330,3 +1316,5 @@ declare global {
     }
   }
 }
+
+export default {};

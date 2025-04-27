@@ -101,7 +101,7 @@ const configs: Config[] = [
         .filter(({ amount }) => amount > 0)
         .map(
           ({ metadata, amount }) =>
-            `${metadata.icon} ${metadata.name}(s) x${utils.parseCurrency(
+            `${metadata.icon} ${metadata.name}(s): x${utils.parseCurrency(
               amount
             )}`
         )
@@ -116,16 +116,16 @@ const configs: Config[] = [
       const outputText = [
         `👤 **${name}**`,
         ``,
-        `💰 Coin(s) $**${utils.parseCurrency(
+        `💰 Coin(s): $**${utils.parseCurrency(
           Math.floor(playerMoney.money)
         )}**💵`,
-        `💷 Point(s) $${utils.parseCurrency(
+        `💷 Point(s): $${utils.parseCurrency(
           Math.floor(playerMoney.battlePoints || 0)
         )}💷`,
-        `🏦 Bank(s) $${utils.parseCurrency(otherMoney.bank || 0)}💵`,
-        `🎒 Cheque(s) $${utils.parseCurrency(otherMoney.cheques || 0)}💵`,
-        `🚗 Car(s) $${utils.parseCurrency(otherMoney.carsAssets || 0)}💵`,
-        `🐈 Pet(s) $${utils.parseCurrency(otherMoney.petsAssets || 0)}💵`,
+        `🏦 Bank(s): $${utils.parseCurrency(otherMoney.bank || 0)}💵`,
+        `🎒 Cheque(s): $${utils.parseCurrency(otherMoney.cheques || 0)}💵`,
+        `🚗 Car(s): $${utils.parseCurrency(otherMoney.carsAssets || 0)}💵`,
+        `🐈 Pet(s): $${utils.parseCurrency(otherMoney.petsAssets || 0)}💵`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.standardLine}`,
         `${UNIRedux.arrow} ***All Options***`,

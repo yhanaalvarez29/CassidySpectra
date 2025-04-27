@@ -6,6 +6,7 @@
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 import "dotenv/config";
+import "./global";
 
 import utils from "./utils.js";
 // @ts-ignore;

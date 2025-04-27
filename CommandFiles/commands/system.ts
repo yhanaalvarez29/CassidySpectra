@@ -8,7 +8,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "system",
   author: "Liane Cagara 🎀",
   noPrefix: false,
-  version: "1.7.3",
+  version: "1.7.9",
   description: "Manage system files and modules (original ver)",
   usage: "system [command]",
   permissions: [2],
@@ -37,10 +37,9 @@ export class style {
 }
 
 export async function entry({
-  output: box,
+  output,
   api,
   input,
-  AutoEdit,
 }: CommandContext): Promise<boolean> {
   let args = input.arguments;
 
@@ -117,9 +116,7 @@ export async function entry({
       await Promise.all(
         willReloads.map(async (x) => {
           const latestVers = fileVersions.get(x);
-          //const fileA = fileStrings.get(x) ?? currentFileStrings.get(x);
-          //const fileB = currentFileStrings.get(x);
-          //const { diffString, status } = await compareCode(fileB, fileA);
+
           let txt =
             `✦ ` +
             x +
@@ -129,13 +126,12 @@ export async function entry({
           } else {
             txt += ` [changed]`;
           }
-          //txt += `\n${status === "added" ? diffString : "No Changes."}`;
           return txt;
         })
       )
     ).join("\n");
     if (!input.isWeb) {
-      const z: any = await box.quickWaitReact(
+      const z: any = await output.quickWaitReact(
         willReloads.length > 0
           ? `✅ We have detected ${willReloads.length} files that will be reloaded.
 
@@ -152,18 +148,17 @@ React with 👍 to continue.`
     }
     if (willReloads.length <= 0) {
       if (input.isWeb) {
-        return box.reply(`✅ There's nothing to reload!`);
+        return output.reply(`✅ There's nothing to reload!`);
       }
       return;
     }
     if (i) {
-      await box.edit(`🔃 | Reloading edited commands...`, i.messageID);
+      await output.edit(`🔃 | Reloading edited commands...`, i.messageID);
     }
     for (const key of willReloads) {
       try {
         const rKey = __dirname + "/" + key;
         if (!require.cache[rKey]) {
-          //throw new Error("Missing cache for: " + rKey);
         } else {
           delete require.cache[rKey];
         }
@@ -172,12 +167,9 @@ React with 👍 to continue.`
           throw error;
         }
         fileStrings.set(key, currentFileStrings.get(key));
-        /*if (backupCache === require.cache[rKey]) {
-          throw new Error("Failed Clearing cache for: " + rKey);
-        }*/
       } catch (error: any) {
         errors[key] = error;
-        console.error(error); //lmao rip console
+        console.error(error);
       }
     }
     let response = "";
@@ -199,15 +191,15 @@ React with 👍 to continue.`
     }
     if (i) {
       await new Promise<void>((r) => setTimeout(r, 1000));
-      await box.edit(response, i.messageID);
+      await output.edit(response, i.messageID);
     } else {
-      await box.reply(response);
+      await output.reply(response);
     }
   }
 
   function handleNotAdmin(): boolean {
     if (!input.isAdmin) {
-      box.reply(`❌ | You need to be an admin to use this risky operation.`);
+      output.reply(`❌ | You need to be an admin to use this risky operation.`);
       return true;
     } else {
       return false;
@@ -219,7 +211,7 @@ React with 👍 to continue.`
       return false;
     }
     if (!input.isWeb) {
-      const z: any = await box.quickWaitReact(
+      const z: any = await output.quickWaitReact(
         `⚠️ | **Warning**:
 Do not run this command in a server with lower resources, especially free tier in Render.com.
 
@@ -237,45 +229,25 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         }
       );
       i = z.self;
-      //await box.edit(`⚙️ | Getting started..`, i.messageID);
     } else {
-      await box.reply(`⚠️ | You cannot reload a system on web.`);
+      await output.reply(`⚠️ | You cannot reload a system on web.`);
       return false;
     }
-    let auto: any = new AutoEdit(Infinity);
-    // auto.messageID = i.messageID;
     await new Promise<void>((r) => setTimeout(r, 1000));
     if (i) {
-      await box.edit(`🔃 | Reloading all commands...`, i.messageID);
+      await output.edit(`🔃 | Reloading all commands...`, i.messageID);
     }
-    const errs1: Errors | boolean = await loadAll(
-      async (error: any, fileName: string) => {
-        if (error) {
-          auto = await auto.do(`❌ ${fileName}`);
-        } else {
-          auto = await auto.do(`✅ ${fileName}`);
-        }
-      }
-    );
+    const errs1: Errors | boolean = await loadAll();
     await new Promise<void>((r) => setTimeout(r, 1000));
     console.log(`Commands loaded.`);
     if (i) {
-      await box.edit(`🔃 | Reloading all plugins...`, i.messageID);
+      await output.edit(`🔃 | Reloading all plugins...`, i.messageID);
     }
-    auto.do(`✅ | Commands Loaded!`);
-    auto = new AutoEdit(Infinity);
+
     const errs2: Errors | boolean = await loadPlugins(
       global.Cassidy.plugins as any,
-      true,
-      async (error: any, fileName: string) => {
-        if (error) {
-          auto = await auto.do(`❌ ${fileName}`);
-        } else {
-          auto = await auto.do(`✅ ${fileName}`);
-        }
-      }
+      true
     );
-    auto.do(`✅ | Plugins Loaded!`);
 
     console.log(`Plugins loaded`);
     const errs: Errors | boolean = {
@@ -294,18 +266,16 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         num++;
       }
       if (i) {
-        await box.edit(res, i.messageID);
+        await output.edit(res, i.messageID);
       } else {
-        await box.reply(res);
+        await output.reply(res);
       }
       return false;
     }
     await new Promise<void>((r) => setTimeout(r, 1000));
     if (i) {
-      await box.edit(`📥 | Saving changes...`, i.messageID);
+      await output.edit(`📥 | Saving changes...`, i.messageID);
     }
-    /*await new Promise<void>((r) => setTimeout(r, 1000));
-    await box.edit(`📥 | Almost there...`, i.messageID);*/
     const { commands, plugins }: any = global.Cassidy as any;
     const commandsLength: number = [...new Set(Object.keys(commands))].length;
     const pluginsLength: number = [...new Set(Object.keys(plugins))].length;
@@ -313,28 +283,28 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
 
     await new Promise<void>((r) => setTimeout(r, 1000));
     if (false) {
-      await box.edit(str, i.messageID);
+      await output.edit(str, i.messageID);
     } else {
-      await box.reply(str);
+      await output.reply(str);
     }
     return true;
   }
 
   async function deleteFile(fileName: string): Promise<boolean> {
     if (fileName === "system.ts") {
-      await box.reply(`❌ | You cannot delete this file.`);
+      await output.reply(`❌ | You cannot delete this file.`);
       return false;
     }
     const filePath: string = `CommandFiles/commands/${fileName}`;
     let trashPath: string = `CommandFiles/commands/trash/${fileName}`;
 
     if (!fs.existsSync(filePath)) {
-      await box.reply(`❌ | File "${fileName}" does not exist.`);
+      await output.reply(`❌ | File "${fileName}" does not exist.`);
       return false;
     }
     const backup: string = fs.readFileSync(filePath, "utf-8");
 
-    await box.quickWaitReact(
+    await output.quickWaitReact(
       `⚠️ Are you sure you want to move "${fileName}" to trash?`,
       {
         edit: `✅ Moving to trash...`,
@@ -358,7 +328,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         }
       }
     }, 5000);
-    await box.reply(
+    await output.reply(
       `✅ | File "${fileName}" has been moved to trash, and will be unloaded after 5 seconds..`
     );
     return true;
@@ -371,16 +341,16 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     const trashPath: string = `CommandFiles/commands/trash/${trashName}`;
     const newPath: string = `CommandFiles/commands/${fileName ?? trashName}`;
     if (fs.existsSync(newPath)) {
-      box.reply(
+      output.reply(
         `❌ | File "${newPath}" already exists in the command files, you must delete/trash it first.`
       );
       return false;
     }
     if (!fs.existsSync(trashPath)) {
-      box.reply(`❌ | File "${trashPath}" does not exist in the trash.`);
+      output.reply(`❌ | File "${trashPath}" does not exist in the trash.`);
       return false;
     }
-    await box.quickWaitReact(
+    await output.quickWaitReact(
       `⚠️ Do you want to recover the trash file "${trashPath}" replacing "${newPath}" in command files?`,
       {
         edit: `✅ | File "${fileName}" has been recovered from trash.`,
@@ -391,7 +361,6 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     const backup: string = fs.readFileSync(trashPath, "utf-8");
     fs.writeFileSync(newPath, backup);
     await handleRefreshFiles([fileName]);
-    //await box.reply(`✅ | File "${fileName}" has been recovered from trash.`);
     return true;
   }
 
@@ -403,11 +372,11 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     const filePath: string = `CommandFiles/commands/${fileName}`;
 
     if (!fs.existsSync(filePath)) {
-      await box.reply(`❌ | File "${fileName}" does not exist.`);
+      await output.reply(`❌ | File "${fileName}" does not exist.`);
       return false;
     }
 
-    await box.quickWaitReact(`⚠️ Do you want to send "${fileName}"?`, {
+    await output.quickWaitReact(`⚠️ Do you want to send "${fileName}"?`, {
       edit: `✅ Sending...`,
       authorOnly: true,
     });
@@ -426,7 +395,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     const filePath: string = `CommandFiles/commands/${fileName}`;
 
     if (!fs.existsSync(filePath)) {
-      await box.reply(`❌ | File "${fileName}" does not exist.`);
+      await output.reply(`❌ | File "${fileName}" does not exist.`);
       return false;
     }
 
@@ -441,7 +410,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         name: fileName,
         publicity: 1,
       });
-      await box.reply({
+      await output.reply({
         body: `✅ | Uploaded "${fileName}" to Pastebin: ${url.replaceAll(
           "pastebin.com/",
           "pastebin.com/raw/"
@@ -451,7 +420,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
       return true;
     } catch (error) {
       console.error("Failed to upload to Pastebin:", error);
-      await box.reply(`❌ | Failed to upload "${fileName}" to Pastebin.`);
+      await output.reply(`❌ | Failed to upload "${fileName}" to Pastebin.`);
       return false;
     }
   }
@@ -468,7 +437,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     }
 
     if (!args[1].endsWith(".js") && !args[1].endsWith(".ts")) {
-      await box.reply(`❌ | Only .js or .ts file extensions were allowed!`);
+      await output.reply(`❌ | Only .js or .ts file extensions were allowed!`);
       return false;
     }
 
@@ -481,7 +450,9 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
         const response = await axios.get(args[2]);
         code = response.data;
       } catch (err) {
-        await box.reply(`❌ | Failed to download the file from the given URL.`);
+        await output.reply(
+          `❌ | Failed to download the file from the given URL.`
+        );
         return false;
       }
     }
@@ -489,7 +460,7 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     if (fs.existsSync(filePath)) {
       const orig = fs.readFileSync(filePath, "utf-8");
       const { status, diffString } = await compareCode(code, orig);
-      await box.quickWaitReact(
+      await output.quickWaitReact(
         `⚠️ The file ${fileName} already exists, please react with any emoji to proceed.(Your files will be automatically added to trash.)${
           status === "added" ? `\n\n💻 **Cassidy Diff**\n\n${diffString}` : ""
         }`,
@@ -508,15 +479,13 @@ By sending a 👍 reaction, you are aware of the potential problems that might o
     }
 
     fs.writeFileSync(filePath, code);
-    /*await box.reply(`✅ | Successfully installed ${fileName}!
 
-at ${filePath}`);*/
     await handleRefreshFiles([fileName]);
     return true;
   } else if (args[0] === "trash") {
     if (args[1] === "list") {
       const files: string[] = fs.readdirSync("CommandFiles/commands/trash");
-      await box.reply(`${system}
+      await output.reply(`${system}
 ${files.length} file${files.length > 1 ? "s" : ""} found.
 
 ${files.join("\n")}`);
@@ -525,7 +494,7 @@ ${files.join("\n")}`);
       return await recoverTrash(args[2], args[3] || null);
     }
     if (!args[1]) {
-      await box.reply(
+      await output.reply(
         `❌ | Please specify the filename you want to move to trash.`
       );
       return false;
@@ -537,7 +506,7 @@ ${files.join("\n")}`);
     }
 
     if (!args[1]) {
-      await box.reply(`❌ | Please specify the filename to send.`);
+      await output.reply(`❌ | Please specify the filename to send.`);
       return false;
     }
     return await sendFile(args[1]);
@@ -547,15 +516,15 @@ ${files.join("\n")}`);
     }
 
     if (!args[1]) {
-      await box.reply(
+      await output.reply(
         `❌ | Please specify the filename to upload to Pastebin.`
       );
       return false;
     }
     return await uploadToPastebin(args[1]);
   } else if (args[0] === "list") {
-    const files: string[] = fs.readdirSync("CommandFiles/commands");
-    await box.reply(`${system}
+    const files = fs.readdirSync("CommandFiles/commands");
+    await output.reply(`${system}
 ${files.length} file${files.length > 1 ? "s" : ""} found.
 
 ${files.join("\n")}`);
@@ -564,7 +533,7 @@ ${files.join("\n")}`);
     await handleRefreshFiles();
     return true;
   } else {
-    await box.reply(`${system}
+    await output.reply(`${system}
 👑 reload (deprecated)
 🛡️ load <...filenames>
 👑 install <filename> <link|code>

@@ -32,6 +32,7 @@
     "declarationMap": true,
     "allowJs": true,
     "checkJs": false,
+    "verbatimModuleSyntax": false,
     "strictNullChecks": false,
     "useUnknownInCatchVariables": false,
     "paths": {
