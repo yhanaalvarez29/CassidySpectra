@@ -38,6 +38,7 @@ export async function entry({
   money,
 }: CommandContext) {
   const commands = removeCommandAliases(ogc);
+
   const args = input.arguments;
   const { logo: icon } = global.Cassidy;
   const { shopInv, money: userMoney } = await money.queryItem(

@@ -32,7 +32,8 @@ export async function entry(context: CommandContext) {
     );
     return;
   }
-  async function out(data: any, inspect: boolean = false) {
+  async function out(data: any, inspect: number | boolean = false) {
+    const depth = typeof inspect === "boolean" ? 0 : Number(inspect);
     let str = data;
     if (typeof data !== "string") {
       str = JSON.stringify(data, null, 2);
@@ -40,8 +41,8 @@ export async function entry(context: CommandContext) {
     if (!data) {
       str = String(data);
     }
-    if (inspect) {
-      str = util.inspect(data);
+    if (inspect !== false) {
+      str = util.inspect(data, { depth, showHidden: true });
     }
     return output.reply({ body: str });
   }
@@ -96,8 +97,8 @@ Are you use you want to install this package? Please send a reaction to proceed.
       }
     }
 
-    if (result) {
-      const resultInfo = util.inspect(result);
+    if (result !== undefined) {
+      const resultInfo = util.inspect(result, { depth: 0, showHidden: true });
       await output.reply(`Console:\n${resultInfo}`);
     }
   } catch (error) {

@@ -18,6 +18,12 @@ import fetchMeta from "../../CommandFiles/modules/fetchMeta";
 import { UNISpectra } from "@cassidy/unispectra";
 import { Inventory } from "@cassidy/ut-shop";
 
+export type UserDataKV = Partial<
+  {
+    [K in keyof UserData as `value.${K}`]: any;
+  } & { key: string }
+>;
+
 export function init(
   this: unknown,
   {
@@ -229,7 +235,7 @@ export default class UserStatsManager {
         await this.#mongo.start();
         await this.#mongo.put("test", this.defaults);
       } catch (error) {
-        console.error("MONGODB Error, Activating OFFLINE JSON!", error);
+        console.error("MONGODB Error, Activating JSON DB Mode", error);
         this.isMongo = false;
         this.set("test", this.defaults);
       }
@@ -350,25 +356,77 @@ export default class UserStatsManager {
     return users[key];
   }
 
+  async getIDs() {
+    return (await this.#mongo.keys()) as string[];
+  }
+
   async queryItem<T extends keyof UserData>(
-    key: string,
+    key: string | UserDataKV
+  ): Promise<UserData>;
+
+  async queryItem<T extends keyof UserData>(
+    key: string | UserDataKV,
     ...propertyNames: T[]
-  ): Promise<Pick<UserData, T>> {
+  ): Promise<Pick<UserData, T>>;
+
+  async queryItem<T extends keyof UserData>(
+    key: string | UserDataKV,
+    ...propertyNames: T[]
+  ) {
     if (!this.isMongo) {
       const data = this.readMoneyFile();
-      const userData = data[key] || {};
-      return this.processProperties(userData, key, propertyNames);
+
+      let userData: UserData | undefined;
+      let newKey: string | undefined;
+
+      if (typeof key === "string") {
+        userData = data[key];
+        newKey = key;
+      } else {
+        for (const [k, v] of Object.entries(data)) {
+          let matches = true;
+          for (const [filterKey, filterValue] of Object.entries(key)) {
+            if (v[filterKey] !== filterValue) {
+              matches = false;
+              break;
+            }
+          }
+          if (matches) {
+            userData = v;
+            newKey = k;
+            break;
+          }
+        }
+      }
+
+      if (!userData) {
+        return this.processProperties({}, undefined, propertyNames);
+      }
+
+      const partialData: Partial<UserData> = {};
+      for (const prop of propertyNames) {
+        if (userData.hasOwnProperty(prop)) {
+          partialData[prop] = userData[prop];
+        }
+      }
+
+      return this.processProperties(partialData, newKey, propertyNames);
     }
 
     const selectedFields = propertyNames
       .map((prop) => `value.${prop}`)
       .join(" ");
-    const queryResult = await this.#mongo.KeyValue.find({ key }).select(
-      selectedFields
-    );
-    const partialData = queryResult?.[0]?.value || {};
-
-    return this.processProperties(partialData, key, propertyNames);
+    const queryResult =
+      propertyNames.length > 0
+        ? await this.#mongo.KeyValue.findOne(
+            typeof key === "string" ? { key } : key
+          ).select(selectedFields)
+        : await this.#mongo.KeyValue.findOne(
+            typeof key === "string" ? { key } : key
+          );
+    const partialData = queryResult?.value || {};
+    const newkey = queryResult?.key;
+    return this.processProperties(partialData, newkey, propertyNames);
   }
 
   private processProperties<T extends keyof UserData>(
@@ -376,6 +434,9 @@ export default class UserStatsManager {
     userID: string,
     propertyNames: T[]
   ): Pick<UserData, T> {
+    if (propertyNames.length <= 0) {
+      propertyNames = Object.keys(userData) as T[];
+    }
     const processedData = this.process(
       { ...this.defaults, ...userData } as UserData,
       userID
