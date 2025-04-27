@@ -6,7 +6,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "balance",
   description: "Check your virtual cash",
   otherNames: ["bal", "money"],
-  version: "3.0.0",
+  version: "3.2.0",
   usage: "{prefix}{name}",
   category: "Finance",
   author: "Liane Cagara",
@@ -18,11 +18,10 @@ export const meta: CassidySpectra.CommandMeta = {
   cmdType: "cplx_g",
 };
 
-/**
- * @type {CassidySpectra.CommandStyle}
- */
-export const style = {
-  title: "Balance 💰",
+const { parseCurrency: pCy } = global.utils;
+
+export const style: CassidySpectra.CommandStyle = {
+  title: "Balance 💵",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -32,7 +31,7 @@ function isBrokenMoney(amount: number) {
     isNaN(amount) ||
     !isFinite(amount) ||
     amount < 0 ||
-    amount > Number.MAX_SAFE_INTEGER
+    amount >= Number.MAX_VALUE
   );
 }
 
@@ -51,7 +50,7 @@ function sortUsers(
   return result;
 }
 
-function getBehindAhead(
+export function getBehindAhead(
   id: string,
   users: any,
   money: typeof global.handleStat
@@ -64,7 +63,7 @@ function getBehindAhead(
     : { ahead: keys.slice(0, index), behind: keys.slice(index + 1) };
 }
 
-function getTop(id: string, users: any, money: any) {
+export function getTop(id: string, users: any, money: any) {
   return Object.keys(sortUsers(users, undefined, money)).indexOf(id) + 1;
 }
 
@@ -80,7 +79,7 @@ const configs: Config[] = [
     ]),
     async handler(
       { money, input, output, prefix, Collectibles, commandName },
-      { itemList, spectralArgs, cooldown }
+      { itemList, spectralArgs }
     ) {
       let senderID = input.senderID;
       if (input.replier) senderID = input.replier.senderID;
@@ -102,9 +101,9 @@ const configs: Config[] = [
         .filter(({ amount }) => amount > 0)
         .map(
           ({ metadata, amount }) =>
-            `${metadata.icon} **${metadata.name}** (x**${utils.parseCurrency(
+            `${metadata.icon} ${metadata.name}(s) x${utils.parseCurrency(
               amount
-            )}**)`
+            )}`
         )
         .join("\n");
       const otherMoney = money.extractMoney(playerMoney);
@@ -115,18 +114,18 @@ const configs: Config[] = [
       output.setUIName(name);
 
       const outputText = [
-        `${
-          cooldown ? `🕒 Oops, **Cooling Down**!\n\n` : ""
-        } 💵 **Cash** (x**${utils.parseCurrency(
+        `👤 **${name}**`,
+        ``,
+        `💰 Coin(s) $**${utils.parseCurrency(
           Math.floor(playerMoney.money)
-        )}**)`,
-        `💷 **Battle Points** (x**${utils.parseCurrency(
+        )}**💵`,
+        `💷 Point(s) $${utils.parseCurrency(
           Math.floor(playerMoney.battlePoints || 0)
-        )}**)`,
-        `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
-        `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
-        `🚗 **Cars** (x**${utils.parseCurrency(otherMoney.carsAssets || 0)}**)`,
-        `🐈 **Pets** (x**${utils.parseCurrency(otherMoney.petsAssets || 0)}**)`,
+        )}💷`,
+        `🏦 Bank(s) $${utils.parseCurrency(otherMoney.bank || 0)}💵`,
+        `🎒 Cheque(s) $${utils.parseCurrency(otherMoney.cheques || 0)}💵`,
+        `🚗 Car(s) $${utils.parseCurrency(otherMoney.carsAssets || 0)}💵`,
+        `🐈 Pet(s) $${utils.parseCurrency(otherMoney.petsAssets || 0)}💵`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.standardLine}`,
         `${UNIRedux.arrow} ***All Options***`,
@@ -136,85 +135,6 @@ const configs: Config[] = [
       ].join("\n");
 
       return output.reply(outputText);
-    },
-  },
-  {
-    key: "check",
-    description: "View your money or someone else’s",
-    args: ["[uid]"],
-    aliases: ["-c", "see"],
-    icon: "💸",
-    validator: new CassCheckly([
-      { index: 0, type: "string", required: false, name: "userID" },
-    ]),
-    async handler(
-      { money, input, output, prefix, clearCurrStack, Collectibles },
-      { itemList, spectralArgs }
-    ) {
-      const i = input.isWeb ? null : await output.reply(`🔧 Loading...`);
-
-      let senderID = input.senderID;
-      if (input.replier) senderID = input.replier.senderID;
-      if (input.hasMentions) senderID = input.firstMention.senderID;
-      if (spectralArgs[0]) senderID = spectralArgs[0];
-
-      const allUsers = await money.getAll();
-      let warn = "",
-        playerMoney: UserData = allUsers[senderID];
-      if (!playerMoney || !playerMoney.name) {
-        return output.reply("❌ This user is a ghost!");
-      }
-      const cll = new Collectibles(playerMoney?.collectibles || []);
-
-      if (isBrokenMoney(playerMoney.money))
-        warn = `\n\n⚠️ Corrupted! Use **${prefix}money-fix**`;
-
-      const items = cll
-        .getAll()
-        .filter(({ amount }) => amount > 0)
-        .map(
-          ({ metadata, amount }) =>
-            `${metadata.icon} **${metadata.name}** (x**${utils.parseCurrency(
-              amount
-            )}**)`
-        )
-        .join("\n");
-      const otherMoney = money.extractMoney(playerMoney);
-      const top = getTop(senderID, allUsers, money);
-      const { ahead, behind } = getBehindAhead(senderID, allUsers, money);
-      const name =
-        input.hasMentions || input.replier || spectralArgs[0]
-          ? playerMoney.name
-          : `${playerMoney.name} (You)`;
-      const has =
-        input.hasMentions || input.replier || spectralArgs[0] ? "have" : "has";
-      output.setUIName(name);
-
-      const outputText = [
-        `💵 **Cash** (x**${utils.parseCurrency(playerMoney.money)}**)`,
-        `💷 **Battle Points** (x**${utils.parseCurrency(
-          playerMoney.battlePoints || 0
-        )}**)`,
-        `🏦 **Bank** (x**${utils.parseCurrency(otherMoney.bank || 0)}**)`,
-        `🎒 **Cheques** (x**${utils.parseCurrency(otherMoney.cheques || 0)}**)`,
-        `🚗 **Cars** (x**${utils.parseCurrency(otherMoney.carsAssets || 0)}**)`,
-        `🐈 **Pets** (x**${utils.parseCurrency(otherMoney.petsAssets || 0)}**)`,
-        (items ? `${items}` : "") + warn,
-        `${UNIRedux.arrowFromT} **Rank**: ${
-          top <= 10 ? `🏅 **#${top}**` : `🌱 **Rising**`
-        }`,
-        `${UNIRedux.standardLine}`,
-        `🏆 ${name} ${has} **${ahead.length}** ahead, **${behind.length}** behind`,
-        `⚠️ This is a **virtual** cash only.`,
-        `${UNIRedux.standardLine}`,
-        `${UNIRedux.arrow} ***All Options***`,
-        ``,
-        itemList,
-      ].join("\n");
-
-      i
-        ? output.edit(outputText, i.messageID) && clearCurrStack()
-        : output.reply(outputText);
     },
   },
   {
@@ -230,11 +150,11 @@ const configs: Config[] = [
         ? input.participantIDs
         : [];
 
-      let result = [`${UNIRedux.arrow} ***Top 10 Richest***\n\n`];
+      let result = [`🏆 **Top 10 Users** 🏆\n`];
       let index = 1,
         lastMoney: number;
       for (const key in topUsers) {
-        const user = topUsers[key];
+        const user: UserData = topUsers[key];
         const otherMoney = money.extractMoney(user);
         const cll = new Collectibles(user.collectibles || []);
         const items = cll
@@ -242,26 +162,35 @@ const configs: Config[] = [
           .filter(({ amount }) => amount > 0)
           .map(
             ({ metadata, amount }) =>
-              `${metadata.icon} ${metadata.name}: ${abbreviateNumber(amount)}`
+              `${metadata.icon} ${metadata.name}(s): x${abbreviateNumber(
+                amount
+              )}`
           )
           .join("\n");
 
         result.push(
-          `${index === 1 ? "👑" : index < 10 ? `0${index}` : index}. **${
-            user.name || "Unknown"
-          }**`,
-          `💸 **Total**: $${abbreviateNumber(otherMoney.total || 0)}`,
-          `💵 Cash: $${abbreviateNumber(user.money || 0)}`,
-          `💷 Battle: $${abbreviateNumber(user.battlePoints || 0)}`,
-          `🏦 Bank: $${abbreviateNumber(otherMoney.bank || 0)}`,
-          `🎒 Cheques: $${abbreviateNumber(otherMoney.cheques || 0)}`,
-          `🚗 Cars: $${abbreviateNumber(otherMoney.carsAssets || 0)}`,
-          `🐈 Pets: $${abbreviateNumber(otherMoney.petsAssets || 0)}`,
+          `${
+            index === 1
+              ? `👑 ${UNIRedux.charm} ${FontSystem.applyFonts(
+                  String(user.name).toUpperCase(),
+                  "double_struck"
+                )} ${UNIRedux.charm}`
+              : index < 10
+              ? `0${index}. **${user.name}**`
+              : `${index}. **${user.name}**`
+          }`,
+          `💰 Total Coins(s): **$${pCy(otherMoney.total || 0)}💵**`,
+          `💵 Local(s): $${pCy(user.money || 0)}💵`,
+          `💷 Point(s): $${pCy(user.battlePoints || 0)}💷`,
+          `🏦 Bank(s): $${pCy(otherMoney.bank || 0)}💵`,
+          `🎒 Cheque(s): $${pCy(otherMoney.cheques || 0)}💵`,
+          `🚗 Car(s): $${pCy(otherMoney.carsAssets || 0)}💵`,
+          `🐈 Pet(s): $${pCy(otherMoney.petsAssets || 0)}💵`,
           items ? items : "",
           lastMoney
-            ? `📉 Gap: $${abbreviateNumber(lastMoney - (user.money || 0))}`
+            ? `📉 Gap(s): $${pCy(Math.abs(lastMoney - (user.money || 0)))}`
             : "",
-          participantIDs.includes(key) ? `✅ Present` : "",
+          participantIDs.includes(key) ? `✅ In Group` : "",
           `\n`
         );
         index++;
@@ -278,7 +207,7 @@ const configs: Config[] = [
     handler: async ({ money, input, output }) => {
       const { money: amount } = await money.get(input.senderID);
       if (isBrokenMoney(amount)) {
-        await money.set(input.senderID, { money: 0 });
+        await money.setItem(input.senderID, { money: 0 });
         output.reply(
           `✅ Fixed from ${utils.parseCurrency(amount)} to 0$ ${UNIRedux.charm}`
         );
@@ -313,7 +242,7 @@ const configs: Config[] = [
 const home = new SpectralCMDHome(
   {
     argIndex: 0,
-    isHypen: true,
+    isHypen: false,
     globalCooldown: 5,
     defaultKey: "home",
     errorHandler: (error, ctx) => {
@@ -325,6 +254,7 @@ const home = new SpectralCMDHome(
 );
 
 import { defineEntry } from "@cass/define";
+import { FontSystem } from "cassidy-styler";
 
 export const entry = defineEntry(async (ctx) => {
   return home.runInContext(ctx);

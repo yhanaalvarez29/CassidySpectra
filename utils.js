@@ -2610,9 +2610,9 @@ class UserSorter {
 }
 
 function parseCurrency(num) {
-  num = num > 1e9 ? BigInt(num) : Number(num);
-  let result = String(num).split(".");
-  let integerPart = result[0];
+  num = num > 1e9 ? BigInt(Math.floor(num)) : Number(num);
+  let result1 = String(num).split(".");
+  let integerPart = result1[0];
 
   if (typeof num === "bigint") {
     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -2620,7 +2620,8 @@ function parseCurrency(num) {
     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  result = result.length > 1 ? integerPart + "." + result[1] : integerPart;
+  let result =
+    result1.length > 1 ? integerPart + "." + result1[1] : integerPart;
   return result;
 }
 

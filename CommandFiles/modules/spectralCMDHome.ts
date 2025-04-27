@@ -395,7 +395,10 @@ export class SpectralCMDHome {
         await this.options.home!.call(
           this.getCommand(this.options.defaultKey),
           ctx,
-          extraCTX
+          {
+            ...extraCTX,
+            spectralArgs: ctx.args.slice(0),
+          }
         );
       }
     } catch (error) {
@@ -501,7 +504,7 @@ export class SpectralCMDHome {
     return configs
       .filter((c) => !c.hidden)
       .map(
-        (c, i) =>
+        (c) =>
           `${UNIRedux.arrowFromT} ${c.icon || "✨"} ${ctx.prefix}${
             !this.checkCooldown(ctx, c.key)
               ? `***${ctx.commandName}***`
