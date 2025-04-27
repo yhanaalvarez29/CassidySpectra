@@ -12,8 +12,8 @@ export const meta: CassidySpectra.CommandMeta = {
   waitingTime: 1,
   description: "Manage your finances with Ariel's Bank (𝐀-𝐁𝐀𝐍𝐊 ®).",
   category: "Finance",
-  noPrefix: false,
-  otherNames: ["arielbank", "b", "ac", "acbank"],
+  noPrefix: "both",
+  otherNames: ["bank", "arielbank", "b", "ac", "acbank"],
   requirement: "3.0.0",
   icon: "🏦",
   requiredLevel: 5,
@@ -33,6 +33,7 @@ export interface Award {
 // };
 
 export const limitKey = "bank_reach_limit";
+const percentLimit = 0.2;
 
 const formatTrophy = (data: UserData & { awards?: Award[] }) => {
   return `${
@@ -169,11 +170,13 @@ export async function entry({
       return output.reply(
         `${trophys.length > 0 ? `🏆 ***Bank Awardee*** 🏆\n` : ""}${
           UNIRedux.standardLine
-        }\n➥ ${isPeek ? `**Peeking**: ` : ""}${targetData.name}\n${
-          UNIRedux.standardLine
-        }\n${trophys.length > 0 ? "👑" : "💳"}: ${formatTrophy(
-          targetData
-        )}\n${formatCash(targetData.bankData?.bank)}\n${UNIRedux.standardLine}${
+        }\n➥ ${isPeek ? `**Peeking**: ` : ""}${
+          targetData.userMeta?.name ?? targetData.name
+        }\n${UNIRedux.standardLine}\n${
+          trophys.length > 0 ? "👑" : "💳"
+        }: ${formatTrophy(targetData)}\n${formatCash(
+          targetData.bankData?.bank
+        )}\n${UNIRedux.standardLine}${
           trophys.length > 0 && !isPeek
             ? `\n${UNIRedux.arrow} You can still withdraw your old bank if you have **zero** bank balance. It will also remove your trophy.`
             : ""
@@ -191,6 +194,16 @@ export async function entry({
       let funds = !isRemoveT ? bankData.bank : Number.MAX_VALUE;
 
       let amount = parseBet(bet, funds);
+      if (amount < funds * percentLimit) {
+        return output.reply(
+          `${NOTIF}\n${
+            UNIRedux.standardLine
+          }\nYou cannot withdraw a value lower than ${formatCash(
+            Math.floor(funds * percentLimit)
+          )}`
+        );
+      }
+
       if (isNaN(amount) || amount <= 0 || amount > funds) {
         return output.reply(
           `${NOTIF}\n${
@@ -242,6 +255,16 @@ export async function entry({
       const bet = args[1];
       let amount = parseBet(bet, userMoney);
       amount = Math.min(amount, Number.MAX_VALUE - amount);
+      if (amount < userMoney * percentLimit) {
+        return output.reply(
+          `${NOTIF}\n${
+            UNIRedux.standardLine
+          }\nYou cannot deposit a value lower than ${formatCash(
+            Math.floor(userMoney * percentLimit)
+          )}`
+        );
+      }
+
       if (isNaN(amount) || amount <= 0 || amount > userMoney) {
         return output.reply(
           `${NOTIF}\n${
@@ -275,6 +298,15 @@ export async function entry({
       const recipientNickname = args[1];
       const bet = args[2];
       let amount = parseBet(bet, bankData.bank);
+      if (amount < bankData.bank * percentLimit) {
+        return output.reply(
+          `${NOTIF}\n${
+            UNIRedux.standardLine
+          }\nYou cannot transfer a value lower than ${formatCash(
+            Math.floor(bankData.bank * percentLimit)
+          )}`
+        );
+      }
       if (
         !recipientNickname ||
         isNaN(amount) ||
