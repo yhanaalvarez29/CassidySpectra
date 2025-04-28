@@ -95,7 +95,7 @@ const configs: Config[] = [
         type: "number",
         required: true,
         name: "role",
-        regex: /^\d+$/,
+        regex: /^-?\d*\.?\d*$/,
       },
       {
         index: 2,
