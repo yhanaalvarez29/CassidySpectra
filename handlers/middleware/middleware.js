@@ -338,6 +338,7 @@ async function handleMiddleWare({
     }
     let prefixes = [prefix, ...global.Cassidy.config.EXTRAPREFIX];
     const threadCache = await threadsDB.getCache(event.threadID);
+    const roleSysCache = await globalDB.getCache("roleSys");
     if (typeof threadCache.threadPrefix === "string") {
       prefixes = [threadCache.threadPrefix];
       prefix = prefixes[0];
@@ -540,11 +541,19 @@ api.${
         if (!isNaN(fRole) && fRole >= (command?.meta.role ?? 0)) {
           runObjects.commandRole = fRole;
         }
-        console.log("frole", fRole);
       }
       try {
         const roles = new Map(threadCache.roles ?? []);
         const foundRole = roles.get(command?.meta?.name);
+        if (foundRole in InputRoles && typeof foundRole === "number") {
+          runObjects.commandRole = foundRole;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const groles = new Map(roleSysCache.roles ?? []);
+        const foundRole = groles.get(command?.meta?.name);
         if (foundRole in InputRoles && typeof foundRole === "number") {
           runObjects.commandRole = foundRole;
         }
