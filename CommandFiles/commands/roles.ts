@@ -130,6 +130,7 @@ const configs: Config[] = [
         let from: InputRoles =
           targetCommand.meta.role ??
           Math.min(...(targetCommand.meta.permissions ?? [])) ??
+          grolesMap.get(targetCommand.meta.name) ??
           0;
 
         if (!(role in InputRoles) || isNaN(role)) {
@@ -216,22 +217,23 @@ const configs: Config[] = [
       const targetCommand = Object.values(commands).find(
         (cmd) => cmd.meta.name === commandName
       );
+      const { roles = [] } = await threadsDB.getItem(input.threadID);
+      const { groles = [] } = await globalDB.getItem(roleSysKey);
 
       if (!targetCommand) {
         return output.reply(`❌ Command **${commandName}** not found.`);
       }
+
+      const rolesMap = new Map(roles);
+      const grolesMap = new Map(groles);
       let from: InputRoles =
         targetCommand.meta.role ??
-        Math.min(...(targetCommand.meta.permissions ?? []));
+        Math.min(...(targetCommand.meta.permissions ?? [])) ??
+        grolesMap.get(targetCommand.meta.name) ??
+        0;
       let from2 = from;
 
       try {
-        const { roles = [] } = await threadsDB.getItem(input.threadID);
-        const { groles = [] } = await globalDB.getItem(roleSysKey);
-
-        const rolesMap = new Map(roles);
-        const grolesMap = new Map(groles);
-
         if (!input.hasRole(from)) {
           return output.reply("‼️ You have a lower role than your target!");
         }
