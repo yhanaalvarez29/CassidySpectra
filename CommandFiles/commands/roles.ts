@@ -163,8 +163,8 @@ const configs: Config[] = [
           if (!input.hasRole(from)) {
             return output.reply("‼️ You have a lower role than your target!");
           }
-          if (!input.hasRole(grolesMap.get(targetCommand.meta.name) ?? 0)) {
-            return output.reply("‼️ You have a lower role than global role!");
+          if (typeof grolesMap.get(targetCommand.meta.name) === "number") {
+            return output.reply("‼️ You cannot bypass a global role!");
           }
           await threadsDB.setItem(input.threadID, {
             roles: [...rolesMap.entries()],
@@ -255,7 +255,7 @@ const configs: Config[] = [
             return output.reply("‼️ You have a lower role than your target!");
           }
           grolesMap.delete(targetCommand.meta.name);
-          await threadsDB.setItem(roleSysKey, {
+          await globalDB.setItem(roleSysKey, {
             groles: [...grolesMap.entries()],
           });
         } else {
