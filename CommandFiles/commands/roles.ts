@@ -163,6 +163,9 @@ const configs: Config[] = [
           if (!input.hasRole(from)) {
             return output.reply("‼️ You have a lower role than your target!");
           }
+          if (!input.hasRole(grolesMap.get(targetCommand.meta.name) ?? 0)) {
+            return output.reply("‼️ You have a lower role than global role!");
+          }
           await threadsDB.setItem(input.threadID, {
             roles: [...rolesMap.entries()],
           });
