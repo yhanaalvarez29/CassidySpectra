@@ -552,7 +552,7 @@ api.${
         console.error(error);
       }
       try {
-        const groles = new Map(roleSysCache.roles ?? []);
+        const groles = new Map(roleSysCache.groles ?? []);
         const foundRole = groles.get(command?.meta?.name);
         if (foundRole in InputRoles && typeof foundRole === "number") {
           runObjects.commandRole = foundRole;
