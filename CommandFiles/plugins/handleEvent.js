@@ -17,18 +17,18 @@ export async function use(obj) {
   try {
     let done = [];
     const { commands } = obj;
-    // console.log("Starting to process commands:", commands);
+    const userCache = await obj.money.get(obj.input.sid);
     for (const key in commands) {
       try {
+        if (userCache.isBanned) {
+          continue;
+        }
         const command = commands[key];
-        // console.log("Processing command:", command.meta.name);
         if (done.includes(command.meta.name)) {
-          // console.log("Command already processed:", command.meta.name);
           continue;
         }
         done.push(command.meta.name);
         if (typeof command.event !== "function") {
-          // console.log("Command event is not a function:", command.meta.name);
           continue;
         }
         const { meta } = command;
@@ -37,7 +37,6 @@ export async function use(obj) {
           Array.isArray(meta.eventType) &&
           !meta.eventType.includes(obj.event.type)
         ) {
-          // console.log("Event type not supported (array):", obj.event.type);
           continue;
         }
         if (
@@ -45,7 +44,6 @@ export async function use(obj) {
           typeof meta.eventType === "string" &&
           meta.eventType !== obj.event.type
         ) {
-          // console.log("Event type not supported (string):", obj.event.type);
           continue;
         }
 

@@ -10,6 +10,7 @@ import fs from "fs";
 import UserStatsManager, { init } from "../../handlers/database/handleStat";
 import { SymLock } from "../loaders/loadCommand.js";
 import { join } from "path";
+import { InputRoles } from "@cass-modules/InputClass";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
@@ -22,6 +23,10 @@ let handleStat;
  * @type {UserStatsManager}
  */
 let threadsDB;
+/**
+ * @type {UserStatsManager}
+ */
+let globalDB;
 
 global.loadSymbols ??= new Map();
 
@@ -233,6 +238,10 @@ export async function middleware({ allPlugins }) {
     collection: "spectrathreads",
     filepath: "handlers/database/threadsDB.json",
   });
+  globalDB = init({
+    collection: "spectraglobals",
+    filepath: "handlers/database/globalDB.json",
+  });
   console.log(handleStat);
   global.handleStat = handleStat;
   await handleStat.connect();
@@ -328,9 +337,9 @@ async function handleMiddleWare({
       event.body = censor(event.body);
     }
     let prefixes = [prefix, ...global.Cassidy.config.EXTRAPREFIX];
-    const cache = await threadsDB.getCache(event.threadID);
-    if (typeof cache.threadPrefix === "string") {
-      prefixes = [cache.threadPrefix];
+    const threadCache = await threadsDB.getCache(event.threadID);
+    if (typeof threadCache.threadPrefix === "string") {
+      prefixes = [threadCache.threadPrefix];
       prefix = prefixes[0];
     }
     if (Array.isArray(event.prefixes)) {
@@ -369,6 +378,9 @@ async function handleMiddleWare({
     }
     let isLink = false;
 
+    /**
+     * @type {CassidySpectra.CassidyCommand | null}
+     */
     let command =
       commands[commandName] || commands[commandName.toLowerCase()] || null;
     if (command && command.meta && typeof command.meta.linkTo === "string") {
@@ -413,9 +425,8 @@ async function handleMiddleWare({
     }
 
     /**
-     * @type {CommandContext}
+     * @type {Partial<CommandContext>}
      */
-    // @ts-ignore
     const runObjects = {
       api: new Proxy(api || {}, {
         get(target, key) {
@@ -457,8 +468,7 @@ api.${
       commands,
       prefix: currentPrefix || prefix,
       prefixes,
-      // @ts-ignore
-      allPlugins,
+      allPlugins: global.Cassidy.plugins,
       queue,
       command,
       origAPI: api,
@@ -482,11 +492,15 @@ api.${
       popularCMD,
       recentCMD,
       usersDB: handleStat,
+      globalDB,
       threadsDB,
       money: handleStat,
       userStat: handleStat,
+      commandRole: undefined,
     };
+    // @ts-ignore
     runObjects.allObj = runObjects;
+    // @ts-ignore
     runObjects.ctx = runObjects;
     let command2 =
       commands[commandName] || commands[commandName.toLowerCase()] || null;
@@ -507,14 +521,38 @@ api.${
     if (command) {
       try {
         const entryX = await deSYMC(command.entry);
-        if (typeof entryX === "symbol") {
+        if (
+          typeof entryX === "symbol" &&
+          "hooklet" in command.entry &&
+          typeof command.entry.hooklet === "function"
+        ) {
           command = { ...command, entry: command.entry.hooklet(entryX) };
           runObjects.command = command;
         }
       } catch (error) {
         console.error(error);
       }
+      runObjects.commandRole = command?.meta.role ?? undefined;
+      if (Array.isArray(command?.meta.permissions)) {
+        const fRole = Math.min(
+          ...command.meta.permissions.filter((i) => !isNaN(i))
+        );
+        if (!isNaN(fRole) && fRole >= (command?.meta.role ?? 0)) {
+          runObjects.commandRole = fRole;
+        }
+        console.log("frole", fRole);
+      }
+      try {
+        const roles = new Map(threadCache.roles ?? []);
+        const foundRole = roles.get(command?.meta?.name);
+        if (foundRole in InputRoles && typeof foundRole === "number") {
+          runObjects.commandRole = foundRole;
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
+
     const styler = new CassidyResponseStylerControl(command?.style ?? {});
     const stylerDummy = new CassidyResponseStylerControl({});
     styler.activateAllPresets();

@@ -1,6 +1,8 @@
 // import type { Inventory, Collectibles } from "../plugins/ut-shop.js";
 // import type { CassEXP } from "./cassEXP.js";
 
+import { InputRoles } from "./InputClass";
+
 type InventoryTypes =
   | "generic"
   | "weapon"
@@ -151,6 +153,8 @@ type UserData = {
     url: string;
     desc: string;
   };
+  roles?: Array<[string, InputRoles]>;
+  groles?: Array<[string, InputRoles]>;
 };
 
 type NullableUserData = {

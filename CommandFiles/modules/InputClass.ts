@@ -458,7 +458,7 @@ export class InputClass extends String implements InputProps {
     if (refresh) {
       await this.#__threadsDB.saveThreadInfo(this.threadID, this.#__api);
     } else {
-      console.log(Reflect.ownKeys(this.#__context), new Error());
+      // console.log(Reflect.ownKeys(this.#__context), new Error());
       await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
     const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
@@ -618,6 +618,18 @@ export class InputClass extends String implements InputProps {
     };
   }
 
+  hasReplyListener() {
+    const { replies } = global.Cassidy;
+
+    return this.replier && replies[this.replier.messageID];
+  }
+
+  hasReactionListener() {
+    const { reacts } = global.Cassidy;
+
+    return this.type == "message_reaction" && reacts[this.messageID];
+  }
+
   public async detectAndProcessReplies() {
     let isCancelCommand = false;
     try {
@@ -626,7 +638,7 @@ export class InputClass extends String implements InputProps {
       const obj = this.#__context;
       const { replies } = global.Cassidy;
 
-      if (input.replier && replies[input.replier.messageID]) {
+      if (this.hasReplyListener()) {
         isCancelCommand = true;
         const { repObj, commandKey, detectID } =
           replies[input.replier.messageID];

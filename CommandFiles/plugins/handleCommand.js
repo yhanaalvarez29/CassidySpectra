@@ -377,9 +377,10 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
         `❌ | You are not allowed to use this command, contact the admin to add you to the whitelist.`
       );
     }
+    const { commandRole } = obj;
 
-    if (meta.role in InputRoles && typeof meta.role === "number") {
-      if (!input.hasRole(meta.role)) {
+    if (commandRole in InputRoles && typeof commandRole === "number") {
+      if (!input.hasRole(commandRole)) {
         /**
          *
          * @param {string} emoji
@@ -407,14 +408,14 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
 
               return await reactAndReply(
                 "👑",
-                `❌ | Moderators cannot use this command as it requires a higher permission.`
+                `👑 | Moderators cannot use this command as it requires a higher permission.`
               );
             }
             if (await tryNoPermission()) return;
 
             return await reactAndReply(
               "👑",
-              `❌ | Only bot admins are allowed to use this command.`
+              `👑 | Only bot admins are allowed to use this command.`
             );
           },
 
@@ -422,7 +423,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
             if (await tryNoPermission()) return;
             return await reactAndReply(
               "🛡️",
-              `❌ | Only bot admins and moderators are allowed to use this command.`
+              `🛡️ | Only bot admins and moderators are allowed to use this command.`
             );
           },
 
@@ -430,7 +431,7 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
             if (await tryNoPermission()) return;
             return await reactAndReply(
               "📦",
-              `❌ | Only thread/box admins and higher permissions are allowed to use this command.`
+              `📦 | Only thread/box admins and higher permissions are allowed to use this command.`
             );
           },
 
@@ -440,17 +441,20 @@ Date: ${new Date(user.banned?.date).toLocaleString()}`);
             if (await tryNoPermission()) return;
             return await reactAndReply(
               "👑",
-              `❌ | Only VIPs are allowed to use this command.`
+              `👑 | Only VIPs are allowed to use this command.`
             );
           },
         };
 
-        const handler = roleHandlers[meta.role];
+        const handler = roleHandlers[commandRole];
         if (isFn(handler)) {
           return await handler();
         }
       }
-    } else if (typeof meta.role === "number" && !(meta.role in InputRoles)) {
+    } else if (
+      typeof commandRole === "number" &&
+      !(commandRole in InputRoles)
+    ) {
       throw new TypeError("Invalid Role.");
     } else {
       if (!meta.permissions) {

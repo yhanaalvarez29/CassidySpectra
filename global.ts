@@ -160,6 +160,11 @@ declare global {
     usersDB: UserStatsManager;
 
     /**
+     * Manages global statistics.
+     */
+    globalDB: UserStatsManager;
+
+    /**
      * Provides access to the API for external operations.
      * @deprecated
      */
@@ -305,6 +310,11 @@ declare global {
      * User roles (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
      */
     role: InputRoles;
+
+    /**
+     * Role for current command (from command meta or custom role on db) (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
+     */
+    commandRole: InputRoles | undefined;
 
     /**
      * User roles as enum.
