@@ -36,7 +36,7 @@ export const style = {
 export async function entry({ input, output, args, money }) {
   const user = await money.getItem(input.sid);
   const bet = parseBet(args[0], user.money);
-  if (!isNaN(bet)) {
+  if (isNaN(bet)) {
     return output.reply("Invalid number.");
   }
   return output.reply(
