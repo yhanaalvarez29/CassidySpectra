@@ -11,6 +11,7 @@ import UserStatsManager, { init } from "../../handlers/database/handleStat";
 import { SymLock } from "../loaders/loadCommand.js";
 import { join } from "path";
 import { InputRoles } from "@cass-modules/InputClass";
+import { extractCommandRole } from "@cassidy/unispectra";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
@@ -246,6 +247,11 @@ export async function middleware({ allPlugins }) {
   global.handleStat = handleStat;
   await handleStat.connect();
   sortPlugin(allPlugins);
+  global.Cassidy.databases = {
+    usersDB: handleStat,
+    threadsDB,
+    globalDB,
+  };
 
   return handleMiddleWare;
 }
@@ -533,32 +539,40 @@ api.${
       } catch (error) {
         console.error(error);
       }
-      runObjects.commandRole = command?.meta.role ?? undefined;
-      if (Array.isArray(command?.meta.permissions)) {
-        const fRole = Math.min(
-          ...command.meta.permissions.filter((i) => !isNaN(i))
-        );
-        if (!isNaN(fRole) && fRole >= (command?.meta.role ?? 0)) {
-          runObjects.commandRole = fRole;
-        }
-      }
-      try {
-        const roles = new Map(threadCache.roles ?? []);
-        const foundRole = roles.get(command?.meta?.name);
-        if (foundRole in InputRoles && typeof foundRole === "number") {
-          runObjects.commandRole = foundRole;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        const groles = new Map(roleSysCache.groles ?? []);
-        const foundRole = groles.get(command?.meta?.name);
-        if (foundRole in InputRoles && typeof foundRole === "number") {
-          runObjects.commandRole = foundRole;
-        }
-      } catch (error) {
-        console.error(error);
+      // runObjects.commandRole = command?.meta.role ?? undefined;
+      // if (Array.isArray(command?.meta.permissions)) {
+      //   const fRole = Math.min(
+      //     ...command.meta.permissions.filter((i) => !isNaN(i))
+      //   );
+      //   if (!isNaN(fRole) && fRole >= (command?.meta.role ?? 0)) {
+      //     runObjects.commandRole = fRole;
+      //   }
+      // }
+      // try {
+      //   const roles = new Map(threadCache.roles ?? []);
+      //   const foundRole = roles.get(command?.meta?.name);
+      //   if (foundRole in InputRoles && typeof foundRole === "number") {
+      //     runObjects.commandRole = foundRole;
+      //   }
+      // } catch (error) {
+      //   console.error(error);
+      // }
+      // try {
+      //   const groles = new Map(roleSysCache.groles ?? []);
+      //   const foundRole = groles.get(command?.meta?.name);
+      //   if (foundRole in InputRoles && typeof foundRole === "number") {
+      //     runObjects.commandRole = foundRole;
+      //   }
+      // } catch (error) {
+      //   console.error(error);
+      // }
+      const extractedRole = await extractCommandRole(
+        command,
+        true,
+        event.threadID
+      );
+      if (extractedRole in InputRoles && typeof extractedRole === "number") {
+        runObjects.commandRole = extractedRole;
       }
     }
 

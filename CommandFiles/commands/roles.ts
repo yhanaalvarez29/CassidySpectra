@@ -110,7 +110,7 @@ const configs: Config[] = [
       { spectralArgs }
     ) {
       const commandName = spectralArgs[0];
-      const role = parseInt(spectralArgs[1]);
+      const role = parseFloat(spectralArgs[1]);
       const isGlobal = spectralArgs[2] === "-g";
 
       const targetCommand = Object.values(commands).find(

@@ -823,3 +823,48 @@ export function formatTime(ms) {
   const hrs = Math.floor(ms / (1000 * 60 * 60));
   return hrs > 0 ? `${hrs}h ${mins}m ${secs}s` : `${mins}m ${secs}s`;
 }
+
+/**
+ *
+ * @param {CassidySpectra.CassidyCommand} command
+ */
+export async function extractCommandRole(
+  command,
+  checkDB = true,
+  threadID = null
+) {
+  const role = command?.meta?.role ?? 0;
+  const permissions = Array.isArray(command?.meta.permissions)
+    ? Math.min(
+        ...command?.meta?.permissions.filter((i) => typeof i === "number")
+      )
+    : 0;
+  const { botAdmin, allowModerators } = command?.meta ?? {};
+  const btx = botAdmin ? (allowModerators ? 1.5 : 2) : 0;
+  let tidRole = 0;
+  let grole = 0;
+  try {
+    if (threadID) {
+      const { roles = [] } = await global.Cassidy.databases.threadsDB.getItem(
+        threadID
+      );
+      const map = new Map(roles);
+      tidRole = map.get(command?.meta?.name) ?? 0;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    if (checkDB) {
+      const { groles = [] } = await global.Cassidy.databases.globalDB.getItem(
+        "roleSys"
+      );
+      const map = new Map(groles);
+      grole = map.get(command?.meta?.name) ?? 0;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  const last = Math.max(role, permissions, btx, grole, tidRole);
+  return last;
+}

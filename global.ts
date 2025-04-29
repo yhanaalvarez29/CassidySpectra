@@ -655,6 +655,11 @@ declare global {
       readonly spectra: boolean;
       readonly highRoll: 10_000_000;
       hostedFilenames: (undefined | TempFile)[];
+      databases?: {
+        usersDB: UserStatsManager;
+        threadsDB: UserStatsManager;
+        globalDB: UserStatsManager;
+      };
     }
 
     export type Output = OutputX;
