@@ -1,6 +1,6 @@
 // @ts-check
 
-import { parseBet } from "@cass-modules/ArielUtils";
+import { abbreviateNumber, parseBet } from "@cass-modules/ArielUtils";
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -42,7 +42,10 @@ export async function entry({ input, output, args, money }) {
   return output.reply(
     `**Your Input**:\n${
       args[0]
-    }\n\n**Translated**:\n${bet}\n\n**Exponential**:\n${bet.toExponential()}\n\n**Locale**:\n${bet.toLocaleString()}\n\n${
+    }\n\n**Translated**:\n${bet}\n\n**Exponential**:\n${bet.toExponential()}\n\n**Locale**:\n${bet.toLocaleString()}\n\n**Abbr (2 Decimals)**:\n${abbreviateNumber(
+      bet,
+      2
+    )}\n\n**Abbr (2 Decimals, FULL)**:\n${abbreviateNumber(bet, 2, true)}\n\n${
       bet <= user.money
         ? "***Is not higher than your balance***"
         : "***Higher than your balance.***"
