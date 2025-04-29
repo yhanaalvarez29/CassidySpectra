@@ -429,9 +429,27 @@ async function main() {
 
   willAccept = true;
   logger("Listener Started!", "LISTEN");
+  setupAutoRestart();
   setupCommands();
 }
 import request from "request";
+
+function setupAutoRestart() {
+  const { mqttRestart } = global.Cassidy.config;
+  if (mqttRestart?.enabled) {
+    const interval = mqttRestart.interval || 3600000;
+    logger(
+      `Auto-restart enabled. Restarting every ${interval / 1000 / 60} minutes.`,
+      "AUTORESTART"
+    );
+    setInterval(restartProcess, interval);
+  }
+}
+
+function restartProcess() {
+  logger("Restarting the process...", "AUTORESTART");
+  process.exit(3);
+}
 
 async function setupCommands() {
   const pageAccessToken = global.Cassidy.config.pageAccessToken;
