@@ -845,7 +845,7 @@ export async function extractCommandRole(
   let grole = 0;
   try {
     if (threadID) {
-      const { roles = [] } = await global.Cassidy.databases.threadsDB.getItem(
+      const { roles = [] } = await global.Cassidy.databases.threadsDB.getCache(
         threadID
       );
       const map = new Map(roles);
@@ -856,7 +856,7 @@ export async function extractCommandRole(
   }
   try {
     if (checkDB) {
-      const { groles = [] } = await global.Cassidy.databases.globalDB.getItem(
+      const { groles = [] } = await global.Cassidy.databases.globalDB.getCache(
         "roleSys"
       );
       const map = new Map(groles);
