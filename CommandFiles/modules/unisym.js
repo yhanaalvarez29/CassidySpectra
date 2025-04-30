@@ -866,5 +866,5 @@ export async function extractCommandRole(
     console.error(error);
   }
   const last = Math.max(role, permissions, btx, grole, tidRole);
-  return last;
+  return allowModerators && last > 1.5 ? 1.5 : last;
 }
