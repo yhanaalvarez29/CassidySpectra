@@ -1,3 +1,4 @@
+// @ts-check
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -7,11 +8,21 @@
 
 import fs from "fs";
 
+/**
+ *
+ * @param {globalThis["Cassidy"]["plugins"]} allPlugins
+ * @param {boolean} force
+ * @param {(error: Error | null, plugin: string, data: any | null) => any} callback
+ * @returns {Promise<Record<string, Error> | false>}
+ */
 export async function loadPluginsEach(
   allPlugins,
   force = false,
   callback = async () => {}
 ) {
+  /**
+   * @type {Record<string, Error>}
+   */
   const errs = {};
   require.cache = {};
   const plugins = fs
@@ -41,43 +52,74 @@ ${error.stack}'`,
   //console.log(allPlugins);
 }
 
+/**
+ *
+ * @param {globalThis["Cassidy"]["plugins"]} allPlugins
+ * @param {boolean} force
+ * @param {(error: Error | null, plugin: string, data: any | null) => any} callback
+ * @returns {Promise<Record<string, Error> | false>}
+ */
 export async function loadPlugins(
   allPlugins,
   force = false,
   callback = async () => {}
 ) {
+  /**
+   * @type {Record<string, Error>}
+   */
   const errs = {};
   require.cache = {};
   const plugins = fs
     .readdirSync("CommandFiles/plugins")
     .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
 
-  const pluginPromises = plugins.map((plugin) =>
-    loadPlugin(plugin, allPlugins, force)
-      .then((data) => {
-        callback(null, plugin, data);
-      })
-      .catch((error) => {
-        errs["plugin:" + plugin] = error;
-        callback(error, plugin, null);
-        global.logger(
-          `Cannot load '${plugin}' because:\n${error.stack}`,
-          "Plugin"
-        );
-      })
-  );
+  // const pluginPromises = plugins.map((plugin) =>
+  //   loadPlugin(plugin, allPlugins, force)
+  //     .then((data) => {
+  //       callback(null, plugin, data);
+  //     })
+  //     .catch((error) => {
+  //       errs["plugin:" + plugin] = error;
+  //       callback(error, plugin, null);
+  //       global.logger(
+  //         `Cannot load '${plugin}' because:\n${error.stack}`,
+  //         "Plugin"
+  //       );
+  //     })
+  // );
 
-  return Promise.allSettled(pluginPromises).then(() => {
-    return Object.keys(errs).length === 0 ? false : errs;
-  });
+  // return Promise.allSettled(pluginPromises).then(() => {
+  //   return Object.keys(errs).length === 0 ? false : errs;
+  // });
+  for (const plugin of plugins) {
+    try {
+      const data = await loadPlugin(plugin, allPlugins, force);
+      callback(null, plugin, data);
+    } catch (error) {
+      errs["plugin:" + plugin] = error;
+      callback(error, plugin, null);
+      global.logger(
+        `Cannot load '${plugin}' because:\n${error.stack}`,
+        "Plugin"
+      );
+    }
+  }
+
+  return Object.keys(errs).length === 0 ? false : errs;
 }
 
-import { checkCompatibility, deprecationWarning } from "./util.js";
+import { checkCompatibility } from "./util.js";
 
-export async function loadPlugin(name, allPlugins, force) {
+/**
+ *
+ * @param {string} name
+ * @param {globalThis["Cassidy"]["plugins"]} allPlugins
+ * @param {boolean} force
+ * @returns
+ */
+export async function loadPlugin(name, allPlugins, force = false) {
   let plugin;
-  const fileContent = fs.readFileSync(`CommandFiles/plugins/${name}`, "utf8");
-  let err1;
+
   try {
     plugin = require(process.cwd() + `/CommandFiles/plugins/${name}`);
   } catch (err) {

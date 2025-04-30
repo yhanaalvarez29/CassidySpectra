@@ -1,3 +1,4 @@
+// @ts-check
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -41,6 +42,9 @@ export async function loadAllPresets() {
   return r;
 }
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 const defaultMeta = {
   name: "",
   description: "No Description",
@@ -48,7 +52,7 @@ const defaultMeta = {
   version: "1.0.0",
   usage: "{prefix}{name}",
   category: "Unconfigured",
-  permissions: [0, 1, 2],
+  role: 0,
   noPrefix: false,
   waitingTime: 5,
   ext_plugins: {},
@@ -63,6 +67,15 @@ import {
 } from "./util.js";
 import { emojiEnd } from "../../CommandFiles/modules/unisym.js";
 
+/**
+ *
+ * @param {string | CassidySpectra.CassidyCommand} fileName
+ * @param {globalThis["Cassidy"]["commands"]} commands
+ * @param {boolean} isObj
+ * @param {boolean} force
+ * @param {boolean} transpileOnly
+ * @returns {Promise<Error | null | CassidySpectra.CassidyCommand>}
+ */
 export async function loadCommand(
   fileName,
   commands,
@@ -70,14 +83,18 @@ export async function loadCommand(
   force = false,
   transpileOnly = false
 ) {
-  const { import: importModule } = global;
+  const startTime = performance.now();
+  const { requireProc: importModule } = global;
   try {
     if (!isPresetLoaded || force) {
       loadAllPresets();
     }
+    /**
+     * @type {CassidySpectra.CassidyCommand}
+     */
     let command;
     try {
-      if (isObj) {
+      if (isObj && typeof fileName !== "string") {
         command = fileName;
         fileName = command.meta?.name || "";
       } else {
@@ -93,14 +110,15 @@ export async function loadCommand(
         if (isObj) {
           throw error;
         } else {
-          /*command = await import(`../../CommandFiles/commands/${fileName}?version=${Date.now()}`);*/
           throw error;
         }
       } catch (error) {
         throw error;
       }
     }
-    //console.log(command);
+    if (command.default) {
+      command = command.default;
+    }
     const { pack } = command;
     if (pack) {
       for (const cmd in command.pack) {
@@ -110,8 +128,8 @@ export async function loadCommand(
       return;
     }
     command.meta = { ...defaultMeta, ...(command.meta ?? {}) };
-    const { meta, entry, duringLoad, noPrefix, reply, onError, onCooldown } =
-      command;
+    fileName = String(fileName);
+    const { meta, entry, duringLoad, noPrefix, reply } = command;
     const verRegex = /,?\s*version:\s*"([^"]*)"\s*,/;
     const fileCOntent = await fs.readFile(
       `CommandFiles/commands/${fileName}`,
@@ -123,23 +141,29 @@ export async function loadCommand(
     }
     if (typeof entry !== "function" && typeof entry !== "object") {
       throw new Error(
-        `'{root}.entry' function should be a function or an object, recieved ${entry?.toString()}`
+        `'{root}.entry' function should be a function or an object, recieved ${String(
+          entry
+        ).toString()}`
       );
     }
     if (noPrefix && typeof noPrefix !== "function") {
       throw new Error(
-        `'{root}.noPrefix' should be undefined, null, or function, recieved ${noPrefix?.toString()}`
+        `'{root}.noPrefix' should be undefined, null, or function, recieved ${String(
+          noPrefix
+        ).toString()}`
       );
     }
     if (reply && typeof reply !== "function") {
       throw new Error(
-        `'{root}.reply' should be undefined, null, or function, recieved ${noPrefix?.toString()}`
+        `'{root}.reply' should be undefined, null, or function, recieved ${String(
+          reply
+        ).toString()}`
       );
     }
     if (!meta || !meta.name) {
       throw new Error(`'{root}.meta' is invalid!`);
     }
-    const { allPlugins = {} } = global;
+    const { plugins: allPlugins = {} } = global.Cassidy;
 
     if (
       !checkCompatibility(meta.requirement || "^1.0.0", global.package.version)
@@ -203,7 +227,7 @@ export async function loadCommand(
       throw new Error(
         `Command '${meta.name}' already exists: '${
           commands[meta.name]?.meta.name
-        }', '${commands[meta.name]?.otherNames?.join("")}`
+        }', '${(commands[meta.name]?.otherNames ?? []).join("")}`
       );
     }
     if (typeof command.load === "function") {
@@ -224,7 +248,7 @@ export async function loadCommand(
           throw new Error(
             `Command '${name}' already exists: '${
               commands[name]?.meta.name
-            }', '${commands[name]?.otherNames?.join("")}'`
+            }', '${(commands[name]?.otherNames ?? []).join("")}'`
           );
         }
         assignCommand(name, command, commands);
@@ -233,28 +257,36 @@ export async function loadCommand(
     if (typeof command.style?.title === "string") {
       emojiEnd(command.style.title);
     }
+    const ms = performance.now() - startTime;
     global.logger(
       `Loaded command ${meta.name}@${version} ${
         Array.isArray(meta.otherNames)
           ? `and aliases ${meta.otherNames.join(", ")}!`
           : "!"
-      }`,
+      }\n(PING: ${ms.toFixed(2)}ms)`,
       fileName
     );
   } catch (error) {
     global.logger(
       `Failed to load command '${fileName}'! Error: ${error.message}`,
-      fileName
+      String(fileName)
     );
     console.log(error);
     return error;
   }
 }
 
+/**
+ *
+ * @param {string} name
+ * @param {CassidySpectra.CassidyCommand} command
+ * @param {globalThis["Cassidy"]["commands"]} commands
+ */
 export function assignCommand(name, command, commands) {
   const ssyx = Symbol(name);
   SymLock["set"](name, ssyx);
   const { entry } = command;
+
   commands[name] = {
     ...command,
     meta: { ...defaultMeta, ...command.meta },

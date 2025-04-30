@@ -37,6 +37,9 @@ import __pkg from "./package.json";
 global.package = __pkg;
 global.logger = logger;
 
+/**
+ * @type {globalThis["Cassidy"]["commands"]}
+ */
 let commands = {};
 const allPlugins = {};
 
@@ -98,6 +101,10 @@ const upt = Date.now();
 global.require = require;
 
 global.import = (m) => {
+  return require("./" + m);
+};
+
+global.requireProc = (m) => {
   return require("./" + m);
 };
 
@@ -264,9 +271,18 @@ function loadCookie() {
   }
 }
 
-async function loadAllCommands(callback = async () => {}) {
+/**
+ *
+ * @param {(err: Error | null, fileName: string) => any} callback
+ * @returns {Promise<Record<string, Error> | false>}
+ */
+export async function loadAllCommands(callback = async () => {}) {
   commands = {};
   global.Cassidy.commands = {};
+
+  /**
+   * @type {Record<string, Error>}
+   */
   let errs = {};
   const fileNames = (await fs.promises.readdir("CommandFiles/commands")).filter(
     (file) => file.endsWith(".js") || file.endsWith(".ts")
@@ -276,21 +292,36 @@ async function loadAllCommands(callback = async () => {}) {
     delete require.cache[i];
   });
 
-  const commandPromises = fileNames.map(async (fileName) => {
+  // const commandPromises = fileNames.map(async (fileName) => {
+  //   try {
+  //     const e = await loadCommand(fileName, commands);
+  //     // @ts-ignore
+  //     await callback(e, fileName);
+  //     checkMemoryUsage(true);
+  //     if (e) {
+  //       errs["command:" + fileName] = e;
+  //     }
+  //   } catch (error) {
+  //     errs["command:" + fileName] = error;
+  //   }
+  // });
+
+  for (const fileName of fileNames) {
     try {
       const e = await loadCommand(fileName, commands);
-      // @ts-ignore
-      await callback(e, fileName);
+      if (e instanceof Error) {
+        await callback(e, fileName);
+      }
       checkMemoryUsage(true);
-      if (e) {
+      if (e instanceof Error) {
         errs["command:" + fileName] = e;
       }
     } catch (error) {
       errs["command:" + fileName] = error;
     }
-  });
+  }
 
-  await Promise.allSettled(commandPromises);
+  // await Promise.allSettled(commandPromises);
 
   return Object.keys(errs).length === 0 ? false : errs;
 }

@@ -12,6 +12,4 @@ try {
     fs.writeFileSync("./cookie.json", x);
     fs.writeFileSync(".env", envfile.stringify(env));
   }
-} catch (error) {
-  console.error(error);
-}
+} catch (error) {}

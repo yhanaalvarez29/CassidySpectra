@@ -24,8 +24,6 @@ export function defineEntry(
 
 import { ReduxCMDHome } from "@cass-modules/reduxCMDHomeV2";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
-import type { UserStatsManager } from "cassidy-userData";
-import type OutputProps from "output-cassidy";
 
 /**
  * Defines a home command entry for the SpectralCMD system.
@@ -82,15 +80,30 @@ export type VNode = {
   children: any[];
 };
 
+/**
+ * Defines and returns a Cassidy Command.
+ */
+export function defineCommand(
+  command: CassidySpectra.CassidyCommand
+): CassidySpectra.CassidyCommand {
+  return command;
+}
 
-// export function defineOutputJSX(output: OutputProps) {
-//   return ({ reply = false, send = false, children = "" }) => {
-    
-//   }
-// }
+// export default defineCommand({
+//   meta: {
+//     name: "test",
+//     description: "idk",
+//     category: "IDK",
+//     version: "1.0.0",
+//   },
+//   style: {
+//     title: "💗 Test",
+//     titleFont: "bold",
+//     contentFont: "fancy",
+//   },
+//   async entry({ input, output, usersDB }) {
+//     const { name } = await usersDB.queryItem(input.sid, "name");
 
-// export function defineUserStatsJSX(money: UserStatsManager) {
-//   return ({ reply = false, send = false, children = "" }) => {
-    
-//   }
-// }
+//     return output.reply(`Hello, ${name}!`);
+//   },
+// });

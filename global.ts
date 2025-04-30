@@ -7,7 +7,7 @@ import type {
   treasureInv,
 } from "./CommandFiles/plugins/ut-shop.js";
 
-import type InputX from "input-cassidy";
+// import type InputX from "input-cassidy";
 import type { ReplySystem, ReactSystem } from "input-cassidy";
 
 import type OutputX from "output-cassidy";
@@ -613,10 +613,15 @@ declare global {
 
   type StrictCommandContext = CommandContextOG;
 
-  type CommandEntry = (
+  type CommandEntryFunc = ((
     ctx: CommandContext,
     ...args: any[]
-  ) => any | Promise<any>;
+  ) => any | Promise<any>) & {
+    hooklet?: (pass: symbol) => CommandEntry;
+  };
+  type CommandEntry = (CommandEntryFunc | Record<string, CommandEntryFunc>) & {
+    hooklet?: (pass: symbol) => CommandEntry;
+  };
 
   type UserData = Cass.UserData;
 
@@ -645,9 +650,9 @@ declare global {
         >
       >;
       presets: Map<any, any>;
-      loadCommand: Function;
-      loadPlugins: Function;
-      loadAllCommands: Function;
+      loadCommand: typeof loadCommand;
+      loadPlugins: typeof loadPlugins;
+      loadAllCommands: typeof loadAllCommands;
       readonly logo: any;
       oldLogo: string;
       accessToken: string | null;
@@ -663,13 +668,13 @@ declare global {
     }
 
     export type Output = OutputX;
-    export type Input = InputX;
+    export type Input = InputClass;
     export type InventoryConstructor = typeof Inventory;
     export type CollectiblesConstructor = typeof Collectibles;
 
     export interface CassidyCommand {
       meta: CommandMeta;
-      entry: CommandHandler;
+      entry: CommandEntry;
       cooldown?: CommandHandler;
       noWeb?: CommandHandler;
       noPermission?: CommandHandler;
@@ -689,8 +694,10 @@ declare global {
       noPrefix?: CommandHandler;
       modLower?: CommandHandler;
       reply?: CommandHandler;
-      style?: any;
+      style?: CommandStyle;
       event?: CommandHandler;
+      pack?: Record<string, CassidyCommand>;
+      default?: CassidyCommand;
       [name: string]: any;
     }
 
@@ -797,7 +804,13 @@ declare global {
     ) => Promise<void> | void;
 
     export type DuringLoadHandler = () => Promise<void> | void;
+
+    export { CommandEntry };
   }
+
+  export interface Output extends OutputX {}
+  export interface Input extends InputClass {}
+  export interface OutputResultC extends OutputResult {}
 }
 
 declare global {
@@ -835,7 +848,7 @@ import {
   Quest,
   WildPlayer,
 } from "@cass-plugins/pet-fight.js";
-import { CassidyIO } from "@cass-plugins/output.js";
+import { CassidyIO, OutputResult } from "@cass-plugins/output.js";
 import { JsonMap } from "@cass-plugins/JsonMap.js";
 import { CassExpress, CustomAI } from "@cass-plugins/cassexpress.js";
 import { NeaxUI, OptionsList, VirtualFiles } from "@cass-plugins/neax-ui.js";
@@ -849,6 +862,9 @@ import {
 } from "@cass-plugins/utils-liane.js";
 import { TempFile } from "./handlers/page/sendMessage.js";
 import InputClass, { InputRoles } from "@cass-modules/InputClass.js";
+import { loadCommand } from "./handlers/loaders/loadCommand";
+import { loadPlugins } from "./handlers/loaders/loadPlugins";
+import { loadAllCommands } from "./Cassidy.js";
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
@@ -1330,6 +1346,17 @@ declare global {
       trueIP: string;
     }
   }
+
+  interface Math {
+    /**
+     * @see {@link Math.random}
+     */
+    randomOriginal: Math["random"];
+  }
+
+  var requireEsm: (url: string) => Promise<any>;
+  var originalRequire: NodeRequire;
+  var requireProc: (m: string) => any;
 }
 
 export default {};

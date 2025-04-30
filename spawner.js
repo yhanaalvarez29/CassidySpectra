@@ -1,5 +1,7 @@
+// @ts-check
 global.requireEsm = async function (url) {
-  return await import(url);
+  const val = await import(url);
+  return val;
 };
 
 global.discordJS = require("discord.js");
@@ -164,7 +166,7 @@ const stackFrameReg = [
       }
 
       let filePreview =
-        !isNaN(lineNo) && fileName !== "<unknown file>"
+        !isNaN(Number(lineNo)) && fileName !== "<unknown file>"
           ? getFilePreview(fileName, lineNo)
           : "[No preview available]\n";
 
