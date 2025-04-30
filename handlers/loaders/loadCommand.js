@@ -65,7 +65,10 @@ import {
   isValidVersion,
   deprecationWarning,
 } from "./util.js";
-import { emojiEnd } from "../../CommandFiles/modules/unisym.js";
+import {
+  emojiEnd,
+  extractCommandRole,
+} from "../../CommandFiles/modules/unisym.js";
 
 /**
  *
@@ -239,6 +242,11 @@ export async function loadCommand(
     }
     command.filePath = `CommandFiles/commands/${fileName}`;
     command.fileName = fileName;
+    const role = await extractCommandRole(command, false, null);
+    command.meta.role = role;
+    delete command.meta.permissions;
+    delete command.meta.botAdmin;
+    delete command.meta.allowModerators;
     await cassWatchJob({ commandData: command, fileName, version });
 
     assignCommand(meta.name, command, commands);
