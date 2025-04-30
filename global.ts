@@ -932,6 +932,8 @@ import InputClass, { InputRoles } from "@cass-modules/InputClass.js";
 import { loadCommand } from "./handlers/loaders/loadCommand";
 import { loadPlugins } from "./handlers/loaders/loadPlugins";
 import { loadAllCommands } from "./Cassidy.js";
+import { etcTagMappings } from "./handlers/definers/jsx-runtime";
+
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
   var fileTypePromise: Promise<typeof FileType>;
@@ -1392,16 +1394,24 @@ declare global {
   export type FirstArg<T> = T extends (arg1: infer A, ...args: any[]) => any
     ? A
     : never;
+  type ETCTags = typeof etcTagMappings;
 
   namespace JSX {
-    type Element = VNode;
+    type Element = string;
+    type ElementFragment = string;
 
-    type ElementFragment = VNode;
-
-    interface IntrinsicElements {
-      output: OutputJSX;
-      userdata: UserStatsJSX;
-    }
+    type IntrinsicElements = {
+      [K in CassidySpectra.FontTypes as `f_${K}`]: {
+        children?: JSX.Element | JSX.Element[] | string;
+        [key: string]: any;
+      };
+    } & {
+      [K in keyof ETCTags]: {
+        children?: JSX.Element | JSX.Element[] | string;
+        font?: CassidySpectra.FontTypes;
+        [key: string]: any;
+      };
+    };
   }
 
   var GoatBot: typeof GoatFill.GoatBot;

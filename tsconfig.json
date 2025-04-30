@@ -5,9 +5,7 @@
     "inlineSources": true
   },
   "compilerOptions": {
-    "jsx": "preserve",
-    "jsxFactory": "fromElement",
-    "jsxFragmentFactory": "fromElement",
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "jsxImportSource": "./handlers/definers/",
     "allowSyntheticDefaultImports": true,
@@ -60,7 +58,8 @@
       "@cassidy/input-types": ["./CommandFiles/types/input.d.ts"],
       "@cassidy/polyfills/*": ["./handlers/polyfills/*"],
       "cassidy-userData": ["./CommandFiles/modules/cassidyUser.d.ts"],
-      "neax-script": ["./CommandFiles/modules/NeaxScript"]
+      "neax-script": ["./CommandFiles/modules/NeaxScript"],
+      "@cassidy/jsx": ["./handlers/definers/jsx-runtime"]
     }
   },
   "exclude": ["node_modules", "public"],
