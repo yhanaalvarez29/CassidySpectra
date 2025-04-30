@@ -844,27 +844,38 @@ export async function extractCommandRole(
   let tidRole = 0;
   let grole = 0;
   try {
-    if (threadID) {
-      const { roles = [] } = await global.Cassidy.databases.threadsDB.getCache(
-        threadID
-      );
-      const map = new Map(roles);
-      tidRole = map.get(command?.meta?.name) ?? 0;
-    }
-  } catch (error) {
-    console.error(error);
-  }
-  try {
     if (checkDB) {
       const { groles = [] } = await global.Cassidy.databases.globalDB.getCache(
         "roleSys"
       );
       const map = new Map(groles);
-      grole = map.get(command?.meta?.name) ?? 0;
+      grole = map.get(command?.meta?.name);
+      if (typeof grole === "number") {
+        return grole;
+      } else {
+        grole = 0;
+      }
     }
   } catch (error) {
     console.error(error);
   }
+  try {
+    if (threadID) {
+      const { roles = [] } = await global.Cassidy.databases.threadsDB.getCache(
+        threadID
+      );
+      const map = new Map(roles);
+      tidRole = map.get(command?.meta?.name);
+      if (typeof tidRole === "number") {
+        return tidRole;
+      } else {
+        tidRole = 0;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
   const last = Math.max(role, permissions, btx, grole, tidRole);
   return allowModerators && last > 1.5 ? 1.5 : last;
 }
