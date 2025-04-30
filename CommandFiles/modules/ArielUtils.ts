@@ -398,7 +398,10 @@ export function abbreviateNumber(value, places = 0, isFull = false) {
     return `${Math.round(abbreviatedValue)}${isFull ? ` ${suffix}` : suffix}`;
   }
 
-  const formattedValue = abbreviatedValue.toFixed(places).replace(/\.?0+$/, "");
+  const formattedValue =
+    places === 0
+      ? abbreviatedValue.toFixed(0)
+      : abbreviatedValue.toFixed(places).replace(/\.?0+$/, "");
 
   return `${formattedValue}${isFull ? ` ${suffix}` : suffix}`;
 }
