@@ -675,24 +675,69 @@ declare global {
     export interface CassidyCommand {
       meta: CommandMeta;
       entry: CommandEntry;
+      /**
+       * @deprecated
+       */
       cooldown?: CommandHandler;
+      /**
+       * @deprecated
+       */
       noWeb?: CommandHandler;
+      /**
+       * @deprecated
+       */
       noPermission?: CommandHandler;
+      /**
+       * @deprecated
+       */
       needPrefix?: CommandHandler;
+      /**
+       * @deprecated
+       */
       banned?: CommandHandler;
+      /**
+       * @deprecated
+       */
       shopLocked?: CommandHandler;
+      /**
+       * @deprecated
+       */
       awaiting?: CommandHandler;
       langs?: Record<string, Record<string, string>>;
       indivMeta?: ConstructorParameters<
         typeof SpectralCMDHome
       >["0"]["entryInfo"];
+      /**
+       * @deprecated
+       */
       middleware?: CommandMiddleware[];
+      /**
+       * @deprecated
+       */
       loaders?: CommandLoader[];
+      /**
+       * @deprecated
+       */
       onError?: ErrorHandler;
+      /**
+       * @deprecated
+       */
       onCooldown?: CooldownHandler;
+      /**
+       * @deprecated
+       */
       duringLoad?: DuringLoadHandler;
+      /**
+       * @deprecated
+       */
       noPrefix?: CommandHandler;
+      /**
+       * @deprecated
+       */
       modLower?: CommandHandler;
+      /**
+       * @deprecated
+       */
       reply?: CommandHandler;
       style?: CommandStyle;
       event?: CommandHandler;
@@ -709,19 +754,37 @@ declare global {
       role?: InputRoles;
       category: string;
       version: `${string}.${string}.${string}`;
+      /**
+       * @deprecated
+       */
       permissions?: number[];
       author?: string;
       otherNames?: string[];
+      /**
+       * @deprecated
+       */
       ext_plugins?: Record<string, string>;
       waitingTime?: number;
+      /**
+       * @deprecated
+       */
       botAdmin?: boolean;
       dependencies?: Record<string, string>;
+      /**
+       * @deprecated
+       */
       whiteList?: string[];
       noPrefix?: boolean | "both";
+      /**
+       * @deprecated
+       */
       allowModerators?: boolean;
       icon?: string;
       requirement?: string;
       supported?: string;
+      /**
+       * @deprecated
+       */
       args?: {
         degree: number;
         fallback: null | string;
@@ -730,6 +793,9 @@ declare global {
         required: boolean;
       }[];
       noWeb?: boolean;
+      /**
+       * @deprecated
+       */
       params?: any[];
       legacyMode?: boolean;
       [name: string]: any;
