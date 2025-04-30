@@ -153,7 +153,7 @@ export type SpectraMainConfig = {
   isHypen?: boolean;
   argIndex?: number;
   setup?: Config["handler"];
-  entryConfig?: Record<string, Config["handler"]>;
+  entryConfig?: Record<string, Config["handler"] | CommandEntry>;
   entryInfo?: {
     [key: string]: Partial<Config>;
   };
@@ -199,6 +199,7 @@ export class SpectralCMDHome {
     configs?: Config[]
   ) {
     if (entryConfig) {
+      // @ts-ignore
       configs = Object.entries(entryConfig).map(([key, handler]) => ({
         key,
         handler,
