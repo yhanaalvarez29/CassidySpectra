@@ -69,6 +69,6 @@ runChildProcess();
 runChildProcess2();
 setInterval?.(async () => {
   try {
-    await axios.get(`http://localhost:3000`);
+    await axios.get(`http://localhost:8000`);
   } catch (err) {}
 }, 10000);
