@@ -117,7 +117,7 @@ export function parseBet(arg: string | number, totalBalance?: number) {
   }
 
   if (targetArg.endsWith("%")) {
-    const per = parseFloat(targetArg.replaceAll("%", ""));
+    const per = parseFloat(targetArg.replaceAll("%", "")) / 100;
     return Math.floor(Number(totalBalance) * per);
   }
 
