@@ -1561,16 +1561,16 @@ function divideArray(arr, divisor) {
   return result;
 }
 
-async function getStreamFromURL(url) {
-  try {
-    const response = await axios.get(url, {
-      responseType: "stream",
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-}
+// async function getStreamFromURL(url) {
+//   try {
+//     const response = await axios.get(url, {
+//       responseType: "stream",
+//     });
+//     return response.data;
+//   } catch (error) {
+//     throw error;
+//   }
+// }
 class PythonDict {
   constructor(obj = {}) {
     this._data = obj;

@@ -205,7 +205,7 @@ export interface OutputProps {
    */
   replyStyled(
     form: OutputForm,
-    style: any,
+    style: CassidySpectra.CommandStyle,
     thread?: string
   ): Promise<OutputResultNew>;
 
@@ -218,7 +218,7 @@ export interface OutputProps {
    */
   sendStyled(
     form: OutputForm,
-    style: any,
+    style: CassidySpectra.CommandStyle,
     thread?: string
   ): Promise<OutputResultNew>;
 
@@ -243,11 +243,11 @@ export interface OutputProps {
      * Creates a new styled message instance.
      * @param style - The style to apply to the messages.
      */
-    new (style: any): {
+    new (style: CassidySpectra.CommandStyle): {
       /**
        * The style applied to the messages.
        */
-      style: any;
+      style: CassidySpectra.CommandStyle;
 
       /**
        * The ID of the last message sent.

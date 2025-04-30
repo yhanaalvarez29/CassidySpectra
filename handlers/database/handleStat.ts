@@ -17,6 +17,7 @@ import type { InventoryItem } from "cassidy-userData";
 import fetchMeta from "../../CommandFiles/modules/fetchMeta";
 import { UNISpectra } from "@cassidy/unispectra";
 import { Inventory } from "@cassidy/ut-shop";
+import axios from "axios";
 
 export type UserDataKV = Partial<
   {
@@ -837,6 +838,19 @@ export default class UserStatsManager {
 
     if (!userMeta) {
       return this.saveUserInfo(userID, refUID);
+    }
+
+    const { image } = userMeta;
+    if (!image) {
+      return this.saveUserInfo(userID, refUID);
+    }
+
+    if (global.Cassidy.config.autoRefreshAvatar) {
+      try {
+        await axios.head(image);
+      } catch (error) {
+        return this.saveUserInfo(userID, refUID);
+      }
     }
 
     return true;

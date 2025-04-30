@@ -879,3 +879,57 @@ export async function extractCommandRole(
   const last = Math.max(role, permissions, btx, grole, tidRole);
   return allowModerators && last > 1.5 ? 1.5 : last;
 }
+
+import { ReadableStream } from "stream/web";
+
+/**
+ * Fetches a welcome card image stream from PopCat API.
+ * @param {Object} options - Options for generating the welcome card.
+ * @param {string?} [options.background] - URL of the background image.
+ * @param {string?} [options.name] - Main text (e.g., username).
+ * @param {string?} [options.main] - Secondary text (e.g., welcome message).
+ * @param {string?} [options.countText] - Tertiary text (e.g., member count).
+ * @param {string?} [options.avatar] - URL of the avatar image.
+ * @returns {Promise<ReadableStream>} - Image stream of the welcome card.
+ */
+export async function getWelcomeCardStream({
+  background = `https://i.ibb.co/N6tjJgWz/Rpj-I9bcol-U.png`,
+  name: text1 = "Unknown User",
+  main: text2 = "Placeholder, I guess?",
+  countText: text3 = "Member IDK",
+  avatar = "https://www.facebook.com/images/fb_icon_325x325.png",
+}) {
+  const baseURL = "https://api.popcat.xyz/v2/welcomecard";
+
+  try {
+    const image = await global.utils.getStreamFromURL(baseURL, "", {
+      params: {
+        background,
+        text1,
+        text2,
+        text3,
+        avatar,
+      },
+      responseType: "stream",
+    });
+
+    return image;
+  } catch (error) {
+    console.error("Failed to fetch welcome card stream:", error.stack);
+    throw error;
+  }
+}
+
+/**
+ * Converts an array of strings into a human-readable list with commas and "and"
+ * @param {string[]} str
+ * @returns {string}
+ */
+export function listArrayStr(str, oxford = false) {
+  if (!Array.isArray(str) || str.length === 0) return "";
+  const last = str.at(-1);
+  const items = str.slice(0, -1);
+  return items.length > 0
+    ? `${items.join(", ")}${oxford ? "," : ""} and ${last}`
+    : `${last ?? ""}`;
+}

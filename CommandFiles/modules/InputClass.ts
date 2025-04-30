@@ -818,6 +818,16 @@ export class InputClass extends String implements InputProps {
   [Symbol.toStringTag]() {
     return InputClass.name;
   }
+
+  getProperty<K extends keyof Omit<InputClass, keyof String>>(
+    key: K
+  ): InputClass[K];
+
+  getProperty(key: string): any;
+
+  getProperty(key: string | keyof InputClass) {
+    return this[key];
+  }
 }
 
 export default InputClass;

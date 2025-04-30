@@ -17,6 +17,7 @@
     "randomUserAgent": false,
     "bypassRegion": "PNB"
   },
+  "autoRefreshAvatar": false,
   "railwayTips": "Use USA Oregon as region for railway, and render. ",
   "knownURL": "https://cassidyredux.onrender.com",
   "defaultLang": "en",

@@ -244,7 +244,11 @@ declare function getRandomInt(min: any, max: any): any;
 declare function randArrValue(arr: any): any;
 declare function randArrIndex(arr: any): number;
 declare function divideArray(arr: any, divisor: any): any[];
-declare function getStreamFromURL(url: any): Promise<any>;
+declare function getStreamFromURL(
+  url?: string,
+  pathName?: string,
+  options?: {}
+): Promise<any>;
 declare class PythonDict {
   constructor(obj?: {});
   _data: {};
