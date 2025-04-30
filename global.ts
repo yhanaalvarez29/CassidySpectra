@@ -845,6 +845,7 @@ declare global {
       text?: string | null;
       line_replacer?: string;
       line_replace?: string;
+      content: string | null;
     }
 
     export type CommandHandler = (
