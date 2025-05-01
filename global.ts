@@ -168,7 +168,7 @@ declare global {
      * Provides access to the API for external operations.
      * @deprecated
      */
-    api: any;
+    api: API;
 
     /**
      * Represents the event data for the current command.
@@ -189,7 +189,7 @@ declare global {
     /**
      * @deprecated Provides access to the original API.
      */
-    origAPI: any;
+    origAPI: API;
 
     /**
      * Indicates whether the command has a prefix.
@@ -219,12 +219,12 @@ declare global {
     /**
      * Provides access to Discord-specific API operations.
      */
-    discordApi: any;
+    discordApi: API;
 
     /**
      * Provides access to page-specific API operations.
      */
-    pageApi: any;
+    pageApi: API;
 
     /**
      * @deprecated Tracks the stack of awaiting operations.
@@ -889,6 +889,10 @@ declare global {
   };
 
   var cassMongoManager: CassMongoManager | undefined;
+
+  interface API extends FCALianeAPI {}
+
+  type FCAMqttEvent = FCAMqtt.MqttMessage & {};
 }
 
 import type * as FileType from "file-type";
@@ -901,7 +905,6 @@ import { LangParser } from "@cass-modules/langparser";
 import * as GoatFill from "@cassidy/polyfills/goatbot";
 import { CassTypes } from "@cass-modules/type-validator";
 import { createCallable } from "@cass-modules/callable-obj";
-import { VNode } from "@cass/define";
 import { G4F } from "g4f";
 import { UNISpectra } from "@cassidy/unispectra";
 import {
@@ -933,6 +936,7 @@ import { loadCommand } from "./handlers/loaders/loadCommand";
 import { loadPlugins } from "./handlers/loaders/loadPlugins";
 import { loadAllCommands } from "./Cassidy.js";
 import { etcTagMappings } from "./handlers/definers/jsx-runtime";
+import { FCALianeAPI, FCAMqtt } from "@cass-modules/fca-types";
 
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {

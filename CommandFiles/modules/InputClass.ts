@@ -43,6 +43,12 @@ export class InputClass extends String implements InputProps {
   public participantIDs?: string[] = null;
   public isWeb: boolean = false;
   public isWss: boolean = false;
+  public logMessageType?: string = null;
+  public logMessageData?: {
+    addedParticipants?: { userFbId: string; fullName: string }[];
+    leftParticipantFbId?: string;
+    [K: string]: any;
+  } = null;
   public arguments: string[] & { original: string[] } = null;
   public args: string[] & { original: string[] } = null;
   public argPipe: string[] = null;
@@ -827,6 +833,32 @@ export class InputClass extends String implements InputProps {
 
   getProperty(key: string | keyof InputClass) {
     return this[key];
+  }
+
+  hasProperty<K extends keyof Omit<InputClass, keyof String>>(key: K): boolean;
+
+  hasProperty(key: string): boolean;
+
+  hasProperty(key: string | keyof InputClass): boolean {
+    return Object.hasOwn(this, key);
+  }
+
+  isProperty<K extends keyof Omit<InputClass, keyof String>>(key: K): boolean;
+
+  isProperty(key: string): boolean;
+
+  isProperty<K extends keyof Omit<InputClass, keyof String>>(
+    key: K,
+    value: InputClass[K]
+  ): boolean;
+
+  isProperty(key: string, value: any): boolean;
+
+  isProperty(...args: [string?, any?]) {
+    if (args.length === 1) {
+      return this.hasProperty(args[0]);
+    }
+    return this[args[0]] === args[1];
   }
 }
 
