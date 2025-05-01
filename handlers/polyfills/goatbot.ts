@@ -84,9 +84,9 @@ export class ReflectiveMap<K extends string | number | symbol, V> {
   }
 }
 
-export async function convertToGoat(
+export function convertToGoat(
   command: Record<string, any>
-): Promise<CassidySpectra.CassidyCommand> {
+): CassidySpectra.CassidyCommand {
   const {
     config = {},
     onStart,
@@ -129,7 +129,7 @@ export async function convertToGoat(
       version: String(version).split(".").length === 3 ? version : "1.0.0",
       author,
       waitingTime: countDown,
-      permissions: role ? Array.from({ length: role }, (_, j) => j) : [0, 1, 2],
+      role,
       usage: normLang(guide),
     },
     langs,
@@ -205,22 +205,20 @@ export class MessageHandler {
 }
 
 export async function createCTX(ctx: CassidySpectra.CommandContext) {
-  const isThreadAdmin = await ctx.input.isThreadAdmin(ctx.input.sid);
-  const isBotAdmin = ctx.input._isAdmin(ctx.input.sid);
   return {
     ...ctx,
     api: ctx.api,
     threadModel: ctx.threadsDB.kv,
     userModel: ctx.usersDB.kv,
-    dashBoardModel: ctx.threadsDB.kv,
-    globalModel: ctx.threadsDB.kv,
+    dashBoardModel: ctx.globalDB.kv,
+    globalModel: ctx.globalDB.kv,
     threadsData: ctx.threadsDB,
     usersData: ctx.usersDB,
     dashBoardData: ctx.threadsDB,
     globalData: ctx.usersDB,
     getText: ctx.getLang,
     args: ctx.args,
-    role: isBotAdmin ? 2 : isThreadAdmin ? 1 : 0,
+    role: ctx.commandRole,
     commandName: ctx.commandName,
     getLang: ctx.getLang,
     message: new MessageHandler(ctx.output, ctx.input),

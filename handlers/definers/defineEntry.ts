@@ -23,6 +23,7 @@ export function defineEntry(
 }
 
 import { ReduxCMDHome } from "@cass-modules/reduxCMDHomeV2";
+import { convertToGoat } from "@cassidy/polyfills/goatbot";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
 
 /**
@@ -107,3 +108,10 @@ export function defineCommand(
 //     return output.reply(`Hello, ${name}!`);
 //   },
 // });
+
+export function registerGoat(
+  module: NodeModule
+): CassidySpectra.CassidyCommand {
+  module.exports = convertToGoat(module.exports);
+  return module.exports;
+}
