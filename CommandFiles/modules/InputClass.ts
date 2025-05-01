@@ -467,7 +467,7 @@ export class InputClass extends String implements InputProps {
       // console.log(Reflect.ownKeys(this.#__context), new Error());
       await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
     }
-    const { threadInfo } = await this.#__threadsDB.getItem(this.threadID);
+    const { threadInfo } = await this.#__threadsDB.getCache(this.threadID);
 
     return Boolean(
       threadInfo && threadInfo.adminIDs.some((i: any) => i.id === uid)
