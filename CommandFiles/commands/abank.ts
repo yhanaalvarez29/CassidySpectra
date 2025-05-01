@@ -469,6 +469,44 @@ export async function entry({
       await saveTrophy(recipient, saveData, recipientID);
       return output.reply(`🏆 **Success**!`);
     },
+    async stalk() {
+      let targetData = userData;
+      const id = input.detectID ?? args[1];
+      let isPeek = false;
+      if (!id) {
+        return output.reply(
+          `${NOTIF}\n${UNIRedux.standardLine}\nPlease provide a user ID, nickname, or reply to a message to stalk a user.`
+        );
+      }
+      if (id) {
+        if (await money.exists(id)) {
+          const da = await money.getItem(id);
+          targetData = da;
+          isPeek = true;
+        } else {
+          const target = await money.queryItem({
+            "value.bankData.nickname": id,
+          });
+          if (target) {
+            targetData = target;
+            isPeek = true;
+          }
+        }
+      }
+      if (id && !isPeek) {
+        return output.reply(
+          `${NOTIF}\n${UNIRedux.standardLine}\nThis user does not have an existing ${ABANK} ® account.`
+        );
+      }
+
+      return output.reply(
+        `🏦 **STALKER** 👀\n${UNIRedux.standardLine}\nUserID: ${
+          targetData.userID
+        }\nNickname: ${formatTrophy(targetData)}\mName: ${
+          targetData?.userMeta?.name ?? targetData.name
+        }\nBalance: ${formatCash(targetData.bankData?.bank)}`
+      );
+    },
   };
 
   const targetHandler =
@@ -481,7 +519,8 @@ export async function entry({
           (["w"].includes(targetArgs) && i === "withdraw") ||
           (["d"].includes(targetArgs) && i === "deposit") ||
           (["t"].includes(targetArgs) && i === "transfer") ||
-          (["rn"].includes(targetArgs) && i === "rename")
+          (["rn"].includes(targetArgs) && i === "rename") ||
+          (["s"].includes(targetArgs) && i === "stalk")
       )
     ];
   if (typeof targetHandler === "function") {
@@ -490,7 +529,7 @@ export async function entry({
     return output.reply(
       `🏦 ${ABANK} ®\n${UNIRedux.standardLine}\n${fonts.bold(
         "Usages"
-      )}:\n➥ \`${prefix}${commandName} register/r <nickname>\` - Create a ${ABANK} ® account.\n➥ \`${prefix}${commandName} check/c\` - Check your ${ABANK} ® balance.\n➥ \`${prefix}${commandName} withdraw/w <amount>\` - Withdraw money from your ${ABANK} ® account.\n➥ \`${prefix}${commandName} deposit/d <amount>\` - Deposit money to your ${ABANK} ® account.\n➥ \`${prefix}${commandName} transfer/t <nickName> <amount>\` - Transfer money to another user.\n➥ \`${prefix}${commandName} rename/rn\` - Rename your ${ABANK} ® nickname.\n➥ \`${prefix}${commandName} <page=1> top <1 to 10>\` - Check the top 10 richest users of ${ABANK} ®.`
+      )}:\n➥ \`${prefix}${commandName} register/r <nickname>\` - Create a ${ABANK} ® account.\n➥ \`${prefix}${commandName} check/c\` - Check your ${ABANK} ® balance.\n➥ \`${prefix}${commandName} withdraw/w <amount>\` - Withdraw money from your ${ABANK} ® account.\n➥ \`${prefix}${commandName} deposit/d <amount>\` - Deposit money to your ${ABANK} ® account.\n➥ \`${prefix}${commandName} transfer/t <nickName> <amount>\` - Transfer money to another user.\n➥ \`${prefix}${commandName} rename/rn\` - Rename your ${ABANK} ® nickname.\n➥ \`${prefix}${commandName} top <page=1>\` - Check the top 10 richest users of ${ABANK} ®.\n➥ \`${prefix}${commandName} stalk <page=1>\` - Check someone's ${ABANK} ® balance.`
     );
   }
 }
