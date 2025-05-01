@@ -142,22 +142,21 @@ export async function entry({
       const id = input.detectID ?? args[1];
       let isPeek = false;
       if (id) {
-        if (await money.exists(args[1])) {
+        if (await money.exists(id)) {
           const da = await money.getItem(id);
           targetData = da;
           isPeek = true;
         } else {
-          const all = await money.getAll();
-          const target = Object.values(all).find(
-            (u) => u.bankData?.nickname === id
-          );
+          const target = await money.queryItem({
+            "value.bankData.nickname": id,
+          });
           if (target) {
             targetData = target;
             isPeek = true;
           }
         }
       }
-      if (args[1] && !isPeek) {
+      if (id && !isPeek) {
         return output.reply(
           `${NOTIF}\n${UNIRedux.standardLine}\nThe user does not have a ${ABANK} ® account with the given nickname.`
         );
@@ -307,28 +306,39 @@ export async function entry({
           )}`
         );
       }
-      if (
-        !recipientNickname ||
-        isNaN(amount) ||
-        amount <= 0 ||
-        amount > bankData.bank
-      ) {
+      if (!recipientNickname) {
         return output.reply(
           `${NOTIF}\n${UNIRedux.standardLine}\nPlease provide a valid recipient's nickname and amount to transfer. Usage: ${prefix}${commandName} transfer <nickname> <amount>`
         );
       }
-      const allUsers = await money.getAll();
-      const recipient = Object.values(allUsers).find(
-        (u) => u.bankData?.nickname === recipientNickname
-      );
-      if (!recipient || recipient?.userID === input.senderID) {
+
+      if (isNaN(amount) || amount <= 0) {
+        return output.reply(
+          `${NOTIF}\n${UNIRedux.standardLine}\nYou cannot transfer an invalid amount.`
+        );
+      }
+      if (amount > bankData.bank) {
+        return output.reply(
+          `${NOTIF}\n${UNIRedux.standardLine}\nYou do not have enough value to transfer.`
+        );
+      }
+
+      const recipient = await money.queryItem({
+        "value.bankData.nickname": recipientNickname,
+      });
+      if (recipient?.bankData?.nickname !== recipientNickname) {
         return output.reply(
           `${NOTIF}\n${UNIRedux.standardLine}\nThe recipient does not have a ${ABANK} ® account with the given nickname.`
         );
       }
-      const recipientID = Object.keys(allUsers).find(
-        (id) => allUsers[id].bankData?.nickname === recipientNickname
-      );
+
+      if (recipient?.userID === input.senderID) {
+        return output.reply(
+          `${NOTIF}\n${UNIRedux.standardLine}\nYou cannot transfer any amount to your own ${ABANK} ® account.`
+        );
+      }
+
+      const recipientID = recipient.userID;
       amount = Math.min(amount, Number.MAX_VALUE - amount);
       if (recipient.bankData.bank >= Number.MAX_VALUE) {
         return output.reply(
@@ -387,9 +397,8 @@ export async function entry({
         cassExpress: cassExpress.raw(),
       });
       return output.reply(
-        `${UNIRedux.standardLine}\n${fonts.serif(
-          "Successfully renamed"
-        )} your ${ABANK} ® account to: ${newNickname}.`
+        `${UNIRedux.standardLine}\n${fonts.bold("Successfully")} renamed
+        your ${ABANK} ® account to: ${newNickname}.`
       );
     },
     async top() {
