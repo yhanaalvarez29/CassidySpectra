@@ -4,8 +4,8 @@
  */
 export const meta = {
   name: "gift",
-  description: "Claim your gift every hours.",
-  version: "1.0.0",
+  description: "Claim your gift every 20 minutes.",
+  version: "2.0.0",
   author: "Liane Cagara",
   category: "Rewards",
   permissions: [0],
@@ -17,6 +17,9 @@ export const meta = {
   cmdType: "cplx_g",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Free Gift 💗",
   titleFont: "bold",
@@ -48,68 +51,82 @@ async function handlePaid({
   if (String(input.words[0]).toLowerCase() !== "buy") {
     return;
   }
-  if (rawInv.length >= invLimit) {
-    return output.reply(getLang("tooManyItems"));
+  let amount = parseInt(input.words[1]);
+  if (isNaN(amount)) {
+    amount = 1;
+  }
+  if (rawInv.length + amount > invLimit) {
+    return output.replyStyled(getLang("tooManyItems"), style);
   }
   const inventory = new Inventory(rawInv);
   const collectibles = new Collectibles(rawCll);
-  if (!collectibles.hasAmount("gems", diaCost)) {
+  if (!collectibles.hasAmount("gems", diaCost * amount)) {
     if (input.isAdmin && input.words[1] === "cheat") {
     } else {
-      return output.reply(getLang("notEnoughGems"));
+      return output.replyStyled(
+        getLang("notEnoughGems", diaCost * amount),
+        style
+      );
     }
   }
-  const giftItem = generateGift();
-  Object.assign(giftItem, {
-    key: "fortuneEnv",
-    name: "Fortune Envelope",
-    icon: "🧧",
-    flavorText:
-      "A token of luck and prosperity, sealed with good wishes and ancient blessings, that might grant you something. It's not guaranteed, but you can use it with the inventory command, if you know how.",
-    type: "treasure",
-    treasureKey: "generic_exclude=>curse",
-    cannotSend: true,
-    cannotToss: true,
-    cannotTrade: true,
-    sellPrice: 20000,
-  });
-  inventory.addOne(giftItem);
-  collectibles.raise("gems", -diaCost);
-  await money.set(input.senderID, {
+  let firstGift = null;
+  for (let index = 0; index < amount; index++) {
+    const giftItem = generateGift();
+    Object.assign(giftItem, {
+      key: "fortuneEnv",
+      name: "Fortune Envelope",
+      icon: "🧧",
+      flavorText:
+        "A token of luck and prosperity, sealed with good wishes and ancient blessings, that might grant you something. It's not guaranteed, but you can use it with the inventory command, if you know how.",
+      type: "treasure",
+      treasureKey: "generic_exclude=>curse",
+      cannotSend: true,
+      cannotToss: true,
+      cannotTrade: true,
+      sellPrice: 20000,
+    });
+    firstGift = giftItem;
+    inventory.addOne(giftItem);
+    collectibles.raise("gems", -diaCost);
+  }
+  await money.setItem(input.senderID, {
     inventory: Array.from(inventory),
     collectibles: Array.from(collectibles),
   });
-  return output.reply(
+  const data = await output.replyStyled(
     getLang(
       "boughtGift",
-      giftItem.icon,
-      giftItem.name,
+      firstGift.icon,
+      firstGift.name,
       String(pCy(collectibles.getAmount("gems"))),
-      String(diaCost)
-    )
+      String(diaCost * amount),
+      amount
+    ),
+    style
   );
+  data.atReply(handlePaid);
 }
 
 export const langs = {
   en: {
     tooManyItems: "❌ You're carrying too many items!",
-    notEnoughGems: "❌ You don't have enough gems to purchase it.",
+    notEnoughGems: "❌ You don't have %1💎 to purchase it.",
     boughtGift:
-      "✅ You bought a **%1 %2**! Check your inventory to see it.\n\n💎 **%3** (-%4)",
+      "✅ You bought a **%1 %2** **(x%5)**! Check your inventory to see it.\n\n💎 **%3** (-%4)",
     alreadyClaimed:
-      "⏳ You've already claimed your free gift. Please wait for %1 hours, %2 minutes, and %3 seconds before claiming again.\nReply **buy** to purchase a fortune **envelope** for %4💎\n\n**💎 %5**",
+      "⏳ You've already claimed your free gift. Please wait for %1 hours, %2 minutes, and %3 seconds before claiming again.\nReply **buy** and <amount> to purchase a fortune **envelope** for %4💎\n\n**💎 %5**",
     claimedGift:
-      "🎁 You've claimed your free gift! Check your inventory and come back later for more.",
+      "🎁 You've claimed your free gift! Check your inventory and come back later for more.\n\nTo open, use **%1bc use gift** without fonts.",
   },
   tl: {
     tooManyItems: "❌ OMG, your items are like, sobrang dami na, girl!",
-    notEnoughGems: "❌ Wala kang enough gems, so sad naman!",
+    notEnoughGems: "❌ Wala kang %1💎, so sad naman!",
     boughtGift:
-      "✅ You bought a **%1 %2**, so fab! Check mo your inventory na.\n\n💎 **%3** (-%4)",
+      "✅ You bought a **%1 %2** **(x%5)**, so fab! Check mo your inventory na.\n\n💎 **%3** (-%4)",
     alreadyClaimed:
-      "⏳ Na-claim mo na your free gift, besh! Wait ka lang ng %1 hours, %2 minutes, and %3 seconds before you can claim ulit.\nJust reply **buy** if you wanna get a fortune **envelope** for %4💎\n\n**💎 %5**",
+      "⏳ Na-claim mo na your free gift, besh! Wait ka lang ng %1 hours, %2 minutes, and %3 seconds before you can claim ulit.\nJust reply **buy** at <amount> if you wanna get a fortune **envelope** for %4💎\n\n**💎 %5**",
     claimedGift:
-      "🎁 Yes, na-claim mo na your free gift! So cute, check your inventory and come back later ha, so fun!",
+      "🎁 Yes, na-claim mo na your free gift! So cute, check your inventory and come back later ha, so fun!\n\nPara maopen, gamitin mo yung **%1bc use gift** na command pero walang font.",
   },
 };
 
@@ -126,6 +143,7 @@ export async function entry({
   generateGift,
   Collectibles,
   langParser,
+  prefix,
 }) {
   const getLang = langParser.createGetLang(langs);
   let {
@@ -169,10 +187,7 @@ export async function entry({
           pCy(collectibles.getAmount("gems"))
         )
       );
-      input.setReply(info.messageID, {
-        callback: handlePaid,
-        key: "gift",
-      });
+      info.atReply(handlePaid);
       return;
     }
   }
@@ -187,6 +202,6 @@ export async function entry({
       lastGiftClaim: currentTime,
     });
 
-    return output.reply(getLang("claimedGift"));
+    return output.reply(getLang("claimedGift", prefix));
   }
 }
