@@ -1,5 +1,6 @@
 // @ts-check
 
+import { parseBet } from "@cass-modules/ArielUtils";
 import { PetPlayer } from "@cass-plugins/pet-fight";
 
 /**
@@ -21,6 +22,9 @@ export const meta = {
   cmdType: "cplx_g",
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Pet Duel ⚔️",
   titleFont: "bold",
@@ -36,8 +40,12 @@ const activeChallenges = new Map();
  */
 export async function entry(ctx) {
   const { args, input, output, money, Inventory } = ctx;
+  const challengerData = await money.getItem(input.senderID);
+
   const challengePetName = args[0];
-  let bet = parseInt(args[1]);
+  const items = Inventory.from(challengerData);
+  let bet = parseBet(args[1], challengerData.money);
+  let hasPass = items.has("highRollPass");
 
   if (!challengePetName || isNaN(bet) || bet <= 0) {
     return output.reply(
@@ -45,14 +53,16 @@ export async function entry(ctx) {
     );
   }
 
-  if (bet > 1000000) {
-    return output.reply("⚠️ | Max bet is 1000000.");
-  }
-
-  const challengerData = await money.getItem(input.senderID);
   if (challengerData.money < bet) {
     return output.reply(`⚠️ | You don't have enough money to place this bet.`);
   }
+
+  if (!hasPass && bet > global.Cassidy.highRoll) {
+    return output.reply(
+      `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
+    );
+  }
+
   const challengerPets = new Inventory(challengerData.petsData);
   const challengePet = challengerPets
     .getAll()

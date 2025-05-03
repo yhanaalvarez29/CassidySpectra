@@ -1799,6 +1799,23 @@ export class Inventory {
   *keys() {
     yield* this.inv.map((item) => item.key);
   }
+
+  /**
+   *
+   * @param {Inventory | CInventoryItem[] | UserData | Record<string, any>} data
+   */
+  static from(data, key = "inventory") {
+    if (Array.isArray(data)) {
+      return new Inventory(data);
+    }
+    if (data instanceof Inventory) {
+      return data.clone();
+    }
+    if (typeof data === "object" && data && key in data) {
+      return new Inventory(data[key]);
+    }
+    return new Inventory([]);
+  }
 }
 export class Collectibles {
   #collectibles;
