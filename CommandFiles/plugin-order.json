@@ -181,7 +181,7 @@
       "orderLast": 0
     },
     {
-      "name": "logsBot",
+      "name": "subscribe",
       "status": "processed",
       "isCircular": false,
       "computedOrder": 100,

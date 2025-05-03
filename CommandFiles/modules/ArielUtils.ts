@@ -158,7 +158,11 @@ export class ArielIcons {
   static info = "ℹ️ ⇒";
 }
 
-export function abbreviateNumber(value, places = 0, isFull = false) {
+export function abbreviateNumber(
+  value: number | string,
+  places: number = 3,
+  isFull: boolean = false
+) {
   let num = Number(value);
   if (isNaN(num)) return "Invalid input";
   if (num < 1000) {

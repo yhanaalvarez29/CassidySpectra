@@ -502,7 +502,7 @@ export async function entry({
       return output.reply(
         `🏦 **STALKER** 👀\n${UNIRedux.standardLine}\nUserID: ${
           targetData.userID
-        }\nNickname: ${formatTrophy(targetData)}\mName: ${
+        }\nNickname: ${formatTrophy(targetData)}\nName: ${
           targetData?.userMeta?.name ?? targetData.name
         }\nBalance: ${formatCash(targetData.bankData?.bank)}`
       );
@@ -529,7 +529,7 @@ export async function entry({
     return output.reply(
       `🏦 ${ABANK} ®\n${UNIRedux.standardLine}\n${fonts.bold(
         "Usages"
-      )}:\n➥ \`${prefix}${commandName} register/r <nickname>\` - Create a ${ABANK} ® account.\n➥ \`${prefix}${commandName} check/c\` - Check your ${ABANK} ® balance.\n➥ \`${prefix}${commandName} withdraw/w <amount>\` - Withdraw money from your ${ABANK} ® account.\n➥ \`${prefix}${commandName} deposit/d <amount>\` - Deposit money to your ${ABANK} ® account.\n➥ \`${prefix}${commandName} transfer/t <nickName> <amount>\` - Transfer money to another user.\n➥ \`${prefix}${commandName} rename/rn\` - Rename your ${ABANK} ® nickname.\n➥ \`${prefix}${commandName} top <page=1>\` - Check the top 10 richest users of ${ABANK} ®.\n➥ \`${prefix}${commandName} stalk <page=1>\` - Check someone's ${ABANK} ® balance.`
+      )}:\n➥ \`${prefix}${commandName} register/r <nickname>\` - Create a ${ABANK} ® account.\n➥ \`${prefix}${commandName} check/c <uid | reply | nickname>\` - Check your ${ABANK} ® balance.\n➥ \`${prefix}${commandName} withdraw/w <amount>\` - Withdraw money from your ${ABANK} ® account.\n➥ \`${prefix}${commandName} deposit/d <amount>\` - Deposit money to your ${ABANK} ® account.\n➥ \`${prefix}${commandName} transfer/t <nickName> <amount>\` - Transfer money to another user.\n➥ \`${prefix}${commandName} rename/rn\` - Rename your ${ABANK} ® nickname.\n➥ \`${prefix}${commandName} top <page=1>\` - Check the top 10 richest users of ${ABANK} ®.\n➥ \`${prefix}${commandName} stalk\` - Check someone's ${ABANK} ® balance.`
     );
   }
 }
