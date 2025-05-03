@@ -66,7 +66,7 @@ export function generateChequeGift(amount = 100, groups = []) {
     sellPrice: Math.floor(amount * 0.75),
     type: "cheque",
     cannotToss: false,
-    prob: Math.min(Math.pow(1 / amount, 0.1), 1),
+    prob: Math.min(Math.pow(1 / amount, 0.3), 1),
     group: groups.length > 0 ? groups : ["generic", "money"],
   };
 }
@@ -423,9 +423,9 @@ export const treasures = [
   generateChequeGift(100_000),
   generateChequeGift(50_000),
   generateChequeGift(69_000),
-  generateChequeGift(10_000),
-  generateChequeGift(10_000),
-  generateChequeGift(10_000),
+  // generateChequeGift(10_000),
+  // generateChequeGift(10_000),
+  // generateChequeGift(10_000),
   generateGift(),
   generateGift(),
   generateGift(),
