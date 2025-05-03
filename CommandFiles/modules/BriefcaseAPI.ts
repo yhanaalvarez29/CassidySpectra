@@ -9,6 +9,7 @@ import {
 } from "./spectralCMDHome";
 import { InventoryItem } from "./cassidyUser";
 import { UNISpectra } from "./unisym";
+import { parseBet } from "./ArielUtils";
 const { parseCurrency: pCy } = global.utils;
 
 export function listItem(
@@ -637,14 +638,9 @@ export class BriefcaseAPI {
           }
           if (item.type === "cheque") {
             let chequeKey = actionArgs[0];
-            if (!String(chequeKey).startsWith("cheque_"))
-              chequeKey = `cheque_${chequeKey}`;
+
             const itemToCash = customInventory.getOne(chequeKey);
-            if (
-              !itemToCash ||
-              !chequeKey.startsWith("cheque_") ||
-              itemToCash?.type !== "cheque"
-            ) {
+            if (!itemToCash || itemToCash?.type !== "cheque") {
               return output.reply(
                 `👤 **${
                   userData.name || "Unregistered"
@@ -652,7 +648,7 @@ export class BriefcaseAPI {
                   `❌ No valid **cheque** with key "**${chequeKey}**" in your ${inventoryIcon}!`
               );
             }
-            const chequeAmount = parseInt(String(itemToCash.chequeAmount));
+            const chequeAmount = parseBet(Number(itemToCash.chequeAmount), 0);
             if (isNaN(chequeAmount) || chequeAmount <= 0) {
               return output.reply(
                 `👤 **${
@@ -663,7 +659,7 @@ export class BriefcaseAPI {
             }
             customInventory.deleteOne(chequeKey);
             userData.money += chequeAmount;
-            await money.set(input.senderID, {
+            await money.setItem(input.senderID, {
               [ikey]: Array.from(customInventory),
               money: userData.money,
             });

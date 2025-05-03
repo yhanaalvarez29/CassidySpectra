@@ -56,6 +56,21 @@ export function generateTrash() {
   };
 }
 
+export function generateChequeGift(amount = 100, groups = []) {
+  return {
+    key: `cheque_${amount}`,
+    icon: "💵",
+    name: `Cheque of $${amount}`,
+    flavorText: `A cheque worth $${amount} that is found from a gift. Cash it to add the amount to your balance.`,
+    chequeAmount: amount,
+    sellPrice: Math.floor(amount * 0.75),
+    type: "cheque",
+    cannotToss: false,
+    prob: Math.min(Math.pow(1 / amount, 0.1), 1),
+    group: groups.length > 0 ? groups : ["generic", "money"],
+  };
+}
+
 export function generateTrashOld() {
   const types = ["dog", "cat", "dragon"];
   const type = types[Math.floor(Math.random() * types.length)];
@@ -351,6 +366,7 @@ export const treasures = [
     picky: true,
     group: ["generic", "petfoods", "tigerhelp"],
   },
+
   {
     name: "Dog",
     key: "dog",
@@ -402,6 +418,18 @@ export const treasures = [
     prob: 1,
   },
   ...rarePets,
+  generateChequeGift(1_000_000),
+  generateChequeGift(10_000_000),
+  generateChequeGift(100_000),
+  generateChequeGift(50_000),
+  generateChequeGift(69_000),
+  generateChequeGift(10_000),
+  generateChequeGift(10_000),
+  generateChequeGift(10_000),
+  generateGift(),
+  generateGift(),
+  generateGift(),
+  generateGift(),
 ];
 
 const treasuresCopy = [...treasures];
@@ -1445,6 +1473,8 @@ ${self.optionText()}
   obj.UTShop = UTShop;
   obj.Inventory = Inventory;
   obj.CassEXP = CassEXP;
+  obj.generateChequeGift = generateChequeGift;
+  obj.generateTrashOld = generateTrashOld;
   obj.next();
 }
 

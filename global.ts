@@ -5,6 +5,8 @@ import type {
   generateGift,
   generateTrash,
   treasureInv,
+  generateChequeGift,
+  generateTrashOld,
 } from "./CommandFiles/plugins/ut-shop.js";
 
 // import type InputX from "input-cassidy";
@@ -478,6 +480,16 @@ declare global {
      * Generates a gift item.
      */
     generateGift?: typeof generateGift;
+
+    /**
+     * Generates a cheque gift item.
+     */
+    generateChequeGift?: typeof generateChequeGift;
+
+    /**
+     * Generates an older trash item.
+     */
+    generateTrashOld?: typeof generateTrashOld;
 
     /**
      * Generates a trash item.

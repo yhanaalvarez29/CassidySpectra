@@ -1,5 +1,6 @@
 // @ts-check
 
+import { parseBet } from "@cass-modules/ArielUtils";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 
 /**
@@ -9,7 +10,7 @@ export const meta = {
   name: "cheque",
   description: "Manage your cheques and cash them for money.",
   author: "Liane Cagara",
-  version: "1.0.7",
+  version: "1.0.8",
   usage: "{prefix}cheque <action> [amount]",
   category: "Finance",
   permissions: [0],
@@ -38,14 +39,14 @@ const home = new ReduxCMDHome(
       aliases: ["-c"],
       args: ["<amount>"],
       description: "Create a cheque of the specified amount.",
-      async handler({ input, output, money, args, Inventory,  }) {
+      async handler({ input, output, money, args, Inventory }) {
         const userData = await money.get(input.senderID);
         let userInventory = new Inventory(userData.inventory);
         userData.shadowPower ??= 0;
 
         let [...actionArgs] = args;
 
-        let amount = parseInt(actionArgs[0]);
+        let amount = parseBet(actionArgs[0], userData.money);
         let shadowUsed = false;
         if (!userInventory.has("shadowCoin") && userData.shadowPower <= 0) {
           return output.reply(
@@ -90,7 +91,7 @@ const home = new ReduxCMDHome(
         userData.money -= amount;
         userData.shadowPower -= 1;
 
-        await money.set(input.senderID, {
+        await money.setItem(input.senderID, {
           inventory: Array.from(userInventory),
           money: userData.money,
           shadowPower: userData.shadowPower,
@@ -117,7 +118,7 @@ ${
       aliases: ["-ca"],
       description:
         " Cash a cheque using the specified key and add it to your balance.",
-      async handler({ input, output, money, args, Inventory,  }) {
+      async handler({ input, output, money, args, Inventory }) {
         const userData = await money.get(input.senderID);
         let userInventory = new Inventory(userData.inventory);
         userData.shadowPower ??= 0;
@@ -139,7 +140,7 @@ ${
           );
         }
 
-        const chequeAmount = parseInt(String(itemToCash.chequeAmount));
+        const chequeAmount = parseBet(Number(itemToCash.chequeAmount), 0);
 
         if (isNaN(chequeAmount) || chequeAmount <= 0) {
           return output.reply(`❌ The cheque amount is invalid.`);
