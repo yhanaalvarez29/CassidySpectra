@@ -113,7 +113,10 @@ export default class UserStatsManager {
   /**
    * Updates the cache, self explanatory.
    */
-  updateCache(key: string, value: any) {
+  updateCache(key: string, value: UserData) {
+    if (typeof value !== "object" || !value) {
+      return console.log(`Invalid: ${key} => ${value}`, new Error());
+    }
     this.cache[key] = value;
   }
 
@@ -603,7 +606,7 @@ export default class UserStatsManager {
     if (this.isMongo) {
       const users = await this.getCaches(...Object.keys(updatedUsers));
 
-      const updatedData = Object.fromEntries(
+      const updatedData: Record<string, UserData> = Object.fromEntries(
         Object.entries(updatedUsers).map(([key, updatedProperties]) => {
           const updatedUser = {
             ...(users[key] || this.defaults),
