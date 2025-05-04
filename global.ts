@@ -61,6 +61,26 @@ declare global {
 
   interface CommandContextOG {
     /**
+     * Syntactical Sugar for FS
+     */
+    Files: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/File").Files;
+    /**
+     * NeaxScript
+     */
+    NeaxScript: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/NeaxScript").NeaxScript;
+    /**
+     * Sets of UNICodes
+     */
+    UNISpectra: typeof UNISpectra;
+    /**
+     * Imported from unisym.
+     */
+    UNIUtils: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/unisym");
+    /**
+     * Useful tools maybe.
+     */
+    SmartSpectra: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/SmartSpectra");
+    /**
      * Manages user statistics and data.
      */
     money: Cass.UserStatsManager;
