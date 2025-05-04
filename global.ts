@@ -17,6 +17,7 @@ import type { OutputProps, StrictOutputForm } from "output-cassidy";
 import { CassEXP } from "./CommandFiles/modules/cassEXP.js";
 import type { GameSimulator } from "./CommandFiles/types/gamesimu.d.ts";
 import GlobalUtilsX from "./CommandFiles/types/utils-type";
+import type * as UNIUtils from "@cass-modules/unisym";
 
 declare global {
   var package: typeof import("./package.json");
@@ -63,11 +64,11 @@ declare global {
     /**
      * Syntactical Sugar for FS
      */
-    Files: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/File").Files;
+    Files: typeof Files;
     /**
      * NeaxScript
      */
-    NeaxScript: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/NeaxScript").NeaxScript;
+    NeaxScript: typeof NeaxScript;
     /**
      * Sets of UNICodes
      */
@@ -75,11 +76,11 @@ declare global {
     /**
      * Imported from unisym.
      */
-    UNIUtils: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/unisym");
+    UNIUtils: typeof UNIUtils;
     /**
      * Useful tools maybe.
      */
-    SmartSpectra: typeof import("c:/Users/UserClient/Desktop/Programming/CassidySpectra/CommandFiles/modules/SmartSpectra");
+    SmartSpectra: typeof SmartSpectra;
     /**
      * Manages user statistics and data.
      */
@@ -969,6 +970,9 @@ import { loadPlugins } from "./handlers/loaders/loadPlugins";
 import { loadAllCommands } from "./Cassidy.js";
 import { etcTagMappings } from "./handlers/definers/jsx-runtime";
 import { FCALianeAPI, FCAMqtt } from "@cass-modules/fca-types";
+import { Files } from "@cass-modules/File";
+import { NeaxScript } from "@cass-modules/NeaxScript";
+import type * as SmartSpectra from "@cass-modules/SmartSpectra";
 
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {
