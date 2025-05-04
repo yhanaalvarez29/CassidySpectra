@@ -59,7 +59,8 @@
       "@cassidy/polyfills/*": ["./handlers/polyfills/*"],
       "cassidy-userData": ["./CommandFiles/modules/cassidyUser.d.ts"],
       "neax-script": ["./CommandFiles/modules/NeaxScript"],
-      "@cassidy/jsx": ["./handlers/definers/jsx-runtime"]
+      "@cassidy/jsx": ["./handlers/definers/jsx-runtime"],
+      "@root/*": ["./*"]
     }
   },
   "exclude": ["node_modules", "public"],
