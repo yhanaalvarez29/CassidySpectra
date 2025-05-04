@@ -246,6 +246,8 @@ export async function middleware({ allPlugins }) {
   console.log(handleStat);
   global.handleStat = handleStat;
   await handleStat.connect();
+  await threadsDB.connect();
+  await globalDB.connect();
   sortPlugin(allPlugins);
   global.Cassidy.databases = {
     usersDB: handleStat,

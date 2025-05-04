@@ -123,19 +123,16 @@ export default class UserStatsManager {
   process(data: UserData, userID: string | number) {
     data ??= this.defaults;
     data.money ??= 0;
-    data.money = data.money <= 0 ? 0 : parseFloat(String(data.money));
-
-    // LMAO
-    // if (data.money > Number.MAX_SAFE_INTEGER) {
-    //   data.money = Number.MAX_SAFE_INTEGER;
-    // }
+    data.money = data.money <= 0 || isNaN(data.money) ? 0 : Number(data.money);
 
     if (data.money > Number.MAX_VALUE) {
       data.money = Number.MAX_VALUE;
     }
     data.battlePoints ??= 0;
     data.battlePoints =
-      data.battlePoints <= 0 ? 0 : parseFloat(String(data.battlePoints));
+      data.battlePoints <= 0 || isNaN(data.battlePoints)
+        ? 0
+        : Number(data.battlePoints);
     data.exp ??= 0;
     data.inventory ??= [];
     if (isNaN(data.exp)) {
@@ -173,6 +170,33 @@ export default class UserStatsManager {
     }
 
     return data;
+  }
+
+  _extractProperty<K extends keyof UserData>(
+    data: UserData,
+    property: K
+  ): UserData[K];
+
+  _extractProperty<K extends keyof UserData>(
+    data: UserData,
+    property: `${K}.${any}`
+  ): UserData[K][any];
+
+  _extractProperty(data: UserData, property: string): any;
+
+  _extractProperty(data: UserData, property: string = "") {
+    property = `${property}`;
+    const props = property.split(".");
+    let value: UserData | keyof UserData | any = data;
+
+    for (const prop of props) {
+      if (!prop) {
+        continue;
+      }
+      value = value?.[prop] ?? null;
+    }
+
+    return value;
   }
 
   normalizeName(name: string) {
@@ -326,7 +350,10 @@ export default class UserStatsManager {
   /**
    * @deprecated - use getItem or getItems
    */
-  async get(key: string): Promise<UserData> {
+  async get(
+    key: string,
+    prop: Parameters<UserStatsManager["_extractProperty"]>[1] = ""
+  ): Promise<UserData> {
     if (this.isMongo) {
       const data = this.process(
         (await this.#mongo.get(key)) || {
@@ -336,7 +363,7 @@ export default class UserStatsManager {
         key
       );
       this.updateCache(key, data);
-      return data;
+      return this._extractProperty(data, prop);
     } else {
       const data = this.readMoneyFile();
       const p = this.process(
@@ -344,17 +371,20 @@ export default class UserStatsManager {
         key
       );
       this.updateCache(key, p);
-      return p;
+      return this._extractProperty(p, prop);
     }
   }
 
   /**
    * Gets a single user data but does not change the fact that it uses the bulk one.
    */
-  async getItem(key: string) {
+  async getItem(
+    key: string,
+    prop: Parameters<UserStatsManager["_extractProperty"]>[1] = ""
+  ) {
     const users = await this.getItems(key);
 
-    return users[key];
+    return this._extractProperty(users[key], prop);
   }
 
   async getIDs() {
