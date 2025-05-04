@@ -409,3 +409,8 @@ export function abbreviateNumber(
 
   return `${formattedValue}${isFull ? ` ${suffix}` : suffix}`;
 }
+
+export const formatCash = (number: number = 0, emoji = "💵", bold = false) =>
+  `${bold ? "**" : ""}${
+    number > 999 ? `($${abbreviateNumber(number)}) ` : ""
+  }$${number.toLocaleString()}${emoji}${bold ? "**" : ""}`;

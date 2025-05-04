@@ -155,6 +155,10 @@ type UserData = {
   };
   roles?: Array<[string, InputRoles]>;
   groles?: Array<[string, InputRoles]>;
+  bankData?: {
+    nickname?: string;
+    bank: number;
+  };
 };
 
 type NullableUserData = {

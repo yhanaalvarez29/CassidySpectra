@@ -18,8 +18,6 @@ export const meta: CassidySpectra.CommandMeta = {
   cmdType: "cplx_g",
 };
 
-const { parseCurrency: pCy } = global.utils;
-
 export const style: CassidySpectra.CommandStyle = {
   title: "Balance 💵",
   titleFont: "bold",
@@ -116,16 +114,12 @@ const configs: Config[] = [
       const outputText = [
         `👤 **${name}**`,
         ``,
-        `💰 Coin(s): $**${utils.parseCurrency(
-          Math.floor(playerMoney.money)
-        )}**💵`,
-        `💷 Point(s): $${utils.parseCurrency(
-          Math.floor(playerMoney.battlePoints || 0)
-        )}💷`,
-        `🏦 Bank(s): $${utils.parseCurrency(otherMoney.bank || 0)}💵`,
-        `🎒 Cheque(s): $${utils.parseCurrency(otherMoney.cheques || 0)}💵`,
-        `🚗 Car(s): $${utils.parseCurrency(otherMoney.carsAssets || 0)}💵`,
-        `🐈 Pet(s): $${utils.parseCurrency(otherMoney.petsAssets || 0)}💵`,
+        `💰 Coin(s): ${formatCash(playerMoney.money, "💵", true)}`,
+        `💷 Point(s): ${formatCash(playerMoney.battlePoints, "💷")}`,
+        `🏦 Bank(s): ${formatCash(otherMoney.bank)}`,
+        `🎒 Cheque(s): ${formatCash(otherMoney.cheques)}`,
+        `🚗 Car(s): ${formatCash(otherMoney.carsAssets)}`,
+        `🐈 Pet(s): ${formatCash(otherMoney.petsAssets)}`,
         (items ? `${items}` : "") + warn,
         `${UNIRedux.standardLine}`,
         `${UNIRedux.arrow} ***All Options***`,
@@ -144,7 +138,7 @@ const configs: Config[] = [
     aliases: ["-t", "leaders"],
     icon: "🏆",
     async handler({ money, input, output, Collectibles }) {
-      const users = await money.getAll();
+      const users = await money.getAllCache();
       const topUsers = sortUsers(users, 10, money);
       const participantIDs = Array.isArray(input.participantIDs)
         ? input.participantIDs
@@ -179,17 +173,20 @@ const configs: Config[] = [
               ? `0${index}. **${user.name}**`
               : `${index}. **${user.name}**`
           }`,
-          `💰 Total Coins(s): **$${pCy(otherMoney.total || 0)}💵**`,
-          `💵 Local(s): $${pCy(user.money || 0)}💵`,
-          `💷 Point(s): $${pCy(user.battlePoints || 0)}💷`,
-          `🏦 Bank(s): $${pCy(otherMoney.bank || 0)}💵`,
-          `🎒 Cheque(s): $${pCy(otherMoney.cheques || 0)}💵`,
-          `🚗 Car(s): $${pCy(otherMoney.carsAssets || 0)}💵`,
-          `🐈 Pet(s): $${pCy(otherMoney.petsAssets || 0)}💵`,
+          `💰 Total Coins(s): ${formatCash(otherMoney.total, "💵", true)}`,
+          `💵 Local(s): ${formatCash(user.money)}`,
+          `💷 Point(s): ${formatCash(user.battlePoints, "💷")}`,
+          `🏦 Bank(s): ${formatCash(otherMoney.bank)}`,
+          `🎒 Cheque(s): ${formatCash(otherMoney.cheques)}`,
+          `🚗 Car(s): ${formatCash(otherMoney.carsAssets)}`,
+          `🐈 Pet(s): ${formatCash(otherMoney.petsAssets)}`,
           items ? items : "",
           lastMoney
-            ? `📉 Gap(s): $${pCy(Math.abs(lastMoney - (user.money || 0)))}`
+            ? `📉 Gap(s): $${formatCash(
+                Math.abs(lastMoney - (user.money || 0))
+              )}`
             : "",
+
           participantIDs.includes(key) ? `✅ In Group` : "",
           `\n`
         );
@@ -255,6 +252,7 @@ const home = new SpectralCMDHome(
 
 import { defineEntry } from "@cass/define";
 import { FontSystem } from "cassidy-styler";
+import { formatCash } from "@cass-modules/ArielUtils";
 
 export const entry = defineEntry(async (ctx) => {
   return home.runInContext(ctx);

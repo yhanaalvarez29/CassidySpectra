@@ -701,7 +701,10 @@ export default class UserStatsManager {
   /**
    * Gets the user data of all users as record. Use with caution, too large data and bandwidth, you can use getUsers if you only need some users.
    */
-  async getAll(): Promise<Record<string, UserData>> {
+  async getAll(cached = true): Promise<Record<string, UserData>> {
+    if (cached) {
+      return this.getAllCache();
+    }
     const allData = await this.getAllOld();
 
     return Object.fromEntries(
