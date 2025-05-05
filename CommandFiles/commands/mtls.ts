@@ -659,5 +659,7 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
   const { name = "???" } = await usersDB.getCache(mint.author);
   return `${mint.icon} **${mint.name}** [${
     mint.id
-  }]\n**By ${name}**\n**Since**: ${formatTime(Date.now() - mint.creationDate)}`;
+  }]\n**By ${name}**\n**Since**: ${formatTime(
+    Date.now() - mint.creationDate
+  )}🪙 **Market Value**: ${formatCash(mint.asset / mint.copies, true)}`;
 }
