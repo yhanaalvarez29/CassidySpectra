@@ -440,9 +440,9 @@ const configs: Config[] = [
         return output.reply(`📋 | Please provide a valid **token ID**.`);
       }
 
-      if (isInvalidAm(amount, userData.money)) {
+      if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**. (${formatCash(
             userData.money,
             true
           )})`
@@ -564,9 +564,9 @@ const configs: Config[] = [
         return output.reply(`📋 | Please provide a valid **token ID**.`);
       }
 
-      if (isInvalidAm(amount, userData.money)) {
+      if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**. (${formatCash(
             userData.money,
             true
           )})`
