@@ -531,18 +531,101 @@ const configs: Config[] = [
       await usersDB.setItem(input.sid, { money: newBal });
 
       return output.reply(
-        `💰 | Successfully added **${formatCash(
+        `💰 | Successfully added ${formatCash(
           amount,
           true
-        )}** as backing asset to **${mint.name}** [${
+        )} as backing asset to **${mint.name}** [${
           mint.id
-        }].\nNew asset value: **${formatCash(
+        }].\nNew asset value: ${formatCash(
           newAsset,
           true
-        )}**\nNew balance: **${formatCash(
-          newBal,
-          true
-        )}**\n\n${await formatMint(updatedMint, usersDB)}`
+        )}\nNew balance: ${formatCash(newBal, true)}\n\n${await formatMint(
+          updatedMint,
+          usersDB
+        )}`
+      );
+    },
+  },
+  {
+    key: "surrender",
+    description:
+      "Surrender copies of a token, reducing its copies but keeping at least 1.",
+    args: ["<tokenid>", "<amount>"],
+    aliases: ["-sur"],
+    icon: "🗑️",
+    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const userData = await usersDB.getItem(input.sid);
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const me: MintUser = mints[input.sid] ?? [];
+      const tokenId = spectralArgs[0] ?? "";
+      const amount = parseBet(spectralArgs[1], userData.money);
+
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      if (isInvalidAm(amount, userData.money)) {
+        return output.reply(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+            userData.money,
+            true
+          )})`
+        );
+      }
+
+      const mint = me.find((i) => i.id === tokenId);
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      const cll = new Collectibles(userData.collectibles ?? []);
+      const KEY = `mtls_${tokenId}`;
+      if (!cll.has(KEY)) {
+        return output.reply(
+          `📋 | You do not have any collectibles for **${mint.name}** [${tokenId}].`
+        );
+      }
+
+      if (!cll.hasAmount(KEY, amount)) {
+        return output.reply(
+          `📋 | You do not have enough collectibles for **${
+            mint.name
+          }** [${tokenId}]. You only had ${cll.getAmount(KEY)} of them.`
+        );
+      }
+
+      const currentCopies = mint.copies || 1;
+      const newCopies = Math.max(1, currentCopies - amount);
+      const actualSurrendered = currentCopies - newCopies;
+
+      if (actualSurrendered <= 0) {
+        return output.reply(
+          `📋 | Cannot surrender **${amount}** copies. At least **1** copy must remain (current: ${currentCopies}).`
+        );
+      }
+
+      const updatedMint: MintItem = { ...mint, copies: newCopies };
+      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
+      mints[input.sid] = userMints;
+
+      cll.raise(KEY, -actualSurrendered);
+
+      await globalDB.setItem(MINT_KEY(), { mints });
+      await usersDB.setItem(input.sid, {
+        collectibles: Array.from(cll),
+      });
+
+      return output.reply(
+        `🗑️ | Successfully surrendered **${actualSurrendered}** copies of **${
+          mint.name
+        }** [${
+          mint.id
+        }].\nRemaining copies: **${newCopies}**\n\n${await formatMint(
+          updatedMint,
+          usersDB
+        )}`
       );
     },
   },
@@ -664,5 +747,5 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
   )}\n🪙 **Market Value**: ${formatCash(
     mint.asset / (mint.copies || 1) || 0,
     true
-  )}`;
+  )} each.`;
 }
