@@ -410,7 +410,24 @@ export function abbreviateNumber(
   return `${formattedValue}${isFull ? ` ${suffix}` : suffix}`;
 }
 
-export const formatCash = (number: number = 0, emoji = "💵", bold = false) =>
-  `${bold ? "**" : ""}${
+export function formatCash(
+  number: number,
+  emoji?: string,
+  bold?: boolean
+): string;
+
+export function formatCash(number: number, bold?: boolean): string;
+
+export function formatCash(
+  number: number = 0,
+  emoji: string | boolean = "💵",
+  bold = false
+) {
+  if (typeof emoji === "boolean") {
+    bold = emoji;
+    emoji = "💵";
+  }
+  return `${bold ? "**" : ""}${
     number > 999 ? `($${abbreviateNumber(number)}) ` : ""
-  }$${number.toLocaleString()}${emoji}${bold ? "**" : ""}`;
+  }$${number.toLocaleString()}${emoji || "💵"}${bold ? "**" : ""}`;
+}

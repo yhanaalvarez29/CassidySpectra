@@ -384,7 +384,7 @@ export default class UserStatsManager {
   async getItem(
     key: string,
     prop: Parameters<UserStatsManager["_extractProperty"]>[1] = ""
-  ) {
+  ): Promise<UserData> {
     const users = await this.getItems(key);
 
     return this._extractProperty(users[key], prop);
@@ -478,7 +478,6 @@ export default class UserStatsManager {
     const mapped = propertyNames
       .map((prop) => [prop, processedData[prop]])
       .filter(([_, value]) => value !== undefined);
-    mapped.forEach((i) => this.updateCache(i[0], i[1]));
     return Object.fromEntries(mapped);
   }
 
