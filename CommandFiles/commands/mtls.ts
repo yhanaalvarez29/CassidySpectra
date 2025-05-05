@@ -335,7 +335,7 @@ const configs: Config[] = [
         name,
         author: input.sid,
         creationDate: Date.now(),
-        copies: 0,
+        copies: 1,
       };
 
       const exists = findExistingMint(mint, mints);
@@ -456,7 +456,7 @@ const configs: Config[] = [
         );
       }
 
-      const newCopies = (mint.copies ?? 0) + amount;
+      const newCopies = (mint.copies || 1) + amount;
       const updatedMint: MintItem = { ...mint, copies: newCopies };
 
       const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
@@ -661,5 +661,8 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
     mint.id
   }]\n**By ${name}**\n**Since**: ${formatTime(
     Date.now() - mint.creationDate
-  )}\n🪙 **Market Value**: ${formatCash(mint.asset / mint.copies || 0, true)}`;
+  )}\n🪙 **Market Value**: ${formatCash(
+    mint.asset / (mint.copies || 1) || 0,
+    true
+  )}`;
 }
