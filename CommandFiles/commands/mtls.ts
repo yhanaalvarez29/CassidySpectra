@@ -1,6 +1,6 @@
 import { SpectralCMDHome, Config } from "@cassidy/spectral-home";
 import { defineEntry } from "@cass/define";
-import { UNISpectra } from "@cassidy/unispectra";
+import { formatTime, UNISpectra } from "@cassidy/unispectra";
 import { formatCash, parseBet } from "@cass-modules/ArielUtils";
 import { FontSystem } from "cassidy-styler";
 
@@ -261,15 +261,13 @@ const configs: Config[] = [
     },
   },
   {
-    key: "send",
-    description: "Transfer a balance to another user for FREE!",
+    key: "stalk",
+    description: "Stalk a specific user using a name or UID.",
     args: ["<name|uid> <amount>"],
-    aliases: ["-tr", "-se", "transfer"],
+    aliases: ["-stk"],
     icon: "📤",
-    async handler({ usersDB, input, output, Inventory }, { spectralArgs }) {
-      const userData = await usersDB.getItem(input.sid);
+    async handler({ usersDB, input, output }, { spectralArgs }) {
       const targTest = spectralArgs[0];
-      const inventory = new Inventory(userData.inventory);
 
       let recipient: UserData;
 
@@ -286,63 +284,28 @@ const configs: Config[] = [
         (recipient?.name !== targTest && recipient?.userID !== targTest)
       ) {
         return output.reply(
-          `❕ | Recipient **not found**. Ensure you are providing the correct user's **name** or user's **ID** as a first argument.`
+          `❕ | Target **not found**. Ensure you are providing the correct user's **name** or user's **ID** as a first argument.`
         );
       }
 
-      if (recipient.userID === input.sid) {
-        return output.reply(`❕ | You cannot send money **to yourself**!`);
-      }
-
-      const amount = parseBet(spectralArgs[1], userData.money);
-
-      if (isInvalidAm(amount, userData.money)) {
-        return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
-            userData.money,
-            true
-          )})`
-        );
-      }
-
-      const newBal = Number(userData.money - amount);
-      const reciBal = Number(recipient.money + amount);
-
-      if (
-        reciBal < recipient.money ||
-        isNaN(reciBal) ||
-        isNaN(newBal) ||
-        isNaN(amount)
-      ) {
-        console.log({
-          reciBal,
-          recipientBal: recipient.money,
-          bal: userData.money,
-          newBal,
-          amount,
-        });
-        return output.wentWrong();
-      }
-
-      await usersDB.setItem(input.sid, {
-        money: newBal,
+      const texts = [
+        `👤 | **Name**: ${recipient.name}`,
+        `🪙 | **Balance**: ${formatCash(recipient.money, true)}`,
+        `🎲 | **User ID**: ${recipient.userID}`,
+        `📤 | **Lent Amount**: ${formatCash(recipient.lendAmount ?? 0, true)}`,
+        `⏳ | **Lent Since**: ${
+          recipient.lendTimestamp
+            ? `${formatTime(Date.now() - recipient.lendTimestamp)}`
+            : "No active lend."
+        }`,
+      ];
+      return output.replyStyled(texts.join("\n"), {
+        ...style,
+        content: {
+          text_font: "none",
+          line_bottom: "none",
+        },
       });
-      await usersDB.setItem(recipient.userID, {
-        money: reciBal,
-      });
-
-      return output.reply(
-        `💥 | Successfully used **0** 🌑 to send ${formatCash(
-          amount,
-          true
-        )}$ to **${
-          recipient.name ?? "Unregistered"
-        }**\n\nRemaining **Shadow Coins**: ${formatCash(
-          inventory.getAmount("shadowCoin"),
-          "🌑",
-          true
-        )}`
-      );
     },
   },
 ];
@@ -357,10 +320,14 @@ const home = new SpectralCMDHome(
         `💌 | Hello **${cache.name}**! Welcome to ${FontSystem.applyFonts(
           "MTLS",
           "double_struck"
-        )} (Minting Token and Lending Service). Please use one of our **services**:\n\n${itemList}\n\n📤 **Lent**: ${formatCash(
+        )} (Minting Token and Lending Service). Please use one of our **services**:\n\n${itemList}\n\n📤 | **Lent Amount**: ${formatCash(
           cache.lendAmount ?? 0,
           true
-        )}`
+        )}\n⏳ | **Lent Since**: ${
+          cache.lendTimestamp
+            ? `${formatTime(Date.now() - cache.lendTimestamp)}`
+            : "No active lend."
+        }`
       );
     },
   },
