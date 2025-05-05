@@ -661,5 +661,5 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
     mint.id
   }]\n**By ${name}**\n**Since**: ${formatTime(
     Date.now() - mint.creationDate
-  )}🪙 **Market Value**: ${formatCash(mint.asset / mint.copies, true)}`;
+  )}\n🪙 **Market Value**: ${formatCash(mint.asset / mint.copies || 0, true)}`;
 }
