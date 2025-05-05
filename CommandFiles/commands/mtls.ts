@@ -4,6 +4,7 @@ import { formatTime, UNISpectra } from "@cassidy/unispectra";
 import { formatCash, parseBet } from "@cass-modules/ArielUtils";
 import { FontSystem } from "cassidy-styler";
 import { UserStatsManager } from "@cass-modules/cassidyUser";
+import { Collectibles } from "@cassidy/ut-shop";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "mtls",
@@ -334,6 +335,7 @@ const configs: Config[] = [
         name,
         author: input.sid,
         creationDate: Date.now(),
+        copies: 0,
       };
 
       const exists = findExistingMint(mint, mints);
@@ -371,7 +373,7 @@ const configs: Config[] = [
     description: "Lists all of your tokens/currency created",
     aliases: ["-tks"],
     icon: "📃",
-    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+    async handler({ usersDB, output, input, globalDB }, {}) {
       const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
       const me: MintUser = mints[input.sid] ?? [];
       const mapped = (
@@ -424,14 +426,64 @@ const configs: Config[] = [
     key: "mint",
     description:
       "Mints new copies of token (without backing asset) based on token id.",
-    args: ["<tokenid>"],
+    args: ["<tokenid>", "<amount>"],
     aliases: ["-mt"],
     icon: "🪙",
-    async handler(
-      { usersDB, output, input, Collectibles, Inventory },
-      { spectralArgs }
-    ) {
-      return output.reply("COMING SOON!");
+    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const userData = await usersDB.getItem(input.sid);
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const me: MintUser = mints[input.sid] ?? [];
+      const tokenId = spectralArgs[0] ?? "";
+      const amount = parseBet(spectralArgs[1], userData.money);
+
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      if (isInvalidAm(amount, userData.money)) {
+        return output.reply(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+            userData.money,
+            true
+          )})`
+        );
+      }
+
+      const mint = me.find((i) => i.id === tokenId);
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      const newCopies = (mint.copies ?? 0) + amount;
+      const updatedMint: MintItem = { ...mint, copies: newCopies };
+
+      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
+      mints[input.sid] = userMints;
+
+      await globalDB.setItem(MINT_KEY(), { mints });
+      const converted = convertMintToCll(updatedMint);
+
+      const cll = new Collectibles(userData.collectibles ?? []);
+      const KEY = converted.key;
+      if (!cll.has(KEY)) {
+        cll.register(KEY, converted);
+      }
+      cll.raise(KEY, amount);
+
+      await usersDB.setItem(input.sid, {
+        collectibles: Array.from(cll),
+      });
+
+      return output.reply(
+        `🪙 | Successfully minted **${amount}** copies of **${mint.name}** [${
+          mint.id
+        }].\nTotal copies: **${newCopies}**\n\n${await formatMint(
+          updatedMint,
+          usersDB
+        )}`
+      );
     },
   },
   {
@@ -441,11 +493,57 @@ const configs: Config[] = [
     args: ["<tokenid>", "<amount>"],
     aliases: ["-ast"],
     icon: "💰",
-    async handler(
-      { usersDB, output, input, Collectibles, Inventory },
-      { spectralArgs }
-    ) {
-      return output.reply("COMING SOON!");
+    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const userData = await usersDB.getItem(input.sid);
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const me: MintUser = mints[input.sid] ?? [];
+      const tokenId = spectralArgs[0] ?? "";
+      const amount = parseBet(spectralArgs[1], userData.money);
+
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      if (isInvalidAm(amount, userData.money)) {
+        return output.reply(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+            userData.money,
+            true
+          )})`
+        );
+      }
+
+      const mint = me.find((i) => i.id === tokenId);
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      const newAsset = (mint.asset ?? 0) + amount;
+      const newBal = userData.money - amount;
+      const updatedMint: MintItem = { ...mint, asset: newAsset };
+
+      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
+      mints[input.sid] = userMints;
+
+      await globalDB.setItem(MINT_KEY(), { mints });
+      await usersDB.setItem(input.sid, { money: newBal });
+
+      return output.reply(
+        `💰 | Successfully added **${formatCash(
+          amount,
+          true
+        )}** as backing asset to **${mint.name}** [${
+          mint.id
+        }].\nNew asset value: **${formatCash(
+          newAsset,
+          true
+        )}**\nNew balance: **${formatCash(
+          newBal,
+          true
+        )}**\n\n${await formatMint(updatedMint, usersDB)}`
+      );
     },
   },
 ];
@@ -495,6 +593,7 @@ export interface MintItem {
   readonly id: string;
   readonly icon: string;
   asset: number;
+  copies: number;
   readonly author: string;
   readonly creationDate: number;
 }
@@ -512,19 +611,12 @@ export function convertMintToCll(mint: MintItem) {
     type: "MTLS",
     author: mint.author,
     creationDate: mint.creationDate ?? Date.now(),
+    copies: mint.copies,
   };
 }
 
 export function convertCllToMint(
-  cll: {
-    key: string;
-    name: string;
-    flavorText: string;
-    icon: string;
-    type: string;
-    author: string;
-    creationDate: number;
-  },
+  cll: ReturnType<typeof convertMintToCll>,
   asset: number
 ): MintItem {
   const id = cll.key.replace("mtls_", "");
@@ -536,6 +628,7 @@ export function convertCllToMint(
     asset,
     author: cll.author,
     creationDate: cll.creationDate,
+    copies: cll.copies,
   };
 }
 
