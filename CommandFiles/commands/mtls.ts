@@ -629,6 +629,249 @@ const configs: Config[] = [
       );
     },
   },
+  {
+    key: "topasset",
+    description:
+      "Lists the top 10 tokens by copies and asset value across all users.",
+    aliases: ["-top"],
+    icon: "🏆",
+    async handler({ output, globalDB, usersDB }, {}) {
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const allMints: { author: string; mintItem: MintItem }[] = Object.entries(
+        mints
+      ).flatMap(([author, mintUser]) =>
+        mintUser.map((mintItem) => ({ author, mintItem }))
+      );
+
+      if (allMints.length === 0) {
+        return output.reply(`📋 | No mints found across all users.`);
+      }
+
+      const sortedByCopies = allMints
+        .sort((a, b) => (b.mintItem.copies || 1) - (a.mintItem.copies || 1))
+        .slice(0, 10);
+      const sortedByAsset = allMints
+        .sort((a, b) => (b.mintItem.asset || 0) - (a.mintItem.asset || 0))
+        .slice(0, 10);
+
+      const formatTopList = async (
+        list: { author: string; mintItem: MintItem }[],
+        key: string
+      ) => {
+        return (
+          await Promise.all(
+            list.map(async (item, index) => {
+              const mint = item.mintItem;
+              return `${index + 1}. ${await formatMint(
+                mint,
+                usersDB
+              )}\n   **${key}**: ${
+                key === "Copies" ? mint.copies : formatCash(mint.asset, true)
+              }`;
+            })
+          )
+        ).join("\n");
+      };
+
+      const topCopiesText = await formatTopList(sortedByCopies, "Copies");
+      const topAssetText = await formatTopList(sortedByAsset, "Asset");
+
+      return output.reply(
+        `🏆 | **Top 10 Tokens by Copies**\n${topCopiesText}\n\n🏆 | **Top 10 Tokens by Asset**\n${topAssetText}`
+      );
+    },
+  },
+  {
+    key: "tomint",
+    description: "Converts money to tokens for any token in your collectibles.",
+    args: ["<tokenid>", "<amount>"],
+    aliases: ["-tmt"],
+    icon: "🔄",
+    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const userData = await usersDB.getItem(input.sid);
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const tokenId = spectralArgs[0] ?? "";
+      const amount = parseBet(spectralArgs[1], userData.money);
+
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      if (isInvalidAm(amount, userData.money)) {
+        return output.reply(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+            userData.money,
+            true
+          )})`
+        );
+      }
+
+      const allMints = Object.values(mints).flat();
+      const mint = allMints.find((m) => m.id === tokenId);
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      const cll = new Collectibles(userData.collectibles ?? []);
+      const KEY = `mtls_${tokenId}`;
+      const converted = convertMintToCll(mint);
+
+      if (!cll.has(KEY)) {
+        cll.register(KEY, converted);
+      }
+
+      const newBal = userData.money - amount;
+      const mintAuthor = mint.author;
+      const authorMints: MintUser = mints[mintAuthor] ?? [];
+      const updatedMint: MintItem = {
+        ...mint,
+        copies: (mint.copies || 1) + amount,
+      };
+      const updatedAuthorMints = authorMints.map((m) =>
+        m.id === tokenId ? updatedMint : m
+      );
+      mints[mintAuthor] = updatedAuthorMints;
+
+      cll.raise(KEY, amount);
+
+      await globalDB.setItem(MINT_KEY(), { mints });
+      await usersDB.setItem(input.sid, {
+        money: newBal,
+        collectibles: Array.from(cll),
+      });
+
+      return output.reply(
+        `🔄 | Successfully converted ${formatCash(
+          amount,
+          true
+        )} to **${amount}** copies of **${mint.name}** [${
+          mint.id
+        }].\nNew balance: ${formatCash(newBal, true)}\n\n${await formatMint(
+          updatedMint,
+          usersDB
+        )}`
+      );
+    },
+  },
+  {
+    key: "tomoney",
+    description: "Converts tokens from your collectibles to money.",
+    args: ["<tokenid>", "<amount>"],
+    aliases: ["-tmn"],
+    icon: "💸",
+    async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const userData = await usersDB.getItem(input.sid);
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const tokenId = spectralArgs[0] ?? "";
+      const amount = parseBet(spectralArgs[1], Infinity);
+
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      if (isInvalidAm(amount, Infinity)) {
+        return output.reply(
+          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**.`
+        );
+      }
+
+      const allMints = Object.values(mints).flat();
+      const mint = allMints.find((m) => m.id === tokenId);
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      const cll = new Collectibles(userData.collectibles ?? []);
+      const KEY = `mtls_${tokenId}`;
+      if (!cll.has(KEY)) {
+        return output.reply(
+          `📋 | You do not have any collectibles for **${mint.name}** [${tokenId}].`
+        );
+      }
+
+      if (!cll.hasAmount(KEY, amount)) {
+        return output.reply(
+          `📋 | You do not have enough collectibles for **${
+            mint.name
+          }** [${tokenId}]. You only have ${cll.getAmount(KEY)} of them.`
+        );
+      }
+
+      const currentCopies = mint.copies || 1;
+      const newCopies = Math.max(1, currentCopies - amount);
+      const actualConverted = currentCopies - newCopies;
+
+      if (actualConverted <= 0) {
+        return output.reply(
+          `📋 | Cannot convert **${amount}** copies. At least **1** copy must remain (current: ${currentCopies}).`
+        );
+      }
+
+      const mintAuthor = mint.author;
+      const authorMints: MintUser = mints[mintAuthor] ?? [];
+      const updatedMint: MintItem = { ...mint, copies: newCopies };
+      const updatedAuthorMints = authorMints.map((m) =>
+        m.id === tokenId ? updatedMint : m
+      );
+      mints[mintAuthor] = updatedAuthorMints;
+
+      const valuePerCopy = (mint.asset || 0) / (mint.copies || 1);
+      const convertedMoney = Math.floor(valuePerCopy * actualConverted);
+      const newBal = userData.money + convertedMoney;
+
+      cll.raise(KEY, -actualConverted);
+
+      await globalDB.setItem(MINT_KEY(), { mints });
+      await usersDB.setItem(input.sid, {
+        money: newBal,
+        collectibles: Array.from(cll),
+      });
+
+      return output.reply(
+        `💸 | Successfully converted **${actualConverted}** copies of **${
+          mint.name
+        }** [${mint.id}] to ${formatCash(
+          convertedMoney,
+          true
+        )}.\nRemaining copies: **${newCopies}**\nNew balance: ${formatCash(
+          newBal,
+          true
+        )}\n\n${await formatMint(updatedMint, usersDB)}`
+      );
+    },
+  },
+  {
+    key: "check",
+    description:
+      "Displays formatted details of any mint by ID, not just yours.",
+    args: ["<tokenid>"],
+    aliases: ["-chk"],
+    icon: "🔍",
+    async handler({ output, globalDB, usersDB }, { spectralArgs }) {
+      const tokenId = spectralArgs[0] ?? "";
+      if (!tokenId) {
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
+      }
+
+      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+      const allMints = Object.values(mints).flat();
+      const mint = allMints.find((m) => m.id === tokenId);
+
+      if (!mint) {
+        return output.reply(
+          `📋 | No **mint** found with the specified ID: ${tokenId}.`
+        );
+      }
+
+      return output.reply(
+        `🔍 | **Mint Details**\n\n${await formatMint(mint, usersDB)}`
+      );
+    },
+  },
 ];
 
 const home = new SpectralCMDHome(
