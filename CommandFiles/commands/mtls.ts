@@ -113,7 +113,10 @@ const configs: Config[] = [
 
       const now = Date.now();
 
-      const durationInSeconds = (now - userData.lendTimestamp) / 1000;
+      const durationInSeconds = Math.max(
+        (now - userData.lendTimestamp) / 1000 - 60 * 60 * 1000,
+        0
+      );
       const inflationRate = await getInflationRate();
 
       const interestNoInflation =
