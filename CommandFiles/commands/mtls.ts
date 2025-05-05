@@ -266,7 +266,7 @@ const configs: Config[] = [
     args: ["<name|uid> <amount>"],
     aliases: ["-stk"],
     icon: "📤",
-    async handler({ usersDB, input, output }, { spectralArgs }) {
+    async handler({ usersDB, output }, { spectralArgs }) {
       const targTest = spectralArgs[0];
 
       let recipient: UserData;
