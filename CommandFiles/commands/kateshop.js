@@ -7,7 +7,7 @@ export const meta = {
   description:
     "A whimsical shop run by the enigmatic Kate, offering rare and enchanting items.",
   version: "1.0.3",
-  author: "MrkimstersDev",
+  author: "MrkimstersDev (LeonHart)",
   usage: "{prefix}kateshop",
   category: "Shopping",
   permissions: [0],

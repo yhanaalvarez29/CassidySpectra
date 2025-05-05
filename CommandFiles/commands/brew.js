@@ -6,7 +6,7 @@ export const meta = {
   name: "brew",
   description: "Brew potions and sell them for gold!",
   version: "1.0.0",
-  author: "MrkimstersDev",
+  author: "MrkimstersDev (LeonHart)",
   usage: "{prefix}brew",
   category: "Idle Accumulation Games",
   permissions: [0],
