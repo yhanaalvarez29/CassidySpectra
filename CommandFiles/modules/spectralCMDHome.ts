@@ -516,7 +516,7 @@ export class SpectralCMDHome {
             this.checkCooldown(ctx, c.key)
               ? ""
               : ` (⏳ **${this.getCooldown(ctx, c.key) / 1000}s**)`
-          }`
+          }${(c.args ?? []).join(" ")}`
       )
       .join("\n");
   }
