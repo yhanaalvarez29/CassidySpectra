@@ -862,12 +862,13 @@ declare global {
       title?: string | StylerItem;
       titleFont?: FontTypes;
       contentFont?: FontTypes;
-      [key: string]: StylerItem | string;
+      preset?: string[] | StylerItem;
+      [key: string]: StylerItem | string | string[];
     }
 
     export interface StylerItem {
       preset?: string | string[];
-      content_template?: any[];
+      content_template?: (string | number)[] | Record<string, string | number>;
       number_font?: FontTypes;
       new_line?: boolean;
       line_top?: "hidden" | "whiteline" | string;
@@ -878,7 +879,7 @@ declare global {
       text?: string | null;
       line_replacer?: string;
       line_replace?: string;
-      content: string | null;
+      content?: string | null;
     }
 
     export type CommandHandler = (

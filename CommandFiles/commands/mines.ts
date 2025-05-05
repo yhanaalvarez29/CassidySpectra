@@ -13,15 +13,9 @@ export default defineCommand({
     usage: "mines start | mines collect | mines buy <pickaxe>",
   },
   style: {
+    preset: ["owners.json"],
     title: {
-      content: "〘 ⛏️ 〙 MINES",
-      text_font: "bold",
-    },
-    titleFont: "bold",
-    contentFont: "fancy",
-    footer: {
-      content: "**Developed by**: Francis Loyd Raval",
-      text_font: "fancy",
+      content_template: ["⛏️", "MINES"],
     },
   },
   async entry(ctx) {
