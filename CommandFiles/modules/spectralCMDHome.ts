@@ -10,13 +10,15 @@ export type Extra = {
   self: SpectralCMDHome;
 } & Record<string, unknown>;
 
+export type Handler = (
+  this: Config,
+  ctx: CommandContext,
+  extra?: Extra
+) => any | Promise<any>;
+
 export type Config = {
   key: string;
-  handler: (
-    this: Config,
-    ctx: CommandContext,
-    extra?: Extra
-  ) => any | Promise<any>;
+  handler: Handler;
   description?: string | null;
   args?: string[] | null;
   aliases?: string[] | null;
