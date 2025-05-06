@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "mtls",
   description: "Minting Token and Lending Service. (Rework 3.6.0)",
   author: "Liane Cagara",
-  version: "4.1.0",
+  version: "4.2.0",
   category: "Finance",
   role: 0,
   noPrefix: false,
@@ -21,7 +21,7 @@ export const meta: CassidySpectra.CommandMeta = {
 
 export const style: CassidySpectra.CommandStyle = {
   title: {
-    content: `${UNISpectra.charm} MTLS 🪙`,
+    content: `${UNISpectra.charm} MTLS V4 🪙`,
     line_bottom: "default",
     text_font: "double_struck",
   },
@@ -185,7 +185,7 @@ const configs: Config[] = [
     description: "Transfer a balance to another user for FREE!",
     args: ["<name|uid> <amount>"],
     aliases: ["-tr", "-se", "transfer"],
-    icon: "📤",
+    icon: "💸",
     async handler({ usersDB, input, output, Inventory }, { spectralArgs }) {
       const userData = await usersDB.getItem(input.sid);
       const targTest = spectralArgs[0];
@@ -270,7 +270,7 @@ const configs: Config[] = [
     description: "Stalk a specific user using a name or UID.",
     args: ["<name|uid> <amount>"],
     aliases: ["-stk"],
-    icon: "📤",
+    icon: "🔍",
     async handler({ usersDB, output }, { spectralArgs }) {
       const targTest = spectralArgs[0];
 
@@ -315,19 +315,23 @@ const configs: Config[] = [
   },
   {
     key: "newtokenid",
-    description: "Creates a new token/currency/mint id.",
-    args: ["<icon>", "<name>", "<id>"],
+    description: "Create a new token/currency/mint ID.",
+    args: ["<icon>", " | ", "<name>", " | ", "<id>"],
     aliases: ["-ntid"],
-    icon: "➕",
+    icon: "🪙",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs, key }) {
-      const [icon = "", name = "", id = ""] = spectralArgs;
+      const mintManager = await MintManager.fromDB(globalDB);
+      const [icon = "", name = "", id = ""] = input.splitArgs(
+        "|",
+        spectralArgs
+      );
 
       if (icon.length < 1 || name.length < 5 || id.length < 5) {
         return output.reply(
-          `💌 | **SYNTAX**:\n${input.words[0]} ${input.arguments[0]} ${key} <icon> <name> <id>\n\n⚠️ | The icon **must be longer** than 0 character, name **must be longer** than 5 characters, and id **must be longer** than 5 characters.`
+          `💌 | **SYNTAX**:\n${input.words[0]} ${input.arguments[0]} ${key} <icon> | <name> | <id>\n\n⚠️ | Icon must be **non-empty**, name and ID must be **5+ characters**.`
         );
       }
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
+
       const mint: MintItem = {
         asset: 0,
         icon,
@@ -338,101 +342,82 @@ const configs: Config[] = [
         copies: 1,
       };
 
-      const exists = findExistingMint(mint, mints);
-
-      if (exists.length > 0) {
-        return output.reply(
-          `📋 | **Mint Already Exists!!**\n\n${await formatMint(
-            exists[0].mintItem,
-            usersDB
-          )}`
-        );
+      const result = mintManager.createMint(input.sid, mint);
+      if (!result.success) {
+        if (result.error === "Mint limit reached") {
+          return output.reply(
+            `📋 | Cannot create mint: You have reached the limit of **${mintManager.MINT_LIMIT}** mints.`
+          );
+        }
+        if (result.error === "Mint already exists" && result.existingMint) {
+          return output.reply(
+            `📋 | Mint already exists!\n\n${await formatMint(
+              result.existingMint,
+              usersDB
+            )}`
+          );
+        }
+        return output.wentWrong();
       }
 
-      const me: MintUser = mints[input.sid] ?? [];
-      if (me.length > MINT_LIMIT()) {
-        return output.reply(
-          `📋 | You can only make mints **up to ${MINT_LIMIT()}**!`
-        );
-      }
-      me.push(mint);
-
-      mints[input.sid] = me;
-
-      await globalDB.setItem(MINT_KEY(), {
-        mints,
-      });
-
+      await mintManager.saveBy(globalDB);
       return output.reply(
-        `☑️ | **Success Created**!\n\n${await formatMint(mint, usersDB)}`
+        `🪙 | Successfully created!\n\n${await formatMint(mint, usersDB)}`
       );
     },
   },
   {
     key: "tokens",
-    description: "Lists all of your tokens/currency created",
+    description: "List all your created tokens/currencies.",
     aliases: ["-tks"],
-    icon: "📃",
+    icon: "📜",
     async handler({ usersDB, output, input, globalDB }, {}) {
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const me: MintUser = mints[input.sid] ?? [];
+      const mintManager = await MintManager.fromDB(globalDB);
+      const userMints = mintManager.getUserMints(input.sid);
       const mapped = (
         await Promise.all(
-          me.map(async (i) => `${await formatMint(i, usersDB)}`)
+          userMints.map(async (i) => `${await formatMint(i, usersDB)}`)
         )
       ).join("\n\n");
 
-      return output.reply(`💌 | **YOUR MINTS**:\n\n${mapped}`);
+      return output.reply(
+        `📜 | **YOUR MINTS**:\n\n${mapped || "No mints found."}`
+      );
     },
   },
   {
     key: "killtoken",
-    description:
-      "Removes your ability to reproduce the token and delete it forever.",
-    aliases: ["-tks"],
-    icon: "📃",
+    description: "Permanently delete a token and its ability to be reproduced.",
+    aliases: ["-klt"],
+    icon: "🗑️",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const me: MintUser = mints[input.sid] ?? [];
+      const mintManager = await MintManager.fromDB(globalDB);
       const id = spectralArgs[0] ?? "";
+
       if (!id) {
-        return output.reply(`📋 | Please use a valid id.`);
-      }
-      if (!me.some((i) => i.id === id)) {
-        return output.reply(`📋 | No **mint** found on the specificed it..`);
-      }
-      const ind = me.findIndex((i) => i.id === id);
-
-      const item = me.find((i) => i.id === id);
-
-      if (ind !== -1) {
-        me.splice(ind, 1);
-      } else {
-        return output.wentWrong();
+        return output.reply(`📋 | Please provide a valid **token ID**.`);
       }
 
-      mints[input.sid] = me;
+      const deletedMint = mintManager.deleteMint(input.sid, id);
+      if (!deletedMint) {
+        return output.reply(`📋 | No **mint** found with ID: ${id}.`);
+      }
 
-      await globalDB.setItem(MINT_KEY(), {
-        mints,
-      });
-
+      await mintManager.saveBy(globalDB);
       return output.reply(
-        `☑️ **DELETED**\n\n${await formatMint(item, usersDB)}`
+        `🗑️ | **DELETED**\n\n${await formatMint(deletedMint, usersDB)}`
       );
     },
   },
   {
     key: "mint",
-    description:
-      "Mints new copies of token (without backing asset) based on token id.",
+    description: "Mint new token copies (without backing asset) by token ID.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-mt"],
     icon: "🪙",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const userData = await usersDB.getItem(input.sid);
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const me: MintUser = mints[input.sid] ?? [];
       const tokenId = spectralArgs[0] ?? "";
       const amount = parseBet(spectralArgs[1], userData.money);
 
@@ -442,31 +427,29 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**. (${formatCash(
-            userData.money,
-            true
-          )})`
+          `📋 | The amount must be a **valid number**, not less than **1**.`
         );
       }
 
-      const mint = me.find((i) => i.id === tokenId);
+      const mint = mintManager
+        .getUserMints(input.sid)
+        .find((i) => i.id === tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       const newCopies = (mint.copies || 1) + amount;
       const updatedMint: MintItem = { ...mint, copies: newCopies };
 
-      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
-      mints[input.sid] = userMints;
-
-      await globalDB.setItem(MINT_KEY(), { mints });
-      const converted = convertMintToCll(updatedMint);
+      const success = mintManager.updateMint(input.sid, updatedMint);
+      if (!success) {
+        return output.wentWrong();
+      }
 
       const cll = new Collectibles(userData.collectibles ?? []);
-      const KEY = converted.key;
+      const KEY = `mtls_${tokenId}`;
+      const converted = convertMintToCll(updatedMint);
+
       if (!cll.has(KEY)) {
         cll.register(KEY, converted);
       }
@@ -475,9 +458,10 @@ const configs: Config[] = [
       await usersDB.setItem(input.sid, {
         collectibles: Array.from(cll),
       });
+      await mintManager.saveBy(globalDB);
 
       return output.reply(
-        `🪙 | Successfully minted **${amount}** copies of **${mint.name}** [${
+        `🪙 | Minted **${amount}** copies of **${mint.name}** [${
           mint.id
         }].\nTotal copies: **${newCopies}**\n\n${await formatMint(
           updatedMint,
@@ -488,15 +472,13 @@ const configs: Config[] = [
   },
   {
     key: "asset",
-    description:
-      "Adds a backing asset on your token id without minting or creating a copy of the token.",
+    description: "Add backing asset to a token without creating copies.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-ast"],
     icon: "💰",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const userData = await usersDB.getItem(input.sid);
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const me: MintUser = mints[input.sid] ?? [];
       const tokenId = spectralArgs[0] ?? "";
       const amount = parseBet(spectralArgs[1], userData.money);
 
@@ -506,35 +488,34 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, userData.money)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
+          `📋 | The amount must be a **valid number**, not less than **1**, and not more than your **balance** (${formatCash(
             userData.money,
             true
-          )})`
+          )}).`
         );
       }
 
-      const mint = me.find((i) => i.id === tokenId);
+      const mint = mintManager
+        .getUserMints(input.sid)
+        .find((i) => i.id === tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       const newAsset = (mint.asset ?? 0) + amount;
       const newBal = userData.money - amount;
       const updatedMint: MintItem = { ...mint, asset: newAsset };
 
-      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
-      mints[input.sid] = userMints;
+      const success = mintManager.updateMint(input.sid, updatedMint);
+      if (!success) {
+        return output.wentWrong();
+      }
 
-      await globalDB.setItem(MINT_KEY(), { mints });
       await usersDB.setItem(input.sid, { money: newBal });
+      await mintManager.saveBy(globalDB);
 
       return output.reply(
-        `💰 | Successfully added ${formatCash(
-          amount,
-          true
-        )} as backing asset to **${mint.name}** [${
+        `💰 | Added ${formatCash(amount, true)} to **${mint.name}** [${
           mint.id
         }].\nNew asset value: ${formatCash(
           newAsset,
@@ -548,15 +529,13 @@ const configs: Config[] = [
   },
   {
     key: "surrender",
-    description:
-      "Surrender copies of a token, reducing its copies but keeping at least 1.",
+    description: "Surrender token copies, keeping at least 1 copy.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-sur"],
     icon: "🗑️",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const userData = await usersDB.getItem(input.sid);
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const me: MintUser = mints[input.sid] ?? [];
       const tokenId = spectralArgs[0] ?? "";
       const amount = parseBet(spectralArgs[1], userData.money);
 
@@ -566,33 +545,30 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**. (${formatCash(
-            userData.money,
-            true
-          )})`
+          `📋 | The amount must be a **valid number**, not less than **1**.`
         );
       }
 
-      const mint = me.find((i) => i.id === tokenId);
+      const mint = mintManager
+        .getUserMints(input.sid)
+        .find((i) => i.id === tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       const cll = new Collectibles(userData.collectibles ?? []);
       const KEY = `mtls_${tokenId}`;
       if (!cll.has(KEY)) {
         return output.reply(
-          `📋 | You do not have any collectibles for **${mint.name}** [${tokenId}].`
+          `📋 | You have no collectibles for **${mint.name}** [${tokenId}].`
         );
       }
 
       if (!cll.hasAmount(KEY, amount)) {
         return output.reply(
-          `📋 | You do not have enough collectibles for **${
+          `📋 | Not enough collectibles for **${
             mint.name
-          }** [${tokenId}]. You only had ${cll.getAmount(KEY)} of them.`
+          }** [${tokenId}]. You have ${cll.getAmount(KEY)}.`
         );
       }
 
@@ -607,18 +583,19 @@ const configs: Config[] = [
       }
 
       const updatedMint: MintItem = { ...mint, copies: newCopies };
-      const userMints = me.map((m) => (m.id === tokenId ? updatedMint : m));
-      mints[input.sid] = userMints;
+      const success = mintManager.updateMint(input.sid, updatedMint);
+      if (!success) {
+        return output.wentWrong();
+      }
 
       cll.raise(KEY, -actualSurrendered);
-
-      await globalDB.setItem(MINT_KEY(), { mints });
       await usersDB.setItem(input.sid, {
         collectibles: Array.from(cll),
       });
+      await mintManager.saveBy(globalDB);
 
       return output.reply(
-        `🗑️ | Successfully surrendered **${actualSurrendered}** copies of **${
+        `🗑️ | Surrendered **${actualSurrendered}** copies of **${
           mint.name
         }** [${
           mint.id
@@ -631,28 +608,17 @@ const configs: Config[] = [
   },
   {
     key: "topasset",
-    description:
-      "Lists the top 10 tokens by copies and asset value across all users.",
+    description: "List top 10 tokens by copies and asset value.",
     aliases: ["-top"],
     icon: "🏆",
     async handler({ output, globalDB, usersDB }, {}) {
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const allMints: { author: string; mintItem: MintItem }[] = Object.entries(
-        mints
-      ).flatMap(([author, mintUser]) =>
-        mintUser.map((mintItem) => ({ author, mintItem }))
-      );
+      const mintManager = await MintManager.fromDB(globalDB);
+      const sortedByCopies = mintManager.getTopMints("copies");
+      const sortedByAsset = mintManager.getTopMints("asset");
 
-      if (allMints.length === 0) {
+      if (sortedByCopies.length === 0) {
         return output.reply(`📋 | No mints found across all users.`);
       }
-
-      const sortedByCopies = allMints
-        .sort((a, b) => (b.mintItem.copies || 1) - (a.mintItem.copies || 1))
-        .slice(0, 10);
-      const sortedByAsset = allMints
-        .sort((a, b) => (b.mintItem.asset || 0) - (a.mintItem.asset || 0))
-        .slice(0, 10);
 
       const formatTopList = async (
         list: { author: string; mintItem: MintItem }[],
@@ -683,35 +649,29 @@ const configs: Config[] = [
   },
   {
     key: "tomint",
-    description: "Converts money to tokens for any token in your collectibles.",
+    description: "Convert money to tokens, increasing copies and asset value.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-tmt"],
     icon: "🔄",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const userData = await usersDB.getItem(input.sid);
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
       const tokenId = spectralArgs[0] ?? "";
-      const amount = parseBet(spectralArgs[1], userData.money);
+      const amount = parseBet(spectralArgs[1], Infinity);
 
       if (!tokenId) {
         return output.reply(`📋 | Please provide a valid **token ID**.`);
       }
 
-      if (isInvalidAm(amount, userData.money)) {
+      if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**, and **not higher** than your **balance.** (${formatCash(
-            userData.money,
-            true
-          )})`
+          `📋 | The amount must be a **valid number**, not less than **1**.`
         );
       }
 
-      const allMints = Object.values(mints).flat();
-      const mint = allMints.find((m) => m.id === tokenId);
+      const mint = mintManager.getMintById(tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       const cll = new Collectibles(userData.collectibles ?? []);
@@ -722,29 +682,49 @@ const configs: Config[] = [
         cll.register(KEY, converted);
       }
 
-      const newBal = userData.money - amount;
-      const mintAuthor = mint.author;
-      const authorMints: MintUser = mints[mintAuthor] ?? [];
+      let totalAssetIncrease = 0;
+      let currentAsset = mint.asset || 0;
+      let currentCopies = mint.copies || 1;
+
+      for (let i = 0; i < amount; i++) {
+        const marketValue = currentAsset / currentCopies || 0;
+        totalAssetIncrease += marketValue;
+        currentAsset += marketValue;
+        currentCopies += 1;
+      }
+
+      const newBal = userData.money - Math.floor(totalAssetIncrease);
+
+      if (newBal < 0) {
+        return output.reply(
+          `📋 | You do not have **enough balance** to pay ${formatCash(
+            Math.floor(totalAssetIncrease),
+            true
+          )}`
+        );
+      }
+
       const updatedMint: MintItem = {
         ...mint,
-        copies: (mint.copies || 1) + amount,
+        copies: currentCopies,
+        asset: currentAsset,
       };
-      const updatedAuthorMints = authorMints.map((m) =>
-        m.id === tokenId ? updatedMint : m
-      );
-      mints[mintAuthor] = updatedAuthorMints;
+
+      const success = mintManager.updateMint(mint.author, updatedMint);
+      if (!success) {
+        return output.wentWrong();
+      }
 
       cll.raise(KEY, amount);
-
-      await globalDB.setItem(MINT_KEY(), { mints });
       await usersDB.setItem(input.sid, {
         money: newBal,
         collectibles: Array.from(cll),
       });
+      await mintManager.saveBy(globalDB);
 
       return output.reply(
-        `🔄 | Successfully converted ${formatCash(
-          amount,
+        `🔄 | Converted ${formatCash(
+          Math.floor(totalAssetIncrease),
           true
         )} to **${amount}** copies of **${mint.name}** [${
           mint.id
@@ -757,13 +737,13 @@ const configs: Config[] = [
   },
   {
     key: "tomoney",
-    description: "Converts tokens from your collectibles to money.",
+    description: "Convert tokens to money, reducing copies and asset value.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-tmn"],
     icon: "💸",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const userData = await usersDB.getItem(input.sid);
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
       const tokenId = spectralArgs[0] ?? "";
       const amount = parseBet(spectralArgs[1], Infinity);
 
@@ -773,31 +753,28 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount (second argument) must be a **valid numerical**, not lower than **1**.`
+          `📋 | The amount must be a **valid number**, not less than **1**.`
         );
       }
 
-      const allMints = Object.values(mints).flat();
-      const mint = allMints.find((m) => m.id === tokenId);
+      const mint = mintManager.getMintById(tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       const cll = new Collectibles(userData.collectibles ?? []);
       const KEY = `mtls_${tokenId}`;
       if (!cll.has(KEY)) {
         return output.reply(
-          `📋 | You do not have any collectibles for **${mint.name}** [${tokenId}].`
+          `📋 | You have no collectibles for **${mint.name}** [${tokenId}].`
         );
       }
 
       if (!cll.hasAmount(KEY, amount)) {
         return output.reply(
-          `📋 | You do not have enough collectibles for **${
+          `📋 | Not enough collectibles for **${
             mint.name
-          }** [${tokenId}]. You only have ${cll.getAmount(KEY)} of them.`
+          }** [${tokenId}]. You have ${cll.getAmount(KEY)}.`
         );
       }
 
@@ -811,30 +788,41 @@ const configs: Config[] = [
         );
       }
 
-      const mintAuthor = mint.author;
-      const authorMints: MintUser = mints[mintAuthor] ?? [];
-      const updatedMint: MintItem = { ...mint, copies: newCopies };
-      const updatedAuthorMints = authorMints.map((m) =>
-        m.id === tokenId ? updatedMint : m
-      );
-      mints[mintAuthor] = updatedAuthorMints;
+      let totalAssetDecrease = 0;
+      let currentAsset = mint.asset || 0;
+      let tempCopies = currentCopies;
 
-      const valuePerCopy = (mint.asset || 0) / (mint.copies || 1);
-      const convertedMoney = Math.floor(valuePerCopy * actualConverted);
+      for (let i = 0; i < actualConverted; i++) {
+        const marketValue = currentAsset / tempCopies || 0;
+        totalAssetDecrease += marketValue;
+        currentAsset -= marketValue;
+        tempCopies -= 1;
+      }
+
+      const convertedMoney = Math.floor(totalAssetDecrease);
       const newBal = userData.money + convertedMoney;
 
-      cll.raise(KEY, -actualConverted);
+      const updatedMint: MintItem = {
+        ...mint,
+        copies: newCopies,
+        asset: Math.max(0, currentAsset),
+      };
+      const success = mintManager.updateMint(mint.author, updatedMint);
+      if (!success) {
+        return output.wentWrong();
+      }
 
-      await globalDB.setItem(MINT_KEY(), { mints });
+      cll.raise(KEY, -actualConverted);
       await usersDB.setItem(input.sid, {
         money: newBal,
         collectibles: Array.from(cll),
       });
+      await mintManager.saveBy(globalDB);
 
       return output.reply(
-        `💸 | Successfully converted **${actualConverted}** copies of **${
-          mint.name
-        }** [${mint.id}] to ${formatCash(
+        `💸 | Converted **${actualConverted}** copies of **${mint.name}** [${
+          mint.id
+        }] to ${formatCash(
           convertedMoney,
           true
         )}.\nRemaining copies: **${newCopies}**\nNew balance: ${formatCash(
@@ -846,25 +834,21 @@ const configs: Config[] = [
   },
   {
     key: "check",
-    description:
-      "Displays formatted details of any mint by ID, not just yours.",
+    description: "Display details of any mint by ID.",
     args: ["<tokenid>"],
     aliases: ["-chk"],
     icon: "🔍",
     async handler({ output, globalDB, usersDB }, { spectralArgs }) {
+      const mintManager = await MintManager.fromDB(globalDB);
       const tokenId = spectralArgs[0] ?? "";
+
       if (!tokenId) {
         return output.reply(`📋 | Please provide a valid **token ID**.`);
       }
 
-      const { mints = {} }: Mints = await globalDB.getCache(MINT_KEY());
-      const allMints = Object.values(mints).flat();
-      const mint = allMints.find((m) => m.id === tokenId);
-
+      const mint = mintManager.getMintById(tokenId);
       if (!mint) {
-        return output.reply(
-          `📋 | No **mint** found with the specified ID: ${tokenId}.`
-        );
+        return output.reply(`📋 | No **mint** found with ID: ${tokenId}.`);
       }
 
       return output.reply(
@@ -900,14 +884,6 @@ const home = new SpectralCMDHome(
 
 export const entry = defineEntry((ctx) => home.runInContext(ctx));
 
-function MINT_LIMIT() {
-  return 8;
-}
-
-export function MINT_KEY(): string {
-  return "mints";
-}
-
 function isInvalidAm(amount: number, balance: number) {
   return isNaN(amount) || amount < 1 || amount > balance;
 }
@@ -924,7 +900,7 @@ export interface MintItem {
   readonly creationDate: number;
 }
 
-export interface Mints extends UserData {
+export interface Mints extends Partial<UserData> {
   mints?: Record<string, MintUser>;
 }
 
@@ -958,29 +934,6 @@ export function convertCllToMint(
   };
 }
 
-export function findExistingMint(
-  target: MintItem,
-  mints: Mints["mints"]
-): Array<{ author: string; mintItem: MintItem }> {
-  const results = Object.entries(mints)
-    .filter(([, mintUser]) =>
-      mintUser?.some(
-        (mintItem) => mintItem.name === target.name || mintItem.id === target.id
-      )
-    )
-    .map(([author, mintUser]) => {
-      return mintUser
-        ?.filter(
-          (mintItem) =>
-            mintItem.name === target.name || mintItem.id === target.id
-        )
-        .map((mintItem) => ({ author, mintItem }));
-    })
-    .flat();
-
-  return results;
-}
-
 export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
   const { name = "???" } = await usersDB.getCache(mint.author);
   return `${mint.icon} **${mint.name}** [${
@@ -991,4 +944,136 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
     mint.asset / (mint.copies || 1) || 0,
     true
   )} each.`;
+}
+
+export class MintManager {
+  public mints: Mints["mints"];
+  public readonly MINT_KEY = "mints";
+  public readonly MINT_LIMIT = 8;
+
+  public constructor(mints: Mints["mints"]) {
+    this.mints = mints ?? {};
+  }
+
+  static async fromDB(globalDB: UserStatsManager): Promise<MintManager> {
+    const data = (await globalDB.getCache(this.prototype.MINT_KEY)) as Mints;
+    return new MintManager(data.mints ?? {});
+  }
+
+  raw(): Mints {
+    return { mints: this.mints };
+  }
+
+  async saveBy(globalDB: UserStatsManager): Promise<void> {
+    await globalDB.setItem(this.MINT_KEY, this.raw());
+  }
+
+  getAllMints(): Mints["mints"] {
+    return this.mints;
+  }
+
+  getUserMints(userId: string): MintUser {
+    return this.mints[userId] ?? [];
+  }
+
+  getMintById(tokenId: string): MintItem | null {
+    const allMints = Object.values(this.mints ?? {}).flat();
+    return allMints.find((m) => m.id === tokenId) || null;
+  }
+
+  createMint(
+    userId: string,
+    mint: MintItem
+  ): { success: boolean; error?: string; existingMint?: MintItem } {
+    const mints = this.mints;
+    const userMints = mints[userId] ?? [];
+
+    if (userMints.length >= this.MINT_LIMIT) {
+      return { success: false, error: "Mint limit reached" };
+    }
+
+    const existing = this.findExistingMint(mint, mints);
+    if (existing.length > 0) {
+      return {
+        success: false,
+        error: "Mint already exists",
+        existingMint: existing[0].mintItem,
+      };
+    }
+
+    userMints.push(mint);
+    mints[userId] = userMints;
+    this.mints = mints;
+    return { success: true };
+  }
+
+  updateMint(userId: string, updatedMint: MintItem): boolean {
+    const mints = this.mints;
+    const userMints = mints[userId] ?? [];
+
+    const mintIndex = userMints.findIndex((m) => m.id === updatedMint.id);
+    if (mintIndex === -1) {
+      return false;
+    }
+
+    userMints[mintIndex] = updatedMint;
+    mints[userId] = userMints;
+    this.mints = mints;
+    return true;
+  }
+
+  deleteMint(userId: string, tokenId: string): MintItem | null {
+    const mints = this.mints;
+    const userMints = mints[userId] ?? [];
+
+    const mintIndex = userMints.findIndex((m) => m.id === tokenId);
+    if (mintIndex === -1) {
+      return null;
+    }
+
+    const [deletedMint] = userMints.splice(mintIndex, 1);
+    mints[userId] = userMints;
+    this.mints = mints;
+    return deletedMint;
+  }
+
+  getTopMints(
+    by: "copies" | "asset",
+    limit: number = 10
+  ): { author: string; mintItem: MintItem }[] {
+    const mints = this.mints;
+    const allMints = Object.entries(mints).flatMap(([author, mintUser]) =>
+      mintUser.map((mintItem) => ({ author, mintItem }))
+    );
+
+    return allMints
+      .sort((a, b) =>
+        by === "copies"
+          ? (b.mintItem.copies || 1) - (a.mintItem.copies || 1)
+          : (b.mintItem.asset || 0) - (a.mintItem.asset || 0)
+      )
+      .slice(0, limit);
+  }
+
+  public findExistingMint(
+    target: MintItem,
+    mints: Mints["mints"]
+  ): Array<{ author: string; mintItem: MintItem }> {
+    return Object.entries(mints ?? {})
+      .filter(([, mintUser]) =>
+        mintUser?.some(
+          (mintItem) =>
+            mintItem.name === target.name || mintItem.id === target.id
+        )
+      )
+      .map(([author, mintUser]) => {
+        return mintUser
+          ?.filter(
+            (mintItem) =>
+              mintItem.name === target.name || mintItem.id === target.id
+          )
+          .map((mintItem) => ({ author, mintItem }));
+      })
+      .flat();
+  }
 }
