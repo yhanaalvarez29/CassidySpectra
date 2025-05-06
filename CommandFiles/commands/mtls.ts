@@ -346,7 +346,7 @@ const configs: Config[] = [
       if (!result.success) {
         if (result.error === "Mint limit reached") {
           return output.reply(
-            `📋 | Cannot create mint: You have reached the limit of **${mintManager.MINT_LIMIT}** mints.`
+            `📋 | Cannot create mint: You have reached the limit of **${MintManager.MINT_LIMIT}** mints.`
           );
         }
         if (result.error === "Mint already exists" && result.existingMint) {
@@ -665,7 +665,7 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount must be a **valid number**, not less than **1**.`
+          `📋 | The first argument must be an **ID**. The amount (second argument) must be a **valid number**, not less than **1**.`
         );
       }
 
@@ -753,7 +753,7 @@ const configs: Config[] = [
 
       if (isInvalidAm(amount, Infinity)) {
         return output.reply(
-          `📋 | The amount must be a **valid number**, not less than **1**.`
+          `📋 | The first argument must be an **ID**. The amount (second argument) must be a **valid number**, not less than **1**.`
         );
       }
 
@@ -948,15 +948,15 @@ export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
 
 export class MintManager {
   public mints: Mints["mints"];
-  public readonly MINT_KEY = "mints";
-  public readonly MINT_LIMIT = 8;
+  public static readonly MINT_KEY = "mints";
+  public static readonly MINT_LIMIT = 8;
 
   public constructor(mints: Mints["mints"]) {
     this.mints = mints ?? {};
   }
 
   static async fromDB(globalDB: UserStatsManager): Promise<MintManager> {
-    const data = (await globalDB.getCache(this.prototype.MINT_KEY)) as Mints;
+    const data = (await globalDB.getCache(MintManager.MINT_KEY)) as Mints;
     return new MintManager(data.mints ?? {});
   }
 
@@ -965,7 +965,7 @@ export class MintManager {
   }
 
   async saveBy(globalDB: UserStatsManager): Promise<void> {
-    await globalDB.setItem(this.MINT_KEY, this.raw());
+    await globalDB.setItem(MintManager.MINT_KEY, this.raw());
   }
 
   getAllMints(): Mints["mints"] {
@@ -988,7 +988,7 @@ export class MintManager {
     const mints = this.mints;
     const userMints = mints[userId] ?? [];
 
-    if (userMints.length >= this.MINT_LIMIT) {
+    if (userMints.length >= MintManager.MINT_LIMIT) {
       return { success: false, error: "Mint limit reached" };
     }
 
