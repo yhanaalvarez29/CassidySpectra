@@ -85,6 +85,7 @@ export async function entry({ output, usersDB, threadsDB, input }) {
   const resultText = [
     `⏰ **Uptime**: ${uptimeString}`,
     `🕒 **MQTT Ping**: ${mqttPing}ms`,
+    `🚦 **Version**: ${global.package.version}`,
     ``,
     `${UNISpectra.arrow} ***CASSIDY*** 📊`,
     ``,
