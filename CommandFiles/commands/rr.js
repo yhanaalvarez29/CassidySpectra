@@ -158,7 +158,7 @@ export async function entry({
     resultText.changeContent("You lost:");
 
     await money.setItem(input.senderID, {
-      ...updatedTokensInfo(infoT, amount - infoT.amount),
+      ...updatedTokensInfo(infoT, infoT.amount - amount),
       rrLooses,
       rrWins,
     });

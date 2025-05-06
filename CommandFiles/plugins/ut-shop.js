@@ -1898,11 +1898,11 @@ export class Collectibles {
       if (!key) continue;
 
       if (collectibleMap.has(key)) {
-        collectibleMap.get(key).amount += collectible.amount;
+        collectibleMap.get(key).amount += Math.abs(collectible.amount);
       } else {
         collectibleMap.set(key, {
           metadata: { key, name, icon, type, limit },
-          amount: collectible.amount,
+          amount: Math.abs(collectible.amount),
         });
       }
     }
