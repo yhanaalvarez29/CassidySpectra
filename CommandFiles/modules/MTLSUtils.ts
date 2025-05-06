@@ -335,7 +335,7 @@ export function updatedTokensInfo(
   const ID = infoT.metadata.key;
   const cll = new Collectibles(infoT.userData.collectibles ?? []);
   cll.raise(ID, -cll.getAmount(ID));
-  cll.raise(ID, amount);
+  cll.raise(ID, Math.abs(amount));
   return {
     collectibles: Array.from(cll),
   };
