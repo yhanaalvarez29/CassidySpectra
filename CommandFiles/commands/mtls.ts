@@ -39,7 +39,7 @@ export const style: CassidySpectra.CommandStyle = {
 const configs: Config[] = [
   {
     key: "lend",
-    description: "Lend a money and retrieve it soon.",
+    description: "Lend money and retrieve it later with potential interest.",
     args: ["<amount>"],
     aliases: ["-le"],
     icon: "📤",
@@ -95,7 +95,7 @@ const configs: Config[] = [
   },
   {
     key: "retrieve",
-    description: "Finally retrieve a lent amount and check for interest/gains.",
+    description: "Retrieve lent amount and view earned interest.",
     aliases: ["-re"],
     args: ["[force]"],
     icon: "📥",
@@ -182,7 +182,7 @@ const configs: Config[] = [
   },
   {
     key: "send",
-    description: "Transfer a balance to another user for FREE!",
+    description: "Transfer money to another user at no cost.",
     args: ["<name|uid> <amount>"],
     aliases: ["-tr", "-se", "transfer"],
     icon: "💸",
@@ -266,10 +266,10 @@ const configs: Config[] = [
     },
   },
   {
-    key: "stalk",
-    description: "Stalk a specific user using a name or UID.",
+    key: "inspect",
+    description: "View financial details of a user by name or ID",
     args: ["<name|uid> <amount>"],
-    aliases: ["-stk"],
+    aliases: ["-ins"],
     icon: "🔍",
     async handler({ usersDB, output }, { spectralArgs }) {
       const targTest = spectralArgs[0];
@@ -314,10 +314,10 @@ const configs: Config[] = [
     },
   },
   {
-    key: "newtokenid",
-    description: "Create a new token/currency/mint ID.",
+    key: "create",
+    description: "Create a new token with custom icon, name, and ID",
     args: ["<icon>", " | ", "<name>", " | ", "<id>"],
-    aliases: ["-ntid"],
+    aliases: ["-cr"],
     icon: "🪙",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs, key }) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -367,9 +367,9 @@ const configs: Config[] = [
     },
   },
   {
-    key: "tokens",
-    description: "List all your created tokens/currencies.",
-    aliases: ["-tks"],
+    key: "list",
+    description: "Display all tokens you've created",
+    aliases: ["-li"],
     icon: "📜",
     async handler({ usersDB, output, input, globalDB }, {}) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -386,9 +386,9 @@ const configs: Config[] = [
     },
   },
   {
-    key: "killtoken",
-    description: "Permanently delete a token and its ability to be reproduced.",
-    aliases: ["-klt"],
+    key: "delete",
+    description: "Permanently delete a token and its reproduction capability",
+    aliases: ["-del"],
     icon: "🗑️",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -411,7 +411,7 @@ const configs: Config[] = [
   },
   {
     key: "mint",
-    description: "Mint new token copies (without backing asset) by token ID.",
+    description: "Create additional token copies by token ID",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-mt"],
     icon: "🪙",
@@ -471,10 +471,10 @@ const configs: Config[] = [
     },
   },
   {
-    key: "asset",
+    key: "fund",
     description: "Add backing asset to a token without creating copies.",
     args: ["<tokenid>", "<amount>"],
-    aliases: ["-ast"],
+    aliases: ["-fu"],
     icon: "💰",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -528,8 +528,8 @@ const configs: Config[] = [
     },
   },
   {
-    key: "surrender",
-    description: "Surrender token copies, keeping at least 1 copy.",
+    key: "burn",
+    description: "Remove token copies while keeping at least one.",
     args: ["<tokenid>", "<amount>"],
     aliases: ["-sur"],
     icon: "🗑️",
@@ -607,9 +607,9 @@ const configs: Config[] = [
     },
   },
   {
-    key: "topasset",
-    description: "List top 10 tokens by copies and asset value.",
-    aliases: ["-top"],
+    key: "top",
+    description: "Show top 10 tokens by copies and asset value",
+    aliases: ["-tp"],
     icon: "🏆",
     async handler({ output, globalDB, usersDB }, {}) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -648,10 +648,10 @@ const configs: Config[] = [
     },
   },
   {
-    key: "tomint",
+    key: "mintify",
     description: "Convert money to tokens, increasing copies and asset value.",
     args: ["<tokenid>", "<amount>"],
-    aliases: ["-tmt"],
+    aliases: ["-mtf"],
     icon: "🔄",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
       const mintManager = await MintManager.fromDB(globalDB);
@@ -736,10 +736,10 @@ const configs: Config[] = [
     },
   },
   {
-    key: "tomoney",
+    key: "cashify",
     description: "Convert tokens to money, reducing copies and asset value.",
     args: ["<tokenid>", "<amount>"],
-    aliases: ["-tmn"],
+    aliases: ["-chf"],
     icon: "💸",
     async handler({ usersDB, output, input, globalDB }, { spectralArgs }) {
       const mintManager = await MintManager.fromDB(globalDB);
