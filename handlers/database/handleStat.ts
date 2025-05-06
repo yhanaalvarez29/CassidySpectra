@@ -394,6 +394,90 @@ export default class UserStatsManager {
     return (await this.#mongo.keys()) as string[];
   }
 
+  async queryItemAll<T extends keyof UserData>(
+    key: string | UserDataKV
+  ): Promise<Record<string, UserData>>;
+
+  async queryItemAll<T extends keyof UserData>(
+    key: string | UserDataKV,
+    ...propertyNames: T[]
+  ): Promise<Record<string, Pick<UserData, T>>>;
+
+  async queryItemAll<T extends keyof UserData>(
+    key: string | UserDataKV,
+    ...propertyNames: T[]
+  ) {
+    if (!this.isMongo) {
+      const data = this.readMoneyFile();
+      const results: Array<[string, Partial<UserData>]> = [];
+
+      if (typeof key === "string") {
+        const userData = data[key];
+        if (userData) {
+          const partialData: Partial<UserData> = {};
+          for (const prop of propertyNames) {
+            if (userData.hasOwnProperty(prop)) {
+              partialData[prop] = userData[prop];
+            }
+          }
+          results.push([key, partialData]);
+        }
+      } else {
+        for (const [k, v] of Object.entries(data)) {
+          let matches = true;
+          for (const [filterKey, filterValue] of Object.entries(key)) {
+            if (v[filterKey] !== filterValue) {
+              matches = false;
+              break;
+            }
+          }
+          if (matches) {
+            const partialData: Partial<UserData> = {};
+            for (const prop of propertyNames) {
+              if (v.hasOwnProperty(prop)) {
+                partialData[prop] = v[prop];
+              }
+            }
+            results.push([k, partialData]);
+          }
+        }
+      }
+
+      return Object.fromEntries(
+        results.map(([k, partialData]) => [
+          k,
+          this.processProperties(partialData, k, propertyNames),
+        ])
+      );
+    }
+
+    const selectedFieldsX = propertyNames.map((prop) => `value.${prop}`);
+
+    if (!selectedFieldsX.includes("key")) {
+      selectedFieldsX.push("key");
+    }
+    const selectedFields = selectedFieldsX.join(" ");
+    const queryResult =
+      propertyNames.length > 0
+        ? await this.#mongo.KeyValue.find(
+            typeof key === "string" ? { key } : key
+          ).select(selectedFields)
+        : await this.#mongo.KeyValue.find(
+            typeof key === "string" ? { key } : key
+          );
+
+    return Object.fromEntries(
+      queryResult.map((i) => {
+        const partialData = i?.value || {};
+        const newkey = i?.key;
+        return [
+          newkey,
+          this.processProperties(partialData, newkey, propertyNames),
+        ];
+      })
+    );
+  }
+
   async queryItem<T extends keyof UserData>(
     key: string | UserDataKV
   ): Promise<UserData>;
@@ -447,9 +531,12 @@ export default class UserStatsManager {
       return this.processProperties(partialData, newKey, propertyNames);
     }
 
-    const selectedFields = propertyNames
-      .map((prop) => `value.${prop}`)
-      .join(" ");
+    const selectedFieldsX = propertyNames.map((prop) => `value.${prop}`);
+
+    if (!selectedFieldsX.includes("key")) {
+      selectedFieldsX.push("key");
+    }
+    const selectedFields = selectedFieldsX.join(" ");
     const queryResult =
       propertyNames.length > 0
         ? await this.#mongo.KeyValue.findOne(

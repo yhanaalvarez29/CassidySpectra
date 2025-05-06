@@ -110,6 +110,18 @@ type InventoryItem = (
   | BaseInventoryItem
 ) & { [key: string]: unknown };
 
+export type CollectibleItem = {
+  metadata: {
+    key: string;
+    name: string;
+    icon: string;
+    type: string;
+    limit: number | null;
+    [key: string]: any;
+  };
+  amount: number;
+};
+
 type UserData = {
   nameMeta?:
     | undefined
@@ -122,6 +134,7 @@ type UserData = {
   money: number;
   userID?: string;
   inventory?: InventoryItem[];
+  collectibles?: CollectibleItem[];
   petsData?: InventoryItem[] & PetUncaged[];
   /**
    * @deprecated

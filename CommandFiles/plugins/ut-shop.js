@@ -1848,7 +1848,15 @@ export class Inventory {
   }
 }
 export class Collectibles {
+  /**
+   * @type {import("@cass-modules/cassidyUser").CollectibleItem[]}
+   */
   #collectibles;
+
+  /**
+   *
+   * @param {import("@cass-modules/cassidyUser").CollectibleItem[]} collectibles
+   */
   constructor(collectibles = []) {
     this.#collectibles = this.sanitize(collectibles);
     try {
@@ -1940,6 +1948,9 @@ export class Collectibles {
     return this.getAll();
   }
 
+  /**
+   * @returns {Generator<import("@cass-modules/cassidyUser").CollectibleItem, undefined, unknown>}
+   */
   *[Symbol.iterator]() {
     yield* this.collectibles;
   }

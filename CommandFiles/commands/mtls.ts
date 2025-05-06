@@ -3,8 +3,14 @@ import { defineEntry } from "@cass/define";
 import { formatTime, UNISpectra } from "@cassidy/unispectra";
 import { formatCash, parseBet } from "@cass-modules/ArielUtils";
 import { FontSystem } from "cassidy-styler";
-import { UserStatsManager } from "@cass-modules/cassidyUser";
 import { Collectibles } from "@cassidy/ut-shop";
+import {
+  convertMintToCll,
+  formatMint,
+  isInvalidAm,
+  MintItem,
+  MintManager,
+} from "@cass-modules/MTLSUtils";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "mtls",
@@ -622,18 +628,13 @@ const configs: Config[] = [
 
       const formatTopList = async (
         list: { author: string; mintItem: MintItem }[],
-        key: string
+        _key: string
       ) => {
         return (
           await Promise.all(
             list.map(async (item, index) => {
               const mint = item.mintItem;
-              return `${index + 1}. ${await formatMint(
-                mint,
-                usersDB
-              )}\n   **${key}**: ${
-                key === "Copies" ? mint.copies : formatCash(mint.asset, true)
-              }`;
+              return `${index + 1}. ${await formatMint(mint, usersDB)}`;
             })
           )
         ).join("\n");
@@ -883,197 +884,3 @@ const home = new SpectralCMDHome(
 );
 
 export const entry = defineEntry((ctx) => home.runInContext(ctx));
-
-function isInvalidAm(amount: number, balance: number) {
-  return isNaN(amount) || amount < 1 || amount > balance;
-}
-
-export interface MintUser extends Array<MintItem> {}
-
-export interface MintItem {
-  readonly name: string;
-  readonly id: string;
-  readonly icon: string;
-  asset: number;
-  copies: number;
-  readonly author: string;
-  readonly creationDate: number;
-}
-
-export interface Mints extends Partial<UserData> {
-  mints?: Record<string, MintUser>;
-}
-
-export function convertMintToCll(mint: MintItem) {
-  return {
-    key: `mtls_${mint.id}`,
-    name: mint.name,
-    flavorText: "Minted from MTLS.",
-    icon: mint.icon,
-    type: "MTLS",
-    author: mint.author,
-    creationDate: mint.creationDate ?? Date.now(),
-    copies: mint.copies,
-  };
-}
-
-export function convertCllToMint(
-  cll: ReturnType<typeof convertMintToCll>,
-  asset: number
-): MintItem {
-  const id = cll.key.replace("mtls_", "");
-
-  return {
-    id: id,
-    name: cll.name,
-    icon: cll.icon,
-    asset,
-    author: cll.author,
-    creationDate: cll.creationDate,
-    copies: cll.copies,
-  };
-}
-
-export async function formatMint(mint: MintItem, usersDB: UserStatsManager) {
-  const { name = "???" } = await usersDB.getCache(mint.author);
-  return `${mint.icon} **${mint.name}** [${
-    mint.id
-  }]\n**By ${name}**\n**Since**: ${formatTime(
-    Date.now() - mint.creationDate
-  )}\n🪙 **Market Value**: ${formatCash(
-    mint.asset / (mint.copies || 1) || 0,
-    true
-  )} each.`;
-}
-
-export class MintManager {
-  public mints: Mints["mints"];
-  public static readonly MINT_KEY = "mints";
-  public static readonly MINT_LIMIT = 8;
-
-  public constructor(mints: Mints["mints"]) {
-    this.mints = mints ?? {};
-  }
-
-  static async fromDB(globalDB: UserStatsManager): Promise<MintManager> {
-    const data = (await globalDB.getCache(MintManager.MINT_KEY)) as Mints;
-    return new MintManager(data.mints ?? {});
-  }
-
-  raw(): Mints {
-    return { mints: this.mints };
-  }
-
-  async saveBy(globalDB: UserStatsManager): Promise<void> {
-    await globalDB.setItem(MintManager.MINT_KEY, this.raw());
-  }
-
-  getAllMints(): Mints["mints"] {
-    return this.mints;
-  }
-
-  getUserMints(userId: string): MintUser {
-    return this.mints[userId] ?? [];
-  }
-
-  getMintById(tokenId: string): MintItem | null {
-    const allMints = Object.values(this.mints ?? {}).flat();
-    return allMints.find((m) => m.id === tokenId) || null;
-  }
-
-  createMint(
-    userId: string,
-    mint: MintItem
-  ): { success: boolean; error?: string; existingMint?: MintItem } {
-    const mints = this.mints;
-    const userMints = mints[userId] ?? [];
-
-    if (userMints.length >= MintManager.MINT_LIMIT) {
-      return { success: false, error: "Mint limit reached" };
-    }
-
-    const existing = this.findExistingMint(mint, mints);
-    if (existing.length > 0) {
-      return {
-        success: false,
-        error: "Mint already exists",
-        existingMint: existing[0].mintItem,
-      };
-    }
-
-    userMints.push(mint);
-    mints[userId] = userMints;
-    this.mints = mints;
-    return { success: true };
-  }
-
-  updateMint(userId: string, updatedMint: MintItem): boolean {
-    const mints = this.mints;
-    const userMints = mints[userId] ?? [];
-
-    const mintIndex = userMints.findIndex((m) => m.id === updatedMint.id);
-    if (mintIndex === -1) {
-      return false;
-    }
-
-    userMints[mintIndex] = updatedMint;
-    mints[userId] = userMints;
-    this.mints = mints;
-    return true;
-  }
-
-  deleteMint(userId: string, tokenId: string): MintItem | null {
-    const mints = this.mints;
-    const userMints = mints[userId] ?? [];
-
-    const mintIndex = userMints.findIndex((m) => m.id === tokenId);
-    if (mintIndex === -1) {
-      return null;
-    }
-
-    const [deletedMint] = userMints.splice(mintIndex, 1);
-    mints[userId] = userMints;
-    this.mints = mints;
-    return deletedMint;
-  }
-
-  getTopMints(
-    by: "copies" | "asset",
-    limit: number = 10
-  ): { author: string; mintItem: MintItem }[] {
-    const mints = this.mints;
-    const allMints = Object.entries(mints).flatMap(([author, mintUser]) =>
-      mintUser.map((mintItem) => ({ author, mintItem }))
-    );
-
-    return allMints
-      .sort((a, b) =>
-        by === "copies"
-          ? (b.mintItem.copies || 1) - (a.mintItem.copies || 1)
-          : (b.mintItem.asset || 0) - (a.mintItem.asset || 0)
-      )
-      .slice(0, limit);
-  }
-
-  public findExistingMint(
-    target: MintItem,
-    mints: Mints["mints"]
-  ): Array<{ author: string; mintItem: MintItem }> {
-    return Object.entries(mints ?? {})
-      .filter(([, mintUser]) =>
-        mintUser?.some(
-          (mintItem) =>
-            mintItem.name === target.name || mintItem.id === target.id
-        )
-      )
-      .map(([author, mintUser]) => {
-        return mintUser
-          ?.filter(
-            (mintItem) =>
-              mintItem.name === target.name || mintItem.id === target.id
-          )
-          .map((mintItem) => ({ author, mintItem }));
-      })
-      .flat();
-  }
-}

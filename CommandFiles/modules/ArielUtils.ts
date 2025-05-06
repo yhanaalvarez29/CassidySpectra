@@ -431,3 +431,25 @@ export function formatCash(
     number > 999 ? `($${abbreviateNumber(number)}) ` : ""
   }$${number.toLocaleString()}${emoji || "💵"}${bold ? "**" : ""}`;
 }
+
+export function formatValue(
+  number: number,
+  emoji?: string,
+  bold?: boolean
+): string;
+
+export function formatValue(number: number, bold?: boolean): string;
+
+export function formatValue(
+  number: number = 0,
+  emoji: string | boolean = "🎲",
+  bold = false
+) {
+  if (typeof emoji === "boolean") {
+    bold = emoji;
+    emoji = "🎲";
+  }
+  return `${bold ? "**" : ""}${
+    number > 999 ? `(${emoji || "🎲"}${abbreviateNumber(number)}) ` : ""
+  }${emoji || "🎲"}${number.toLocaleString()}${bold ? "**" : ""}`;
+}

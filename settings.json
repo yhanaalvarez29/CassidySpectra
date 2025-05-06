@@ -71,5 +71,6 @@
   "autoGoogleTranslate": "",
   "silentNotiMode": true,
   "verboseErrorStacks": false,
-  "verboseBotMode": false
+  "verboseBotMode": false,
+  "gambleNeedsMint": true
 }
