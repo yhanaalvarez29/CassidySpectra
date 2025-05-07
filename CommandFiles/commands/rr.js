@@ -91,6 +91,10 @@ export async function entry({
     if (KEY.startsWith("mtls_")) {
       KEY = KEY.replace("mtls_", "");
     }
+    if (Cassidy.config.strictGambleNeedsMint && KEY === "money") {
+      cancelCooldown();
+      return output.reply("⚠️ We do not allow money bets!");
+    }
     if (!KEY || !isNaN(parseBet(KEY, Infinity)) || !bet.length) {
       cancelCooldown();
       return output.reply(

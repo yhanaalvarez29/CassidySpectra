@@ -1,6 +1,13 @@
 // @ts-check
 
 import { parseBet } from "@cass-modules/ArielUtils";
+import {
+  formatTokens,
+  getTokensInfo,
+  updatedTokensInfo,
+} from "@cass-modules/MTLSUtils";
+
+const isT = Cassidy.config.gambleNeedsMint ?? false;
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -10,9 +17,9 @@ export const meta = {
   description:
     "Test your skills in a high-stakes basketball shooting game to win big or lose it all.",
   version: "1.1.5",
-  author: "original idea by Duke Agustin,recreated by Liane Cagara",
+  author: "original idea by Duke Agustin, recreated by Liane Cagara",
   otherNames: ["bball", "shot", "bb"],
-  usage: "{prefix}{name}",
+  usage: "{prefix}{name} [mtls_key] <bet>",
   category: "Gambling Games",
   permissions: [0],
   noPrefix: false,
@@ -41,20 +48,69 @@ export async function entry({
   cancelCooldown,
   Inventory,
 }) {
-  let {
-    money: userMoney,
-    inventory: r,
-    bbWins = 0,
-    bbLooses = 0,
-  } = await money.getItem(input.senderID);
+  let userData = await money.getItem(input.senderID);
+  let { inventory: r, bbWins = 0, bbLooses = 0 } = userData;
   const inventory = new Inventory(r);
   let hasPass = inventory.has("highRollPass");
 
   const isWin = Math.random() < 0.4;
 
-  const [bet] = input.arguments;
+  /**
+   * @type {string}
+   */
+  let bet;
+  /**
+   * @type {string}
+   */
+  let KEY;
+  /**
+   * @type {ReturnType<typeof getTokensInfo>}
+   */
+  let infoT;
 
-  let amount = parseBet(bet, userMoney);
+  if (isT) {
+    [KEY = "", bet = ""] = input.arguments;
+    if (KEY.startsWith("mtls_")) {
+      KEY = KEY.replace("mtls_", "");
+    }
+    if (Cassidy.config.strictGambleNeedsMint && KEY === "money") {
+      cancelCooldown();
+      return output.reply("⚠️ We do not allow money bets!");
+    }
+    if (!KEY || !isNaN(parseBet(KEY, Infinity)) || !bet.length) {
+      cancelCooldown();
+      return output.reply(
+        `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <mtls_key> <bet>\n\nYou can check your **collectibles** or visit **MTLS** to mint one!\nMTLS Key should have no "mtls_" prefix.`
+      );
+    }
+    infoT = getTokensInfo(KEY, userData);
+  } else {
+    [bet] = input.arguments;
+    if (!bet.length) {
+      cancelCooldown();
+      return output.reply(
+        `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <bet>`
+      );
+    }
+    infoT = getTokensInfo("money", userData);
+  }
+
+  let amount = parseBet(bet, infoT.amount);
+
+  if (isNaN(amount) || amount <= 0) {
+    cancelCooldown();
+    return output.reply(`⚠️ Invalid bet amount.`);
+  }
+
+  if (amount > infoT.amount) {
+    cancelCooldown();
+    return output.reply(
+      `⚠️ You do not have enough ${formatTokens(
+        infoT,
+        amount
+      )}. You only had ${formatTokens(infoT, infoT.amount)}`
+    );
+  }
 
   if (!hasPass && amount > global.Cassidy.highRoll) {
     return output.reply(
@@ -62,42 +118,56 @@ export async function entry({
     );
   }
 
-  if (isNaN(amount) || amount <= 0 || amount > userMoney) {
-    cancelCooldown();
-    return output.reply(`⚠️ Invalid bet amount.`);
-  }
   const cashField = styler.getField("cashField");
   const resultText = styler.getField("resultText");
 
   if (!isWin) {
-    amount = Math.min(amount, userMoney);
+    amount = Math.min(amount, infoT.amount);
 
     cashField.applyTemplate({
-      cash: amount.toLocaleString(),
+      cash: formatTokens(infoT, amount),
     });
     bbLooses += amount;
 
     resultText.changeContent("You lost:");
 
     await money.setItem(input.senderID, {
-      money: userMoney - amount,
+      ...updatedTokensInfo(infoT, infoT.amount - amount),
       bbLooses,
       bbWins,
     });
-    output.reply(`💥 The Ball ⛹🏻‍♂️ missed🏀`);
+    const newInfo = getTokensInfo(
+      infoT.refKey,
+      await money.getCache(input.sid)
+    );
+    output.reply(
+      `💥 The Ball ⛹🏻‍♂️ missed🏀\nYour new amount is ${formatTokens(
+        newInfo,
+        newInfo.amount
+      )}`
+    );
   } else {
     bbWins += amount;
 
     cashField.applyTemplate({
-      cash: amount.toLocaleString(),
+      cash: formatTokens(infoT, amount),
     });
 
     resultText.changeContent("You Won:");
     await money.setItem(input.senderID, {
-      money: userMoney + amount,
+      ...updatedTokensInfo(infoT, infoT.amount + amount),
       bbWins,
       bbLooses,
     });
-    output.reply(`💥 The Ball ⛹🏻‍♂️ was shot successfully🏀`);
+    const newInfo = getTokensInfo(
+      infoT.refKey,
+      await money.getCache(input.sid)
+    );
+    output.reply(
+      `💥 The Ball ⛹🏻‍♂️ was shot successfully🏀\nYour new amount is ${formatTokens(
+        newInfo,
+        newInfo.amount
+      )}`
+    );
   }
 }

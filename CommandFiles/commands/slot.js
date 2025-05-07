@@ -1,5 +1,13 @@
 // @ts-check
 const fruits = ["🍒", "🍎", "🍓", "🍌", "🍊", "🍇", "🍐", "🍋"];
+import { parseBet } from "@cass-modules/ArielUtils";
+import {
+  formatTokens,
+  getTokensInfo,
+  updatedTokensInfo,
+} from "@cass-modules/MTLSUtils";
+
+const isT = Cassidy.config.gambleNeedsMint ?? false;
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -9,7 +17,7 @@ export const meta = {
   description: "Play the slot machine game",
   author: "Liane Cagara",
   version: "1.1.9",
-  usage: "{prefix}{name} <bet>",
+  usage: "{prefix}{name} [mtls_key] <bet>",
   category: "Gambling Games",
   permissions: [0],
   noPrefix: "both",
@@ -19,6 +27,7 @@ export const meta = {
   icon: "🍒",
   cmdType: "arl_g",
 };
+
 const { randArrValue } = global.utils;
 
 const highRollPass = {
@@ -46,45 +55,104 @@ export async function entry({
   cancelCooldown,
   Inventory,
 }) {
-  const [bet] = input.arguments.map((i) => Number(i));
   const senderID = input.senderID;
+  let userData = await money.getItem(senderID);
   let {
-    money: playerMoney,
+    inventory: ri,
     slotWins = 0,
     slotLooses = 0,
     winStreak = 0,
-    inventory: ri,
     slotLuck = false,
-  } = await money.getItem(senderID);
+  } = userData;
   if (slotLuck) {
     cancelCooldown();
   }
   const inventory = new Inventory(ri);
   const top = `𝖲𝗅𝗈𝗍 𝖱𝖾𝗌𝗎𝗅𝗍 | •~•`;
-  const bottom = `𝗬𝗼𝘂 𝘄𝗼𝗻: x$
-𝗬𝗼𝘂 𝗹𝗼𝘀𝘁: y$`;
+  const bottom = `𝗬𝗼𝘂 𝘄𝗼𝗻: x
+𝗬𝗼𝘂 𝗹𝗼𝘀𝘁: y`;
   let isBad = slotWins - slotLooses < 0;
 
-  if (!bet || isNaN(bet) || bet <= 0 || bet > playerMoney) {
-    output.reply(
-      `${icon}\n\nInvalid bet amount. Your current balance is ${playerMoney}$.
+  /**
+   * @type {string}
+   */
+  let bet;
+  /**
+   * @type {string}
+   */
+  let KEY;
+  /**
+   * @type {ReturnType<typeof getTokensInfo>}
+   */
+  let infoT;
 
-**Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$`
-    );
-    cancelCooldown();
-    return;
+  if (isT) {
+    [KEY = "", bet = ""] = input.arguments;
+    if (KEY.startsWith("mtls_")) {
+      KEY = KEY.replace("mtls_", "");
+    }
+    if (Cassidy.config.strictGambleNeedsMint && KEY === "money") {
+      cancelCooldown();
+      return output.reply("⚠️ We do not allow money bets!");
+    }
+    if (!KEY || !isNaN(parseBet(KEY, Infinity)) || !bet.length) {
+      cancelCooldown();
+      return output.reply(
+        `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <mtls_key> <bet>\n\nYou can check your **collectibles** or visit **MTLS** to mint one!\nMTLS Key should have no "mtls_" prefix.`
+      );
+    }
+    infoT = getTokensInfo(KEY, userData);
+  } else {
+    [bet] = input.arguments;
+    if (!bet.length) {
+      cancelCooldown();
+      return output.reply(
+        `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <bet>`
+      );
+    }
+    infoT = getTokensInfo("money", userData);
   }
+
+  const betAmount = parseBet(bet, infoT.amount);
+
+  if (isNaN(betAmount) || betAmount <= 0) {
+    cancelCooldown();
+    return output.reply(
+      `${icon}\n\nInvalid bet amount. Your current balance is ${formatTokens(
+        infoT,
+        infoT.amount
+      )}.\n\n**Total ${isBad ? `Looses` : `Wins`}:** ${formatTokens(
+        infoT,
+        Math.abs(slotWins - slotLooses)
+      )}`
+    );
+  }
+
   let hasPass = inventory.has(highRollPass.key);
-  if (!hasPass && bet > global.Cassidy.highRoll) {
+  if (!hasPass && betAmount > global.Cassidy.highRoll) {
+    cancelCooldown();
     return output.reply(
       `${icon}\n\nYou need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
     );
   }
-  if (bet > playerMoney * 0.75) {
+
+  if (betAmount > infoT.amount * 0.75) {
+    cancelCooldown();
     return output.reply(
       `${icon}\n\nYou cannot bet more than 75% of your balance.`
     );
   }
+
+  if (betAmount > infoT.amount) {
+    cancelCooldown();
+    return output.reply(
+      `${icon}\n\n⚠️ You do not have enough ${formatTokens(
+        infoT,
+        betAmount
+      )}. You only had ${formatTokens(infoT, infoT.amount)}`
+    );
+  }
+
   let result;
   let same = 0;
   const multipliers = {
@@ -104,7 +172,8 @@ export async function entry({
         same++;
       }
     }
-  } while (slotLuck && same === 0 && bet % 2 !== 0);
+  } while (slotLuck && same === 0 && betAmount % 2 !== 0);
+
   const multiplier = multipliers[same];
   let isWinPass = false;
   if (same) {
@@ -121,8 +190,9 @@ export async function entry({
   } else if (winStreak > 0) {
     winStreak--;
   }
-  const won = bet * multiplier;
-  const lost = !same ? bet : 0;
+
+  const won = betAmount * multiplier;
+  const lost = !same ? betAmount : 0;
   slotWins += Number(same ? won : 0);
   slotLooses += Number(same ? 0 : lost);
   isBad = slotWins - slotLooses < 0;
@@ -133,14 +203,20 @@ ${top}
 
 { ${result.join(" , ")} }
 
-${bottom.replace(/x/, String(won)).replace(/y/, String(lost))}
+${bottom
+  .replace(/x/, formatTokens(infoT, won))
+  .replace(/y/, formatTokens(infoT, lost))}
 
-**Total ${isBad ? `Looses` : `Wins`}:** ${Math.abs(slotWins - slotLooses)}$
+**Total ${isBad ? `Looses` : `Wins`}:** ${formatTokens(
+    infoT,
+    Math.abs(slotWins - slotLooses)
+  )}
 **Win Streak:** ${winStreak}${winStreak > 7 ? "" : "/7"}${
     isWinPass ? "\n🃏 You won a **HighRoll** pass!" : ""
   }`);
+
   await money.setItem(senderID, {
-    money: playerMoney + won - lost,
+    ...updatedTokensInfo(infoT, infoT.amount + won - lost),
     slotWins,
     slotLooses,
     winStreak,

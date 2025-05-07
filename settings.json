@@ -72,5 +72,6 @@
   "silentNotiMode": false,
   "verboseErrorStacks": false,
   "verboseBotMode": false,
-  "gambleNeedsMint": true
+  "gambleNeedsMint": true,
+  "strictGambleNeedsMint": true,
 }

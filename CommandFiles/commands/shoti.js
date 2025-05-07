@@ -7,7 +7,7 @@ export const meta = {
   description: "Send a random Shoti video",
   author: "0xVoid | Liane?",
   version: "1.0.0",
-  usage: "{prefix}{name}",
+  usage: "{prefix}{name} [mtls_key] <bet>",
   category: "Media",
   permissions: [0],
   noPrefix: "both",
@@ -17,17 +17,29 @@ export const meta = {
   icon: "😋",
 };
 
-import { abbreviateNumber, parseBet } from "@cass-modules/ArielUtils";
+import { parseBet } from "@cass-modules/ArielUtils";
 import { CassidyResponseStylerControl } from "@cassidy/styler";
 import Shoti from "shoti";
+import {
+  formatTokens,
+  getTokensInfo,
+  updatedTokensInfo,
+} from "@cass-modules/MTLSUtils";
 
+const isT = Cassidy.config.gambleNeedsMint ?? false;
 const shoti = new Shoti("$shoti-b04f8c279e");
 
 /**
  *
  * @param {CommandContext} ctx
  */
-export async function entry({ output, input, usersDB, Inventory }) {
+export async function entry({
+  output,
+  input,
+  usersDB,
+  Inventory,
+  cancelCooldown,
+}) {
   if (input.arguments[0]) {
     const cashGames = new CassidyResponseStylerControl({
       preset: ["cash_games.json"],
@@ -38,15 +50,68 @@ export async function entry({ output, input, usersDB, Inventory }) {
     const resultText = cashGames.getField("resultText");
 
     const userData = await usersDB.getItem(input.sid);
-    const bet = parseBet(input.arguments[0], userData.money);
     const inv = new Inventory(userData.inventory);
     let hasPass = inv.has("highRollPass");
 
-    if (isNaN(bet) || bet > userData.money || bet <= 0) {
+    /**
+     * @type {string}
+     */
+    let bet;
+    /**
+     * @type {string}
+     */
+    let KEY;
+    /**
+     * @type {ReturnType<typeof getTokensInfo>}
+     */
+    let infoT;
+
+    if (isT) {
+      [KEY = "", bet = ""] = input.arguments;
+      if (KEY.startsWith("mtls_")) {
+        KEY = KEY.replace("mtls_", "");
+      }
+      if (Cassidy.config.strictGambleNeedsMint && KEY === "money") {
+        cancelCooldown();
+        return output.reply("⚠️ We do not allow money bets!");
+      }
+      if (!KEY || !isNaN(parseBet(KEY, Infinity)) || !bet.length) {
+        cancelCooldown();
+        return output.reply(
+          `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <mtls_key> <bet>\n\nYou can check your **collectibles** or visit **MTLS** to mint one!\nMTLS Key should have no "mtls_" prefix.`
+        );
+      }
+      infoT = getTokensInfo(KEY, userData);
+    } else {
+      [bet] = input.arguments;
+      if (!bet.length) {
+        cancelCooldown();
+        return output.reply(
+          `⚠️ Wrong syntax!\n\n**Guide**: ${input.words[0]} <bet>`
+        );
+      }
+      infoT = getTokensInfo("money", userData);
+    }
+
+    const betAmount = parseBet(bet, infoT.amount);
+
+    if (isNaN(betAmount) || betAmount <= 0) {
+      cancelCooldown();
       return output.reply("⚠️ Invalid Bet");
     }
 
-    if (!hasPass && bet > global.Cassidy.highRoll) {
+    if (betAmount > infoT.amount) {
+      cancelCooldown();
+      return output.reply(
+        `⚠️ You do not have enough ${formatTokens(
+          infoT,
+          betAmount
+        )}. You only had ${formatTokens(infoT, infoT.amount)}`
+      );
+    }
+
+    if (!hasPass && betAmount > global.Cassidy.highRoll) {
+      cancelCooldown();
       return output.reply(
         `You need a **HighRoll Pass** 🃏 to place bets over ${global.Cassidy.highRoll}$`
       );
@@ -58,29 +123,31 @@ export async function entry({ output, input, usersDB, Inventory }) {
     let text = "";
 
     if (isWin) {
-      mod += +bet;
+      mod += +betAmount;
 
       cashField.applyTemplate({
-        cash: abbreviateNumber(Math.abs(mod)),
+        cash: formatTokens(infoT, Math.abs(mod)),
       });
 
       resultText.changeContent("You won:");
 
-      text = `😋 ***SARAP*** ni gurl! You won $${abbreviateNumber(
+      text = `😋 ***SARAP*** ni gurl! You won ${formatTokens(
+        infoT,
         Math.abs(mod)
-      )}💵.`;
+      )}.`;
     } else {
-      mod += -bet;
+      mod += -betAmount;
 
       cashField.applyTemplate({
-        cash: abbreviateNumber(Math.abs(mod)),
+        cash: formatTokens(infoT, Math.abs(mod)),
       });
 
       resultText.changeContent("You lost:");
 
-      text = `😝 ***ASIM*** ni gurl! You lost $${abbreviateNumber(
+      text = `😝 ***ASIM*** ni gurl! You lost ${formatTokens(
+        infoT,
         Math.abs(mod)
-      )}💵.`;
+      )}.`;
     }
 
     if (isNaN(mod)) {
@@ -88,12 +155,14 @@ export async function entry({ output, input, usersDB, Inventory }) {
     }
 
     await usersDB.setItem(input.sid, {
-      money: userData.money + mod,
+      ...updatedTokensInfo(infoT, infoT.amount + mod),
     });
 
-    text += ` Your new balance is $${abbreviateNumber(
-      (await usersDB.getCache(input.sid)).money
-    )}💵`;
+    const newInfo = getTokensInfo(
+      infoT.refKey,
+      await usersDB.getCache(input.sid)
+    );
+    text += ` Your new balance is ${formatTokens(infoT, newInfo.amount)}`;
 
     return output.replyStyled(text, {
       ...cashGames.getFields(),
