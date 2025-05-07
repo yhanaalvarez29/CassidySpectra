@@ -825,6 +825,13 @@ export class EasyOutput {
     this.output = output;
     this.input = input;
     this.lastMessage = null;
+    /**
+     *
+     * @param {OutputResult} i
+     */
+    this.resumeMessageWaiter = (i) => {
+      return i;
+    };
   }
 
   /**
@@ -851,7 +858,7 @@ export class EasyOutput {
     const i = await this.output.reply({
       body: String(msg),
     });
-    this.lastMessage = i;
+    this.setLastMessage(i);
     return i;
   }
 
@@ -863,7 +870,7 @@ export class EasyOutput {
     const i = await this.output.send({
       body: String(msg),
     });
-    this.lastMessage = i;
+    this.setLastMessage(i);
     return i;
   }
 
@@ -884,21 +891,53 @@ export class EasyOutput {
     return this.output.reaction(emoji);
   }
 
+  getMessageWaiter() {
+    return new Promise((res) => {
+      if (this.lastMessage) {
+        return res(this.lastMessage);
+      }
+      this.resumeMessageWaiter = (i) => {
+        res(i);
+        return i;
+      };
+    });
+  }
+
+  /**
+   *
+   * @param {OutputResult} i
+   */
+  setLastMessage(i) {
+    this.resumeMessageWaiter(i);
+    this.lastMessage = i;
+  }
+
+  async unsend() {
+    const last = await this.getMessageWaiter();
+    if (!last) {
+      this.throwLast();
+    }
+
+    return last.unsendSelf();
+  }
+
   /**
    *
    * @param {string} msg
+   * @param {number?} delay
    */
-  edit(msg) {
-    this.checkLast();
-    return this.lastMessage.editSelf(msg);
+  async edit(msg, delay = 500) {
+    const last = await this.getMessageWaiter();
+    if (!last) {
+      this.throwLast();
+    }
+
+    await global.utils.delay(delay);
+
+    return last.editSelf(msg);
   }
 
-  unsend() {
-    this.checkLast();
-    return this.lastMessage.unsendSelf();
-  }
-
-  checkLast() {
+  throwLast() {
     if (!this.lastMessage) {
       throw new Error("The bot haven't send a message yet!");
     }
