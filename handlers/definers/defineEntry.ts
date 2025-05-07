@@ -149,5 +149,18 @@ export function easyCMD(command: EasyCommand): CassidySpectra.CassidyCommand {
         return ctx.print("Missing a run() function!");
       }),
   };
+  const style: CassidySpectra.CommandStyle = {
+    ...(command.extra?.style ?? {}),
+    title: command.title,
+    titleFont: command.titleFont,
+    contentFont: command.contentFont,
+    content: command.content,
+  };
+  for (const [k, v] of Object.entries(style)) {
+    if (v === undefined || v === null) {
+      delete style[k];
+    }
+  }
+  newCommand.style = style;
   return newCommand;
 }
