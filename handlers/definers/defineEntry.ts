@@ -134,6 +134,13 @@ export interface EasyCommand {
  * Defines and returns a quick Cassidy Command.
  */
 export function easyCMD(command: EasyCommand): CassidySpectra.CassidyCommand {
+  const modifyCTX = (entryX: CommandEntryFunc) => {
+    return function entry(ctx: CommandContext) {
+      const newCTX: CommandContext["print"] & CommandContext =
+        ctx.print.assignStatic(ctx);
+      return entryX(newCTX);
+    };
+  };
   const newCommand: CassidySpectra.CassidyCommand = {
     ...(command.extra ?? {}),
     meta: {
@@ -143,11 +150,12 @@ export function easyCMD(command: EasyCommand): CassidySpectra.CassidyCommand {
       description: command.description ?? "No description.",
       version: command.version ?? "1.0.0",
     },
-    entry:
+    entry: modifyCTX(
       command.run ??
-      ((ctx) => {
-        return ctx.print("Missing a run() function!");
-      }),
+        ((ctx) => {
+          return ctx.print("Missing a run() function!");
+        })
+    ),
   };
   const style: CassidySpectra.CommandStyle = {
     ...(command.extra?.style ?? {}),
