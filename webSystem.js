@@ -1,7 +1,5 @@
 // @ts-check
 import { creatorX } from "./handlers/page/webhook.js";
-import { createDiscordListener } from "./handlers/discord/discordLogin.js";
-import { tphHandler } from "./handlers/talkersPH/tphHandler.js";
 
 /**
  * @type {Map<string, WebSocket>}
@@ -19,7 +17,9 @@ export class Listener {
     this.api = api;
     this.app = app;
 
-    this.callback = () => {};
+    this.callback = (...args) => {
+      return args;
+    };
     let setupFB = () => {
       let alive = true;
       if (typeof api?.listenMqtt === "function") {
@@ -84,7 +84,11 @@ export class Listener {
       });
     });
   }
-  async startListen(callback = () => {}) {
+  async startListen(
+    callback = (...args) => {
+      return args;
+    }
+  ) {
     this.callback = callback;
     try {
       handleWebSocket(this.wss, this.callback);
@@ -218,6 +222,21 @@ export class Event {
       mentions: {},
       isWeb: true,
     };
+    this.body = defaults.body;
+    this.senderID = defaults.senderID;
+    this.threadID = defaults.threadID;
+    this.messageID = defaults.messageID;
+    this.type = defaults.type;
+    this.timestamp = defaults.timestamp;
+    this.isGroup = defaults.isGroup;
+    this.isWeb = defaults.isWeb;
+    this.participantIDs = defaults.participantIDs;
+    this.attachments = defaults.attachments;
+    this.mentions = defaults.mentions;
+    /**
+     * @type {any}
+     */
+    this.messageReply = null;
     Object.assign(this, defaults, info);
     if (this.userID && this.isWeb) {
       this.userID = formatIP(this.senderID);
@@ -383,36 +402,46 @@ export class WssAPI {
     if (!Array.isArray(message.attachment) && message.attachment) {
       message.attachment = [message.attachment];
     }
-    if (Array.isArray(message.attachment)) {
-      resAt = await Promise.all(
-        [...message.attachment]
-          .filter((i) => i !== null && i !== undefined)
-          .map(async (item, index) => {
-            if (item && typeof item.on === "function") {
-              return await streamToBase64(item);
-            }
-            if (typeof item === "string") {
-              if (/^[A-Za-z0-9+/=]+$/.test(item) && item.length % 4 === 0) {
-                try {
-                  Buffer.from(item, "base64").toString("base64");
-                  return item;
-                } catch (e) {}
+    try {
+      if (Array.isArray(message.attachment)) {
+        resAt = await Promise.all(
+          [...message.attachment]
+            .filter((i) => i !== null && i !== undefined)
+            .map(async (item) => {
+              if (item && typeof item.on === "function") {
+                return await streamToBase64(item);
               }
-              return Buffer.from(item).toString("base64");
-            }
-            return null;
-          })
-          .filter(Boolean)
-      );
+              if (typeof item === "string") {
+                if (/^[A-Za-z0-9+/=]+$/.test(item) && item.length % 4 === 0) {
+                  try {
+                    Buffer.from(item, "base64").toString("base64");
+                    return item;
+                  } catch (e) {}
+                }
+                return Buffer.from(item).toString("base64");
+              }
+              return null;
+            })
+            .filter(Boolean)
+        );
+      }
+    } catch (error) {
+      console.error(error);
     }
-    const { fileTypeFromBuffer } = await global.fileTypePromise;
-    let attachmentType = await Promise.all(
-      (resAt ?? []).map(async (i) => {
-        const buffer = Buffer.from(i, "base64");
-        const type = await fileTypeFromBuffer(buffer);
-        return type?.mime;
-      })
-    );
+    let attachmentType;
+    try {
+      const { fileTypeFromBuffer } = await global.fileTypePromise;
+      attachmentType = await Promise.all(
+        (resAt ?? []).map(async (i) => {
+          const buffer = Buffer.from(i, "base64");
+          // @ts-ignore
+          const type = await fileTypeFromBuffer(buffer);
+          return type?.mime;
+        })
+      );
+    } catch (error) {
+      console.error(error);
+    }
     const self = this;
     return new Promise((resolve) => {
       self._queue.push({
@@ -461,7 +490,7 @@ export class WssAPI {
 /**
  *
  * @param {string} userID
- * @param {WebSocket} socket
+ * @param {WebSocket & { panelID: string; _xPassword: string }} socket
  */
 export async function recordUser(userID = "wss:user", socket) {
   if (typeof userID !== "string" || !userID) {
@@ -543,7 +572,7 @@ export function sendAllWS(data) {
   }
 }
 export function doAllWS(data) {
-  for (const [userID, socket] of wssUsers) {
+  for (const [, socket] of wssUsers) {
     socket.send(data);
   }
 }
@@ -553,64 +582,71 @@ export function doAllWS(data) {
  * @param {WebSocket.Server} ws
  */
 export function handleWebSocket(ws, funcListen) {
-  ws.on("connection", (socket) => {
-    const api = new WssAPI(socket);
-    socket.on("message", (i) => {
-      const data = JSON.parse(i);
-      if (socket._xPassword) {
-        data.password = socket._xPassword;
-      }
-      //console.log(data);
-      function listenCall({ ...props } = {}) {
-        const payload = { ...formatWssEvent({ ...data, ...props }) };
-        funcListen(null, payload, { wssApi: api });
-      }
-      if (data.botSend) {
-        return;
-      }
-      if (socket.panelID) {
-        data.senderID ??= socket.panelID;
-      }
+  ws.on(
+    "connection",
+    (
+      /**
+       * @type {WebSocket & { panelID: string; _xPassword: string }}
+       */ socket
+    ) => {
+      const api = new WssAPI(socket);
 
-      switch (data.type) {
-        case "login":
-          let { WEB_PASSWORD } = global.Cassidy.config;
-          if (process.env.WEB_PASSWORD) {
-            WEB_PASSWORD = process.env.WEB_PASSWORD;
-          }
-          if (data.password !== WEB_PASSWORD) {
-            socket.send(
-              JSON.stringify({
-                type: "login_failure",
-              })
-            );
-          } else {
-            socket._xPassword = data.password;
-          }
-          recordUser(data.panelID, socket);
-          break;
-        case "message":
-          handleMessage(socket, data, listenCall, api);
-          break;
-        case "message_reply":
-          handleMessage(socket, data, listenCall, api);
-          break;
-        case "message_reaction":
-          handleReaction(socket, data, listenCall, api);
-      }
-    });
-    socket.on("close", () => {
-      deleteUser(socket.panelID);
-    });
-  });
+      socket.on("message", (i) => {
+        const data = JSON.parse(i.toString());
+        if (socket._xPassword) {
+          data.password = socket._xPassword;
+        }
+        function listenCall({ ...props } = {}) {
+          const payload = { ...formatWssEvent({ ...data, ...props }) };
+          funcListen(null, payload, { wssApi: api });
+        }
+        if (data.botSend) {
+          return;
+        }
+        if (socket.panelID) {
+          data.senderID ??= socket.panelID;
+        }
+
+        switch (data.type) {
+          case "login":
+            let { WEB_PASSWORD } = global.Cassidy.config;
+            if (process.env.WEB_PASSWORD) {
+              WEB_PASSWORD = process.env.WEB_PASSWORD;
+            }
+            if (data.password !== WEB_PASSWORD) {
+              socket.send(
+                JSON.stringify({
+                  type: "login_failure",
+                })
+              );
+            } else {
+              socket._xPassword = data.password;
+            }
+            recordUser(data.panelID, socket);
+            break;
+          case "message":
+            handleMessage(socket, data, listenCall, api);
+            break;
+          case "message_reply":
+            handleMessage(socket, data, listenCall, api);
+            break;
+          case "message_reaction":
+            handleReaction(socket, data, listenCall);
+        }
+      });
+      socket.on("close", () => {
+        deleteUser(socket.panelID);
+      });
+    }
+  );
 }
 
 /**
  *
- * @param {WebSocket} socket
+ * @param {WebSocket} _socket
  */
 export function handleReaction(
-  socket,
+  _socket,
   { messageID, reaction, userID },
   listenCall
 ) {
@@ -644,27 +680,12 @@ export function handleEditMessage(socket, { body, messageID }) {
  * @param {WebSocket} socket
  */
 export function handleMessage(socket, data, listenCall, api) {
-  let { body, messageReply, botSend } = data;
+  let { botSend } = data;
   const messageID = generateWssMessageID();
   listenCall ??= function () {};
   if (socket) {
     console.log(`Sending data with messageID: ${messageID}`);
-    // socket.send(
-    //   JSON.stringify({
-    //     type: messageReply ? "message_reply" : "message",
-    //     body: String(body),
-    //     messageID,
-    //     ...(messageReply
-    //       ? {
-    //           messageReply: {
-    //             senderID: "wss:bot",
-    //             ...messageReply,
-    //           },
-    //         }
-    //       : {}),
-    //     botSend: !!botSend,
-    //   })
-    // );
+
     sendAllWS({ ...data, messageID });
   }
   if (botSend && api._queue.length > 0) {

@@ -12,6 +12,7 @@ class CassMongo {
   ignoreError: boolean;
   allowClear: boolean;
   #uri: string;
+  jsonMode: boolean;
   KeyValue: mongoose.Model<
     {
       key: string;
@@ -60,6 +61,7 @@ class CassMongo {
     this.collection = collection;
     this.ignoreError = ignoreError;
     this.allowClear = allowClear;
+    this.jsonMode = false;
 
     const keyValueSchema = new mongoose.Schema({
       key: { type: String, required: true, unique: true },

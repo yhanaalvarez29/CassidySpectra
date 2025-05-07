@@ -18,6 +18,7 @@ import fetchMeta from "../../CommandFiles/modules/fetchMeta";
 import { UNISpectra } from "@cassidy/unispectra";
 import { Inventory } from "@cassidy/ut-shop";
 import axios from "axios";
+import { queryObjects } from "@cass-modules/OBJQuery";
 
 export type UserDataKV = Partial<
   {
@@ -74,19 +75,9 @@ export default class UserStatsManager {
     this.collection = collection;
     this.#uri = process.env[uri];
     this.isMongo = !!global.Cassidy.config.MongoConfig?.status;
-    if (this.isMongo) {
-      this.#mongo = cassMongoManager.getInstance({
-        uri: this.#uri,
-        collection,
-      });
-      this.kv = this.#mongo.KeyValue;
-    }
 
     this.cache = {};
     this.ignoreQueue = [];
-    this.setItems({ test: {} }).then(() => {
-      this.deleteItem("test");
-    });
   }
 
   setMongo(mongo: CassMongo) {
@@ -266,8 +257,20 @@ export default class UserStatsManager {
         console.error("MONGODB Error, Activating JSON DB Mode", error);
         this.isMongo = false;
         this.set("test", this.defaults);
+        delete this.kv;
+        this.#mongo = null;
       }
     }
+    if (this.isMongo) {
+      this.#mongo = cassMongoManager.getInstance({
+        uri: this.#uri,
+        collection: this.collection,
+      });
+      this.kv = this.#mongo.KeyValue;
+    }
+    this.setItems({ test: {} }).then(() => {
+      this.deleteItem("test");
+    });
   }
 
   /**
@@ -420,27 +423,14 @@ export default class UserStatsManager {
               partialData[prop] = userData[prop];
             }
           }
-          results.push([key, partialData]);
+          results.push([
+            key,
+            propertyNames.length > 0 ? partialData : userData,
+          ]);
         }
       } else {
-        for (const [k, v] of Object.entries(data)) {
-          let matches = true;
-          for (const [filterKey, filterValue] of Object.entries(key)) {
-            if (v[filterKey] !== filterValue) {
-              matches = false;
-              break;
-            }
-          }
-          if (matches) {
-            const partialData: Partial<UserData> = {};
-            for (const prop of propertyNames) {
-              if (v.hasOwnProperty(prop)) {
-                partialData[prop] = v[prop];
-              }
-            }
-            results.push([k, partialData]);
-          }
-        }
+        const x = queryObjects(data, key, false, propertyNames as string[]);
+        results.push(...x);
       }
 
       return Object.fromEntries(
@@ -492,43 +482,8 @@ export default class UserStatsManager {
     ...propertyNames: T[]
   ) {
     if (!this.isMongo) {
-      const data = this.readMoneyFile();
-
-      let userData: UserData | undefined;
-      let newKey: string | undefined;
-
-      if (typeof key === "string") {
-        userData = data[key];
-        newKey = key;
-      } else {
-        for (const [k, v] of Object.entries(data)) {
-          let matches = true;
-          for (const [filterKey, filterValue] of Object.entries(key)) {
-            if (v[filterKey] !== filterValue) {
-              matches = false;
-              break;
-            }
-          }
-          if (matches) {
-            userData = v;
-            newKey = k;
-            break;
-          }
-        }
-      }
-
-      if (!userData) {
-        return this.processProperties({}, undefined, propertyNames);
-      }
-
-      const partialData: Partial<UserData> = {};
-      for (const prop of propertyNames) {
-        if (userData.hasOwnProperty(prop)) {
-          partialData[prop] = userData[prop];
-        }
-      }
-
-      return this.processProperties(partialData, newKey, propertyNames);
+      const res = await this.queryItemAll<T>(key, ...propertyNames);
+      return res[Object.keys(res)[0]] ?? {};
     }
 
     const selectedFieldsX = propertyNames.map((prop) => `value.${prop}`);
@@ -555,13 +510,13 @@ export default class UserStatsManager {
     userID: string,
     propertyNames: T[]
   ): Pick<UserData, T> {
-    if (propertyNames.length <= 0) {
-      propertyNames = Object.keys(userData) as T[];
-    }
     const processedData = this.process(
       { ...this.defaults, ...userData } as UserData,
       userID
     );
+    if (propertyNames.length === 0) {
+      return { ...processedData } as UserData;
+    }
     const mapped = propertyNames
       .map((prop) => [prop, processedData[prop]])
       .filter(([_, value]) => value !== undefined);
@@ -872,6 +827,9 @@ export default class UserStatsManager {
    * Know if a user id exists without wasting so much bandwidth
    */
   exists(key: string) {
+    if (!this.isMongo) {
+      return !!this.readMoneyFile()[key];
+    }
     return this.#mongo.containsKey(key);
   }
 
@@ -1026,7 +984,7 @@ export default class UserStatsManager {
    * @deprecated - idk
    */
   async toLeanObject() {
-    if (!this.#mongo) {
+    if (!this.isMongo) {
       return this.getAll();
     }
     try {

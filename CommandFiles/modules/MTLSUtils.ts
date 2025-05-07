@@ -78,14 +78,16 @@ export class MintManager {
 
   static async fromDB(globalDB: UserStatsManager): Promise<MintManager> {
     const data = (await globalDB.getCache(MintManager.MINT_KEY)) as Mints;
-    const allCache = await Cassidy.databases.usersDB.queryItemAll(
-      {
-        "value.collectibles": { $exists: true },
-      },
-      "collectibles"
-    );
+    const allCache = Cassidy.databases.usersDB.isMongo
+      ? await Cassidy.databases.usersDB.queryItemAll(
+          {
+            "value.collectibles": { $exists: true },
+          },
+          "collectibles"
+        )
+      : await Cassidy.databases.usersDB.getAllCache();
 
-    const mints = MintManager.updateCopies(data.mints, allCache);
+    const mints = MintManager.updateCopies(data.mints ?? {}, allCache);
     return new MintManager(mints);
   }
 

@@ -1,11 +1,11 @@
 {
   "name": "cassidy-spectra",
   "author": "Liane Cagara",
-  "version": "3.6.28-PRERELEASE",
+  "version": "3.6.29-PRERELEASE",
   "description": "Reworked Versatile Facebook Bot framework that provides many features.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node index.js --trace-warnings",
     "build": "[ ! -d ./dist-commandfiles ] && (command -v npx >/dev/null 2>&1 && npx tsc || tsc) || echo 'dist-commandfiles exists, skipping compilation'",
     "dev": "node dist-commandfiles/index.js",
     "clean": "rm -rf ./dist-commandfiles",
@@ -31,6 +31,7 @@
     "cassidy-styler": "^1.2.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "debug": "^4.4.0",
     "discord.js": "^14.15.2",
     "dotenv": "^16.4.5",
     "duplexify": "github:lianecagara/duplexify",
@@ -51,6 +52,7 @@
     "mathjs": "^12.4.2",
     "mime-types": "^3.0.1",
     "moment-timezone": "^0.5.45",
+    "mongoose-memory": "^1.1.2",
     "pastebin-api": "^7.0.0",
     "pastebin-js": "^1.0.6",
     "patch-package": "^8.0.0",
@@ -69,6 +71,7 @@
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.12",
     "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.16",
     "@types/mime-types": "^2.1.4",

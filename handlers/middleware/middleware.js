@@ -12,6 +12,7 @@ import { SymLock } from "../loaders/loadCommand.js";
 import { join } from "path";
 import { InputRoles } from "@cass-modules/InputClass";
 import { extractCommandRole } from "@cassidy/unispectra";
+import { inspect } from "util";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
@@ -243,11 +244,15 @@ export async function middleware({ allPlugins }) {
     collection: "spectraglobals",
     filepath: "handlers/database/globalDB.json",
   });
-  console.log(handleStat);
   global.handleStat = handleStat;
   await handleStat.connect();
   await threadsDB.connect();
   await globalDB.connect();
+  console.log({
+    usersDB: handleStat,
+    threadsDB,
+    globalDB,
+  });
   sortPlugin(allPlugins);
   global.Cassidy.databases = {
     usersDB: handleStat,
@@ -438,7 +443,7 @@ async function handleMiddleWare({
     /**
      * @type {Partial<CommandContext>}
      */
-    const runObjects = {
+    let runObjects = {
       api: new Proxy(api || {}, {
         get(target, key) {
           if (event.isWss && key in (wssApi ?? {})) {
@@ -509,6 +514,29 @@ api.${
       userStat: handleStat,
       commandRole: undefined,
     };
+    if (Cassidy.config.DEBUG) {
+      function makeProxy(a, pref = "") {
+        return new Proxy(a, {
+          get(target, p, arg) {
+            if (pref !== "CommandContext") {
+              logger(`Accessed: ${pref}.${String(p)}`, "DEBUG CTX");
+            }
+            const item = Reflect.get(target, p, arg);
+            if (
+              typeof item === "object" &&
+              item &&
+              Cassidy.config.DEBUG_PROPS.some((i) =>
+                i.startsWith(pref + "." + String(p))
+              )
+            ) {
+              return makeProxy(item, pref + "." + String(p));
+            }
+            return item;
+          },
+        });
+      }
+      runObjects = makeProxy(runObjects, "CommandContext");
+    }
     // @ts-ignore
     runObjects.allObj = runObjects;
     // @ts-ignore

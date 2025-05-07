@@ -1,20 +1,22 @@
 {
   "100075058221244": {
-    "money": 75363598,
+    "money": 1000075363598,
     "exp": 250000,
     "kills": 54,
     "spares": 7,
     "name2": "Liane",
     "name3": "Clover",
-    "name": "Clover"
+    "name": "Clover",
+    "lastModified": 1746625303185
   },
   "61551231060760": {
     "money": 2472,
     "exp": 0
   },
   "undefined": {
-    "money": 0,
-    "exp": 0
+    "money": 5000075363598,
+    "exp": 0,
+    "lastModified": 1746625054646
   },
   "61556018595762": {
     "money": 0,
@@ -268,16 +270,61 @@
       "exp": 5
     }
   },
-  "test": {
-    "money": 0,
-    "exp": 0,
-    "lastModified": 1742650543308
-  },
   "w@9-8-8-8-5:3-8-3-6-0:0:9-0:2-2-": {
-    "money": 0,
+    "money": 3999999999995,
     "exp": 0,
     "inventory": [],
     "name": "Lianee",
-    "lastModified": 1742561741572
+    "lastModified": 1746625303165,
+    "lastDailyClaim": 1746619365008,
+    "battlePoints": 10,
+    "collectibles": [
+      {
+        "metadata": {
+          "key": "gems",
+          "name": "Daily Gems",
+          "icon": "💎",
+          "type": "currency"
+        },
+        "amount": 1
+      },
+      {
+        "metadata": {
+          "key": "feudTickets",
+          "name": "Feud Tickets",
+          "icon": "🎫",
+          "type": "hardWork"
+        },
+        "amount": 0
+      },
+      {
+        "metadata": {
+          "key": "mtls_ccoins",
+          "name": "Chicken Coins",
+          "icon": "🐓",
+          "type": "MTLS"
+        },
+        "amount": 800000
+      }
+    ],
+    "cassExpress": {
+      "mailList": [
+        {
+          "body": "Congratulations **Lianee** for claiming your daily reward!",
+          "timeStamp": 1746619365009,
+          "title": "Daily Reward Claimed",
+          "author": "w@9-8-8-8-5:3-8-3-6-0:0:9-0:2-2-"
+        }
+      ],
+      "bankLogs": []
+    },
+    "cassEXP": {
+      "exp": 5
+    },
+    "shopInv": {
+      "richroll": true
+    },
+    "rrLooses": 200000,
+    "rrWins": 0
   }
 }

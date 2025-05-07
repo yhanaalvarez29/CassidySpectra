@@ -73,5 +73,12 @@
   "verboseErrorStacks": false,
   "verboseBotMode": false,
   "gambleNeedsMint": true,
-  "strictGambleNeedsMint": true
+  "strictGambleNeedsMint": true,
+  "DEBUG": false,
+  "DEBUG_PROPS": [
+    "CommandContext.threadsDB",
+    "CommandContext.usersDB",
+    "CommandContext.money",
+    "CommandContext.output"
+  ]
 }

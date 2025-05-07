@@ -369,7 +369,7 @@ export async function use(obj) {
         if (options.referenceQ === input.webQ) {
         }
         if (input.isWeb) {
-          console.log("Q", input.webQ, global.webQuery);
+          // console.log("Q", input.webQ, global.webQuery);
 
           let url = null;
           if (
@@ -418,7 +418,7 @@ export async function use(obj) {
             });
             //console.log(`Resolved message to ${input.webQ} with mid: ${newMid}`);
           }
-          console.log("WEB Res", toR);
+          // console.log("WEB Res", toR);
           return new Promise((r) => {
             LASTID = toR.messageID;
             r(toR);
@@ -446,7 +446,7 @@ export async function use(obj) {
                 body: options.body,
               });
               LASTID = resu.messageID;
-              console.log("API RESU", resu);
+              // console.log("API RESU", resu);
               res(resu);
             },
             optionsCopy.messageID ||
