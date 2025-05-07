@@ -245,6 +245,14 @@ export default class UserStatsManager {
    */
   async connect() {
     if (this.isMongo) {
+      this.#mongo = cassMongoManager.getInstance({
+        uri: this.#uri,
+        collection: this.collection,
+      });
+      this.kv = this.#mongo.KeyValue;
+    }
+
+    if (this.isMongo) {
       try {
         if (!this.#uri) {
           throw new Error(
@@ -253,24 +261,20 @@ export default class UserStatsManager {
         }
         await this.#mongo.start();
         await this.#mongo.put("test", this.defaults);
+        this.setItems({ test: {} }).then(() => {
+          this.deleteItem("test");
+        });
       } catch (error) {
         console.error("MONGODB Error, Activating JSON DB Mode", error);
         this.isMongo = false;
         this.set("test", this.defaults);
         delete this.kv;
         this.#mongo = null;
+        this.setItems({ test: {} }).then(() => {
+          this.deleteItem("test");
+        });
       }
     }
-    if (this.isMongo) {
-      this.#mongo = cassMongoManager.getInstance({
-        uri: this.#uri,
-        collection: this.collection,
-      });
-      this.kv = this.#mongo.KeyValue;
-    }
-    this.setItems({ test: {} }).then(() => {
-      this.deleteItem("test");
-    });
   }
 
   /**
