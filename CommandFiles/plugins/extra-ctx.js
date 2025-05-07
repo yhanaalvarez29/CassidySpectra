@@ -25,5 +25,6 @@ export async function use(ctx) {
   ctx.UNISpectra = UNISpectra;
   ctx.UNIUtils = UNIUtils;
   ctx.SmartSpectra = SmartSpectra;
+  ctx.pause = global.utils.delay;
   return ctx.next();
 }

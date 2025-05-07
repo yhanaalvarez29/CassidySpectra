@@ -680,6 +680,11 @@ declare global {
      * Unsends the last message that is sent using print, reply, or send
      */
     unsend: EasyOutput["unsend"];
+
+    /**
+     * Returns a pause promise, (USE await)
+     */
+    pause: typeof utils.delay;
   }
 
   type CommandContext = CommandContextOG & { [key: string]: unknown };
