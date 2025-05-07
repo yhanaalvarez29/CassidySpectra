@@ -176,7 +176,7 @@ export class CassidyIO {
 
 /**
  *
- * @type {CommandEntry}
+ * @param {CommandContext} obj
  */
 export async function use(obj) {
   let LASTID = null;
@@ -786,8 +786,123 @@ export async function use(obj) {
   const cassIO = new CassidyIO(obj.input, obj.output, obj.command?.style);
   obj.cassIO = cassIO;
   obj.input.attachSystemsToOutput(obj.output);
+  const easy = new EasyOutput(obj.output, obj.input);
+  obj.print = easy.getBound("print");
+  obj.reply = easy.getBound("reply");
+  obj.send = easy.getBound("send");
+  obj.attachment = easy.getBound("attachment");
+  obj.reaction = easy.getBound("reaction");
+  obj.edit = easy.getBound("edit");
+  obj.unsend = easy.getBound("unsend");
+
+  obj.EasyOutput = EasyOutput;
 
   obj.next();
+}
+
+export class EasyOutput {
+  /**
+   * @type {import("output-cassidy").OutputProps}
+   */
+  output;
+  /**
+   * @type {InputClass}
+   */
+  input;
+
+  /**
+   *
+   * @type {OutputResult}
+   */
+  lastMessage;
+
+  /**
+   *
+   * @param {import("output-cassidy").OutputProps} output
+   * @param {InputClass} input
+   */
+  constructor(output, input) {
+    this.output = output;
+    this.input = input;
+    this.lastMessage = null;
+  }
+
+  /**
+   * @template {keyof EasyOutput} K
+   * @param {K} key
+   * @returns {EasyOutput[K] extends (...args: any[]) => any ? (this: EasyOutput, ...params: Parameters<EasyOutput[K]>) => ReturnType<EasyOutput[K]> : EasyOutput[K]}
+   */
+  getBound(key) {
+    if (typeof this[key] !== "function") {
+      return this[key];
+    }
+    return this[key].bind(this);
+  }
+
+  get print() {
+    return this.reply;
+  }
+
+  /**
+   *
+   * @param {string} msg
+   */
+  async reply(msg) {
+    const i = await this.output.reply({
+      body: String(msg),
+    });
+    this.lastMessage = i;
+    return i;
+  }
+
+  /**
+   *
+   * @param {string} msg
+   */
+  async send(msg) {
+    const i = await this.output.send({
+      body: String(msg),
+    });
+    this.lastMessage = i;
+    return i;
+  }
+
+  /**
+   *
+   * @param {string} url
+   * @param {string?} msg
+   */
+  attachment(url, msg = "") {
+    return this.output.attach(String(msg) || "", String(url));
+  }
+
+  /**
+   *
+   * @param {string} emoji
+   */
+  reaction(emoji) {
+    return this.output.reaction(emoji);
+  }
+
+  /**
+   *
+   * @param {string} msg
+   */
+  edit(msg) {
+    this.checkLast();
+    return this.lastMessage.editSelf(msg);
+  }
+
+  unsend() {
+    this.checkLast();
+    return this.lastMessage.unsendSelf();
+  }
+
+  checkLast() {
+    if (!this.lastMessage) {
+      throw new Error("The bot haven't send a message yet!");
+    }
+  }
 }
 
 function assignProp(func, obj) {

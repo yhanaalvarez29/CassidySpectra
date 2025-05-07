@@ -115,3 +115,39 @@ export function registerGoat(
   module.exports = convertToGoat(module.exports);
   return module.exports;
 }
+
+export interface EasyCommand {
+  name: string;
+  category?: string;
+  description?: string;
+  version?: CassidySpectra.CommandMeta["version"];
+  meta?: Partial<CassidySpectra.CommandMeta>;
+  run(ctx: CommandContext): Promise<any> | any;
+  title?: CassidySpectra.CommandStyle["title"];
+  titleFont?: CassidySpectra.CommandStyle["titleFont"];
+  contentFont?: CassidySpectra.CommandStyle["contentFont"];
+  content?: CassidySpectra.CommandStyle["content"];
+  extra?: Partial<CassidySpectra.CassidyCommand>;
+}
+
+/**
+ * Defines and returns a quick Cassidy Command.
+ */
+export function easyCMD(command: EasyCommand): CassidySpectra.CassidyCommand {
+  const newCommand: CassidySpectra.CassidyCommand = {
+    ...(command.extra ?? {}),
+    meta: {
+      ...(command.meta ?? {}),
+      name: command.name,
+      category: command.category ?? "Easy",
+      description: command.description ?? "No description.",
+      version: command.version ?? "1.0.0",
+    },
+    entry:
+      command.run ??
+      ((ctx) => {
+        return ctx.print("Missing a run() function!");
+      }),
+  };
+  return newCommand;
+}

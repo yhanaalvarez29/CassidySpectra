@@ -640,6 +640,46 @@ declare global {
      * @deprecated Provides access to the startSteal utility.
      */
     startSteal?: Function;
+
+    /**
+     * Easy, duhhh?
+     */
+    EasyOutput: typeof EasyOutput;
+
+    /**
+     * Sends a reply to the current user.
+     */
+    reply: EasyOutput["reply"];
+
+    /**
+     * Sends a reply to the current user.
+     */
+    print: EasyOutput["print"];
+
+    /**
+     * Sends a non-reply to the current user.
+     */
+    send: EasyOutput["send"];
+
+    /**
+     * Sends an emoji reaction to the current user.
+     */
+    reaction: EasyOutput["reaction"];
+
+    /**
+     * Sends an attachment to the current user using link
+     */
+    attachment: EasyOutput["attachment"];
+
+    /**
+     * Edits the last message that is sent using print, reply, or send
+     */
+    edit: EasyOutput["edit"];
+
+    /**
+     * Unsends the last message that is sent using print, reply, or send
+     */
+    unsend: EasyOutput["unsend"];
   }
 
   type CommandContext = CommandContextOG & { [key: string]: unknown };
@@ -912,7 +952,12 @@ declare global {
   export interface Output extends OutputX {}
   export interface Input extends InputClass {}
   export interface OutputResultC extends OutputResult {}
+
+  var defineCommand: typeof CassDefine.defineCommand;
+  var easyCMD: typeof CassDefine.easyCMD;
 }
+
+import * as CassDefine from "@cass/define";
 
 declare global {
   var Cassidy: CassidySpectra.GlobalCassidy;
@@ -952,7 +997,7 @@ import {
   Quest,
   WildPlayer,
 } from "@cass-plugins/pet-fight.js";
-import { CassidyIO, OutputResult } from "@cass-plugins/output.js";
+import { CassidyIO, EasyOutput, OutputResult } from "@cass-plugins/output.js";
 import { JsonMap } from "@cass-plugins/JsonMap.js";
 import { CassExpress, CustomAI } from "@cass-plugins/cassexpress.js";
 import { NeaxUI, OptionsList, VirtualFiles } from "@cass-plugins/neax-ui.js";

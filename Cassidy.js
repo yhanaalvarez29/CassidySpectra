@@ -36,6 +36,9 @@ import * as fs from "fs";
 import __pkg from "./package.json";
 global.package = __pkg;
 global.logger = logger;
+import { defineCommand, easyCMD } from "@cass/define";
+global.defineCommand = defineCommand;
+global.easyCMD = easyCMD;
 
 /**
  * @type {globalThis["Cassidy"]["commands"]}
