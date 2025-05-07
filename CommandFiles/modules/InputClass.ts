@@ -461,17 +461,24 @@ export class InputClass extends String implements InputProps {
   }
 
   public async isThreadAdmin(uid: string, refresh = false): Promise<boolean> {
-    if (refresh) {
-      await this.#__threadsDB.saveThreadInfo(this.threadID, this.#__api);
-    } else {
-      // console.log(Reflect.ownKeys(this.#__context), new Error());
-      await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
-    }
-    const { threadInfo } = await this.#__threadsDB.getCache(this.threadID);
+    try {
+      if (refresh) {
+        await this.#__threadsDB.saveThreadInfo(this.threadID, this.#__api);
+      } else {
+        // console.log(Reflect.ownKeys(this.#__context), new Error());
+        await this.#__threadsDB.ensureThreadInfo(this.threadID, this.#__api);
+      }
+      const { threadInfo } = await this.#__threadsDB.getCache(this.threadID);
 
-    return Boolean(
-      threadInfo && threadInfo.adminIDs.some((i: any) => i.id === uid)
-    );
+      return Boolean(
+        threadInfo &&
+          threadInfo.adminIDs &&
+          threadInfo.adminIDs?.some((i: any) => i.id === uid)
+      );
+    } catch (error) {
+      console.error(error);
+    }
+    return false;
   }
 
   public async updateRole() {
