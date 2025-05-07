@@ -794,6 +794,8 @@ export async function use(obj) {
   obj.reaction = easy.getBound("reaction");
   obj.edit = easy.getBound("edit");
   obj.unsend = easy.getBound("unsend");
+  obj.atReply = easy.getBound("atReply");
+  obj.atReaction = easy.getBound("atReaction");
 
   obj.EasyOutput = EasyOutput;
 
@@ -891,6 +893,10 @@ export class EasyOutput {
     return this.output.reaction(emoji);
   }
 
+  /**
+   *
+   * @returns {OutputResult}
+   */
   getMessageWaiter() {
     return new Promise((res) => {
       if (this.lastMessage) {
@@ -935,6 +941,32 @@ export class EasyOutput {
     await global.utils.delay(delay);
 
     return last.editSelf(msg);
+  }
+
+  /**
+   *
+   * @param {(ctx: CommandContext) => any | Promise<any>} callback
+   */
+  async atReply(callback) {
+    const last = await this.getMessageWaiter();
+    if (!last) {
+      this.throwLast();
+    }
+
+    return last.atReply(callback);
+  }
+
+  /**
+   *
+   * @param {(ctx: CommandContext) => any | Promise<any>} callback
+   */
+  async atReaction(callback) {
+    const last = await this.getMessageWaiter();
+    if (!last) {
+      this.throwLast();
+    }
+
+    return last.atReaction(callback);
   }
 
   throwLast() {

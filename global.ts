@@ -682,6 +682,16 @@ declare global {
     unsend: EasyOutput["unsend"];
 
     /**
+     * Add reply listener for the last message that is sent using print, reply, or send
+     */
+    atReply: EasyOutput["atReply"];
+
+    /**
+     * Add reaction listener for the last message that is sent using print, reply, or send
+     */
+    atReaction: EasyOutput["atReaction"];
+
+    /**
      * Returns a pause promise, (USE await)
      */
     pause: typeof utils.delay;
