@@ -84,7 +84,6 @@ export class MintManager {
       },
       "collectibles"
     );
-    console.log(allCache);
 
     const mints = MintManager.updateCopies(data.mints, allCache);
     return new MintManager(mints);
