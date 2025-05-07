@@ -169,6 +169,8 @@ export function easyCMD(command: EasyCommand): CassidySpectra.CassidyCommand {
       delete style[k];
     }
   }
-  newCommand.style = style;
+  if (Object.entries(style).length > 0) {
+    newCommand.style = style;
+  }
   return newCommand;
 }

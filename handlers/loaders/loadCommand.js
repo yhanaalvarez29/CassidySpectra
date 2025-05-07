@@ -138,7 +138,7 @@ export async function loadCommand(
       `CommandFiles/commands/${fileName}`,
       "utf-8"
     );
-    const version = fileCOntent.match(verRegex)?.[1];
+    const version = fileCOntent.match(verRegex)?.[1] ?? command.meta?.version;
     if (!version || !isValidVersion(version)) {
       throw new Error(`Invalid version found in ${fileName}, got: ${version}`);
     }
