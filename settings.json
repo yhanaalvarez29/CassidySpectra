@@ -69,7 +69,7 @@
   "disableInflation": true,
   "standardSpectra": false,
   "autoGoogleTranslate": "",
-  "silentNotiMode": true,
+  "silentNotiMode": false,
   "verboseErrorStacks": false,
   "verboseBotMode": false,
   "gambleNeedsMint": true
