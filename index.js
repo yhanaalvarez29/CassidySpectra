@@ -82,7 +82,7 @@ setInterval?.(async () => {
     await axios.get(`http://localhost:8000`);
   } catch (err) {
     if (err instanceof axios.AxiosError) {
-      if (err.response.status === 499 && currentChild) {
+      if (err.response?.status === 499 && currentChild) {
         console.log("499 Detected, trying a restart.");
         currentChild.kill("SIGTERM");
         if (!running) {
