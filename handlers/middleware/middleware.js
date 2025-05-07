@@ -341,6 +341,9 @@ async function handleMiddleWare({
   let pluginCount = 0;
 
   try {
+    if (["typ", "read_receipt", "read", "presence"].includes(event.type)) {
+      return;
+    }
     if (event.body && global.Cassidy.config.censorInput) {
       event.body = censor(event.body);
     }
