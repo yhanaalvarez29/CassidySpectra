@@ -1,3 +1,4 @@
+// @ts-check
 const { spawn } = require("child_process");
 const gradient = require("gradient-string");
 const { retro } = gradient;
@@ -8,12 +9,20 @@ const { retro } = gradient;
   Proceed with extreme caution and refrain from any unauthorized actions.
 */
 
-const axios = require("axios");
+const axios = require("axios").default;
+
+/**
+ * @type {import("child_process").ChildProcessWithoutNullStreams}
+ */
+let currentChild = null;
+let running = false;
 function runChildProcess() {
   const child = spawn("node", ["spawner.js"], {
     shell: true,
     stdio: "pipe",
   });
+  running = true;
+  currentChild = child;
 
   child.stdout.on("data", (data) => {
     const output = retro(data.toString());
@@ -26,6 +35,7 @@ function runChildProcess() {
   });
 
   child.on("close", (code) => {
+    running = false;
     if (code === 69) {
       return;
     }
@@ -70,5 +80,18 @@ runChildProcess2();
 setInterval?.(async () => {
   try {
     await axios.get(`http://localhost:8000`);
-  } catch (err) {}
+  } catch (err) {
+    if (err instanceof axios.AxiosError) {
+      if (err.response.status === 499 && currentChild) {
+        console.log("499 Detected, trying a restart.");
+        currentChild.kill("SIGTERM");
+        if (!running) {
+          runChildProcess();
+          console.log("Plan: A");
+        } else {
+          console.log("Plan: B");
+        }
+      }
+    }
+  }
 }, 10000);
