@@ -124,19 +124,24 @@ export class MintManager {
       result[author] = (mints ?? []).map((mint) => {
         const target = cll.get(`mtls_${mint.id}`);
         const origCopies = mint.copies || 1;
+        const actualAmount = target?.amount ?? origCopies;
 
-        const updatedCopies = target?.amount
-          ? Math.max(target.amount, 1)
-          : mint.copies;
-        const diff = Math.max(updatedCopies - origCopies, 0);
+        let updatedCopies = actualAmount;
         let newAssets = mint.asset;
-        let tempCopies = mint.copies || 1;
 
-        if (diff >= 1) {
-          for (let i = 1; i <= diff; i++) {
-            const marketValue = mint.asset / tempCopies || 0;
+        if (updatedCopies > origCopies) {
+          let tempCopies = origCopies;
+          for (let i = 1; i <= updatedCopies - origCopies; i++) {
+            const marketValue = newAssets / tempCopies || 0;
             newAssets += marketValue;
             tempCopies++;
+          }
+        } else if (updatedCopies < origCopies) {
+          let tempCopies = origCopies;
+          for (let i = 1; i <= origCopies - updatedCopies; i++) {
+            const marketValue = newAssets / tempCopies || 0;
+            newAssets -= marketValue;
+            tempCopies--;
           }
         }
 
