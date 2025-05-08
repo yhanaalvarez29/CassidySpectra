@@ -91,7 +91,7 @@ export class MintManager {
     return new MintManager(mints);
   }
 
-  static flatAllCll(
+  static flatAllCllOld(
     userData: Record<string, Partial<UserData>>
   ): CollectibleItem[] {
     const amountsMap = new Map<string, CollectibleItem>();
@@ -111,6 +111,29 @@ export class MintManager {
     }
 
     return Array.from(amountsMap.values());
+  }
+
+  static flatAllCll(
+    userData: Record<string, Partial<UserData>>
+  ): CollectibleItem[] {
+    return Array.from(
+      Object.values(userData)
+        .reduce((amountsMap, user) => {
+          user.collectibles?.forEach((item) => {
+            const key = item?.metadata?.key;
+            if (key) {
+              const existing = amountsMap.get(key);
+              if (existing) {
+                existing.amount += item.amount || 0;
+              } else {
+                amountsMap.set(key, { ...item });
+              }
+            }
+          });
+          return amountsMap;
+        }, new Map<string, CollectibleItem>())
+        .values()
+    );
   }
 
   static updateCopies(
