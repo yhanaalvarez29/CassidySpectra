@@ -637,7 +637,7 @@ const configs: Config[] = [
               return `${index + 1}. ${await formatMint(mint, usersDB)}`;
             })
           )
-        ).join("\n");
+        ).join("\n\n");
       };
 
       const topCopiesText = await formatTopList(sortedByCopies, "Copies");
@@ -683,16 +683,10 @@ const configs: Config[] = [
         cll.register(KEY, converted);
       }
 
-      let totalAssetIncrease = 0;
-      let currentAsset = mint.asset || 0;
-      let currentCopies = mint.copies || 1;
-
-      for (let i = 0; i < amount; i++) {
-        const marketValue = currentAsset / currentCopies || 0;
-        totalAssetIncrease += marketValue;
-        currentAsset += marketValue;
-        currentCopies += 1;
-      }
+      const totalAssetIncrease =
+        mint.asset * ((mint.copies + amount) / mint.copies - 1);
+      const currentAsset = mint.asset + totalAssetIncrease;
+      const currentCopies = mint.copies + amount;
 
       const newBal = userData.money - Math.floor(totalAssetIncrease);
 
@@ -789,16 +783,9 @@ const configs: Config[] = [
         );
       }
 
-      let totalAssetDecrease = 0;
-      let currentAsset = mint.asset || 0;
-      let tempCopies = currentCopies;
-
-      for (let i = 0; i < actualConverted; i++) {
-        const marketValue = currentAsset / tempCopies || 0;
-        totalAssetDecrease += marketValue;
-        currentAsset -= marketValue;
-        tempCopies -= 1;
-      }
+      const totalAssetDecrease =
+        mint.asset * (1 - (mint.copies - actualConverted) / mint.copies);
+      const currentAsset = mint.asset - totalAssetDecrease;
 
       const convertedMoney = Math.floor(totalAssetDecrease);
       const newBal = userData.money + convertedMoney;
