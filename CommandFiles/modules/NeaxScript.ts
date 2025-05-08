@@ -162,7 +162,14 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
-    async *ulink({ globalDB, nsxuCreated, nsxTarget, nsxu, isAuthorAdmin }) {
+    async *ulink({
+      globalDB,
+      nsxuCreated,
+      nsxTarget,
+      nsxu,
+      isAuthorAdmin,
+      isTargetAdmin,
+    }) {
       if (!isAuthorAdmin) {
         yield nsxu.notAllowed();
         return Codes.PermissionNeedRise;
@@ -172,7 +179,7 @@ export namespace NeaxScript {
         yield "Missing target.";
         return Codes.MissingOrInvalidArgs;
       }
-      if (isAuthorAdmin && Cassidy.config.ignoreUIDLinksOfAdminBOT) {
+      if (isTargetAdmin && Cassidy.config.ignoreUIDLinksOfAdminBOT) {
         yield "Cannot modify uid link of a bot admin.";
         return Codes.MissingOrInvalidArgs;
       }
