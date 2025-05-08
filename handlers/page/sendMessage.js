@@ -190,6 +190,9 @@ export class APIPage {
     if (body.attachment) {
       delete body.text;
     }
+    if (body.text) {
+      body.text = String(body.text).slice(0, 2000);
+    }
 
     const conf = {
       url: "https://graph.facebook.com/v20.0/me/messages",
@@ -319,7 +322,7 @@ export class APIPage {
           qs: { access_token: this.token },
           method: "POST",
           json: { reaction_type: reaction },
-        },  
+        },
         (error, _, responseBody) => {
           if (error) {
             if (callback) callback(error, null);

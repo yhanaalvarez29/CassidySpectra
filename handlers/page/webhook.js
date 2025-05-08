@@ -91,7 +91,10 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
 
           if (eventX.message || eventX.reaction) {
             const convertedEvent = convertEvent(event);
-            if (typeof convertedEvent.body === "string") {
+            if (
+              typeof convertedEvent.body === "string" &&
+              !convertedEvent.messageReply
+            ) {
               const [commandName] = convertedEvent.body.split(" ");
               const commandExists = Object.keys(global.Cassidy.commands).some(
                 (key) => key.toLowerCase() === commandName.toLowerCase()
