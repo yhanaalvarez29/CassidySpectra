@@ -337,18 +337,21 @@ const { censor } = require("fca-liane-utils");
  * Recursively replaces UID strings with links in nested objects and arrays.
  * Uses Object.entries and Object.fromEntries for cleaner object traversal.
  * @param {Map<string, string>} map - The map of links
- * @param {any} value - The input value to process.
+ * @param {unknown} value - The input value to process.
  * @returns {any} - Transformed value with UID links replaced.
  */
 export const replaceLinked = (map, value) => {
   try {
     if (Array.isArray(value)) {
-      return value.map(replaceLinked);
+      return value.map((i) => replaceLinked(map, i));
     }
 
     if (value && typeof value === "object") {
       return Object.fromEntries(
-        Object.entries(value).map(([key, val]) => [key, replaceLinked(val)])
+        Object.entries(value).map(([key, val]) => [
+          key,
+          replaceLinked(map, val),
+        ])
       );
     }
 
@@ -361,6 +364,7 @@ export const replaceLinked = (map, value) => {
         if (typeof link === "string") {
           return link;
         }
+        return value;
       }
     }
   } catch (error) {
