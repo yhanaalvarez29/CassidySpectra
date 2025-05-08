@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.0",
+  version: "1.0.1",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -761,8 +761,8 @@ export async function entry(ctx: CommandContext) {
             )}\n`;
             result += `📜 ${
               shopItem.type === "srworker"
-                ? "Your new **worker** can be assigned to buildings!"
-                : "Use `${prefix}skyrise build ${shopItem.key}` to construct this **building**."
+                ? `Your new **worker** can be assigned to buildings!`
+                : `Use ${prefix}skyrise build ${shopItem.key} to construct this **building**.`
             }\n`;
             result += `\n📝 **Next Step**: ${suggestNextAction(
               buildingsData,
