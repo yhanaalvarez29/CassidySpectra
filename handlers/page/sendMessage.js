@@ -319,7 +319,7 @@ export class APIPage {
           qs: { access_token: this.token },
           method: "POST",
           json: { reaction_type: reaction },
-        },
+        },  
         (error, _, responseBody) => {
           if (error) {
             if (callback) callback(error, null);
