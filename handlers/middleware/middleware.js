@@ -333,6 +333,44 @@ const deSYMC = function (axx) {
 // @ts-ignore
 const { censor } = require("fca-liane-utils");
 
+/**
+ * Recursively replaces UID strings with links in nested objects and arrays.
+ * Uses Object.entries and Object.fromEntries for cleaner object traversal.
+ * @param {Map<string, string>} map - The map of links
+ * @param {any} value - The input value to process.
+ * @returns {any} - Transformed value with UID links replaced.
+ */
+export const replaceLinked = (map, value) => {
+  try {
+    if (Array.isArray(value)) {
+      return value.map(replaceLinked);
+    }
+
+    if (value && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, val]) => [key, replaceLinked(val)])
+      );
+    }
+
+    if (!Cassidy.config.disableUIDLinks && typeof value === "string") {
+      if (
+        !Cassidy.config.ADMINBOT.includes(value) ||
+        !Cassidy.config.ignoreUIDLinksOfAdminBOT
+      ) {
+        const link = map.get(value);
+        if (typeof link === "string") {
+          return link;
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return value;
+};
+
+export const UID_LINKS_KEY = "uid-links";
+
 async function handleMiddleWare({
   api,
   event,
@@ -354,6 +392,13 @@ async function handleMiddleWare({
     }
     let prefixes = [prefix, ...global.Cassidy.config.EXTRAPREFIX];
     const threadCache = await threadsDB.getCache(event.threadID);
+    const { links = [] } = await globalDB.getCache(UID_LINKS_KEY);
+    const linksMap = new Map(links);
+
+    for (const [key, value] of Object.entries(event)) {
+      event[key] = replaceLinked(linksMap, value);
+    }
+
     if (typeof threadCache.threadPrefix === "string") {
       prefixes = [threadCache.threadPrefix];
       prefix = prefixes[0];

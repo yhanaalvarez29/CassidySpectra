@@ -80,5 +80,7 @@
     "CommandContext.usersDB",
     "CommandContext.money",
     "CommandContext.output"
-  ]
+  ],
+  "disableUIDLinks": false,
+  "ignoreUIDLinksOfAdminBOT": true
 }

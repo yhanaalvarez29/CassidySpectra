@@ -1,5 +1,5 @@
+import { UID_LINKS_KEY } from "@root/handlers/middleware/middleware";
 import * as nodeUtil from "util";
-import InputClass from "./InputClass";
 
 export namespace NeaxScript {
   const { Cassidy } = global;
@@ -134,6 +134,20 @@ export namespace NeaxScript {
   Requirements:
   - Author must have permission or be an admin
   `,
+    input: `
+  Retrieves a nested property from a inputs's data.
+  Usage: tget::<threadID> <nested_keys...>
+  Example: tget::1234567890 config mods
+  Arguments:
+  - threadID: thread ID
+  - nested_keys: keys from outermost to innermost (space-separated)
+  Flags:
+  - --json: Output as JSON
+  - --raw: Suppress property name prefix
+  - --depth <number>: Custom object inspection depth
+  Requirements:
+  - Author must have permission or be an admin
+  `,
   };
 
   export enum Codes {
@@ -148,6 +162,64 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
+    async *ulink({ globalDB, nsxuCreated, nsxTarget, nsxu, isAuthorAdmin }) {
+      if (!isAuthorAdmin) {
+        yield nsxu.notAllowed();
+        return Codes.PermissionNeedRise;
+      }
+
+      if (!nsxTarget) {
+        yield "Missing target.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      if (isAuthorAdmin && Cassidy.config.ignoreUIDLinksOfAdminBOT) {
+        yield "Cannot modify uid link of a bot admin.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      const [linkedUID] = nsxuCreated.args;
+      if (!linkedUID) {
+        yield "Missing link uid as first arg.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      const { links = [] } = await globalDB.getItem(UID_LINKS_KEY);
+      const linksMap = new Map(links);
+      linksMap.set(nsxTarget, linkedUID);
+      await globalDB.setItem(UID_LINKS_KEY, {
+        links: Array.from(linksMap),
+      });
+
+      yield `Link success [${nsxTarget}]`;
+      yield nsxu.json([nsxTarget, linksMap.get(nsxTarget)]);
+      yield `${nsxTarget} will now use uid of ${linksMap.get(nsxTarget)}`;
+      return Codes.Success;
+    },
+    async *uunlink({ globalDB, nsxTarget, nsxu, isAuthorAdmin }) {
+      if (!isAuthorAdmin) {
+        yield nsxu.notAllowed();
+        return Codes.PermissionNeedRise;
+      }
+      if (!nsxTarget) {
+        yield "Missing target.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      const { links = [] } = await globalDB.getItem(UID_LINKS_KEY);
+      const linksMap = new Map(links);
+      const linkedUID = linksMap.get(nsxTarget);
+      if (!linkedUID) {
+        yield "The target has no linked uid.";
+        return Codes.MissingOrInvalidArgs;
+      }
+
+      linksMap.delete(nsxTarget);
+      await globalDB.setItem(UID_LINKS_KEY, {
+        links: Array.from(linksMap),
+      });
+
+      yield `Unlink success [${nsxTarget}]`;
+      yield nsxu.json([nsxTarget, linksMap.get(nsxTarget)]);
+      yield `${nsxTarget} will no longer use uid of ${linksMap.get(nsxTarget)}`;
+      return Codes.Success;
+    },
     async *input({ nsxuCreated, input, nsxu }) {
       if (nsxuCreated.args.length < 1) {
         yield "[Invalid]";

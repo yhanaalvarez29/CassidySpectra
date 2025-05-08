@@ -172,6 +172,7 @@ type UserData = {
     nickname?: string;
     bank: number;
   };
+  links?: [string, string][];
 };
 
 type NullableUserData = {
