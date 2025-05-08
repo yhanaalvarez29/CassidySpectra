@@ -128,15 +128,18 @@ export class MintManager {
         const updatedCopies = target?.amount
           ? Math.max(target.amount, 1)
           : mint.copies;
-        const diff = updatedCopies - origCopies;
+        const diff = Math.max(updatedCopies - origCopies, 0);
         let newAssets = mint.asset;
         let tempCopies = mint.copies || 1;
 
-        for (let i = 1; i <= diff; i++) {
-          const marketValue = mint.asset / tempCopies || 0;
-          newAssets += marketValue;
-          tempCopies++;
+        if (diff >= 1) {
+          for (let i = 1; i <= diff; i++) {
+            const marketValue = mint.asset / tempCopies || 0;
+            newAssets += marketValue;
+            tempCopies++;
+          }
         }
+
         return { ...mint, copies: updatedCopies, asset: newAssets };
       });
     }
