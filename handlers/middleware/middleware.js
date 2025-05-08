@@ -12,7 +12,6 @@ import { SymLock } from "../loaders/loadCommand.js";
 import { join } from "path";
 import { InputRoles } from "@cass-modules/InputClass";
 import { extractCommandRole } from "@cassidy/unispectra";
-import { inspect } from "util";
 const recentCMD = {};
 const popularCMD = {};
 export let queue = [];
