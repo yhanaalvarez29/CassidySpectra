@@ -803,10 +803,10 @@ export async function use(obj) {
   obj.tid = obj.input.threadID;
   obj.getMoney = async function getMoney(uid = obj.input.senderID) {
     const data = await obj.usersDB.queryItem(uid, "money");
-    return data.money;
+    return data.money || 0;
   };
   obj.setMoney = async function setMoney(balance, uid = obj.input.senderID) {
-    if (isNaN(balance) || balance < 1) {
+    if (isNaN(balance) || balance < 0) {
       throw new Error("Cannot set invalid money!");
     }
     await obj.usersDB.setItem(uid, {
