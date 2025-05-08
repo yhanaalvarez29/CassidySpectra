@@ -10,7 +10,7 @@ export const meta = {
   usage: "{prefix}{name}",
   category: "Utilities",
   permissions: [2],
-  noPrefix: "both",
+  noPrefix: false,
   waitingTime: 0,
   requirement: "3.0.0",
   otherNames: ["ss"],

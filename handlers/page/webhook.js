@@ -1,7 +1,8 @@
 const VERIFY_TOKEN = global.Cassidy.config.pageVerifyToken;
 const PAGE_ACCESS_TOKEN = global.Cassidy.config.pageAccessToken;
 import { APIPage } from "./sendMessage.js";
-import { convertEvent } from "./convertEvent.js";
+import { convertEvent } from "./convertEvent";
+import { inspect } from "node:util";
 
 export function creatorX(handleMessage, handlePostback = () => {}) {
   const api = new Proxy(new APIPage(PAGE_ACCESS_TOKEN), {
@@ -19,10 +20,9 @@ export function creatorX(handleMessage, handlePostback = () => {}) {
       }
     },
     set(api, key, value) {
-      global.logger(
-        `Setting api.${key} to: ${JSON.stringify(value)}`,
-        "API Set"
-      );
+      if (key !== "editMessage") {
+        global.logger(`Setting api.${key} to: ${inspect(value)}`, "API Set");
+      }
       api[key] = value;
       return true;
     },

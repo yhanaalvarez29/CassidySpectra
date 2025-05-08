@@ -75,6 +75,11 @@ export class InputClass extends String implements InputProps {
   public detectID?: string = null;
   public censor: (text: string) => string;
   public isCommand?: boolean = false;
+  public postback?: {
+    title: string;
+    payload: string;
+    mid: string;
+  };
   /**
    * User roles (2 for bot admin, 1.5 for moderator, 1 for thread admin, 0 for everyone.)
    */
