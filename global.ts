@@ -695,6 +695,36 @@ declare global {
      * Returns a pause promise, (USE await)
      */
     pause: typeof utils.delay;
+
+    /**
+     * Current user's registered name.
+     */
+    userName: string;
+
+    /**
+     * Userdata cache for current user, contains name, money, inventory, etc
+     */
+    user: UserData;
+
+    /**
+     * The senderID on output.js
+     */
+    uid: string;
+
+    /**
+     * The threadID on output.js
+     */
+    tid: string;
+
+    /**
+     * Gets the money of a user in real time, default to current user if no uid specified
+     */
+    getMoney?: (uid?: string) => Promise<number>;
+
+    /**
+     * Sets the money of a user in real time, default to current user if no uid specified
+     */
+    setMoney?: (balance: number, uid?: string) => Promise<void>;
   }
 
   type CommandContext = CommandContextOG & { [key: string]: unknown };

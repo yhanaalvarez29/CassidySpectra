@@ -796,7 +796,23 @@ export async function use(obj) {
   obj.unsend = easy.getBound("unsend");
   obj.atReply = easy.getBound("atReply");
   obj.atReaction = easy.getBound("atReaction");
-
+  const cache = await obj.usersDB.getCache(obj.input.sid);
+  obj.userName = cache.userMeta?.name ?? cache.name ?? "Unknown";
+  obj.user = cache;
+  obj.uid = obj.input.senderID;
+  obj.tid = obj.input.threadID;
+  obj.getMoney = async function getMoney(uid = obj.input.senderID) {
+    const data = await obj.usersDB.queryItem(uid, "money");
+    return data.money;
+  };
+  obj.setMoney = async function setMoney(balance, uid = obj.input.senderID) {
+    if (isNaN(balance) || balance < 1) {
+      throw new Error("Cannot set invalid money!");
+    }
+    await obj.usersDB.setItem(uid, {
+      money: balance,
+    });
+  };
   obj.EasyOutput = EasyOutput;
 
   obj.next();
