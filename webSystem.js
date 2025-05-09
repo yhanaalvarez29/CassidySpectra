@@ -39,6 +39,7 @@ export class Listener {
             let d = {
               enabled: false,
               interval: 3600000,
+              note: "",
             };
             mqttRestart ??= d;
             mqttRestart = Object.assign({}, d, mqttRestart);

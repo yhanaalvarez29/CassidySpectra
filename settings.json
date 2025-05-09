@@ -1,25 +1,52 @@
 {
+  "NOTES_1": [
+    "Please configure the PREFIX, ADMINBOT, also make sure the knownURL is set to your server url without trailing /",
+    "You can do noFB: true, to disable facebook login.",
+    "100075058221244 is not required in ADMINBOT.",
+    "DO NOT REVEAL settings.json publicly, make sure to use a private repository.",
+    "LOGO is your custom cassidy logo TEXT (which shows in prefix, menu, etc). You can modify it based on your likings! Leave an empty string to use the original logo TEXT"
+  ],
+  "railwayTips": "Use USA East as region for railway, and render. ",
+  "knownURL": "https://cassidyredux.onrender.com",
+  "noFB": false,
+  "PREFIX": "#",
+  "LOGO": "",
+  "ADMINBOT": ["100075058221244", "YOUR_UID"],
+  "EXTRAPREFIX": ["_"],
+  "MODERATORBOT": [],
+  "exitOnError": false,
+  "WEB_PASSWORD": "liaSS-web",
+  "discordBotToken": "",
+  "discordClientID": "",
+  "pageAccessToken": "",
+  "pageVerifyToken": "",
+  "mqttRestart": {
+    "enabled": true,
+    "interval": 3600000,
+    "note": "This restarts the MQTT Listener on facebook."
+  },
+  "processRestart": {
+    "enabled": true,
+    "interval": 3600000,
+    "note": "This restarts the entire process."
+  },
   "FCA": {
-    "region": "PRN",
     "path": "./ws3-fca/index",
     "selfListen": false,
     "selfListenEvent": false,
     "listenEvents": true,
     "listenTyping": false,
-    "updatePresence": false,
-    "forceLogin": true,
+    "updatePresence": true,
+    "forceLogin": false,
     "autoMarkDelivery": false,
-    "autoMarkRead": true,
+    "autoMarkRead": false,
     "autoReconnect": true,
     "online": true,
     "emitReady": false,
-    "userAgent": "utils.defaultUserAgent",
-    "randomUserAgent": false,
-    "bypassRegion": "PNB"
+    "userAgent": "facebookexternalhit/1.1",
+    "randomUserAgent": false
   },
   "autoRefreshAvatar": false,
-  "railwayTips": "Use USA Oregon as region for railway, and render. ",
-  "knownURL": "https://cassidyredux.onrender.com",
   "defaultLang": "en",
   "CASS_WATCH": {
     "enabled": false,
@@ -28,26 +55,17 @@
   "autoCreateDB": false,
   "MongoConfig": {
     "status": true,
-    "uri": "MONGO_URI"
+    "uri": "MONGO_URI",
+    "note": "DO NOT MODIFY THIS IF YOU DO NOT KNOW WHAT YOU WERE DOING. They serve as .env keys for mongo uri."
   },
-  "discordBotToken": "",
-  "discordClientID": "",
-  "pageAccessToken": "",
-  "pageVerifyToken": "",
-  "noFB": false,
   "credentials": {
     "email": "",
     "password": "",
     "email_asEnvKey": false,
     "password_asEnvKey": false,
-    "note": "This is for the bot account, not your main account, if email_asEnvKey or password_asEnvKey is true, it will use the .env key provided in email and password fields, this is helpful when hiding the credentials."
+    "note": "This is for the bot account, not your main account, if email_asEnvKey or password_asEnvKey is true, it will use the .env key provided in email and password fields, this is helpful when hiding the credentials.",
+    "note2": "This is also deprecated."
   },
-  "PREFIX": "#",
-  "ADMINBOT": ["wss:admin", "100075058221244"],
-  "EXTRAPREFIX": ["@"],
-  "MODERATORBOT": ["wss:moderator"],
-  "exitOnError": false,
-  "WEB_PASSWORD": "liaSS-web",
   "maintenanceMode": false,
   "noLevelUI": true,
   "noRibbonUI": true,
@@ -57,14 +75,6 @@
   "requireRgistration": false,
   "censorInput": false,
   "censorOutput": true,
-  "mqttRestart": {
-    "enabled": true,
-    "interval": 3600000
-  },
-  "processRestart": {
-    "enabled": true,
-    "interval": 3600000
-  },
   "forceWebUID": false,
   "disableInflation": true,
   "standardSpectra": false,

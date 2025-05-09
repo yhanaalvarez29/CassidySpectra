@@ -33,6 +33,9 @@ import { fontTag } from "./handlers/styler.js/main";
 import cors from "cors";
 import * as fs from "fs";
 
+import { lookup } from "mime-types";
+import { autoBold } from "cassidy-styler";
+
 import __pkg from "./package.json";
 global.package = __pkg;
 global.logger = logger;
@@ -99,7 +102,7 @@ global.webQuery = new Proxy(
     },
   }
 );
-const upt = Date.now();
+const upt = performance.now();
 
 global.require = require;
 
@@ -115,50 +118,68 @@ global.requireProc = (m) => {
  * @global
  */
 global.Cassidy = {
-  // @ts-ignore
   get config() {
-    return new Proxy(
-      {},
-      {
-        get(_, prop) {
-          const data = loadSettings();
-          return data[prop];
-        },
-        set(_, prop, value) {
-          const data = loadSettings();
-          data[prop] = value;
-          saveSettings(data);
-          return true;
-        },
-      }
-    );
+    const cache = loadSettings();
+    return new Proxy(cache, {
+      get(_, prop) {
+        const data = loadSettings();
+        for (const [k, v] of Object.entries(data)) {
+          cache[k] = v;
+        }
+        return data[prop];
+      },
+      set(_, prop, value) {
+        const data = loadSettings();
+        data[prop] = value;
+        saveSettings(data);
+        return true;
+      },
+      ownKeys(_) {
+        const data = loadSettings();
+        return Reflect.ownKeys(data);
+      },
+      has(_, key) {
+        const data = loadSettings();
+        return Reflect.has(data, key);
+      },
+      deleteProperty(_, prop) {
+        const data = loadSettings();
+        const a = delete data[prop];
+        saveSettings(data);
+        return a;
+      },
+      defineProperty(_, key, desc) {
+        const data = loadSettings();
+        Object.defineProperty(data, key, desc);
+        saveSettings(data);
+        return true;
+      },
+    });
   },
-  // @ts-ignore
   set config(data) {
-    // @ts-ignore
     saveSettings(data);
   },
   get uptime() {
-    return Date.now() - upt;
+    return performance.now() - upt;
   },
   plugins: allPlugins,
-  // @ts-ignore
   get commands() {
     return commands;
   },
-  // @ts-ignore
   set commands(data) {
     commands = data;
   },
-  // invLimit: 36,
   invLimit: 36,
   highRoll: 10_000_000,
   presets: new Map(),
   loadCommand: null,
   loadPlugins: null,
   loadAllCommands: null,
-  reduxlogo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
-  logo: fontTag(UNISpectra.spectra),
+  // reduxlogo: `🌌 𝗖𝗮𝘀𝘀𝗶𝗱𝘆ℝ𝕖𝕕𝕦𝕩 ✦`,
+  get logo() {
+    return autoBold(global.Cassidy.config.LOGO) || fontTag(UNISpectra.spectra);
+  },
+  spectra: true,
   oldLogo: `🔬 𝗖𝗮𝘀𝘀𝗶𝗱𝘆 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝖼𝖾`,
   accessToken: null,
   redux: true,
@@ -331,6 +352,7 @@ export async function loadAllCommands(callback = async () => {}) {
 
 let willAccept = false;
 async function main() {
+  let loginErr;
   logger(`Cassidy ${__pkg.version}`, "Info");
   logger(
     `The CassidySpectra is currently in development and is also unstable. Some features might not work as expected.`,
@@ -375,7 +397,7 @@ async function main() {
       password = process.env[password];
     }
     if (
-      !(process.env["test"] || settings.noFB) &&
+      !(process.env["test"] || settings.noFB || String(cookie) === "uwu") &&
       (cookie || (email && password))
     ) {
       api = await loginHelper({ appState: cookie, email, password });
@@ -390,6 +412,7 @@ async function main() {
     }
   } catch (error) {
     logger("Error logging in.", "FCA");
+    loginErr = error;
   }
   logger(`Refreshing cookie...`);
   try {
@@ -459,12 +482,12 @@ async function main() {
   const cPro = loadAllCommands();
   await cPro;
 
-  // await Promise.allSettled([pPro, cPro]);
-
   willAccept = true;
   logger("Listener Started!", "LISTEN");
   setupAutoRestart();
-  setupCommands();
+  await setupCommands();
+
+  return logSummary(api, settings, cookie, loginErr);
 }
 import request from "request";
 
@@ -555,8 +578,14 @@ const limit = {
     res.status(502).send(fs.readFileSync("public/502.html", "utf8"));
   },
 };
-import { lookup } from "mime-types";
 const fake502 = rateLimit(limit);
+
+/**
+ *
+ * @param {API?} api
+ * @param {(err: any, event: any, extra: any) => any} funcListen
+ * @param {unknown} _
+ */
 function web(api, funcListen, _) {
   const app = express();
   app.use(cors());
@@ -893,3 +922,79 @@ function web(api, funcListen, _) {
   });
 }
 main();
+
+/**
+ *
+ * @param {API} api
+ * @param {CassidySpectra.GlobalCassidy["config"]} config
+ * @param {any[]} cookie
+ * @param {any} loginErr
+ */
+export async function logSummary(api, config, cookie = [], loginErr) {
+  const { Cassidy } = global;
+  const { databases } = Cassidy;
+
+  logger(`Fetching a summary...`, "Summary");
+
+  if (api) {
+    logger(`Facebook: Logged in as ${api.getCurrentUserID()}`, "Summary");
+  } else {
+    logger(
+      config.noFB || process.env["test"]
+        ? `Facebook Login is disabled in settings.json (noFB)`
+        : String(cookie) !== "uwu" && cookie
+        ? `Facebook: Login fail.`
+        : `Facebook: No valid cookie found. Therefore no login happened.`,
+      "Summary"
+    );
+    if (loginErr) {
+      logger(loginErr, "Facebook Error");
+    }
+  }
+
+  if (process.env.MONGO_URI) {
+    logger(`MONGO_URI (MongoDB uri) exists in .env`);
+  } else {
+    logger(
+      `MONGO_URI (MongoDB uri) does not exist in .env and the system may potentially use JSON Mode.`
+    );
+  }
+
+  /**
+   *
+   * @param {import("@cass-modules/cassidyUser").UserStatsManager} db
+   */
+  const cl = async (db, name = "") => {
+    logger(
+      `Database ${name}: ${
+        db.isMongo
+          ? `Uses MongoDB (${db.collection}). All data will be saved to a remote database.`
+          : `Uses JSON File (${db.filePath}). Warning: changes JSON Files do not persists during deployment. Consider using MongoDB instead. Visit https://cloud.mongodb.com/ for info.`
+      }`,
+      "Summary"
+    );
+    try {
+      logger(`Documents in ${name}: ${(await db.getIDs()).length}`, "Summary");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  await cl(databases.usersDB, "Users");
+  await cl(databases.threadsDB, "Threads");
+  await cl(databases.globalDB, "Globals");
+  logger(`${Object.values(Cassidy.commands).length}`, "Commands");
+  logger(`${Object.values(Cassidy.plugins).length}`, "Plugins");
+  logger(`${Cassidy.presets.size}`, "Presets");
+  logger(`Setup complete!`, "Info");
+  console.log("");
+  console.log("");
+  console.log(`   █▀▀ ▄▀█ █▀ █▀ █ █▀▄ █▄█\n   █▄▄ █▀█ ▄█ ▄█ █ █▄▀ ░█░`);
+  console.log(`   Version ${__pkg.version}`);
+  console.log("");
+  console.log("");
+  logger(
+    `Made by Liane Cagara (lianecagara on github), (facebook.com/nealiana.kaye.cagara)`,
+    "Credit"
+  );
+}
