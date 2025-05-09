@@ -484,8 +484,13 @@ async function main() {
 
   willAccept = true;
   logger("Listener Started!", "LISTEN");
-  setupAutoRestart();
-  await setupCommands();
+
+  try {
+    setupAutoRestart();
+    await setupCommands();
+  } catch (error) {
+    console.error(error);
+  }
 
   return logSummary(api, settings, cookie, loginErr);
 }
