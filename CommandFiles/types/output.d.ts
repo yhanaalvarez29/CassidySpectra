@@ -30,6 +30,7 @@ export interface StrictOutputForm {
   messageID?: string;
   noLevelUI?: boolean;
   noRibbonUI?: boolean;
+  contactID?: string;
 }
 export interface OutputResult extends StrictOutputForm {
   messageID: string;

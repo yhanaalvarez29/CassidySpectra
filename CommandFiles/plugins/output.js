@@ -425,6 +425,23 @@ export async function use(obj) {
           });
         }
         return new Promise((res) => {
+          if (options.contactID && input.isFacebook) {
+            api.shareContact(
+              options.body,
+              options.contactID,
+              optionsCopy.threadID || event.threadID
+            );
+            res(
+              new OutputResult(obj, {
+                ...options,
+                ...resultInfo,
+                messageID: newMid,
+                senderID: api.getCurrentUserID(),
+                body: options.body,
+              })
+            );
+            return;
+          }
           api.sendMessage(
             options,
             optionsCopy.threadID || event.threadID,
@@ -435,7 +452,6 @@ export async function use(obj) {
 
               if (err) {
                 console.log(err);
-                //return rej(err);
               }
 
               const resu = new OutputResult(obj, {
@@ -520,18 +536,10 @@ export async function use(obj) {
         uiName = String(name);
       },
       async contact(text, id, destination) {
-        return new Promise(async (res, rej) => {
-          await api.shareContact(
-            text || "",
-            id || input.senderID,
-            destination || input.threadID,
-            (err) => {
-              if (err) {
-                return rej(err);
-              }
-              res(true);
-            }
-          );
+        return output({
+          body: text,
+          contactID: id,
+          threadID: destination,
         });
       },
       async error(err, callback) {
