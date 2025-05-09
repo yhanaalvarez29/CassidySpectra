@@ -234,6 +234,9 @@ function loginHandler(obj) {
         } else if (api) {
           resolve(api);
         }
+        if (api === null) {
+          reject(new Error("Login failed (Missing API)"));
+        }
       });
     } catch (err) {
       reject(err);
@@ -246,18 +249,6 @@ async function loginHelper(obj) {
     return result;
   } catch (err) {
     global.logger(err, "FCA");
-    global.logger(`Trying credentials instead of cookie...`, "FCA");
-    try {
-      const result = await loginHandler({
-        email: obj.email,
-        password: obj.password,
-      });
-      return result;
-    } catch (error) {
-      global.logger(error, "FCA");
-      global.logger(`Even credentials didn't worked, RIP`, "FCA");
-      return null;
-    }
   }
 }
 
@@ -416,9 +407,10 @@ async function main() {
     logger("Error logging in.", "FCA");
     loginErr = error;
   }
-  logger(`Refreshing cookie...`);
+
   try {
     if (api) {
+      logger(`Refreshing cookie...`);
       const newApp = api.getAppState();
       fs.writeFileSync("cookie.json", JSON.stringify(newApp, null, 2));
       let done = [];
