@@ -216,7 +216,9 @@ export function logger(text, title = "log") {
   const now = new Date();
   const options = { timeZone: "Asia/Manila", hour12: false };
   const time = now.toLocaleTimeString("en-PH", options);
-  const message = `${time} [ ${title.toUpperCase()} ] - ${text}`;
+  const message = `${time} [ ${title.toUpperCase()} ] - ${
+    typeof text === "string" ? text : inspect(text)
+  }`;
 
   console.log(message);
   return logger;
@@ -571,6 +573,7 @@ import requestIp from "request-ip";
 import bodyParser from "body-parser";
 import fetchMeta from "./CommandFiles/modules/fetchMeta.js";
 import { TempFile } from "./handlers/page/sendMessage";
+import { inspect } from "util";
 const { UTYPlayer } = global.utils;
 
 const limit = {
