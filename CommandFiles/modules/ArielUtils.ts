@@ -429,7 +429,7 @@ export function formatCash(
   }
   return `${bold ? "**" : ""}${
     number > 999 ? `($${abbreviateNumber(number)}) ` : ""
-  }$${number.toLocaleString()}${emoji || "💵"}${bold ? "**" : ""}`;
+  }$${Number(number).toLocaleString()}${emoji || "💵"}${bold ? "**" : ""}`;
 }
 
 export function formatValue(
@@ -451,5 +451,5 @@ export function formatValue(
   }
   return `${bold ? "**" : ""}${
     number > 999 ? `(${emoji || "🎲"}${abbreviateNumber(number)}) ` : ""
-  }${emoji || "🎲"}${number.toLocaleString()}${bold ? "**" : ""}`;
+  }${emoji || "🎲"}${Number(number).toLocaleString()}${bold ? "**" : ""}`;
 }

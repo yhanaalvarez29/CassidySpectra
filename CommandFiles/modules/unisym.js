@@ -46,7 +46,7 @@ export function emojiEnd(str) {
       })
       .join(" ")
   ).trim();
-  console.log(str, " => ", res);
+  // console.log(str, " => ", res);
   return res;
 }
 

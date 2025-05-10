@@ -133,7 +133,7 @@ export async function entry({
   let outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
   const basis = Math.random();
 
-  while (basis < 0.3 ? outcome.includes(" lose") : false) {
+  while (basis < 0.3 ? outcome.includes(" lose") : outcome.includes(" win")) {
     outcome = outcomes.toSorted(() => Math.random() - 0.5)[outcomeIndex];
   }
 

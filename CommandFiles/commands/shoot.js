@@ -53,7 +53,7 @@ export async function entry({
   const inventory = new Inventory(r);
   let hasPass = inventory.has("highRollPass");
 
-  const isWin = Math.random() < 0.4;
+  const isWin = Math.random() < 0.3;
 
   /**
    * @type {string}

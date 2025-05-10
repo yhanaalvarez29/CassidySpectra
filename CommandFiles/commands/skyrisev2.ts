@@ -4,7 +4,7 @@ import { CassEXP } from "../modules/cassEXP.js";
 import { UNIRedux } from "../modules/unisym.js";
 import { Inventory } from "@cassidy/ut-shop";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
-import { formatCash } from "@cass-modules/ArielUtils";
+import { abbreviateNumber, formatCash } from "@cass-modules/ArielUtils";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
@@ -47,6 +47,7 @@ type SkyForgeBuilding = InventoryItem & {
   workers: number;
   key: string;
   name: string;
+  buildingName: string;
   icon: string;
   achievements?: string[];
 };
@@ -71,6 +72,7 @@ const shopItems: Array<{
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Aether Collector",
+        buildingName: "",
         key: "aetherCollector",
         flavorText: "Produces **Aether** over time.",
         icon: "🌬️",
@@ -92,6 +94,7 @@ const shopItems: Array<{
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Crystal Mine",
+        buildingName: "",
         key: "crystalMine",
         flavorText: "Produces **Crystals** over time.",
         icon: "💎",
@@ -113,6 +116,7 @@ const shopItems: Array<{
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Stone Quarry",
+        buildingName: "",
         key: "stoneQuarry",
         flavorText: "Produces **Stone** over time.",
         icon: "🪨",
@@ -134,6 +138,7 @@ const shopItems: Array<{
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Sky Forge",
+        buildingName: "",
         key: "skyForge",
         flavorText: "Boosts production of **all resources** when upgraded.",
         icon: "⚒️",
@@ -159,7 +164,30 @@ const shopItems: Array<{
   },
 ];
 
-function updateBuildingData(building: SkyForgeBuilding): SkyForgeBuilding {
+function generateUniqueBuildingName(
+  baseName: string,
+  existingNames: string[]
+): string {
+  const cleanBaseName = baseName.replace(/\s+/g, "");
+  let candidateName = cleanBaseName;
+  let counter = 2;
+
+  while (
+    existingNames.some(
+      (name) => name.toLowerCase() === candidateName.toLowerCase()
+    )
+  ) {
+    candidateName = `${cleanBaseName}${counter}`;
+    counter++;
+  }
+
+  return candidateName;
+}
+
+function updateBuildingData(
+  building: SkyForgeBuilding,
+  existingBuildings: SkyForgeBuilding[]
+): SkyForgeBuilding {
   const defaults: Partial<SkyForgeBuilding> = {
     level: 1,
     lastCollect: Date.now(),
@@ -171,6 +199,12 @@ function updateBuildingData(building: SkyForgeBuilding): SkyForgeBuilding {
     workers: 0,
     key: building.key || `building:unknown_${Date.now()}`,
     name: building.name || "Unnamed",
+    buildingName:
+      building.buildingName ||
+      generateUniqueBuildingName(
+        building.name || "Unnamed",
+        existingBuildings.map((b) => b.buildingName || "")
+      ),
     icon: building.icon || "🏠",
     type: building.type || "srbuilding",
     sellPrice: building.sellPrice || 0,
@@ -184,17 +218,19 @@ function calculateProduction(
   building: SkyForgeBuilding,
   _srworkers: number
 ): number {
-  const updatedBuilding = updateBuildingData(building);
+  const updatedBuilding = updateBuildingData(building, []);
   const timeSinceCollect = Date.now() - updatedBuilding.lastCollect;
   const intervals = Math.floor(
     timeSinceCollect / updatedBuilding.production.interval
   );
   const workerBoost = 1 + (updatedBuilding.workers || 0) * 0.2;
-  const baseAmount =
+  const baseAmountX =
     updatedBuilding.production.amount *
     updatedBuilding.level *
     intervals *
     workerBoost;
+  const baseAmount = baseAmountX + (Math.random() - 0.5) * baseAmountX;
+
   return Math.floor(baseAmount * ((_srworkers ?? 0) + 1));
 }
 
@@ -321,32 +357,62 @@ export async function entry(ctx: CommandContext) {
         key: "status",
         description: "View your empire's **status** and **resources**",
         aliases: ["-s"],
-        async handler() {
+        args: ["[page]"],
+        async handler(_, { spectralArgs }) {
           const buildingsData = new Inventory(rawBuildingsData);
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Empire Status***\n\n`;
+          const buildings = buildingsData.getAll() as SkyForgeBuilding[];
+          const pageSize = 5;
+          const totalPages = Math.ceil(
+            Math.min(36, buildings.length) / pageSize
+          );
+          let page = parseInt(spectralArgs[0]) || 1;
+          page = Math.max(1, Math.min(page, totalPages || 1));
+
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Empire Status***\n\n`;
           result += `**Resources**:\n`;
           result += `🌬️ **Aether**: ${aether}\n`;
           result += `💎 **Crystal**: ${crystal}\n`;
           result += `🪨 **Stone**: ${stone}\n`;
           result += `👷 **Workers**: ${srworkers}/10\n`;
           result += `💰 **Money**: ${formatCash(userMoney)}\n\n`;
-          result += `${UNIRedux.arrow} ***Buildings***\n\n`;
-          const buildings = buildingsData.getAll() as SkyForgeBuilding[];
+          result += `${UNIRedux.arrow} ***Buildings (Page ${page}/${totalPages})***\n\n`;
+
           if (buildings.length === 0) {
             result += `❌ No **buildings** yet! Visit the **Sky Market** with ${prefix}skyrise shop.\n`;
           } else {
-            for (const building of buildings) {
-              const updatedBuilding = updateBuildingData(building);
+            const startIdx = (page - 1) * pageSize;
+            const endIdx = Math.min(
+              startIdx + pageSize,
+              Math.min(36, buildings.length)
+            );
+            const pageBuildings = buildings.slice(startIdx, endIdx);
+
+            for (const building of pageBuildings) {
+              const updatedBuilding = updateBuildingData(building, buildings);
               const production = calculateProduction(
                 updatedBuilding,
                 srworkers
               );
               result += `${updatedBuilding.icon} **${updatedBuilding.name}** (Level ${updatedBuilding.level})\n`;
+              result += `🏛️ Name: ${updatedBuilding.buildingName}\n`;
               result += `👷 Workers: ${updatedBuilding.workers || 0}\n`;
               result += `📈 Production: ${production} **${updatedBuilding.production.resource}**\n`;
               result += `🆔 ID: ${updatedBuilding.key}\n\n`;
             }
+
+            if (totalPages > 1) {
+              result += `📄 **Navigation**: Use ${prefix}skyrise status <page>\n`;
+              if (page < totalPages) {
+                result += `➡️ Next page: ${prefix}skyrise status ${page + 1}\n`;
+              }
+              if (page > 1) {
+                result += `⬅️ Previous page: ${prefix}skyrise status ${
+                  page - 1
+                }\n`;
+              }
+            }
           }
+
           result += `\n📝 **Next Step**: ${suggestNextAction(
             buildingsData,
             { aether, crystal, stone, money: userMoney },
@@ -361,20 +427,49 @@ export async function entry(ctx: CommandContext) {
         key: "build",
         description: "Construct a new **building** for your empire",
         aliases: ["-b"],
-        args: ["<building_key>"],
+        args: ["<building_key>", "<building_name>"],
         async handler(_, { spectralArgs }) {
           const buildingsData = new Inventory(rawBuildingsData);
           const inventory = new Inventory(rawInventory);
-          const buildingKey = spectralArgs[0];
+          const [buildingKey, buildingName] = spectralArgs;
 
-          if (!buildingKey) {
-            let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Build Guide***\n\n`;
-            result += `❌ No **building key** provided! To ***build***, visit the **Sky Market** to purchase a building.\n\n`;
-            result += `**Usage**: ${prefix}skyrise build <building_key>\n`;
-            result += `**Example**: ${prefix}skyrise build aetherCollector to build an **Aether Collector**.\n\n`;
+          if (!buildingKey || !buildingName) {
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Build Guide***\n\n`;
+            result += `❌ Missing **building key** or **name**! To ***build***, visit the **Sky Market** and provide a unique name.\n\n`;
+            result += `**Usage**: ${prefix}skyrise build <building_key> <building_name>\n`;
+            result += `**Example**: ${prefix}skyrise build aetherCollector SkyAether1 to build an **Aether Collector** named SkyAether1.\n\n`;
             result += `📝 **Next Step**: Use ${prefix}skyrise shop to browse available **buildings**!\n`;
             result += `🔔 **Reminder**: Check your **resources** with ${prefix}skyrise status.`;
             return output.reply(result);
+          }
+
+          if (!/^[a-zA-Z0-9]+$/.test(buildingName)) {
+            return output.reply(
+              `👤 **${name}** (SkyRise)\n\n❌ Invalid **building name**! Use only alphanumeric characters, no spaces.\n` +
+                `\n📝 **Next Step**: ${suggestNextAction(
+                  buildingsData,
+                  { aether, crystal, stone, money: userMoney },
+                  srworkers,
+                  prefix
+                )}\n` +
+                `🔔 **Reminder**: Check ${prefix}skyrise status for valid names.`
+            );
+          }
+
+          const existingNames = (buildingsData.getAll() as SkyForgeBuilding[])
+            .map((b) => b.buildingName?.toLowerCase())
+            .filter((n): n is string => !!n);
+          if (existingNames.includes(buildingName.toLowerCase())) {
+            return output.reply(
+              `👤 **${name}** (SkyRise)\n\n❌ **Building name** "${buildingName}" already exists! Choose a unique name.\n` +
+                `\n📝 **Next Step**: ${suggestNextAction(
+                  buildingsData,
+                  { aether, crystal, stone, money: userMoney },
+                  srworkers,
+                  prefix
+                )}\n` +
+                `🔔 **Reminder**: Check ${prefix}skyrise status for existing names.`
+            );
           }
 
           const newBuilding = inventory.getOne(buildingKey) as
@@ -382,7 +477,7 @@ export async function entry(ctx: CommandContext) {
             | undefined;
           if (!newBuilding) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ Invalid **building key**! Use ${prefix}skyrise shop to see options.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ Invalid **building key**! Use ${prefix}skyrise shop to see options.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -395,7 +490,7 @@ export async function entry(ctx: CommandContext) {
 
           if (buildingsData.getAll().length >= invLimit) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ **Island full**! Max ${invLimit} **buildings**.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ **Island full**! Max ${invLimit} **buildings**.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -413,6 +508,7 @@ export async function entry(ctx: CommandContext) {
             level: 1,
             lastCollect: Date.now(),
             workers: 0,
+            buildingName,
           });
 
           await money.setItem(input.senderID, {
@@ -420,8 +516,8 @@ export async function entry(ctx: CommandContext) {
             inventory: Array.from(inventory),
           });
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***New Building***\n\n`;
-          result += `✅ Built ${newBuilding.icon} **${newBuilding.name}**!\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***New Building***\n\n`;
+          result += `✅ Built ${newBuilding.icon} **${newBuilding.name}** named **${buildingName}**!\n`;
           result += `📈 Produces ${newBuilding.production.amount} **${newBuilding.production.resource}**/min.\n`;
           result += `📜 Your empire grows stronger with this **building**! It will generate **resources** over time.\n`;
           result += `\n📝 **Next Step**: ${suggestNextAction(
@@ -447,23 +543,70 @@ export async function entry(ctx: CommandContext) {
           let totalMoney: number = userMoney;
           let collected = false;
 
+          const earns: [
+            SkyForgeBuilding,
+            {
+              aether?: number;
+              crystal?: number;
+              stone?: number;
+              money?: number;
+            }
+          ][] = [];
+
           for (const building of buildingsData.getAll() as SkyForgeBuilding[]) {
-            const updatedBuilding = updateBuildingData(building);
+            const updatedBuilding = updateBuildingData(
+              building,
+              buildingsData.getAll() as SkyForgeBuilding[]
+            );
             const production = calculateProduction(updatedBuilding, srworkers);
             if (production > 0) {
               collected = true;
               if (updatedBuilding.production.resource === "aether") {
                 totalAether += production;
+                totalMoney += production * 100;
+                earns.push([
+                  building,
+                  {
+                    aether: production,
+                    money: production * 100,
+                  },
+                ]);
               } else if (updatedBuilding.production.resource === "crystal") {
                 totalCrystal += production;
+                totalMoney += production * 100;
+                earns.push([
+                  building,
+                  {
+                    crystal: production,
+                    money: production * 100,
+                  },
+                ]);
               } else if (updatedBuilding.production.resource === "stone") {
                 totalStone += production;
+                totalMoney += production * 100;
+                earns.push([
+                  building,
+                  {
+                    stone: production,
+                    money: production * 100,
+                  },
+                ]);
               } else if (updatedBuilding.production.resource === "all") {
                 totalAether += production;
                 totalCrystal += production;
                 totalStone += production;
+                totalMoney += production * 3 * 100;
+                earns.push([
+                  building,
+                  {
+                    aether: production,
+                    crystal: production,
+                    stone: production,
+                    money: production * 3 * 100,
+                  },
+                ]);
               }
-              totalMoney += production;
+
               updatedBuilding.lastCollect = Date.now();
               buildingsData.deleteOne(updatedBuilding.key);
               buildingsData.addOne(updatedBuilding);
@@ -472,7 +615,7 @@ export async function entry(ctx: CommandContext) {
 
           if (!collected) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ No **resources** to ***collect*** yet! Wait for your **buildings** to produce.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ No **resources** to ***collect*** yet! Wait for your **buildings** to produce.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -481,6 +624,32 @@ export async function entry(ctx: CommandContext) {
                 )}\n` +
                 `🔔 **Reminder**: Check your **status** with ${prefix}skyrise status.`
             );
+          }
+
+          const earnsBest = [...earns].sort(
+            (a, b) =>
+              Object.values(b[1]).reduce((acc, i) => acc + i, 0) -
+              Object.values(a[1]).reduce((acc, i) => acc + i, 0)
+          );
+          let xf = (a: number, icon: string) =>
+            a ? `${icon} **x${abbreviateNumber(a, 2, false)}**, ` : "";
+
+          let earnsSliced = earnsBest.slice(0, 10);
+          let earnsStr = earnsSliced
+            .map(
+              (i) =>
+                `${UNIRedux.arrowFromT} ${i[0].icon} LV${i[0].level} **${
+                  i[0].buildingName
+                }**: collected ${xf(i[1].aether, "🌬️")}${xf(
+                  i[1].crystal,
+                  "💎"
+                )}${xf(i[1].stone, "🪨")}${xf(i[1].money, "💵")}`
+            )
+            .join("\n");
+          if (earnsBest.length - earnsSliced.length) {
+            earnsStr += `\n[...And ${
+              earnsBest.length - earnsSliced.length
+            } others.]`;
           }
 
           cassEXP.expControls.raise(10);
@@ -493,8 +662,10 @@ export async function entry(ctx: CommandContext) {
             cassEXP: cassEXP.raw(),
           });
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Resources Collected***\n\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Resources Collected***\n\n`;
           result += `✅ Gathered **resources** from your **buildings**!\n`;
+          result += `\n${earnsStr}\n\n`;
+          result += `📝 ***SUMMARY***\n\n`;
           result += `🌬️ **Aether**: ${totalAether} (+${
             totalAether - aether
           })\n`;
@@ -527,10 +698,10 @@ export async function entry(ctx: CommandContext) {
           const buildingName = spectralArgs.join(" ");
 
           if (!buildingName) {
-            let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Upgrade Guide***\n\n`;
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Upgrade Guide***\n\n`;
             result += `❌ No **building name** provided! To ***upgrade***, specify a building from your empire.\n\n`;
             result += `**Usage**: ${prefix}skyrise upgrade <building_name>\n`;
-            result += `**Example**: ${prefix}skyrise upgrade Aether Collector to upgrade an **Aether Collector**.\n\n`;
+            result += `**Example**: ${prefix}skyrise upgrade SkyAether1 to upgrade a building named **SkyAether1**.\n\n`;
             result += `**Your Buildings**:\n`;
             const buildings = buildingsData.getAll() as SkyForgeBuilding[];
             if (buildings.length === 0) {
@@ -539,6 +710,7 @@ export async function entry(ctx: CommandContext) {
               buildings.forEach((b) => {
                 const cost = calculateUpgradeCost(b);
                 result += `${b.icon} **${b.name}** (Level ${b.level})\n`;
+                result += `🏛️ Name: ${b.buildingName}\n`;
                 result += `💰 Cost: ${cost.aether} **Aether**, ${
                   cost.crystal
                 } **Crystal**, ${cost.stone} **Stone**, and ${formatCash(
@@ -557,11 +729,11 @@ export async function entry(ctx: CommandContext) {
           }
 
           const building = (buildingsData.getAll() as SkyForgeBuilding[]).find(
-            (b) => b.name.toLowerCase() === buildingName.toLowerCase()
+            (b) => b.buildingName?.toLowerCase() === buildingName.toLowerCase()
           );
           if (!building) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -580,11 +752,11 @@ export async function entry(ctx: CommandContext) {
             )
           ) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ Not enough **resources**! Need: ${
+              `👤 **${name}** (SkyRise)\n\n❌ Not enough **resources**! Need: ${
                 cost.aether
               } **Aether**, ${cost.crystal} **Crystal**, ${
                 cost.stone
-              } **Stone** and ${formatCash(cost.money)}\n` +
+              } **Stone**, and ${formatCash(cost.money)}\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -598,7 +770,12 @@ export async function entry(ctx: CommandContext) {
           building.level += 1;
           building.lastCollect = Date.now();
           buildingsData.deleteOne(building.key);
-          buildingsData.addOne(updateBuildingData(building));
+          buildingsData.addOne(
+            updateBuildingData(
+              building,
+              buildingsData.getAll() as SkyForgeBuilding[]
+            )
+          );
 
           await money.setItem(input.senderID, {
             aether: aether - (cost.aether ?? 0),
@@ -608,8 +785,8 @@ export async function entry(ctx: CommandContext) {
             srbuildings: Array.from(buildingsData),
           });
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Building Upgraded***\n\n`;
-          result += `✅ Upgraded ${building.icon} **${building.name}** to **Level ${building.level}**!\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Building Upgraded***\n\n`;
+          result += `✅ Upgraded ${building.icon} **${building.name}** (**${building.buildingName}**) to **Level ${building.level}**!\n`;
           result += `💰 Spent: ${cost.aether} **Aether**, ${
             cost.crystal
           } **Crystal**, ${cost.stone} **Stone**, and ${formatCash(
@@ -622,7 +799,7 @@ export async function entry(ctx: CommandContext) {
             srworkers,
             prefix
           )}\n`;
-          result += `🔔 **Reminder**: Assign **workers** to this building with ${prefix}skyrise worker ${building.name} assign 1.`;
+          result += `🔔 **Reminder**: Assign **workers** to this building with ${prefix}skyrise worker ${building.buildingName} assign 1.`;
           return output.reply(result);
         },
       },
@@ -666,7 +843,7 @@ export async function entry(ctx: CommandContext) {
             cassEXP: cassEXP.raw(),
           });
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Sky Pirate Raid***\n\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Sky Pirate Raid***\n\n`;
           result += `🏴‍☠️ Defense: ${defenseStrength} vs **Pirates**: ${pirateStrength}\n`;
           if (success) {
             result += `✅ **Repelled Sky Pirates**!\n`;
@@ -703,7 +880,7 @@ export async function entry(ctx: CommandContext) {
             const shopItem = shopItems.find((item) => item.key === itemKey);
             if (!shopItem) {
               return output.reply(
-                `👤 **${name}** (SkyForge)\n\n❌ Invalid **item key** "${itemKey}"! Use ${prefix}skyrise shop to see available items.\n` +
+                `👤 **${name}** (SkyRise)\n\n❌ Invalid **item key** "${itemKey}"! Use ${prefix}skyrise shop to see available items.\n` +
                   `\n📝 **Next Step**: ${suggestNextAction(
                     buildingsData,
                     { aether, crystal, stone, money: userMoney },
@@ -721,7 +898,7 @@ export async function entry(ctx: CommandContext) {
               )
             ) {
               return output.reply(
-                `👤 **${name}** (SkyForge)\n\n❌ Not enough **resources**! Need: ${
+                `👤 **${name}** (SkyRise)\n\n❌ Not enough **resources**! Need: ${
                   shopItem.price.aether
                 } **Aether**, ${shopItem.price.crystal} **Crystal**, ${
                   shopItem.price.stone
@@ -752,7 +929,7 @@ export async function entry(ctx: CommandContext) {
                 shopItem.type === "srworker" ? srworkers + 1 : srworkers,
             });
 
-            let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Purchase Successrul***\n\n`;
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Purchase Successful***\n\n`;
             result += `✅ Bought ${shopItem.icon} **${shopItem.name}**!\n`;
             result += `💰 Spent: ${shopItem.price.aether} **Aether**, ${
               shopItem.price.crystal
@@ -762,7 +939,7 @@ export async function entry(ctx: CommandContext) {
             result += `📜 ${
               shopItem.type === "srworker"
                 ? `Your new **worker** can be assigned to buildings!`
-                : `Use ${prefix}skyrise build ${shopItem.key} to construct this **building**.`
+                : `Use ${prefix}skyrise build ${shopItem.key} <building_name> to construct this **building**.`
             }\n`;
             result += `\n📝 **Next Step**: ${suggestNextAction(
               buildingsData,
@@ -774,7 +951,7 @@ export async function entry(ctx: CommandContext) {
             return output.reply(result);
           }
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Sky Market***\n\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Sky Market***\n\n`;
           result += `🏪 Welcome to the **Sky Market**! Browse **buildings** and **workers** to expand your empire.\n\n`;
           result += `**Usage**: ${prefix}skyrise shop [buy <item_key>]\n`;
           result += `**Example**: ${prefix}skyrise shop buy aetherCollector to buy an **Aether Collector**.\n\n`;
@@ -809,12 +986,12 @@ export async function entry(ctx: CommandContext) {
           const amount = parseInt(amountStr) || 1;
 
           if (!buildingName || !action || isNaN(amount)) {
-            let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Worker Guide***\n\n`;
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Worker Guide***\n\n`;
             result += `❌ Missing or invalid arguments! To manage **workers**, specify a **building**, action, and amount.\n\n`;
             result += `**Usage**: ${prefix}skyrise worker <building_name> <assign|remove> <amount>\n`;
             result += `**Examples**:\n`;
-            result += `- ${prefix}skyrise worker Aether Collector assign 1 to assign 1 **worker**.\n`;
-            result += `- ${prefix}skyrise worker Crystal Mine remove 2 to remove 2 **workers**.\n\n`;
+            result += `- ${prefix}skyrise worker SkyAether1 assign 1 to assign 1 **worker**.\n`;
+            result += `- ${prefix}skyrise worker SkyCrystal1 remove 2 to remove 2 **workers**.\n\n`;
             result += `**Your Buildings**:\n`;
             const buildings = buildingsData.getAll() as SkyForgeBuilding[];
             if (buildings.length === 0) {
@@ -824,6 +1001,7 @@ export async function entry(ctx: CommandContext) {
                 result += `${b.icon} **${b.name}** (Workers: ${
                   b.workers || 0
                 })\n`;
+                result += `🏛️ Name: ${b.buildingName}\n`;
               });
             }
             result += `\n📝 **Next Step**: ${suggestNextAction(
@@ -837,11 +1015,11 @@ export async function entry(ctx: CommandContext) {
           }
 
           const building = (buildingsData.getAll() as SkyForgeBuilding[]).find(
-            (b) => b.name.toLowerCase() === buildingName.toLowerCase()
+            (b) => b.buildingName?.toLowerCase() === buildingName.toLowerCase()
           );
           if (!building) {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -861,7 +1039,7 @@ export async function entry(ctx: CommandContext) {
           if (action === "assign") {
             if (totalAssigned + amount > srworkers) {
               return output.reply(
-                `👤 **${name}** (SkyForge)\n\n❌ Not enough **workers**! Available: ${
+                `👤 **${name}** (SkyRise)\n\n❌ Not enough **workers**! Available: ${
                   srworkers - totalAssigned
                 }\n` +
                   `\n📝 **Next Step**: ${suggestNextAction(
@@ -878,7 +1056,7 @@ export async function entry(ctx: CommandContext) {
             newWorkers = Math.max(0, currentWorkers - amount);
           } else {
             return output.reply(
-              `👤 **${name}** (SkyForge)\n\n❌ Invalid action! Use **assign** or **remove**.\n` +
+              `👤 **${name}** (SkyRise)\n\n❌ Invalid action! Use **assign** or **remove**.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -891,14 +1069,19 @@ export async function entry(ctx: CommandContext) {
 
           building.workers = newWorkers;
           buildingsData.deleteOne(building.key);
-          buildingsData.addOne(updateBuildingData(building));
+          buildingsData.addOne(
+            updateBuildingData(
+              building,
+              buildingsData.getAll() as SkyForgeBuilding[]
+            )
+          );
 
           await money.setItem(input.senderID, {
             srbuildings: Array.from(buildingsData),
           });
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***Worker Management***\n\n`;
-          result += `✅ Updated **workers** for ${building.icon} **${building.name}**!\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Worker Management***\n\n`;
+          result += `✅ Updated **workers** for ${building.icon} **${building.name}** (**${building.buildingName}**)!\n`;
           result += `👷 **Workers**: ${newWorkers} (${
             action === "assign" ? "+" : "-"
           }${amount})\n`;
@@ -929,14 +1112,21 @@ export async function entry(ctx: CommandContext) {
                 ),
             },
             {
-              text: `Great! Now ***collect resources*** from your **Aether Collector**.\nUse ${prefix}skyrise collect.`,
+              text: `Great! Now ***build*** your **Aether Collector**.\nUse ${prefix}skyrise build aetherCollector SkyAether1.`,
               condition: () =>
                 rawBuildingsData.some((b: SkyForgeBuilding) =>
                   b.key.includes("aetherCollector")
                 ),
             },
             {
-              text: `Nice work! ***Upgrade*** your **Aether Collector** to boost production.\nUse ${prefix}skyrise upgrade Aether Collector.`,
+              text: `Nice work! ***Collect resources*** from your **Aether Collector**.\nUse ${prefix}skyrise collect.`,
+              condition: () =>
+                rawBuildingsData.some(
+                  (b: SkyForgeBuilding) => b.buildingName === "SkyAether1"
+                ),
+            },
+            {
+              text: `Awesome! ***Upgrade*** your **Aether Collector** to boost production.\nUse ${prefix}skyrise upgrade SkyAether1.`,
               condition: () => aether >= 50 && crystal >= 50 && stone >= 50,
             },
             {
@@ -959,7 +1149,7 @@ export async function entry(ctx: CommandContext) {
           await money.setItem(input.senderID, { tutorialStep: nextStep });
 
           return output.reply(
-            `👤 **${name}** (SkyForge)\n\n📜 **Tutorial Step ${
+            `👤 **${name}** (SkyRise)\n\n📜 **Tutorial Step ${
               tutorialStep + 1
             }**\n${currentStep.text}`
           );
@@ -971,16 +1161,16 @@ export async function entry(ctx: CommandContext) {
         aliases: ["-h"],
         async handler() {
           const buildingsData = new Inventory(rawBuildingsData);
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***SkyForge Empire Guide***\n\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***SkyForge Empire Guide***\n\n`;
           result += `Build a floating island empire by collecting **Aether**, **Crystal**, and **Stone**.\n\n`;
           result += `**Commands**:\n`;
-          result += `- **status** (-s): Check your **resources** and **buildings**.\n`;
-          result += `- **build** (-b) <building_key>: Construct a new **building** from the **Sky Market**.\n`;
+          result += `- **status** (-s) [page]: Check your **resources** and **buildings**.\n`;
+          result += `- **build** (-b) <building_key> <building_name>: Construct a new **building**.\n`;
           result += `- **collect** (-c): Gather **resources** from your **buildings**.\n`;
           result += `- **upgrade** (-u) <building_name>: Improve a **building**'s **production**.\n`;
           result += `- **defend** (-d): Protect against **Sky Pirate** raids.\n`;
-          result += `- **shop** (-sh) [buy <item_key>]: Buy **buildings** and **workers** from the **Sky Market**.\n`;
-          result += `- **srworker** (-w) <building_name> <assign|remove> <amount>: Manage **workers**.\n`;
+          result += `- **shop** (-sh) [buy <item_key>]: Buy **buildings** and **workers**.\n`;
+          result += `- **worker** (-w) <building_name> <assign|remove> <amount>: Manage **workers**.\n`;
           result += `- **tutorial** (-t): Start or continue the **tutorial**.\n`;
           result += `- **lobby** (-l): View **achievements** and **commands**.\n`;
           result += `\n📝 **Next Step**: ${suggestNextAction(
@@ -1026,7 +1216,12 @@ export async function entry(ctx: CommandContext) {
                 b.achievements = b.achievements || [];
                 b.achievements.push(achName);
                 buildingsData.deleteOne(b.key);
-                buildingsData.addOne(updateBuildingData(b));
+                buildingsData.addOne(
+                  updateBuildingData(
+                    b,
+                    buildingsData.getAll() as SkyForgeBuilding[]
+                  )
+                );
               });
             }
           }
@@ -1044,7 +1239,7 @@ export async function entry(ctx: CommandContext) {
             });
           }
 
-          let result = `👤 **${name}** (SkyForge)\n\n${UNIRedux.arrow} ***SkyForge Lobby***\n\n`;
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***SkyForge Lobby***\n\n`;
           result += `📜 Welcome to your empire's **lobby**! Check your **achievements** and plan your next move.\n\n${UNIRedux.arrow} ***Commands***\n\n${itemList}\n\n`;
           if (achievementMessages.length > 0) {
             result += `${

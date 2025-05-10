@@ -117,7 +117,7 @@ export async function entry({
       );
     }
 
-    const isWin = Math.random() < 0.7;
+    const isWin = Math.random() < 0.3;
     let mod = 0;
 
     let text = "";
