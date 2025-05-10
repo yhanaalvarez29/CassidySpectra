@@ -8,7 +8,7 @@ export default defineCommand({
     author: "Monsterwith and Liane Cagara",
     version: "1.1.0",
     description: "pair with random people 😗",
-    usage: "{prefix}{name}",
+    usage: "{prefix}{name} [quoted]",
     category: "Fun",
     noPrefix: false,
     role: 0,
@@ -20,7 +20,7 @@ export default defineCommand({
     titleFont: "bold",
   },
 
-  async entry({ input, output, usersDB }) {
+  async entry({ input, output, usersDB, args }) {
     const uidI = input.senderID;
     await usersDB.ensureUserInfo(uidI);
     const user1 = await usersDB.getItem(uidI);
@@ -56,6 +56,9 @@ export default defineCommand({
     let img1: any, img2: any;
 
     let makeQ = async (url: string, name: string, quote: string) => {
+      if (args[0] !== "quoted") {
+        return global.utils.getStreamFromURL(url);
+      }
       const res = await axios.get("https://api.popcat.xyz/quote", {
         params: {
           image: url,
