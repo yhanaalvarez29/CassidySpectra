@@ -164,21 +164,22 @@ const shopItems: Array<{
   },
 ];
 
-function generateUniqueBuildingName(
-  baseName: string,
-  existingNames: string[]
+function generateUniqueBuildingNames(
+  existingBuildings: SkyForgeBuilding[]
 ): string {
-  const cleanBaseName = baseName.replace(/\s+/g, "");
-  let candidateName = cleanBaseName;
-  let counter = 2;
+  const cleanBaseName = (
+    existingBuildings[0]?.buildingName || "Building"
+  ).replace(/\s+/g, "");
 
-  while (
-    existingNames.some(
-      (name) => name.toLowerCase() === candidateName.toLowerCase()
-    )
-  ) {
-    candidateName = `${cleanBaseName}${counter}`;
-    counter++;
+  let candidateName = cleanBaseName;
+
+  for (let i = 0; i < existingBuildings.length; i++) {
+    if (
+      existingBuildings[i].buildingName?.toLowerCase() ===
+      candidateName.toLowerCase()
+    ) {
+      candidateName = `${cleanBaseName}${i + 1}`;
+    }
   }
 
   return candidateName;
@@ -200,11 +201,7 @@ function updateBuildingData(
     key: building.key || `building:unknown_${Date.now()}`,
     name: building.name || "Unnamed",
     buildingName:
-      building.buildingName ||
-      generateUniqueBuildingName(
-        building.name || "Unnamed",
-        existingBuildings.map((b) => b.buildingName || "")
-      ),
+      building.buildingName || generateUniqueBuildingNames(existingBuildings),
     icon: building.icon || "🏠",
     type: building.type || "srbuilding",
     sellPrice: building.sellPrice || 0,
@@ -345,7 +342,24 @@ export async function entry(ctx: CommandContext) {
     cassEXP: cxp,
     money: userMoney,
     tutorialStep = 0,
+    isUptSkyRise = false,
   } = await money.getCache(input.senderID);
+
+  if (!isUptSkyRise) {
+    const buildingsData = new Inventory(rawBuildingsData);
+    const upt = buildingsData
+      .getAll()
+      .map((i) =>
+        updateBuildingData(
+          i as SkyForgeBuilding,
+          buildingsData.getAll() as SkyForgeBuilding[]
+        )
+      );
+    await money.setItem(input.sid, {
+      isUptSkyRise: true,
+      srbuildings: upt,
+    });
+  }
 
   const home = new SpectralCMDHome(
     {
@@ -565,7 +579,7 @@ export async function entry(ctx: CommandContext) {
                 totalAether += production;
                 totalMoney += production * 100;
                 earns.push([
-                  building,
+                  updatedBuilding,
                   {
                     aether: production,
                     money: production * 100,
@@ -575,7 +589,7 @@ export async function entry(ctx: CommandContext) {
                 totalCrystal += production;
                 totalMoney += production * 100;
                 earns.push([
-                  building,
+                  updatedBuilding,
                   {
                     crystal: production,
                     money: production * 100,
@@ -585,7 +599,7 @@ export async function entry(ctx: CommandContext) {
                 totalStone += production;
                 totalMoney += production * 100;
                 earns.push([
-                  building,
+                  updatedBuilding,
                   {
                     stone: production,
                     money: production * 100,
@@ -597,7 +611,7 @@ export async function entry(ctx: CommandContext) {
                 totalStone += production;
                 totalMoney += production * 3 * 100;
                 earns.push([
-                  building,
+                  updatedBuilding,
                   {
                     aether: production,
                     crystal: production,
@@ -1266,5 +1280,5 @@ export async function entry(ctx: CommandContext) {
     ]
   );
 
-  return home.runInContext(ctx);
+  await home.runInContext(ctx);
 }
