@@ -1,24 +1,33 @@
-const { getStreamFromURL } = global.utils;
+import { UNISpectra } from "@cassidy/unispectra";
+import axios from "axios";
 
 export default defineCommand({
   meta: {
     name: "pair",
     otherNames: ["pairing"],
-    author: "Monsterwith",
-    version: "1.0.0",
+    author: "Monsterwith and Liane Cagara",
+    version: "1.1.0",
     description: "pair with random people 😗",
     usage: "{prefix}{name}",
     category: "Fun",
     noPrefix: false,
     role: 0,
-    waitingTime: 10,
+    waitingTime: 20,
+  },
+  style: {
+    title: "💘 Pair",
+    contentFont: "fancy",
+    titleFont: "bold",
   },
 
   async entry({ input, output, usersDB }) {
     const uidI = input.senderID;
     await usersDB.ensureUserInfo(uidI);
     const user1 = await usersDB.getItem(uidI);
-    const avatarUrl1 = user1.userMeta.image;
+    const avatarUrl1 = user1.userMeta?.image;
+    if (!avatarUrl1) {
+      return output.reply("❌ This command does not work to you!");
+    }
     const name1 = user1.userMeta?.name ?? user1.name ?? "Unregistered";
     const members = input.participantIDs ?? [];
 
@@ -45,39 +54,61 @@ export default defineCommand({
     const randomNumber1 = Math.floor(Math.random() * 36) + 65;
     const randomNumber2 = Math.floor(Math.random() * 36) + 65;
     let img1: any, img2: any;
+
+    let makeQ = async (url: string, name: string, quote: string) => {
+      const res = await axios.get("https://api.popcat.xyz/quote", {
+        params: {
+          image: url,
+          font: "Poppins-Bold",
+          name,
+          text: quote,
+        },
+        responseType: "stream",
+      });
+      return res.data;
+    };
+    const text1 = `I love you ${name2}!`;
+    const text2 = `I love you ${name1}!`;
     try {
-      img1 = await getStreamFromURL(avatarUrl1);
+      img1 = await makeQ(avatarUrl1, name1, text1);
     } catch (error) {
       await usersDB.saveUserInfo(uidI);
       try {
-        img1 = await getStreamFromURL(
+        img1 = await makeQ(
           (
             await usersDB.getItem(uidI)
-          ).userMeta?.image
+          ).userMeta?.image,
+          name1,
+          text1
         );
       } catch (error) {}
     }
     try {
-      img2 = await getStreamFromURL(avatarUrl2);
+      img2 = await makeQ(avatarUrl2, name2, text2);
     } catch (error) {
       await usersDB.saveUserInfo(randomMember);
       try {
-        img2 = await getStreamFromURL(
+        img2 = await makeQ(
           (
             await usersDB.getItem(randomMember)
-          ).userMeta?.image
+          ).userMeta?.image,
+          name2,
+          text2
         );
       } catch (error) {}
     }
 
     return output.reply({
-      body: `• Everyone congratulates the new husband and wife:
-❤ ***${name1}*** 💕 ***${name2}*** ❤
-**Love percentage**: "${randomNumber1} % 🤭"
-**Compatibility ratio**: "${randomNumber2} % 💕"
+      body: `${UNISpectra.arrow} Everyone congratulates the new husband and wife:
+❤ ***${name1}*** 
+        💕 
+❤ ***${name2}*** 
+
+**Love percentage**: ${randomNumber1}% 🤭
+**Compatibility ratio**: "${randomNumber2}% 💕
 
 Congratulations 💝`,
-      ...(!input.isWeb ? {} : { attachment: [img1, img2].filter(Boolean) }),
+      ...(input.isWeb ? {} : { attachment: [img1, img2].filter(Boolean) }),
     });
   },
 });
