@@ -1,7 +1,7 @@
 export default easyCMD({
   name: "report",
   description: "Reports a message to bot admins.",
-  title: "💗 Greetings",
+  title: "📝 Report to Admin",
   category: "Utilities",
   meta: {
     cooldown: 120,
@@ -33,5 +33,7 @@ export default easyCMD({
         id
       );
     }
+    output.reply("✅ Your report has been sent to the admins.");
+    output.react("✅");
   },
 });

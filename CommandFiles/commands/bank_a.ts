@@ -3,6 +3,8 @@ import { abbreviateNumber, UNIRedux } from "@cassidy/unispectra";
 import { parseBet } from "@cass-modules/ArielUtils";
 import { FontSystem } from "cassidy-styler";
 import { UserData } from "@cass-modules/cassidyUser";
+import { Inventory } from "@cassidy/ut-shop";
+import { listItem, groupItems } from "@cass-modules/BriefcaseAPI";
 const { fonts } = FontSystem;
 
 export const meta: CassidySpectra.CommandMeta = {
@@ -10,7 +12,7 @@ export const meta: CassidySpectra.CommandMeta = {
   version: "1.0.2",
   author: "original idea by Duke Agustin,recreated by Liane Cagara",
   waitingTime: 1,
-  description: "Manage your finances with Ariel's Bank (𝐀-𝐁𝐀𝐍𝐊 ®).",
+  description: "Manage your finances and items with Ariel's Bank (𝐀-𝐁𝐀𝐍𝐊 ®).",
   category: "Finance",
   noPrefix: "both",
   otherNames: ["bank", "arielbank", "b", "ac", "acbank"],
@@ -85,12 +87,16 @@ export async function entry({
   commandName,
 }: CommandContext) {
   const userData = await money.getItem(input.senderID);
+  const inv = new Inventory(userData.inventory);
+
   const cassExpress = new CassExpress(userData.cassExpress ?? {});
   let {
     name,
     money: userMoney,
-    bankData = { bank: 0, nickname: null },
+    bankData = { bank: 0, nickname: null, items: null },
   } = userData;
+  const bankDataItems = new Inventory(bankData.items ?? [], 100);
+
   bankData.bank = Math.min(bankData.bank, Number.MAX_VALUE);
   if (!name) {
     return output.reply(
@@ -166,6 +172,9 @@ export async function entry({
           `${NOTIF}\n${UNIRedux.standardLine}\nYou do not have an ${ABANK} ® account. Register with ${prefix}${commandName} register <nickname>.`
         );
       }
+      const itemStr = [...groupItems(bankDataItems.getAll()).values()]
+        .map((i) => listItem(i, i.amount))
+        .join("\n");
       return output.reply(
         `${trophys.length > 0 ? `🏆 ***Bank Awardee*** 🏆\n` : ""}${
           UNIRedux.standardLine
@@ -179,7 +188,9 @@ export async function entry({
           trophys.length > 0 && !isPeek
             ? `\n${UNIRedux.arrow} You can still withdraw your old bank if you have **zero** bank balance. It will also remove your trophy.`
             : ""
-        }`
+        }\n🛍️ **Items**\n\n${itemStr || "No items."}\n${
+          UNIRedux.standardLine
+        }\n`
       );
     },
     async withdraw() {

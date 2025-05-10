@@ -171,6 +171,7 @@ type UserData = {
   bankData?: {
     nickname?: string;
     bank: number;
+    items?: InventoryItem[];
   };
   links?: [string, string][];
 };
