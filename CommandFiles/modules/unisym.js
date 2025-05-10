@@ -128,6 +128,9 @@ export class UNISpectra {
     return `${this.wrapA} ${emoji} ${this.wrapB}`;
   }
   static standardizeLines(text) {
+    if (!Cassidy.config.standardSpectra) {
+      return text;
+    }
     const lines = String(text).split("\n");
     let result = lines
       .map((i) => {
@@ -149,7 +152,13 @@ export class UNISpectra {
   static standardLineStart = "━━━━━━━━━━━━━━━"; // Line
   static standardBottomStart = "━━━━━━━ ✕ ━━━━━━"; // Line
   static standardBottom = "•────── ✕ ──────•"; // Line
-  static standardLine = "•───────────────•"; // Line
+  static standardLineNew = "•───────────────•"; // Line
+  static get standardLine() {
+    if (Cassidy.config.standardSpectra) {
+      return this.standardLineNew;
+    }
+    return this.standardLineOld;
+  }
   static section = "§"; // Section sign
   static paragraph = "¶"; // Pilcrow sign
   static registered = "®"; // Registered trademark sign

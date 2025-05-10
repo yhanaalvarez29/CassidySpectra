@@ -148,6 +148,12 @@ export namespace NeaxScript {
   Requirements:
   - Author must have permission or be an admin
   `,
+    ulink: `
+  Links a target user to another user's UID.`,
+    uunlink: `
+  Unlinks a target user from their linked UID.`,
+    links: `
+  Displays all linked users.`,
   };
 
   export enum Codes {
@@ -190,6 +196,11 @@ export namespace NeaxScript {
       }
       const { links = [] } = await globalDB.getItem(UID_LINKS_KEY);
       const linksMap = new Map(links);
+      const key = [...linksMap].find(([_, v]) => v === linkedUID)?.[0];
+      if (key === linkedUID && nsxTarget === linksMap.get(key)) {
+        yield "Circular link detected.";
+        return Codes.MissingOrInvalidArgs;
+      }
       linksMap.set(nsxTarget, linkedUID);
       await globalDB.setItem(UID_LINKS_KEY, {
         links: Array.from(linksMap),
@@ -217,14 +228,28 @@ export namespace NeaxScript {
         return Codes.MissingOrInvalidArgs;
       }
 
-      linksMap.delete(nsxTarget);
+      const key = [...linksMap].find(([_, v]) => v === linkedUID)?.[0];
+      if (!key) {
+        yield "The target has no linked uid.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      linksMap.delete(key);
       await globalDB.setItem(UID_LINKS_KEY, {
         links: Array.from(linksMap),
       });
 
       yield `Unlink success [${nsxTarget}]`;
       yield nsxu.json([nsxTarget, linksMap.get(nsxTarget)]);
-      yield `${nsxTarget} will no longer use uid of ${linksMap.get(nsxTarget)}`;
+      yield `${nsxTarget} will no longer use uid of ${key}`;
+      return Codes.Success;
+    },
+    async *links({ globalDB, nsxu }) {
+      const { links = [] } = await globalDB.getItem(UID_LINKS_KEY);
+      if (links.length < 1) {
+        yield "No linked uids.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      yield nsxu.json(links);
       return Codes.Success;
     },
     async *input({ nsxuCreated, input, nsxu }) {
