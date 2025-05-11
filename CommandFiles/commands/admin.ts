@@ -316,26 +316,26 @@ const configs: Config[] = [
         if (ADMINBOT.length === 0) {
           result += `${UNISpectra.arrowFromT} No admins set.\n`;
         } else {
-          result += ` ┌──────────────────┐\n`;
+          result += ` ┌─────────────┐\n`;
           let n = 1;
           for (const [admin, { name }] of Object.entries(admins)) {
             result += ` │ ${n.toString()}. ${name} (${admin})\n`;
             n++;
           }
-          result += ` └──────────────────┘\n`;
+          result += ` └─────────────┘\n`;
         }
 
         result += `\n${UNISpectra.arrow} 🛡️ ***Moderators*** (${MODERATORBOT.length}):\n`;
         if (MODERATORBOT.length === 0) {
           result += `${UNISpectra.arrowFromT} No moderators set.\n`;
         } else {
-          result += ` ┌──────────────────┐\n`;
+          result += ` ┌─────────────┐\n`;
           let n = 1;
           for (const [moderator, { name }] of Object.entries(mods)) {
             result += ` │ ${n.toString()}. ${name} (${moderator})\n`;
             n++;
           }
-          result += ` └──────────────────┘\n`;
+          result += ` └─────────────┘\n`;
         }
 
         result += `\n${UNISpectra.arrow} Use **${prefix}admin [add|remove|addmod|removemod] <uid>** to manage.`;
