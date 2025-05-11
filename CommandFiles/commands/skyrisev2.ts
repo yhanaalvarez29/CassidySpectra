@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.3",
+  version: "1.0.5",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -100,7 +100,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Crystal Mine",
     flavorText: "Mines sparkling **Crystals** from the island core.",
     key: "crystalMine",
-    price: { aether: 50, crystal: 0, stone: 0, money: 10000 },
+    price: { aether: 50000, crystal: 0, stone: 0, money: 10000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Crystal Mine",
@@ -122,7 +122,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Stone Quarry",
     flavorText: "Extracts sturdy **Stone** from the island.",
     key: "stoneQuarry",
-    price: { aether: 50, crystal: 50, stone: 0, money: 20000 },
+    price: { aether: 50000, crystal: 50000, stone: 0, money: 20000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Stone Quarry",
@@ -144,7 +144,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Sky Forge",
     flavorText: "Crafts powerful upgrades for your empire.",
     key: "skyForge",
-    price: { aether: 100, crystal: 100, stone: 100, money: 100000 },
+    price: { aether: 1000000, crystal: 1000000, stone: 1000000, money: 100000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Sky Forge",
@@ -167,7 +167,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     type: "srworker",
     flavorText: "Increases building efficiency.",
     key: "srworker",
-    price: { aether: 200, crystal: 200, stone: 200, money: 200000 },
+    price: { aether: 2000000, crystal: 2000000, stone: 2000000, money: 200000 },
     onPurchase({ moneySet }) {
       moneySet.srworkers = (moneySet.srworkers || 0) + 1;
     },
@@ -228,21 +228,20 @@ function calculateProduction(
   const updatedBuilding = updateBuildingData(building, []);
   const timeSinceCollectX = Date.now() - updatedBuilding.lastCollect;
 
-  const baseCapMinutes = 5;
+  const baseCapMinutes = 3;
   const levelCapMinutes =
     baseCapMinutes * Math.pow(2, updatedBuilding.level - 1);
   const capMilliseconds = levelCapMinutes * 60 * 1000;
 
   const timeSinceCollect = Math.min(timeSinceCollectX, capMilliseconds);
-  const intervals = Math.floor(
-    timeSinceCollect / updatedBuilding.production.interval
-  );
+  const randomizedInterval =
+    updatedBuilding.production.interval +
+    (Math.random() + 0.5) * updatedBuilding.production.interval;
+  const intervals = Math.floor(timeSinceCollect / randomizedInterval);
   const workerBoost = 1 + (updatedBuilding.workers || 0) * 0.2;
+  const levelPow = Math.pow(2, updatedBuilding.level ?? 0);
   const baseAmountX =
-    updatedBuilding.production.amount *
-    updatedBuilding.level *
-    intervals *
-    workerBoost;
+    updatedBuilding.production.amount * levelPow * intervals * workerBoost;
   const baseAmount = baseAmountX + (Math.random() - 0.5) * baseAmountX;
 
   const srWorkerMultiplier = Math.pow(2, _srworkers ?? 0);
@@ -271,7 +270,9 @@ export function predictProduction(
     );
   }
 
-  const production = buildingItem.production;
+  const production = {
+    ...buildingItem.production,
+  };
   if (
     production.resource === "none" ||
     production.amount <= 0 ||
@@ -309,10 +310,10 @@ export function predictProduction(
 function calculateUpgradeCost(building: SkyForgeBuilding) {
   const level = building.level || 1;
   return {
-    aether: 50 * level,
-    crystal: 50 * level,
-    stone: 50 * level,
-    money: 50 * level,
+    aether: 50000 * level,
+    crystal: 50000 * level,
+    stone: 50000 * level,
+    money: 50000 * level,
   };
 }
 
@@ -418,6 +419,7 @@ export async function entry(ctx: CommandContext) {
     money: userMoney,
     tutorialStep = 0,
     isUptSkyRise = false,
+    isSkyRiseV2 = false,
   } = await money.getCache(input.senderID);
 
   if (!isUptSkyRise) {
@@ -433,6 +435,18 @@ export async function entry(ctx: CommandContext) {
     await money.setItem(input.sid, {
       isUptSkyRise: true,
       srbuildings: upt,
+    });
+  }
+
+  if (!isSkyRiseV2) {
+    await money.setItem(input.sid, {
+      srbuildings: [],
+      stone: 0,
+      aether: 0,
+      crystal: 0,
+      srworkers: 0,
+      tutorialStep: 0,
+      isSkyRiseV2: true,
     });
   }
 
@@ -478,14 +492,15 @@ export async function entry(ctx: CommandContext) {
 
             for (const building of pageBuildings) {
               const updatedBuilding = updateBuildingData(building, buildings);
-              const production = calculateProduction(
+              const production = predictProduction(
+                shopItems.find((i) => i.name === updatedBuilding.name),
                 updatedBuilding,
                 srworkers
               );
               result += `${updatedBuilding.icon} **${updatedBuilding.name}** (Level ${updatedBuilding.level})\n`;
               result += `🏛️ Name: ${updatedBuilding.buildingName}\n`;
               result += `👷 Workers: ${updatedBuilding.workers || 0}\n`;
-              result += `📈 Production: ${production} **${updatedBuilding.production.resource}**\n`;
+              result += `📈 Production: ${production.minAmount} **${production.resource}**\n`;
               result += `🆔 ID: ${updatedBuilding.key}\n\n`;
             }
 
