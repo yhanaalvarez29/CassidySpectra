@@ -53,6 +53,7 @@ import {
   removeCommandAliases,
   UNISpectra,
 } from "./CommandFiles/modules/unisym.js";
+import { ConsoleArray } from "@cass-modules/ConsoleArray";
 
 const checkMemoryUsage = (normal) => {
   const memoryUsage = process.memoryUsage();
@@ -114,10 +115,13 @@ global.requireProc = (m) => {
   return require("./" + m);
 };
 
+const consoleDisplay = new ConsoleArray();
+
 /**
  * @global
  */
 global.Cassidy = {
+  consoleDisplay,
   get config() {
     const cache = loadSettings();
     return new Proxy(cache, {
@@ -210,9 +214,11 @@ function clearObj(obj) {
 }
 
 /**
- * @param {string} text
+ * @param {any} text
+ * @param {string} title
+ * @param {(a: any, ...args: any[]) => any} func
  */
-export function logger(text, title = "log") {
+export function logger(text, title = "log", func = console.log) {
   const now = new Date();
   const options = { timeZone: "Asia/Manila", hour12: false };
   const time = now.toLocaleTimeString("en-PH", options);
@@ -220,7 +226,7 @@ export function logger(text, title = "log") {
     typeof text === "string" ? text : inspect(text)
   }`;
 
-  console.log(message);
+  func(message);
   return logger;
 }
 
@@ -346,6 +352,7 @@ export async function loadAllCommands(callback = async () => {}) {
 let willAccept = false;
 async function main() {
   let loginErr;
+
   logger(`Cassidy ${__pkg.version}`, "Info");
   logger(
     `The CassidySpectra is currently in development and is also unstable. Some features might not work as expected.`,
@@ -370,6 +377,8 @@ async function main() {
       "No settings found, please check if the settings are properly configured.",
       "Info"
     );
+  } else {
+    loadLog("Settings loaded!", "Info");
   }
   loadLog("Loading cookie...", "Cookie");
   const cookie = loadCookie();

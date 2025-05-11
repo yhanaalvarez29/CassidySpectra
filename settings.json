@@ -7,6 +7,7 @@
     "LOGO is your custom cassidy logo TEXT (which shows in prefix, menu, etc). You can modify it based on your likings! Leave an empty string to use the original logo TEXT"
   ],
   "railwayTips": "Use USA East as region for railway, and render. ",
+  "GRADIENT_THEME": "retro",
   "knownURL": "https://cassidyredux.onrender.com",
   "noFB": false,
   "PREFIX": "#",

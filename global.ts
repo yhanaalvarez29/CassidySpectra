@@ -750,6 +750,7 @@ declare global {
   export namespace CassidySpectra {
     export interface CommandContext extends CommandContextOG {}
     export interface GlobalCassidy {
+      consoleDisplay: ConsoleArray;
       config: typeof import("./settings.json");
       uptime: number;
       plugins: Record<string, any>;
@@ -1064,6 +1065,7 @@ import { FCALianeAPI, FCAMqtt } from "@cass-modules/fca-types";
 import { Files } from "@cass-modules/File";
 import { NeaxScript } from "@cass-modules/NeaxScript";
 import type * as SmartSpectra from "@cass-modules/SmartSpectra";
+import { ConsoleArray } from "@cass-modules/ConsoleArray";
 
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {

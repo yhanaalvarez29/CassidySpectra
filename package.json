@@ -1,7 +1,7 @@
 {
   "name": "cassidy-spectra",
   "author": "Liane Cagara",
-  "version": "3.7.18-PRERELEASE",
+  "version": "3.7.19-PRERELEASE",
   "description": "Reworked Versatile Facebook Bot framework that provides many features.",
   "main": "index.js",
   "scripts": {
@@ -73,6 +73,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/express": "^5.0.0",
+    "@types/gradient-string": "^1.1.6",
     "@types/lodash": "^4.17.16",
     "@types/mime-types": "^2.1.4",
     "@types/request": "^2.48.12",

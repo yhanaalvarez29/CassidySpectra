@@ -1,7 +1,16 @@
 // @ts-check
 const { spawn } = require("child_process");
 const gradient = require("gradient-string");
-const { retro } = gradient;
+const settings = require("./settings.json");
+/**
+ * @type {keyof typeof gradient}
+ */
+// @ts-ignore
+const key = settings.GRADIENT_THEME ?? "retro";
+let { [key]: themed } = gradient;
+if (!themed) {
+  themed = gradient.retro;
+}
 /*
   WARNING: This source code is created by Liane Cagara.
   Any unauthorized modifications or attempts to tamper with this code 
@@ -25,12 +34,12 @@ function runChildProcess() {
   currentChild = child;
 
   child.stdout.on("data", (data) => {
-    const output = retro(data.toString());
+    const output = themed(data.toString());
     process.stdout.write(output);
   });
 
   child.stderr.on("data", (data) => {
-    const output = retro(data.toString());
+    const output = themed(data.toString());
     process.stderr.write(output);
   });
 
@@ -54,12 +63,12 @@ function runChildProcess2() {
   });
 
   child.stdout.on("data", (data) => {
-    const output = retro(data.toString());
+    const output = themed(data.toString());
     process.stdout.write(output);
   });
 
   child.stderr.on("data", (data) => {
-    const output = retro(data.toString());
+    const output = themed(data.toString());
     process.stderr.write(output);
   });
 
