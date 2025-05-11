@@ -251,13 +251,14 @@ export async function entry({
   output,
   args,
   input,
+  InputRoles,
   ctx,
 }) {
   const a = 7 * 60 * 60 * 1000;
   const b = 12 * 60 * 60 * 1000;
   let isAvailable = isTimeAvailable(a, b);
   if (!isAvailable) {
-    if (!input.isAdmin || args[0] !== "force") {
+    if (!input.hasRole(InputRoles.MODERATORBOT) || args[0] !== "force") {
       return output.reply(
         `✦ ${
           closeTexts[Math.floor(Math.random() * closeTexts.length)]

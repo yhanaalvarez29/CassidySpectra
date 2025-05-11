@@ -6,7 +6,7 @@ export const meta = {
   name: "uptime",
   description: "Check the bot's uptime status.",
   otherNames: ["upt", "up"],
-  version: "2.0.0",
+  version: "2.0.1",
   author: "Liane Cagara",
   usage: "{prefix}{name}",
   category: "System",
@@ -33,6 +33,7 @@ const { formatTimeDiff, formatBits } = global.utils;
  * @param {CommandContext} param0
  */
 export async function entry({ output, usersDB, threadsDB, input }) {
+  output.reaction("🚀");
   /**
    * @param {number} value
    * @param {string} unit
