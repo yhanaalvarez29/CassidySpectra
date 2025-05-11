@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.1",
+  version: "1.0.3",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -40,7 +40,7 @@ interface Production {
   interval: number;
 }
 
-type SkyForgeBuilding = InventoryItem & {
+export type SkyForgeBuilding = InventoryItem & {
   level: number;
   lastCollect: number;
   production: Production;
@@ -52,17 +52,27 @@ type SkyForgeBuilding = InventoryItem & {
   achievements?: string[];
 };
 
-const shopItems: Array<{
+export interface SkyForgeShopItem {
   icon: string;
   name: string;
   flavorText: string;
   key: string;
   type?: string;
-  price: { aether: number; crystal: number; stone: number; money: number };
-  onPurchase: (context: {
-    moneySet: { inventory: SkyForgeBuilding[]; srworkers: number };
-  }) => void;
-}> = [
+  price: {
+    aether: number;
+    crystal: number;
+    stone: number;
+    money: number;
+  };
+  onPurchase(context: {
+    moneySet: {
+      inventory: SkyForgeBuilding[];
+      srworkers: number;
+    };
+  }): void;
+}
+
+export const shopItems: Array<SkyForgeShopItem> = [
   {
     icon: "🌬️",
     name: "Aether Collector",
@@ -216,7 +226,14 @@ function calculateProduction(
   _srworkers: number
 ): number {
   const updatedBuilding = updateBuildingData(building, []);
-  const timeSinceCollect = Date.now() - updatedBuilding.lastCollect;
+  const timeSinceCollectX = Date.now() - updatedBuilding.lastCollect;
+
+  const baseCapMinutes = 5;
+  const levelCapMinutes =
+    baseCapMinutes * Math.pow(2, updatedBuilding.level - 1);
+  const capMilliseconds = levelCapMinutes * 60 * 1000;
+
+  const timeSinceCollect = Math.min(timeSinceCollectX, capMilliseconds);
   const intervals = Math.floor(
     timeSinceCollect / updatedBuilding.production.interval
   );
@@ -228,7 +245,65 @@ function calculateProduction(
     workerBoost;
   const baseAmount = baseAmountX + (Math.random() - 0.5) * baseAmountX;
 
-  return Math.floor(baseAmount * ((_srworkers ?? 0) + 1));
+  const srWorkerMultiplier = Math.pow(2, _srworkers ?? 0);
+
+  return Math.floor(baseAmount * srWorkerMultiplier);
+}
+
+export function predictProduction(
+  shopItem: SkyForgeShopItem,
+  buildingItem: SkyForgeBuilding,
+  totalWorkers: number
+): { resource: string; minAmount: number; maxAmount: number } {
+  if (!shopItem || !shopItem.key) {
+    throw new Error(`Invalid shop item: ${JSON.stringify(shopItem)}`);
+  }
+
+  if (!buildingItem || !buildingItem.production) {
+    throw new Error(`Invalid building item: ${JSON.stringify(buildingItem)}`);
+  }
+
+  const buildingKey =
+    buildingItem.key.split(":")[1]?.split("_")[0] || buildingItem.key;
+  if (shopItem.key !== buildingKey && shopItem.key !== buildingItem.key) {
+    throw new Error(
+      `Shop item key "${shopItem.key}" does not match building item key "${buildingItem.key}"`
+    );
+  }
+
+  const production = buildingItem.production;
+  if (
+    production.resource === "none" ||
+    production.amount <= 0 ||
+    production.interval <= 0
+  ) {
+    throw new Error(`Invalid production data: ${JSON.stringify(production)}`);
+  }
+
+  const baseCapMinutes = 5;
+  const levelCapMinutes = baseCapMinutes * Math.pow(2, buildingItem.level - 1);
+  const capMilliseconds = levelCapMinutes * 60 * 1000;
+
+  const intervals = Math.floor(capMilliseconds / production.interval);
+
+  const workerBoost = 1 + (buildingItem.workers || 0) * 0.2;
+
+  const baseAmountX =
+    production.amount * buildingItem.level * intervals * workerBoost;
+
+  const minBaseAmount = baseAmountX * 0.5;
+  const maxBaseAmount = baseAmountX * 1.5;
+
+  const srWorkerMultiplier = Math.pow(2, totalWorkers);
+
+  const minAmount = Math.floor(minBaseAmount * srWorkerMultiplier);
+  const maxAmount = Math.floor(maxBaseAmount * srWorkerMultiplier);
+
+  return {
+    resource: production.resource,
+    minAmount,
+    maxAmount,
+  };
 }
 
 function calculateUpgradeCost(building: SkyForgeBuilding) {
