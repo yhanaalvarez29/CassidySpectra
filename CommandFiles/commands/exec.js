@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-check
 
 import { exec } from "child_process";
 
@@ -26,17 +26,16 @@ export const meta = {
 export const style = {
   title: "Terminal >_",
   titleFont: "bold",
-  contentFont: "fancy",
+  contentFont: "none",
 };
 
 /**
- * 
- * @param {CommandContext} ctx 
- * @returns 
+ *
+ * @param {CommandContext} ctx
+ * @returns
  */
-export async function entry({ output, input, AutoEdit }) {
+export async function entry({ output, input }) {
   output.reaction("⏳");
-  let auto = new AutoEdit();
   const command = input.arguments.join(" ");
   if (!command) {
     await output.reply("❌ Please provide a command to execute.");
@@ -54,7 +53,6 @@ export async function entry({ output, input, AutoEdit }) {
     if (stderr) result += stderr;
     if (error) result += error;
     if (!input.isWeb) {
-      //auto = await auto.addUp(result);
     }
   });
 
