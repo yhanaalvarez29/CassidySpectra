@@ -3,14 +3,18 @@ import {
   CassCheckly,
   Config,
 } from "../modules/spectralCMDHome";
-import { limitString, UNIRedux, UNISpectra } from "@cassidy/unispectra";
+import { limitString, UNIRedux } from "@cassidy/unispectra";
 
 interface AutoNickname {
   nickname: string;
   author: string;
 }
 
-function checkShortCut(nickname: string, uid: string, userName: string): string {
+function checkShortCut(
+  nickname: string,
+  uid: string,
+  userName: string
+): string {
   if (/{userName}/gi.test(nickname)) {
     nickname = nickname.replace(/{userName}/gi, userName);
   }
@@ -29,14 +33,14 @@ export const meta: CassidySpectra.CommandMeta = {
   category: "Thread",
   author: "MrkimstersDev",
   role: 1,
-  noPrefix: "none",
+  noPrefix: false,
   waitingTime: 0,
   requirement: "3.0.0",
   icon: "🏷️",
   noWeb: true,
 };
 
-export const style = {
+export const style: CassidySpectra.CommandStyle = {
   title: "🏷️ Auto Nickname",
   titleFont: "bold",
   contentFont: "fancy",
@@ -51,8 +55,10 @@ const configs: Config[] = [
     icon: "👀",
     async handler({ output, threadsDB, input }) {
       const threadData = await threadsDB.getItem(input.threadID);
-      const autoNickname: AutoNickname | null = threadData?.autoNickname || null;
-      const isEnabled: boolean = threadData?.settings?.enableAutoSetName || false;
+      const autoNickname: AutoNickname | null =
+        threadData?.autoNickname || null;
+      const isEnabled: boolean =
+        threadData?.settings?.enableAutoSetName || false;
 
       if (!autoNickname) {
         output.reply(
@@ -73,7 +79,8 @@ const configs: Config[] = [
   },
   {
     key: "set",
-    description: "Set an auto-nickname for new users (supports {userName}, {userID})",
+    description:
+      "Set an auto-nickname for new users (supports {userName}, {userID})",
     args: ["[nickname]"],
     aliases: ["-s", "add", "config"],
     icon: "✏️",
@@ -85,7 +92,10 @@ const configs: Config[] = [
         name: "nickname",
       },
     ]),
-    async handler({ input, output, threadsDB, prefix, commandName }, { spectralArgs, key }) {
+    async handler(
+      { input, output, threadsDB, prefix, commandName },
+      { spectralArgs, key }
+    ) {
       const nickname = input.censor(spectralArgs.join(" ").trim());
 
       if (!nickname) {
@@ -95,7 +105,8 @@ const configs: Config[] = [
       }
 
       const existingNickname: AutoNickname | null =
-        (await threadsDB.queryItem(input.threadID, "autoNickname"))?.autoNickname || null;
+        (await threadsDB.queryItem(input.threadID, "autoNickname"))
+          ?.autoNickname || null;
 
       if (existingNickname) {
         await output.quickWaitReact(
@@ -205,8 +216,12 @@ const configs: Config[] = [
     icon: "✅",
     async handler({ input, output, threadsDB }) {
       const { settings: existing } = await threadsDB.getCache(input.tid);
-      await threadsDB.setItem(input.threadID, { settings: { ...existing, enableAutoSetName: true } });
-      output.reply(`${UNIRedux.arrow} **Auto Nickname Turned On** ✅\n\nNew users will now receive the set nickname.`);
+      await threadsDB.setItem(input.threadID, {
+        settings: { ...existing, enableAutoSetName: true },
+      });
+      output.reply(
+        `${UNIRedux.arrow} **Auto Nickname Turned On** ✅\n\nNew users will now receive the set nickname.`
+      );
     },
   },
   {
@@ -216,8 +231,12 @@ const configs: Config[] = [
     icon: "❌",
     async handler({ input, output, threadsDB }) {
       const { settings: existing } = await threadsDB.getCache(input.tid);
-      await threadsDB.setItem(input.threadID, { settings: { ...existing, enableAutoSetName: false } });
-      output.reply(`${UNIRedux.arrow} **Auto Nickname Turned Off** ❌\n\nNew users will no longer receive the set nickname.`);
+      await threadsDB.setItem(input.threadID, {
+        settings: { ...existing, enableAutoSetName: false },
+      });
+      output.reply(
+        `${UNIRedux.arrow} **Auto Nickname Turned Off** ❌\n\nNew users will no longer receive the set nickname.`
+      );
     },
   },
 ];
@@ -240,9 +259,15 @@ export async function event(ctx: CassidySpectra.CommandContext) {
     for (const user of dataAddedParticipants) {
       const { userFbId: uid, fullName: userName } = user;
       try {
-        const formattedNickname = checkShortCut(autoNickname.nickname, uid, userName);
+        const formattedNickname = checkShortCut(
+          autoNickname.nickname,
+          uid,
+          userName
+        );
         await api.changeNickname(formattedNickname, threadID, uid);
-        console.log(`Set nickname "${formattedNickname}" for user ${uid} in thread ${threadID}`);
+        console.log(
+          `Set nickname "${formattedNickname}" for user ${uid} in thread ${threadID}`
+        );
       } catch (error) {
         console.error(`Failed to set nickname for user ${uid}:`, error);
         output.reply(

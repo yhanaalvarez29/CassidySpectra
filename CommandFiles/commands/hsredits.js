@@ -1,6 +1,8 @@
-// CommandFiles/commands/baimg.js
-
 // @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "hsrEdits",
   description: "Fetches and sends a random Honkai Star Rail edits.",
@@ -18,6 +20,9 @@ export const meta = {
   noWeb: true,
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Honkai Star Rail Edits 🌃",
   titleFont: "bold",
@@ -26,19 +31,20 @@ export const style = {
 
 import { defineEntry } from "@cass/define";
 
-export const entry = defineEntry(
-  async ({ api, event, input, output, args, prefix, commandName }) => {
-    const API_URL = "https://haji-mix.up.railway.app/api/tiktok?search=Hsr+edits&stream=true";
-    try {
-      await output.reply("🔎 | Fetching Honkai Star Rail Edits...\n⏳ | Please **wait**...💖");
+export const entry = defineEntry(async ({ output }) => {
+  const API_URL =
+    "https://haji-mix.up.railway.app/api/tiktok?search=Hsr+edits&stream=true";
+  try {
+    await output.reply(
+      "🔎 | Fetching Honkai Star Rail Edits...\n⏳ | Please **wait**...💖"
+    );
 
-      await output.reply({
-        body: "Here's your Star Rail Edit おさま! 💖🥀\nMay This Journey Lead Us Starward! 🌌",
-        attachment: await global.utils.getStreamFromURL(API_URL),
-      });
-    } catch (error) {
-      console.error("Entry error:", error.message);
-      output.reply(`Error fetching image: ${error.message}`);
-    }
+    await output.reply({
+      body: "Here's your Star Rail Edit おさま! 💖🥀\nMay This Journey Lead Us Starward! 🌌",
+      attachment: await global.utils.getStreamFromURL(API_URL),
+    });
+  } catch (error) {
+    console.error("Entry error:", error.message);
+    output.reply(`Error fetching image: ${error.message}`);
   }
-);
+});

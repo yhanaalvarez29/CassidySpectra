@@ -1,9 +1,12 @@
-// CommandFiles/commands/tiktok.js
-
 // @ts-check
+
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "tiktok",
-  description: "Searches for TikTok videos based on your query and sends a video.",
+  description:
+    "Searches for TikTok videos based on your query and sends a video.",
   author: "MrKimstersDev | haji-mix-api",
   version: "1.0.0",
   usage: "{prefix}{name} <search query>",
@@ -18,6 +21,9 @@ export const meta = {
   noWeb: true,
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "TikTok Video 🎵",
   titleFont: "bold",
@@ -27,11 +33,10 @@ export const style = {
 import { defineEntry } from "@cass/define";
 
 export const entry = defineEntry(
-  async ({ api, event, input, output, args, prefix, commandName }) => {
+  async ({ input, output, prefix, commandName }) => {
     const BASE_API_URL = "https://haji-mix-api.gleeze.com/api/tiktok";
     const query = input.arguments.join(" ") || "";
 
-    // Check if a search query is provided
     if (!query) {
       await output.reply(
         `***Guide***\n\nPlease provide a search query. **Example**: ${prefix}${commandName} Demon Slayer edits`
@@ -40,12 +45,14 @@ export const entry = defineEntry(
     }
 
     try {
-      await output.reply(`🔎 | Searching TikTok for "${query}"...\n⏳ | Please **wait**...🎵`);
+      await output.reply(
+        `🔎 | Searching TikTok for "${query}"...\n⏳ | Please **wait**...🎵`
+      );
 
-      // Construct the API URL with the user's query
-      const apiUrl = `${BASE_API_URL}?search=${encodeURIComponent(query)}&stream=true`;
+      const apiUrl = `${BASE_API_URL}?search=${encodeURIComponent(
+        query
+      )}&stream=true`;
 
-      // Use output.attach to send the video directly
       await output.attach(
         `Here's your TikTok video for "${query}"! 🎬✨`,
         apiUrl

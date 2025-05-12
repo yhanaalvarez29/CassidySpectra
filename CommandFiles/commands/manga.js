@@ -1,6 +1,10 @@
+// @ts-check
+import { UNISpectra } from "@cassidy/unispectra";
 import moment from "moment-timezone";
-import { defineEntry } from "@cass/define";
 
+/**
+ * @type {CassidySpectra.CommandMeta}
+ */
 export const meta = {
   name: "manga",
   description: "Search and read manga chapters",
@@ -17,42 +21,50 @@ export const meta = {
   noLevelUI: true,
 };
 
+/**
+ * @type {CassidySpectra.CommandStyle}
+ */
 export const style = {
   title: "Astral • Manga Reader 🌌",
   titleFont: "bold",
   contentFont: "fancy",
 };
 
-const langs = {
+export const langs = {
   en: {
-    noQuery: "Please provide a manga title to search for!\nExample: {prefix}manga One Piece",
+    noQuery:
+      "Please provide a manga title to search for!\nExample: {prefix}manga One Piece",
     noResults: "No manga found with that title!",
     error: "Error fetching manga data: %1",
     invalidSelection: "Please select a valid number between 1 and 20!",
-    chapterPrompt: "Reply with a chapter number to read (e.g., '1' for Chapter 1)\nOr use 'next'/'prev' to change pages",
+    chapterPrompt:
+      "Reply with a chapter number to read (e.g., '1' for Chapter 1)\nOr use 'next'/'prev' to change pages",
     noChapters: "No chapters available for this manga!",
     invalidChapter: "Please select a valid chapter number!",
     invalidPageCommand: "Use 'next' or 'prev' to change pages!",
   },
 };
 
-function getLang(key, ...args) {
-  let text = langs.en[key] || "";
-  args.forEach((arg, i) => {
-    text = text.replace(`%${i + 1}`, arg);
-  });
-  return text;
-}
-
-// Search for manga titles using MangaDex
+/**
+ *
+ * @param {string} query
+ * @returns {Promise<any[]>}
+ */
 async function fetchMangaData(query) {
-  const apiUrl = `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=20`;
+  const apiUrl = `https://api.mangadex.org/manga?title=${encodeURIComponent(
+    query
+  )}&limit=20`;
   const response = await fetch(apiUrl);
   const data = await response.json();
+  // @ts-ignore
   return data.data || [];
 }
 
-// Fetch all chapters for a manga with pagination
+/**
+ *
+ * @param {string} mangaId
+ * @returns
+ */
 async function fetchChapterList(mangaId) {
   let allChapters = [];
   let offset = 0;
@@ -62,14 +74,14 @@ async function fetchChapterList(mangaId) {
     const apiUrl = `https://api.mangadex.org/chapter?manga=${mangaId}&limit=${limit}&offset=${offset}&translatedLanguage[]=en`;
     const response = await fetch(apiUrl);
     const data = await response.json();
+    // @ts-ignore
     const chapters = data.data || [];
     allChapters = allChapters.concat(chapters);
 
-    if (chapters.length < limit) break; // No more chapters to fetch
+    if (chapters.length < limit) break;
     offset += limit;
   }
 
-  // Sort chapters by chapter number
   allChapters.sort((a, b) => {
     const aNum = parseFloat(a.attributes.chapter || "0");
     const bNum = parseFloat(b.attributes.chapter || "0");
@@ -79,17 +91,21 @@ async function fetchChapterList(mangaId) {
   return allChapters;
 }
 
-// Fetch chapter page images using MangaDex at-home server
 async function fetchChapterPages(chapterId) {
   try {
     const apiUrl = `https://api.mangadex.org/at-home/server/${chapterId}`;
     const response = await fetch(apiUrl);
     if (!response.ok) throw new Error("Failed to fetch chapter pages");
+    /**
+     * @type {any}
+     */
     const data = await response.json();
     const baseUrl = data.baseUrl;
     const chapterHash = data.chapter.hash;
-    const pages = data.chapter.data.map(page => `${baseUrl}/data/${chapterHash}/${page}`);
-    return pages; // Return all pages
+    const pages = data.chapter.data.map(
+      (page) => `${baseUrl}/data/${chapterHash}/${page}`
+    );
+    return pages;
   } catch (error) {
     throw new Error(`Failed to fetch chapter pages: ${error.message}`);
   }
@@ -97,48 +113,65 @@ async function fetchChapterPages(chapterId) {
 
 function formatMangaList(results) {
   const timestamp = moment().tz("Asia/Manila").format("MMMM D, YYYY h:mm A");
-  const list = results.slice(0, 20).map((manga, index) => {
-    const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
-    const status = manga.attributes.status;
-    return ` • ${index + 1}. ${title} (${status})`;
-  }).join("\n");
+  const list = results
+    .slice(0, 20)
+    .map((manga, index) => {
+      const title =
+        manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+      const status = manga.attributes.status;
+      return ` • ${index + 1}. ${title} (${status})`;
+    })
+    .join("\n");
 
-  return `✦ 𝖳𝖾𝗆𝗉𝗈𝗋𝖺𝗅 𝖢𝗈𝗈𝗋𝖽𝗂𝗇𝖺𝗍𝖾𝗌
+  return `${UNISpectra.charm} Temporal Coordinates
  • 📅 ${timestamp}
-•───────────────•
-✦ 𝖬𝖺𝗇𝗀𝖺 𝖲𝖾𝖺𝗋𝖼𝗁 𝖱𝖾𝗌𝗎𝗅𝗍𝗌
+${UNISpectra.standardLine}
+${UNISpectra.charm} Manga Search Results
 ${list}
-•───────────────•
-✦ 𝖱𝖾𝗉𝗅𝗒 𝗐𝗂𝗍𝗁 𝖺 𝗇𝗎𝗆𝗯𝖾𝗋 (1-20) 𝗍𝗈 𝗌𝖾𝗅𝖾𝖼𝗍
-✦ 𝖢𝖺𝗌𝗌𝗂𝖽𝗒𝖠𝗌𝗍𝗋𝖺𝗅-𝖬𝗂𝖽𝗇𝗂𝗀𝗁𝗍 🌃 ✦
-[ 𝖳𝗋𝖺𝗇𝗌𝗆𝗂𝗌𝗌𝗂𝗈𝗇 𝖿𝗋𝗈𝗆 𝖠𝗌𝗍𝗋𝖺𝗅 𝖢𝗈𝗆𝗆𝖺𝗇𝖽 ]`;
+${UNISpectra.standardLine}
+${UNISpectra.charm} Reply with a number (1-20) to select
+${UNISpectra.charm} CassidyAstral-Midnight 🌃 ${UNISpectra.charm}
+[ Transmission from Astral Command ]`;
 }
 
 function formatChapterList(manga, chapters, page = 0) {
   const timestamp = moment().tz("Asia/Manila").format("MMMM D, YYYY h:mm A");
-  const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+  const title =
+    manga.attributes.title.en || Object.values(manga.attributes.title)[0];
   const perPage = 10;
   const start = page * perPage;
   const end = start + perPage;
   const totalPages = Math.ceil(chapters.length / perPage);
 
-  const chapterList = chapters.slice(start, end).map((chapter, index) => 
-    ` • ${start + index + 1}. Chapter ${chapter.attributes.chapter || "N/A"}`
-  ).join("\n");
+  const chapterList = chapters
+    .slice(start, end)
+    .map(
+      (chapter, index) =>
+        ` • ${start + index + 1}. Chapter ${
+          chapter.attributes.chapter || "N/A"
+        }`
+    )
+    .join("\n");
 
-  return `✦ 𝖳𝖾𝗆𝗉𝗈𝗋𝖺𝗅 𝖢𝗈𝗈𝗋𝖽𝗂𝗇𝖺𝗍𝖾𝗌
+  return `${UNISpectra.charm} Temporal Coordinates
  • 📅 ${timestamp}
-•───────────────•
-✦ 𝖬𝖺𝗇𝗀𝖺: ${title}
+${UNISpectra.standardLine}
+${UNISpectra.charm} Manga: ${title}
 ${chapterList}
-•───────────────•
+${UNISpectra.standardLine}
 Page ${page + 1}/${totalPages}
-${getLang("chapterPrompt")}
-✦ 𝖢𝖺𝗌𝗌𝗂𝖽𝗒𝖠𝗌𝗍𝗋𝖺𝗅-𝖬𝗂𝖽𝗇𝗂𝗀𝗁𝗍 🌃 ✦
-[ 𝖳𝗋𝖺𝗇𝗌𝗆𝗂𝗌𝗌𝗂𝗈𝗇 𝖿𝗋𝗈𝗆 𝖠𝗌𝗍𝗋𝖺𝗅 𝖢𝗈𝗆𝗆𝖺𝗇𝖽 ]`;
+${langs.en.chapterPrompt}
+${UNISpectra.charm} CassidyAstral-Midnight 🌃 ${UNISpectra.charm}
+[ Transmission from Astral Command ]`;
 }
 
-export async function entry({ input, output, commandName, api }) {
+/**
+ *
+ * @param {CommandContext} param0
+ * @returns
+ */
+export async function entry({ input, output, commandName, langParser }) {
+  const getLang = langParser.createGetLang(langs);
   try {
     const message = input.body.split(" ").slice(1).join(" ").trim();
     if (!message) {
@@ -164,8 +197,14 @@ export async function entry({ input, output, commandName, api }) {
   }
 }
 
-export async function reply({ input, output, repObj, detectID, api }) {
+/**
+ *
+ * @param {CommandContext & { repObj: { id: string; results: any, stage: any; manga: any, chapters: any; page: number; key: string } }} param0
+ * @returns
+ */
+export async function reply({ input, output, repObj, detectID, langParser }) {
   const { id, results, stage, manga, chapters, page = 0 } = repObj;
+  const getLang = langParser.createGetLang(langs);
 
   if (input.senderID !== id) {
     return;
@@ -188,7 +227,9 @@ export async function reply({ input, output, repObj, detectID, api }) {
         return output.reply(getLang("noChapters"));
       }
 
-      const messageInfo = await output.reply(formatChapterList(selectedManga, chapters, 0));
+      const messageInfo = await output.reply(
+        formatChapterList(selectedManga, chapters, 0)
+      );
       input.setReply(messageInfo.messageID, {
         key: repObj.key,
         id: input.senderID,
@@ -203,7 +244,6 @@ export async function reply({ input, output, repObj, detectID, api }) {
   } else if (stage === "selectChapter") {
     const inputLower = input.body.toLowerCase();
 
-    // Handle pagination commands
     if (inputLower === "next" || inputLower === "prev") {
       const perPage = 10;
       const totalPages = Math.ceil(chapters.length / perPage);
@@ -217,7 +257,9 @@ export async function reply({ input, output, repObj, detectID, api }) {
         return output.reply(getLang("invalidPageCommand"));
       }
 
-      const messageInfo = await output.reply(formatChapterList(manga, chapters, newPage));
+      const messageInfo = await output.reply(
+        formatChapterList(manga, chapters, newPage)
+      );
       input.setReply(messageInfo.messageID, {
         key: repObj.key,
         id: input.senderID,
@@ -229,12 +271,14 @@ export async function reply({ input, output, repObj, detectID, api }) {
       return;
     }
 
-    // Handle chapter selection
     const chapterSelection = parseInt(input.body);
-    const perPage = 10;
     const totalChapters = chapters.length;
 
-    if (isNaN(chapterSelection) || chapterSelection < 1 || chapterSelection > totalChapters) {
+    if (
+      isNaN(chapterSelection) ||
+      chapterSelection < 1 ||
+      chapterSelection > totalChapters
+    ) {
       return output.reply(getLang("invalidChapter"));
     }
 
@@ -245,22 +289,25 @@ export async function reply({ input, output, repObj, detectID, api }) {
         return output.reply("No pages available for this chapter!");
       }
 
-      const timestamp = moment().tz("Asia/Manila").format("MMMM D, YYYY h:mm A");
-      const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
-      const replyText = `✦ 𝖳𝖾𝗆𝗉𝗈𝗋𝖺𝗅 𝖢𝗈𝗈𝗋𝖽𝗂𝗇𝖺𝗍𝖾𝗌
+      const timestamp = moment()
+        .tz("Asia/Manila")
+        .format("MMMM D, YYYY h:mm A");
+      const title =
+        manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+      const replyText = `${UNISpectra.charm} 𝖳𝖾𝗆𝗉𝗈𝗋𝖺𝗅 𝖢𝗈𝗈𝗋𝖽𝗂𝗇𝖺𝗍𝖾𝗌
  • 📅 ${timestamp}
-•───────────────•
-✦ 𝖬𝖺𝗇𝗀𝖺: ${title}
+${UNISpectra.standardLine}
+${UNISpectra.charm} 𝖬𝖺𝗇𝗀𝖺: ${title}
  • 📖 Chapter ${selectedChapter.attributes.chapter || "N/A"}
  • 📄 Pages: ${pageUrls.length}
-•───────────────•
-✦ 𝖢𝖺𝗌𝗌𝗂𝖽𝗒𝖠𝗌𝗍𝗋𝖺𝗅-𝖬𝗂𝖽𝗇𝗂𝗀𝗁𝗍 🌃 ✦`;
+${UNISpectra.standardLine}
+${UNISpectra.charm} 𝖢𝖺𝗌𝗌𝗂𝖽𝗒𝖠𝗌𝗍𝗋𝖺𝗅-𝖬𝗂𝖽𝗇𝗂𝗀𝗁𝗍 🌃 ${UNISpectra.charm}`;
 
       const attachments = await Promise.all(
-        pageUrls.map(url => global.utils.getStreamFromURL(url))
+        pageUrls.map((url) => global.utils.getStreamFromURL(url))
       );
 
-      input.delReply(detectID);
+      input.delReply(String(detectID));
 
       const messageInfo = await output.reply({
         body: replyText,
