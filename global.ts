@@ -808,9 +808,9 @@ declare global {
     export interface CassidyCommand {
       meta: CommandMeta;
       entry: CommandEntry;
-      ID: number;
-      fileName: string;
-      filePath: string;
+      ID?: number;
+      fileName?: string;
+      filePath?: string;
       /**
        * @deprecated
        */

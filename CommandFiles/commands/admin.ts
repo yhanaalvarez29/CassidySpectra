@@ -319,7 +319,7 @@ const configs: Config[] = [
           result += ` ┌─────────────┐\n`;
           let n = 1;
           for (const [admin, { name }] of Object.entries(admins)) {
-            result += ` │ ${n.toString()}. ${name} (${admin})\n`;
+            result += ` │ ${n.toString()}. **${name}**\n │ (${admin})\n`;
             n++;
           }
           result += ` └─────────────┘\n`;
@@ -332,7 +332,7 @@ const configs: Config[] = [
           result += ` ┌─────────────┐\n`;
           let n = 1;
           for (const [moderator, { name }] of Object.entries(mods)) {
-            result += ` │ ${n.toString()}. ${name} (${moderator})\n`;
+            result += ` │ ${n.toString()}. **${name}**\n │ (${moderator})\n`;
             n++;
           }
           result += ` └─────────────┘\n`;
