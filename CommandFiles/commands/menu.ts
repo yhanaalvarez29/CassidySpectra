@@ -31,6 +31,7 @@ export async function entry({
   output,
   prefix,
   commandName,
+  commandName: cmdn,
   money,
   multiCommands,
   InputRoles,
@@ -49,7 +50,10 @@ export async function entry({
 
   if (args.length > 0 && isNaN(parseInt(args[0]))) {
     const commandName = args[0];
-    const commandsFound = commands.get(commandName);
+    const commandsFound = multiCommands
+      .getMap(commandName)
+      .toUnique((i) => i.meta.name)
+      .values();
     let str = [];
 
     if (commandsFound.length > 0) {
@@ -74,7 +78,22 @@ export async function entry({
           : "🔒 Locked";
         let role = await extractCommandRole(command, true, input.tid);
 
-        str.push(`
+        if (commandsFound.length !== 1) {
+          str.push(`
+╭─── ${cmdIcon} **${toTitleCase(name)}** ───
+│   📜 **Name**:
+│   ${UNISpectra.charm} ${name}
+│ 
+│   💬 **Description**: 
+│   ${UNISpectra.charm} ${description}
+│ 
+│   📝 **Aliases**: 
+│   ${UNISpectra.charm} ${otherNames.length ? otherNames.join(", ") : "None"}
+│   
+│   🔎 See **${prefix}${cmdn} ${name}** for more info.
+╰────────────────`);
+        } else {
+          str.push(`
 ╭─── ${cmdIcon} **${toTitleCase(name)}** ───
 │   📜 **Name**:
 │   ${UNISpectra.charm} ${name}
@@ -87,8 +106,8 @@ export async function entry({
 │ 
 │   🛠️ **Usage**:
 │   ${UNISpectra.charm} ${usage
-          .replace(/{prefix}/g, prefix)
-          .replace(/{name}/g, name)}
+            .replace(/{prefix}/g, prefix)
+            .replace(/{name}/g, name)}
 │ 
 │   📁 **Category**:
 │   ${UNISpectra.charm} ${category}
@@ -114,6 +133,7 @@ export async function entry({
 │   🛡️ **Requirement**:
 │   ${UNISpectra.charm} ${requirement}
 ╰────────────────`);
+        }
       }
       return output.replyStyled(str.join("\n\n"), {
         title: Cassidy.logo,

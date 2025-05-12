@@ -110,6 +110,14 @@ export class OutputResult {
   unsendSelf() {
     return this.#ctx.output.unsend(this.messageID);
   }
+
+  removeAtReply() {
+    this.#ctx.input.delReply(this.messageID);
+  }
+
+  removeAtReaction() {
+    this.#ctx.input.delReact(this.messageID);
+  }
 }
 
 export class CassidyIO {

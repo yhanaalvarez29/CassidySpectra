@@ -633,19 +633,22 @@ api.${
         console.error(error);
       }
 
+      // @ts-ignore
+      runObjects.supposedCommand = runObjects.command;
+    }
+    if (defCommand) {
+      runObjects.command = defCommand;
+    }
+
+    if (runObjects.command) {
       const extractedRole = await extractCommandRole(
-        command,
+        // @ts-ignore
+        runObjects.command,
         true,
         event.threadID
       );
       if (extractedRole in InputRoles && typeof extractedRole === "number") {
         runObjects.commandRole = extractedRole;
-      }
-
-      // @ts-ignore
-      runObjects.supposedCommand = runObjects.command;
-      if (defCommand) {
-        runObjects.command = defCommand;
       }
     }
 

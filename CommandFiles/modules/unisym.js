@@ -945,3 +945,86 @@ export function listArrayStr(str, oxford = false) {
     ? `${items.join(", ")}${oxford ? "," : ""} and ${last}`
     : `${last ?? ""}`;
 }
+
+/**
+ *
+ * @param {CommandContext} ctx
+ * @param {CassidySpectra.CassidyCommand[]} foundCommands
+ * @param {string} commandName
+ * @returns
+ */
+export async function handleDefaultCommand(
+  { output, prefix, input },
+  foundCommands,
+  commandName
+) {
+  /**
+   * @type {CassidySpectra.CommandStyle}
+   */
+  const cassStyle = {
+    title: Cassidy.logo,
+    contentFont: "fancy",
+  };
+  const xName = commandName;
+  try {
+    if (foundCommands.length === 0) {
+      return output.replyStyled(`❌ **Found no commands.**`, cassStyle);
+    }
+    if (foundCommands.length === 1) {
+      const str = [
+        `🔎 **Found only one command.**`,
+        ``,
+        ...foundCommands.map(
+          (i) =>
+            `${UNISpectra.arrowFromT} ${i.meta.icon} ${prefix}**${i.meta.name}**\n${UNISpectra.charm}${i.meta.description}\n`
+        ),
+        ``,
+        `${UNISpectra.arrow} You cannot choose a **default command** because there are no other commands with the same alias.`,
+      ].join("\n");
+      return output.replyStyled(str, cassStyle);
+    }
+    const str = [
+      `🔎 **Found ${foundCommands.length} commands.**`,
+      ``,
+      ...foundCommands.map(
+        (i) =>
+          `${UNISpectra.arrowFromT} ${i.meta.icon} ${prefix}**${i.meta.name}**\n${UNISpectra.charm}${i.meta.description}\n`
+      ),
+      ``,
+      `${UNISpectra.arrow} Please reply with a **command name** without **prefix and fonts** to choose your ***Default Command***`,
+    ].join("\n");
+
+    const info = await output.replyStyled(str, cassStyle);
+    info.atReply(async (ctx2) => {
+      if (ctx2.input.sid !== input.sid) {
+        return;
+      }
+      const { defaultCommands = [] } = await ctx2.usersDB.getItem(
+        ctx2.input.sid
+      );
+      const defMap = new Map(defaultCommands);
+      let name = (ctx2.input.words[0] ?? "").trim();
+      if (name.startsWith(ctx2.prefix)) {
+        name = name.slice(ctx2.prefix.length);
+      }
+      const exists = foundCommands.find((v) => v.meta?.name === name);
+      if (!exists) {
+        return ctx2.output.replyStyled(
+          `❌ Cannot find command "${name}"! Please go **back** to the previous message and reply again.`,
+          cassStyle
+        );
+      }
+      defMap.set(xName, name);
+      await ctx2.usersDB.setItem(ctx2.input.sid, {
+        defaultCommands: [...defMap],
+      });
+      info.removeAtReply();
+      return output.replyStyled(
+        `✅ Successfully used **${name}** as the default command for **${xName}**! You can always change this setting by using the **${ctx2.prefix}defaults <alias>** without the fonts.`,
+        cassStyle
+      );
+    });
+  } catch (error) {
+    return output.error(error);
+  }
+}
