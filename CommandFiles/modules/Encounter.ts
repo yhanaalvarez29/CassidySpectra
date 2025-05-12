@@ -9,6 +9,16 @@ export interface Flavor {
   satisfied?: string[];
 }
 
+export interface PersistentStats {
+  totalDamageDealt: number;
+  totalDamageTaken: number;
+  mercyContributed: number;
+  defenseBoosts: number;
+  attackBoosts: number;
+  healsPerformed: number;
+  lastMove: string | null;
+}
+
 export interface Dialogues {
   neutral?: string[];
   satisfied?: string[];

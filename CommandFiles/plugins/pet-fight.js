@@ -944,15 +944,21 @@ export class PetPlayer {
   }
   magicModifier = 0;
   get MAGIC() {
-    const weaponMagic = this.weapon[0].magic;
-    const armorsMagic = this.armors.reduce((acc, weapon) => {
-      return acc + weapon.magic;
-    }, 0);
-    const extra = PetPlayer.getExtraMagicOf(
-      (weaponMagic + armorsMagic) / 100,
-      this.exp
-    );
-    return Math.round(weaponMagic + armorsMagic + extra + this.magicModifier);
+    const gearMagic =
+      this.weapon[0].magic +
+      this.armors.reduce((acc, weapon) => {
+        return acc + weapon.magic;
+      }, 0);
+
+    const cappedGearMagic = Math.min(gearMagic, 50 + this.level * 5);
+
+    const extra = PetPlayer.getExtraMagicOf(cappedGearMagic / 100, this.exp);
+
+    const rawMagic = cappedGearMagic + extra + this.magicModifier;
+
+    const statCap = Math.max(this.maxHP * 2, this.ATK * 3, this.level * 10);
+
+    return Math.round(Math.min(rawMagic, statCap));
   }
   clone() {
     return new PetPlayer(this.OgpetData, this.OggearData);
@@ -994,8 +1000,10 @@ export class PetPlayer {
     });
     return result;
   }
+
   static getExtraMagicOf(magic, lastExp) {
-    return Math.floor((magic + 1) * (1 + lastExp / 300)) + (-magic + 1);
+    const expFactor = Math.min(lastExp / 300, 5);
+    return Math.floor((magic + 1) * (1 + expFactor)) + (-magic + 1);
   }
   static getLevelOf(lastExp) {
     return lastExp < 10 ? 1 : Math.floor(Math.log2(lastExp / 10)) + 1;

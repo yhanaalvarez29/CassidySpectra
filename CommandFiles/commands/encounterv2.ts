@@ -6,8 +6,14 @@ import {
 } from "@cass-plugins/pet-fight";
 import { Inventory } from "@cassidy/ut-shop";
 import fs from "fs-extra";
-import { Encounter, PetSchema, GameState } from "@cass-modules/Encounter";
+import {
+  Encounter,
+  PetSchema,
+  GameState,
+  PersistentStats,
+} from "@cass-modules/Encounter";
 import { FontSystem } from "cassidy-styler";
+import { OutputResult } from "@cass-plugins/output";
 
 export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
@@ -36,7 +42,6 @@ export const style: CassidySpectra.CommandStyle = {
 const encounters: Record<string, Encounter> = fs.readJSONSync(
   process.cwd() + "/CommandFiles/resources/spinoff/encounters.json"
 );
-
 const petSchema: PetSchema = {
   fight: false,
   item: false,
@@ -48,6 +53,13 @@ const petSchema: PetSchema = {
     Act: "🔈",
     LifeUp: "✨",
     HexSmash: "💥",
+    FluxStrike: "🌩️",
+    GuardPulse: "🛡️",
+    MercyWave: "🌊",
+    ChaosBolt: "⚡",
+    VitalSurge: "💖",
+    StatSync: "🔄",
+    Equilibrium: "⚖️",
   },
 };
 
@@ -62,6 +74,13 @@ const leaderSchema: PetSchema = {
     Act: "🔊",
     LifeUp: "✨",
     HexSmash: "💥",
+    FluxStrike: "🌩️",
+    GuardPulse: "🛡️",
+    MercyWave: "🌊",
+    ChaosBolt: "⚡",
+    VitalSurge: "💖",
+    StatSync: "🔄",
+    Equilibrium: "⚖️",
   },
 };
 
@@ -97,6 +116,7 @@ function getCacheIcon(turn: string | null): string | null {
 }
 
 export async function entry({ input, output }: CommandContext): Promise<void> {
+  const statMap = new Map<string, PersistentStats>();
   let gameState: GameState | null = null;
   let isDefeat = false;
 
@@ -203,6 +223,30 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
   info.atReply(startHandler);
 
+  function initializeStatMap(pets: PetPlayer[], opponent: WildPlayer) {
+    statMap.clear();
+    for (const pet of pets) {
+      statMap.set(pet.OgpetData.key, {
+        totalDamageDealt: 0,
+        totalDamageTaken: 0,
+        mercyContributed: 0,
+        defenseBoosts: 0,
+        attackBoosts: 0,
+        healsPerformed: 0,
+        lastMove: null,
+      });
+    }
+    statMap.set("opponent", {
+      totalDamageDealt: 0,
+      totalDamageTaken: 0,
+      mercyContributed: 0,
+      defenseBoosts: 0,
+      attackBoosts: 0,
+      healsPerformed: 0,
+      lastMove: null,
+    });
+  }
+
   async function displayPetSelection(ctx: CommandContext): Promise<void> {
     if (!gameState) return;
     let result = `* ${gameState.flavorCache}\n\n`;
@@ -217,6 +261,8 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
     }
     result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options.`;
 
+    initializeStatMap(gameState.pets, gameState.opponent);
+
     const newInfo = await ctx.output.replyStyled(result, style);
     newInfo.atReply(
       async (turnCtx) => await handlePlayerTurn(turnCtx, newInfo)
@@ -225,7 +271,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
   async function handlePlayerTurn(
     ctx: CommandContext,
-    info: any
+    info: OutputResult
   ): Promise<void> {
     if (isDefeat || !gameState || ctx.input.senderID !== gameState.author)
       return;
@@ -345,7 +391,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
   async function handleEnemyTurn(
     ctx: CommandContext,
-    info: any
+    info: OutputResult
   ): Promise<void> {
     if (!gameState) return;
     const turns = gameState.turnCache.map((i) => String(i).toLowerCase());
@@ -363,9 +409,11 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         }.\n`;
         continue;
       }
+      const petStats = statMap.get(pet.OgpetData.key);
+      const opponentStats = statMap.get("opponent");
 
       switch (turn) {
-        case "cheat":
+        case "cheat": {
           if (ctx.input.isAdmin) {
             const allAtk = gameState.pets.reduce(
               (acc, pet) => acc + pet.calculateAttack(gameState.opponent.DF),
@@ -374,7 +422,8 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             damage += gameState.opponent.maxHP - allAtk;
           }
           break;
-        case "hexsmash":
+        }
+        case "hexsmash": {
           flavorText += `* ${pet.petIcon} **${pet.petName}** used 💥 **HexMash**!\n`;
           if (
             (gameState.prevTurns[i] === "hexsmash" && dodgeChance < 0.7) ||
@@ -390,8 +439,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             damage += damageEach;
           }
           flavorText += `\n`;
+
           break;
-        case "bash":
+        }
+        case "bash": {
           flavorText += `* ${pet.petIcon} **${pet.petName}** attacks!\n`;
           if (
             (gameState.prevTurns[i] === "bash" && dodgeChance < 0.7) ||
@@ -405,11 +456,14 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             damage += damageEach;
           }
           flavorText += `\n`;
+
           break;
-        case "defend":
+        }
+        case "defend": {
           flavorText += `* ${pet.petIcon} **${pet.petName}** defended.\n`;
           break;
-        case "mercy":
+        }
+        case "mercy": {
           if (gameState.opponent.isSparable()) {
             flavorText += `* ${pet.petIcon} **${pet.petName}** spared ${gameState.opponent.wildIcon} **${gameState.opponent.wildName}**!`;
             await handleWin(ctx, true, flavorText);
@@ -429,10 +483,12 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             calc
           )}% Mercy Points.\n`;
           break;
-        case "debug":
+        }
+        case "debug": {
           flavorText += `${JSON.stringify(gameState.opponent, null, 2)}\n`;
           break;
-        case "act":
+        }
+        case "act": {
           if (i !== 0) {
             const calc =
               (pet.calculateAttack(gameState.opponent.DF) /
@@ -473,7 +529,8 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             newResponse = response;
           }
           break;
-        case "lifeup":
+        }
+        case "lifeup": {
           const magic = pet.MAGIC;
           const lowests = gameState.pets.toSorted(
             (a, b) => a.HP / a.maxHP - b.HP / b.maxHP
@@ -508,6 +565,178 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
                 : `+${finalHealing} HP`,
           })}\n\n`;
           break;
+        }
+        case "fluxstrike": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used 🌩️ **FluxStrike**!\n`;
+          if (
+            dodgeChance < 0.1 ||
+            (petStats.lastMove === "fluxstrike" && dodgeChance < 0.7)
+          ) {
+            flavorText += `* ${gameState.opponent.wildIcon} **${gameState.opponent.wildName}** dodges!\n`;
+          } else {
+            const damageFactor = Math.max(
+              0.5,
+              1 - petStats.totalDamageDealt / (gameState.opponent.maxHP * 2)
+            );
+            const fluxMultiplier =
+              1 +
+              Math.random() *
+                0.5 *
+                (gameState.opponent.HP / gameState.opponent.maxHP) *
+                damageFactor;
+            const fluxDamage = Math.round(
+              pet.ATK * fluxMultiplier - gameState.opponent.DF / 5
+            );
+            gameState.opponent.HP -= fluxDamage;
+            petStats.totalDamageDealt += fluxDamage;
+            opponentStats.totalDamageTaken += fluxDamage;
+            flavorText += `* Dealt **${fluxDamage}** fluctuating damage!\n${gameState.opponent.getPlayerUI()}\n`;
+            damage += fluxDamage;
+          }
+          flavorText += `\n`;
+          break;
+        }
+
+        case "guardpulse": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used 🛡️ **GuardPulse**!\n`;
+          const guardFactor = Math.max(0.5, 1 - petStats.defenseBoosts * 0.2);
+          const guardBoost = Math.round(
+            pet.DF * (1 - pet.HP / pet.maxHP) * 1.5 * guardFactor
+          );
+          pet.defModifier += guardBoost;
+          petStats.defenseBoosts += 1;
+          flavorText += `* Defense boosted by **${guardBoost}** for the next attack!\n${pet.getPlayerUI()}\n`;
+          flavorText += `\n`;
+          break;
+        }
+
+        case "mercywave": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used 🌊 **MercyWave**!\n`;
+
+          const mercyFactor = Math.min(1 + petStats.mercyContributed / 1000, 2);
+
+          const baseMercyPoints = Math.round(
+            pet.MAGIC *
+              (gameState.opponent.HP / gameState.opponent.maxHP) *
+              0.5 *
+              mercyFactor
+          );
+
+          const opponentCap = Math.round(gameState.opponent.maxHP * 0.1);
+          const petCap = Math.round(Math.min(pet.MAGIC, 100) * 10);
+          const fixedCap = 625;
+
+          const mercyPoints = Math.min(
+            baseMercyPoints,
+            opponentCap,
+            petCap,
+            fixedCap
+          );
+
+          gameState.opponent.addMercyInternal(mercyPoints);
+          petStats.mercyContributed += mercyPoints;
+
+          flavorText += `* Gained **${Math.round(
+            mercyPoints / 25
+          )}%** mercy points!\n${gameState.opponent.getPlayerUI()}\n`;
+          flavorText += `\n`;
+          break;
+        }
+
+        case "chaosbolt": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used ⚡ **ChaosBolt**!\n`;
+          if (
+            dodgeChance < 0.1 ||
+            (petStats.lastMove === "chaosbolt" && dodgeChance < 0.7)
+          ) {
+            flavorText += `* ${gameState.opponent.wildIcon} **${gameState.opponent.wildName}** dodges!\n`;
+          } else {
+            let boltDamage = Math.round(
+              pet.calculateAttack(gameState.opponent.DF)
+            );
+            const chaosChance =
+              Math.min(pet.ATK / gameState.opponent.DF, 0.5) *
+              (1 - petStats.attackBoosts * 0.1);
+            if (Math.random() < chaosChance) {
+              boltDamage *= 2;
+              flavorText += `* Critical chaos hit! `;
+            }
+            gameState.opponent.HP -= boltDamage;
+            petStats.totalDamageDealt += boltDamage;
+            opponentStats.totalDamageTaken += boltDamage;
+            flavorText += `* Dealt **${boltDamage}** damage!\n${gameState.opponent.getPlayerUI()}\n`;
+            damage += boltDamage;
+          }
+          flavorText += `\n`;
+          break;
+        }
+
+        case "vitalsurge": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used 💖 **VitalSurge**!\n`;
+          const healFactor = Math.min(
+            1.5,
+            1 + (1 - petStats.healsPerformed * 0.2)
+          );
+          const avgTeamHP =
+            gameState.pets.reduce(
+              (acc, p) => acc + (p.isDown() ? 0 : p.HP / p.maxHP),
+              0
+            ) / gameState.pets.length;
+          const surgeHeal = Math.round(
+            pet.MAGIC * (1 + avgTeamHP) * 0.5 * healFactor
+          );
+          const target = gameState.pets.reduce((a, b) => (a.HP < b.HP ? a : b));
+          const prevDown = target.isDown();
+          target.HP += Math.min(surgeHeal, target.maxHP - target.HP);
+          petStats.healsPerformed += 1;
+          flavorText += `* Healed **${surgeHeal}** HP to **${
+            target.petName
+          }**!\n${target.getPlayerUI({
+            upperPop: prevDown && !target.isDown() ? `UP` : `+${surgeHeal} HP`,
+          })}\n`;
+          flavorText += `\n`;
+          break;
+        }
+
+        case "statsync": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used 🔄 **StatSync**!\n`;
+          const syncFactor = Math.max(0.5, 1 - petStats.attackBoosts * 0.2);
+          const syncBoost = Math.round(
+            (pet.DF + 3) *
+              ((gameState.opponent.DF || 1) / (pet.DF || 1)) *
+              0.4 *
+              syncFactor
+          );
+          pet.atkModifier += syncBoost;
+          petStats.attackBoosts += 1;
+          flavorText += `* ATK boosted by **${syncBoost}** for the next turn!\n${pet.getPlayerUI()}\n`;
+          flavorText += `\n`;
+          break;
+        }
+
+        case "equilibrium": {
+          flavorText += `* ${pet.petIcon} **${pet.petName}** used ⚖️ **Equilibrium**!\n`;
+          const eqFactor = 1 + petStats.totalDamageTaken / (pet.maxHP * 2);
+          const hpDiff = gameState.opponent.HP - pet.HP;
+          if (hpDiff > 0) {
+            const eqDamage = Math.round(hpDiff * 0.3 * eqFactor);
+            const eqHeal = Math.round(hpDiff * 0.2 * eqFactor);
+            gameState.opponent.HP -= eqDamage;
+            pet.HP += Math.min(eqHeal, pet.maxHP - pet.HP);
+            petStats.totalDamageDealt += eqDamage;
+            opponentStats.totalDamageTaken += eqDamage;
+            flavorText += `* Dealt **${eqDamage}** damage and healed **${eqHeal}** HP!\n${gameState.opponent.getPlayerUI()}\n${pet.getPlayerUI(
+              {
+                upperPop: `+${eqHeal} HP`,
+              }
+            )}\n`;
+            damage += eqDamage;
+          } else {
+            flavorText += `* No effect! Opponent's HP is not higher than yours.\n`;
+          }
+          flavorText += `\n`;
+          break;
+        }
         default:
           flavorText += `* ${pet.petIcon} **${pet.petName}** did not learn **${turn}**.\n`;
       }
@@ -520,7 +749,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
   async function enemyAttack(
     ctx: CommandContext,
-    _info: any,
+    _info: OutputResult,
     {
       flavorText,
       damage,
@@ -651,7 +880,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
     gameState = null;
   }
 
-  async function handleDefeat(ctx: CommandContext, info: any): Promise<void> {
+  async function handleDefeat(
+    ctx: CommandContext,
+    info: OutputResult
+  ): Promise<void> {
     isDefeat = true;
     currentEnc = generateEnc();
     info.removeAtReply();
