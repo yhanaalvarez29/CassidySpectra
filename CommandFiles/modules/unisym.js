@@ -283,6 +283,9 @@ export function getCommandByFileName(fileName, commands) {
   return command ? command[1] : null;
 }
 
+/**
+ * @deprecated
+ */
 export function isAdminCommand(command) {
   if (!command) return false;
 

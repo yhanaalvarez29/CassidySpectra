@@ -1,5 +1,4 @@
 // @ts-check
-import { SpectralCMDHome } from "@cassidy/spectral-home";
 import { CassEXP } from "../modules/cassEXP.js";
 import { clamp, UNIRedux } from "../modules/unisym.js";
 import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
@@ -8,9 +7,9 @@ import { BriefcaseAPI } from "@cass-modules/BriefcaseAPI";
  * @type {CassidySpectra.CommandMeta}
  */
 export const meta = {
-  name: "pet",
+  name: "petnica",
   description: "Manage your pets!",
-  otherNames: ["p"],
+  otherNames: ["p", "pet"],
   version: "1.6.0",
   usage: "{prefix}{name}",
   category: "Idle Investment Games",

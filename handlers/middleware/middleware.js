@@ -488,6 +488,15 @@ async function handleMiddleWare({
       }
     }
 
+    const foundCommands = Cassidy.multiCommands.get(commandName);
+
+    const { defaultCommands = [] } = await handleStat.getCache(event.senderID);
+    const defMap = new Map(defaultCommands);
+    const defCmdName = defMap.get(commandName);
+    const defCommand = Cassidy.multiCommands.findOne(
+      (_, v) => v?.meta?.name === defCmdName
+    )?.[1];
+
     /**
      * @type {Partial<CommandContext>}
      */
@@ -561,6 +570,10 @@ api.${
       money: handleStat,
       userStat: handleStat,
       commandRole: undefined,
+      multiCommands: Cassidy.multiCommands,
+      foundCommands,
+      supposedCommand: undefined,
+      defCommand,
     };
     if (Cassidy.config.DEBUG) {
       function makeProxy(a, pref = "") {
@@ -628,9 +641,17 @@ api.${
       if (extractedRole in InputRoles && typeof extractedRole === "number") {
         runObjects.commandRole = extractedRole;
       }
+
+      // @ts-ignore
+      runObjects.supposedCommand = runObjects.command;
+      if (defCommand) {
+        runObjects.command = defCommand;
+      }
     }
 
-    const styler = new CassidyResponseStylerControl(command?.style ?? {});
+    const styler = new CassidyResponseStylerControl(
+      runObjects.command?.style ?? {}
+    );
     const stylerDummy = new CassidyResponseStylerControl({});
     styler.activateAllPresets();
     runObjects.styler = styler;

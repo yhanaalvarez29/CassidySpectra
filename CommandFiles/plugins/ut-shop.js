@@ -1559,7 +1559,9 @@ export class Inventory {
       }
       return result;
     });
-    return result.filter(Boolean);
+    return result
+      .filter(Boolean)
+      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
   }
 
   /**

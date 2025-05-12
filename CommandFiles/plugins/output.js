@@ -518,19 +518,27 @@ export async function use(obj) {
         return await output(body, { callback, isReply: true });
       },
       async attach(body, stream, style) {
-        const awaited =
-          typeof stream === "string"
-            ? await global.utils.getStreamFromUrl(stream)
-            : stream;
-        let form1 = typeof body === "string" ? { body } : { ...body };
-        let form = {
-          ...form1,
-          attachment: awaited,
-        };
-        if (style) {
-          return outputProps.replyStyled(form, style);
+        try {
+          const awaited =
+            typeof stream === "string"
+              ? await global.utils.getStreamFromUrl(stream)
+              : stream;
+          let form1 = typeof body === "string" ? { body } : { ...body };
+          let form = {
+            ...form1,
+            attachment: awaited,
+          };
+          if (style) {
+            return outputProps.replyStyled(form, style);
+          }
+          return outputProps.reply(form);
+        } catch (error) {
+          console.error(error);
+          if (style) {
+            return outputProps.replyStyled(body, style);
+          }
+          return outputProps.reply(body);
         }
-        return outputProps.reply(form);
       },
       async setUIName(name) {
         uiName = String(name);

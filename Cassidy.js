@@ -40,6 +40,7 @@ import __pkg from "./package.json";
 global.package = __pkg;
 global.logger = logger;
 import { defineCommand, easyCMD } from "@cass/define";
+import { MultiMap } from "@cass-modules/Multimap";
 global.defineCommand = defineCommand;
 global.easyCMD = easyCMD;
 
@@ -190,7 +191,9 @@ global.Cassidy = {
   hostedFilenames: [],
   replies: {},
   reacts: {},
+  multiCommands: new MultiMap(),
 };
+
 const login = require(global.Cassidy.config.FCA.path);
 
 import { loadCommand } from "./handlers/loaders/loadCommand.js";

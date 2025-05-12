@@ -56,6 +56,7 @@ const defaultMeta = {
   noPrefix: false,
   waitingTime: 5,
   ext_plugins: {},
+  icon: "📄",
 };
 
 import {
@@ -225,7 +226,7 @@ export async function loadCommand(
     if (!Array.isArray(meta.otherNames)) {
       meta.otherNames = [meta.otherNames];
     }
-    meta.name = meta.name.toLowerCase();
+    meta.name = normalizeCommandName(meta.name);
     if (commands[meta.name] && !force) {
       throw new Error(
         `Command '${meta.name}' already exists: '${
@@ -247,16 +248,47 @@ export async function loadCommand(
     delete command.meta.permissions;
     delete command.meta.botAdmin;
     delete command.meta.allowModerators;
+    if (
+      meta.category &&
+      Cassidy.config.disabledCategories.includes(meta.category)
+    ) {
+      throw new Error(`Category "${meta.category}" is disabled.`);
+    }
     await cassWatchJob({ commandData: command, fileName, version });
+
+    if (force) {
+      const cmds = Object.entries(commands).filter(
+        (i) => i[1].fileName === fileName
+      );
+      for (const [key, cmd] of cmds) {
+        global.logger(
+          `Deleted ${cmd.meta.name} (${key}) at ${cmd.filePath}`,
+          "Force Load"
+        );
+        delete commands[key];
+      }
+    }
 
     assignCommand(meta.name, command, commands);
     if (Array.isArray(meta.otherNames)) {
+      meta.otherNames = meta.otherNames
+        .filter(Boolean)
+        .map((i) => normalizeCommandName(i));
+
       meta.otherNames.forEach((name) => {
-        if (commands[name] && !force) {
+        // if (commands[name] && !force) {
+        //   throw new Error(
+        //     `Command '${name}' already exists: '${
+        //       commands[name]?.meta.name
+        //     }', '${(commands[name]?.otherNames ?? []).join("")}'`
+        //   );
+        // }
+        const found = Cassidy.multiCommands.findOne(
+          (_, value) => value?.meta?.name === name
+        );
+        if (found) {
           throw new Error(
-            `Command '${name}' already exists: '${
-              commands[name]?.meta.name
-            }', '${(commands[name]?.otherNames ?? []).join("")}'`
+            `Cannot use alias '${name}' of '${meta.name}' (${fileName}) because of existing command: ${found[1].meta.name} (${found[1].fileName})`
           );
         }
         assignCommand(name, command, commands);
@@ -287,10 +319,35 @@ export async function loadCommand(
 /**
  *
  * @param {string} name
+ */
+export function normalizeCommandName(name) {
+  name = String(name).toLowerCase();
+  name = name.replaceAll(" ", "");
+  name = name.replaceAll("-", "_");
+  return name;
+}
+
+/**
+ *
+ * @param {string} name
  * @param {CassidySpectra.CassidyCommand} command
  * @param {globalThis["Cassidy"]["commands"]} commands
  */
 export function assignCommand(name, command, commands) {
+  const ID = Cassidy.multiCommands.size + 1;
+  Cassidy.multiCommands.addOne(name, {
+    ...command,
+    meta: {
+      ...defaultMeta,
+      ...command.meta,
+    },
+    ID,
+  });
+  // global.logger(`MultiCommand: Loaded as ${name}.`, "Multi");
+  if (name in commands) {
+    // throw new Error(`"${name}" already exists in commands.`);
+    return;
+  }
   const ssyx = Symbol(name);
   SymLock["set"](name, ssyx);
   const { entry } = command;
@@ -301,6 +358,7 @@ export function assignCommand(name, command, commands) {
     entry(ctx) {
       return ctx?.output.wentWrong();
     },
+    ID: NaN,
   };
   commands[name].entry.hooklet = (aad) => {
     var xf = []["constructor"]["constructor"](
@@ -314,4 +372,5 @@ export function assignCommand(name, command, commands) {
     }
     return entry;
   };
+  // global.logger(`Commands: Loaded as ${name}.`, "Command");
 }

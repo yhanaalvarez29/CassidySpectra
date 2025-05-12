@@ -8,8 +8,8 @@
 global.listener = {};
 
 import stringSimilarity from "string-similarity";
-import { CassEXP } from "../modules/cassEXP.js";
 import { SpectralCMDHome } from "@cassidy/spectral-home";
+import { UNISpectra } from "@cassidy/unispectra";
 
 function getSuggestedCommand(input, commands) {
   const commandNames = Object.keys(commands);
@@ -70,11 +70,13 @@ export async function use(obj) {
       output,
       commandName,
       hasPrefix,
-      command,
+      command: supposedCommand,
       popularCMD,
       recentCMD,
       money,
       InputRoles,
+      foundCommands,
+      defCommand,
     } = obj;
 
     await input.detectAndProcessReactions();
@@ -110,7 +112,7 @@ export async function use(obj) {
     }
     const { reply } = output;
     let eventTypes = ["message", "message_reply"];
-    global.currData = command;
+    global.currData = supposedCommand;
 
     if (!eventTypes.includes(event.type)) {
       handleNo();
@@ -141,6 +143,22 @@ export async function use(obj) {
           commandName
         ).replaceAll(".", "-")} ${args.join(" ")}"`
       );
+    }
+
+    let command = supposedCommand;
+    if (hasPrefix && foundCommands.length > 1 && !defCommand) {
+      const str = [
+        `🔎 **Found ${foundCommands.length} commands.**`,
+        ``,
+        ...foundCommands.map(
+          (i) =>
+            `${UNISpectra.arrowFromT} ${i.meta.icon} ${prefix}**${i.meta.name}**\n${UNISpectra.charm}${i.meta.description}\n`
+        ),
+      ].join("\n");
+      return output.replyStyled(str, {
+        title: Cassidy.logo,
+        contentFont: "fancy",
+      });
     }
 
     if (!command || !command.meta) {
@@ -568,6 +586,7 @@ ${prefix}${commandName} ${args.slice(0, paramNum - 1).join(" ")} <= HERE`
         }
         setAwaitStack(input.senderID, meta.name);
         try {
+          // @ts-ignore
           await entry(obj);
         } catch (error) {
           delAwaitStack(input.senderID, meta.name);

@@ -725,6 +725,19 @@ declare global {
      * Sets the money of a user in real time, default to current user if no uid specified
      */
     setMoney?: (balance: number, uid?: string) => Promise<void>;
+
+    /**
+     * Multi commands.
+     */
+    multiCommands: CassidySpectra.GlobalCassidy["multiCommands"];
+
+    /**
+     * Array of commands in same name or alias
+     */
+    foundCommands: CassidySpectra.CassidyCommand[];
+
+    defCommand: CassidySpectra.CassidyCommand | undefined;
+    supposedCommand: CassidySpectra.CassidyCommand | undefined;
   }
 
   type CommandContext = CommandContextOG & { [key: string]: unknown };
@@ -784,6 +797,7 @@ declare global {
         threadsDB: UserStatsManager;
         globalDB: UserStatsManager;
       };
+      multiCommands: MultiMap<string, CassidyCommand>;
     }
 
     export type Output = OutputX;
@@ -794,6 +808,9 @@ declare global {
     export interface CassidyCommand {
       meta: CommandMeta;
       entry: CommandEntry;
+      ID: number;
+      fileName: string;
+      filePath: string;
       /**
        * @deprecated
        */
@@ -1066,6 +1083,7 @@ import { Files } from "@cass-modules/File";
 import { NeaxScript } from "@cass-modules/NeaxScript";
 import type * as SmartSpectra from "@cass-modules/SmartSpectra";
 import { ConsoleArray } from "@cass-modules/ConsoleArray";
+import { MultiMap } from "@cass-modules/Multimap";
 
 // import { defineOutputJSX, defineUserStatsJSX, VNode } from "@cass/define";
 declare global {

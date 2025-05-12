@@ -1,10 +1,7 @@
 // @ts-check
 import {
-  fontMarkups,
-  isAdminCommand,
-  removeCommandAliases,
+  extractCommandRole,
   toTitleCase,
-  UNIRedux,
   UNISpectra,
 } from "@cassidy/unispectra";
 import { ShopClass } from "@cass-plugins/shopV2";
@@ -14,7 +11,7 @@ export const meta: CassidySpectra.CommandMeta = {
   author: "Liane Cagara",
   description:
     "Acts as a central hub, like a Start Menu, providing users with an overview of available commands, their functionalities, and access to specific command details. Helps users quickly navigate the bot's features.",
-  version: "2.5.0",
+  version: "3.0.0",
   usage: "{prefix}{name} [commandName]",
   category: "System",
   permissions: [0],
@@ -32,12 +29,14 @@ export const style = {
 export async function entry({
   input,
   output,
-  commands: ogc,
   prefix,
   commandName,
   money,
+  multiCommands,
+  InputRoles,
 }: CommandContext) {
-  const commands = removeCommandAliases(ogc);
+  // const commands = removeCommandAliases(ogc);
+  const commands = multiCommands.toUnique((i) => i.meta?.name);
 
   const args = input.arguments;
   const { logo: icon } = global.Cassidy;
@@ -50,31 +49,32 @@ export async function entry({
 
   if (args.length > 0 && isNaN(parseInt(args[0]))) {
     const commandName = args[0];
-    const command = ogc[commandName];
+    const commandsFound = commands.get(commandName);
+    let str = [];
 
-    if (command) {
-      const {
-        name,
-        description,
-        otherNames = [],
-        usage,
-        category = "None",
-        permissions = [],
-        waitingTime = 5,
-        author = "Unknown",
-        shopPrice = 0,
-        icon: cmdIcon = "📄",
-        version = "N/A",
-        requirement = "N/A",
-        role,
-      } = command.meta;
-      const status = shop.isUnlocked(name)
-        ? "✅ Unlocked"
-        : shop.canPurchase(name, userMoney)
-        ? "💰 Buyable"
-        : "🔒 Locked";
+    if (commandsFound.length > 0) {
+      for (const command of commandsFound) {
+        const {
+          name,
+          description,
+          otherNames = [],
+          usage,
+          category = "None",
+          waitingTime = 5,
+          author = "Unknown",
+          shopPrice = 0,
+          icon: cmdIcon = "📄",
+          version = "N/A",
+          requirement = "N/A",
+        } = command.meta;
+        const status = shop.isUnlocked(name)
+          ? "✅ Unlocked"
+          : shop.canPurchase(name, userMoney)
+          ? "💰 Buyable"
+          : "🔒 Locked";
+        let role = await extractCommandRole(command, true, input.tid);
 
-      output.reply(`
+        str.push(`
 ╭─── ${cmdIcon} **${toTitleCase(name)}** ───
 │   📜 **Name**:
 │   ${UNISpectra.charm} ${name}
@@ -87,20 +87,14 @@ export async function entry({
 │ 
 │   🛠️ **Usage**:
 │   ${UNISpectra.charm} ${usage
-        .replace(/{prefix}/g, prefix)
-        .replace(/{name}/g, name)}
+          .replace(/{prefix}/g, prefix)
+          .replace(/{name}/g, name)}
 │ 
 │   📁 **Category**:
 │   ${UNISpectra.charm} ${category}
 │ 
 │   🔐 **Permissions**:
-│   ${UNISpectra.charm} ${
-        typeof role === "number"
-          ? role
-          : permissions.length
-          ? permissions.join(", ")
-          : "None required"
-      }
+│   ${UNISpectra.charm} ${typeof role === "number" ? role : "None required"}
 │ 
 │   ⏳ **Cooldown**:
 │   ${UNISpectra.charm} ${waitingTime} 
@@ -120,6 +114,11 @@ export async function entry({
 │   🛡️ **Requirement**:
 │   ${UNISpectra.charm} ${requirement}
 ╰────────────────`);
+      }
+      return output.replyStyled(str.join("\n\n"), {
+        title: Cassidy.logo,
+        contentFont: "fancy",
+      });
     } else {
       output.reply(
         `${icon}\n\n❌ Oops! **${commandName}** isn't a valid command. Try another!`
@@ -129,7 +128,7 @@ export async function entry({
   }
 
   const categorizedCommands: Record<string, CassidySpectra.CassidyCommand[]> =
-    Object.values(commands).reduce((categories, command) => {
+    commands.values().reduce((categories, command) => {
       const category = command.meta.category || "Miscellaneous";
       if (!categories[category]) categories[category] = [];
       categories[category].push(command);
@@ -196,39 +195,26 @@ export async function entry({
   let result = `**Page ${currentPage} of ${totalPages}** 📄\n`;
   let preff = "│ ";
 
-  pageCategories.forEach((category) => {
+  for (const category of pageCategories) {
     result += `\n╭─────────────❍\n${preff} ${UNISpectra.arrow} ***${category}*** 📁\n${preff}\n`;
-    categorizedCommands[category].forEach((command) => {
+    for (const command of categorizedCommands[category]) {
       const { name, icon, shopPrice = 0 } = command.meta;
-      const statusIcon = isAdminCommand(command)
-        ? "👑"
-        : shop.isUnlocked(name)
-        ? icon || "📄"
-        : shop.canPurchase(name, userMoney)
-        ? "🔐"
-        : "🔒";
-      // result += `${preff}  ${statusIcon} ${prefix}**${toTitleCase(name)}**${
-      //   shopPrice
-      //     ? ` - $**${shopPrice}** ${
-      //         shop.canPurchase(name, userMoney)
-      //           ? shop.isUnlocked(name)
-      //             ? "✅"
-      //             : "💰"
-      //           : "❌"
-      //       }`
-      //     : ""
-      // } ${UNIRedux.charm}\n${preff}   ${
-      //   UNIRedux.charm
-      // } ${fontMarkups.fancy_italic(
-      //   "Description"
-      // )}: ${description} 💬\n${preff}   ${
-      //   UNIRedux.charm
-      // } ${fontMarkups.fancy_italic("Aliases")}: ${
-      //   otherNames?.join(", ") || "None 📝"
-      // }\n${preff}\n`;
+      const role = await extractCommandRole(command);
+      const statusIcon =
+        role === InputRoles.ADMINBOX && !input.hasRole(role)
+          ? "📦"
+          : InputRoles.MODERATORBOT && !input.hasRole(role)
+          ? "🛡️"
+          : role === InputRoles.ADMINBOT && !input.hasRole(role)
+          ? "👑"
+          : shop.isUnlocked(name)
+          ? icon || "📄"
+          : shop.canPurchase(name, userMoney)
+          ? "🔐"
+          : "🔒";
+
       let isAllowed =
-        (!shopPrice || shop.isUnlocked(name)) &&
-        (!isAdminCommand(command) || input.isAdmin);
+        (!shopPrice || shop.isUnlocked(name)) && input.hasRole(role);
       result += `${preff}  ${statusIcon} ${prefix}${
         isAllowed ? `**${toTitleCase(name)}**` : `${toTitleCase(name)}`
       }${
@@ -242,9 +228,9 @@ export async function entry({
             }`
           : ""
       }\n`;
-    });
+    }
     result += `╰─────────────❍\n`;
-  });
+  }
   result = result.trim();
 
   result += `\n\n${UNISpectra.arrow} ***Explore*** more commands!\n`;
