@@ -6,9 +6,9 @@ import fs from "fs-extra";
  * @type {CassidySpectra.CommandMeta}
  */
 export const meta = {
-  name: "encounter",
+  name: "encounterv1",
   description: "Pets Encounter",
-  otherNames: ["enc"],
+  otherNames: ["encv1", "enc", "encounter"],
   version: "1.0.2",
   usage: "{prefix}{name}",
   category: "Spinoff Games",

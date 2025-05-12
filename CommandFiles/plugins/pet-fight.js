@@ -1,3 +1,4 @@
+// @ts-check
 export const meta = {
   name: "pet-fight",
   author: "Liane Cagara",
@@ -285,7 +286,7 @@ export const spells = {
     flavorText:
       "Grants a protective buff to allies, increasing their defense against enemy attacks for 3 turns.",
     type: "ally_change_noself",
-    value(caster, opponent, target) {
+    value(caster, _opponent, target) {
       const magic = caster.MAGIC;
       const def = target.DEF;
       return Math.floor(def + (magic + 5) * 0.25); // Adjusted effect from 0.2 to 0.25
@@ -299,7 +300,7 @@ export const spells = {
     flavorText:
       "Allows the pet to swiftly attack from the shadows, dealing surprise damage.",
     type: "opp_attack",
-    value(caster, opponent) {
+    value(caster, _opponent) {
       const atk = caster.ATK;
       const magic = caster.MAGIC;
       return Math.floor(atk + atk * ((magic + 1) * 0.15)); // Adjusted effect from 0.2 to 0.15
@@ -312,7 +313,7 @@ export const spells = {
     flavorText:
       "Enables the pet to evade attacks more effectively for a short duration of 2 turns.",
     type: "ally_change_self",
-    value(caster, opponent) {
+    value(caster, _opponent) {
       const magic = caster.MAGIC;
       const def = caster.DEF;
       return Math.floor(def + (magic + 5) * 0.25); // Adjusted effect from 0.3 to 0.25
@@ -325,7 +326,7 @@ export const spells = {
     tp: 30, // Slightly reduced TP cost
     flavorText: "Restores HP of an ally pet.",
     type: "ally_heal",
-    value(caster, opponent) {
+    value(caster, _opponent) {
       const magic = caster.MAGIC;
       return Math.floor(30 * (1 + (magic + 3) * 0.15)); // Adjusted effect from 24 to 30
     },
@@ -350,7 +351,7 @@ export const spells = {
     tp: 55, // Slightly increased TP cost
     flavorText: "Unleashes a blast of elemental breath, damaging all enemies.",
     type: "opp_attack",
-    value(player, opponent) {
+    value(player, _opponent) {
       const magic = player.MAGIC;
       const atk = player.ATK;
       return Math.floor(atk + atk * ((magic + 2) * 0.12)); // Adjusted effect from 0.1 to 0.12
@@ -361,7 +362,7 @@ export const spells = {
     tp: 95, // Slightly reduced TP cost
     flavorText: "Sacrifices itself to heal an ally and resurrect all.",
     type: "ally_heal_all",
-    value(caster, opponent, target) {
+    value(caster, _opponent, target) {
       const magic = caster.MAGIC;
       target.HP = target.maxHP;
       caster.HP = 0;
@@ -378,7 +379,7 @@ export const spells = {
     flavorText:
       "Surrounds allies in healing flames, restoring health over time.",
     type: "ally_heal",
-    value(caster, opponent, target) {
+    value(caster, _opponent, _target) {
       const magic = caster.MAGIC;
       return Math.floor(8 * (1 + magic * 0.2)); // Adjusted effect from 7 to 8
     },
@@ -386,21 +387,37 @@ export const spells = {
   },
 };
 
-function randArr(array) {
+/**
+ * @template T
+ * @param {T[]} array
+ * @returns {T}
+ */
+export function randArr(array) {
   array = Array.from(array);
   return array[Math.floor(Math.random() * array.length)];
 }
-function randObj(obj) {
+/**
+ * @template {number | string | symbol} K
+ * @template V
+ * @param {Record<K, V>} obj
+ * @returns {[string, V]}
+ */
+export function randObj(obj) {
   return randArr(Object.entries(obj));
 }
 export class PetGame {
+  /**
+   *
+   * @param {PetPlayer[]} petPlayers
+   * @param {WildPlayer[]} petOpponents
+   */
   constructor(petPlayers, petOpponents) {
     this.pets = petPlayers;
     this.opponents = petOpponents;
   }
-  static useSpell(spellkey, caster, target) {
+  static useSpell(spellKey, _caster, _target) {
     const spell = spells[spellKey];
-    let [destination, action, ...modifiers] = spell.type.split("_");
+    let [destination, action, ..._modifiers] = spell.type.split("_");
     switch (destination) {
       case "ally":
         {
@@ -429,25 +446,59 @@ export class PetGame {
     }
   }
 }
+
+/**
+ * @typedef {import("@cass-modules/Encounter").WildEntity} WildEntity
+ */
+
+/**
+ * @implements {WildEntity}
+ */
 export class WildPlayer {
+  /**
+   *
+   * @param {WildEntity} wildData
+   * @param {PetPlayer[]} battlePets
+   */
   constructor(wildData, battlePets = []) {
     wildData = JSON.parse(JSON.stringify(wildData));
     this.battlePets = battlePets;
     wildData.flavor ??= {};
     wildData.dialogues ??= {};
-    Object.assign(this, {
-      ...wildData,
-      flavor: wildData.flavor,
-      dialogues: wildData.dialogues,
-      DF: wildData.DF ?? 0,
-      ATK: wildData.ATK ?? 0,
-      HP: wildData.HP ?? 1,
-      goldFled: wildData.goldFled ?? 0,
-      goldSpared: wildData.goldSpared ?? 0,
-      maxHP: wildData.HP ?? 1,
-      attacks: wildData.attacks ?? {},
-      expEarn: wildData.expEarn ?? 30,
-    });
+    this.wildName = wildData.wildName;
+    this.wildIcon = wildData.wildIcon;
+    this.wildType = wildData.wildType;
+    this.HP = wildData.HP;
+    this.ATK = wildData.ATK;
+    this.DF = wildData.DF;
+    this.flavor = wildData.flavor;
+    this.dialogues = wildData.dialogues;
+    this.attacks = wildData.attacks;
+    this.goldFled = wildData.goldFled;
+    this.goldSpared = wildData.goldSpared;
+    this.expEarn = wildData.expEarn;
+    this.fakeHP = wildData.fakeHP;
+    this.acts = wildData.acts;
+    this.fakeDEF = wildData.fakeDEF;
+    this.winDias = wildData.winDias;
+    this.fakeATK = wildData.fakeATK;
+    this.level = wildData.level;
+    this.flavor = wildData.flavor;
+    this.dialogues = wildData.dialogues;
+    this.DF = wildData.DF ?? 0;
+    this.ATK = wildData.ATK ?? 0;
+    this.HP = wildData.HP ?? 1;
+    this.maxHP = wildData.HP ?? 1;
+    this.goldFled = wildData.goldFled ?? 0;
+    this.goldSpared = wildData.goldSpared ?? 0;
+    /**
+     * @type {WildEntity["attacks"]}
+     */
+    this.attacks = wildData.attacks ?? {};
+    this.expEarn = wildData.expEarn ?? 30;
+    /**
+     * @type {WildEntity["acts"]}
+     */
     this.acts = wildData.acts ?? {};
     this.#mercy = 0;
   }
@@ -486,7 +537,7 @@ export class WildPlayer {
     pop = null,
     icon = null,
     upperPop = null,
-    selectionOptions,
+    selectionOptions = undefined,
   } = {}) {
     let fled = this.isAlmostFled();
     let txt = `${icon ?? this.wildIcon} **${this.wildName} LV${
@@ -502,7 +553,7 @@ export class WildPlayer {
     }
     return txt;
   }
-  getSelectionUI(selectionOptions) {}
+  getSelectionUI(_selectionOptions) {}
   isDown() {
     return this.HP <= 0;
   }
@@ -518,6 +569,11 @@ export class WildPlayer {
     }
     return randArr(this.dialogues.neutral ?? ["..."]);
   }
+  /**
+   *
+   * @param {string} pet
+   * @returns
+   */
   getActTarget(pet) {
     let targetPet = this.battlePets.find((i) => i?.petType === pet);
     if (pet === "[slot:1]") {
@@ -582,6 +638,11 @@ export class WildPlayer {
       attackName,
     };
   }
+  /**
+   *
+   * @param {string} act
+   * @returns
+   */
   getAct(act) {
     act = String(act);
     let targetAct = this.acts[act] ?? this.acts[act.toLowerCase()];
@@ -594,13 +655,13 @@ export class WildPlayer {
     let {
       pet: selector,
       flavor = `You performed ${act}!`,
-      response = [this.getNeutralDialogue()],
-      petLine = [`Hi I performed ${act}!`],
+      response: responseArr = [this.getNeutralDialogue()],
+      petLine: petLineArr = [`Hi I performed ${act}!`],
       mercyPts = 1,
     } = targetAct;
     mercyPts = Math.min(1, mercyPts);
-    petLine = randArr(petLine);
-    response = randArr(response);
+    let petLine = randArr(petLineArr);
+    let response = randArr(responseArr);
     const targetPet = this.getActTarget(selector) ?? this.battlePets[0];
     flavor = helper(flavor);
     response = helper(response);
@@ -643,17 +704,16 @@ export class PetPlayer {
     gearData = JSON.parse(JSON.stringify(gearData));
     this.exp = petData.lastExp ?? 0;
     const { weapon = [], armors = [], items = [] } = gearData;
-    Object.assign(this, {
-      weapon: PetPlayer.sanitizeWeapon(weapon),
-      armors: PetPlayer.sanitizeArmors(armors),
-      items,
-      OgpetData: petData,
-      OggearData: gearData,
-      petName: petData.name ?? "Catchara",
-      petType: petData.petType ?? "unknown",
-      petIcon: petData.icon ?? "🐈",
-      sellPrice: petData.sellPrice,
-    });
+    this.weapon = PetPlayer.sanitizeWeapon(weapon);
+    this.armors = PetPlayer.sanitizeArmors(armors);
+    this.items = items;
+    this.OgpetData = petData;
+    this.OggearData = gearData;
+    this.petName = petData.name ?? "Catchara";
+    this.petType = petData.petType ?? "unknown";
+    this.petIcon = petData.icon ?? "🐈";
+    this.sellPrice = petData.sellPrice;
+
     this.extras = {};
     this.mode = "default";
     this.hpModifier = -this.getHungryModifier();
@@ -672,7 +732,7 @@ export class PetPlayer {
     pop = null,
     icon = null,
     upperPop = null,
-    selectionOptions,
+    selectionOptions = undefined,
   } = {}) {
     let txt = `${icon ?? this.petIcon} **${this.petName} LV${this.level}** ${
       !upperPop ? (this.isDown() ? `(***DOWN***)` : ``) : `(***${upperPop}***)`
@@ -779,7 +839,7 @@ export class PetPlayer {
 
   calculateTakenDamage(damage) {
     let result = damage;
-    const df = this.DF * (1 / 5);
+    // const df = this.DF * (1 / 5);
     //result = Math.floor(result - df);
     /*result = Math.floor(result - result / df);*/
     //result = Math.floor(damage - this.DF / 5);
@@ -1193,7 +1253,7 @@ export class Quest {
     });
     this.sanitize();
   }
-  sortCompleted(key) {
+  sortCompleted(_key) {
     return this.data.map((i) => {
       i.completed = i.progress >= i.meta.max;
       return i;

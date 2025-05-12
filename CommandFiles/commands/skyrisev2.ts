@@ -1368,6 +1368,77 @@ export async function entry(ctx: CommandContext) {
           return output.reply(result);
         },
       },
+      {
+        key: "destroy",
+        description: "Permanently **destroy** a building with no refunds",
+        aliases: ["-des"],
+        args: ["<building_name>"],
+        async handler(_, { spectralArgs }) {
+          const buildingsData = new Inventory(rawBuildingsData);
+          const buildingName = spectralArgs.join(" ");
+
+          if (!buildingName) {
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Destroy Guide***\n\n`;
+            result += `❌ No **building name** provided! To ***destroy*** a building, specify its name.\n\n`;
+            result += `⚠️ **WARNING**: Destroying a building is **permanent** and offers **no refunds**!\n\n`;
+            result += `**Usage**: ${prefix}skyrise destroy <building_name>\n`;
+            result += `**Example**: ${prefix}skyrise destroy SkyAether1 to destroy a building named **SkyAether1**.\n\n`;
+            result += `**Your Buildings**:\n`;
+            const buildings = buildingsData.getAll() as SkyForgeBuilding[];
+            if (buildings.length === 0) {
+              result += `❌ No **buildings** to destroy! Build some with ${prefix}skyrise shop.\n`;
+            } else {
+              buildings.forEach((b) => {
+                result += `${b.icon} **${b.name}** (Level ${b.level})\n`;
+                result += `🏛️ Name: ${b.buildingName}\n\n`;
+              });
+            }
+            result += `📝 **Next Step**: ${suggestNextAction(
+              buildingsData,
+              { aether, crystal, stone, money: userMoney },
+              srworkers,
+              prefix
+            )}\n`;
+            result += `🔔 **Reminder**: Check your **buildings** with ${prefix}skyrise status.`;
+            return output.reply(result);
+          }
+
+          const building = (buildingsData.getAll() as SkyForgeBuilding[]).find(
+            (b) => b.buildingName?.toLowerCase() === buildingName.toLowerCase()
+          );
+          if (!building) {
+            return output.reply(
+              `👤 **${name}** (SkyRise)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
+                `\n📝 **Next Step**: ${suggestNextAction(
+                  buildingsData,
+                  { aether, crystal, stone, money: userMoney },
+                  srworkers,
+                  prefix
+                )}\n` +
+                `🔔 **Reminder**: Collect **resources** with ${prefix}skyrise collect.`
+            );
+          }
+
+          buildingsData.deleteOne(building.key);
+
+          await money.setItem(input.senderID, {
+            srbuildings: Array.from(buildingsData),
+          });
+
+          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Building Destroyed***\n\n`;
+          result += `💥 Permanently destroyed ${building.icon} **${building.name}** (**${building.buildingName}**)!\n`;
+          result += `⚠️ **No resources refunded** as per destruction policy.\n`;
+          result += `📜 Your empire has been reshaped. Plan your next move carefully!\n`;
+          result += `\n📝 **Next Step**: ${suggestNextAction(
+            buildingsData,
+            { aether, crystal, stone, money: userMoney },
+            srworkers,
+            prefix
+          )}\n`;
+          result += `🔔 **Reminder**: Build new structures with ${prefix}skyrise shop.`;
+          return output.reply(result);
+        },
+      },
     ]
   );
 
