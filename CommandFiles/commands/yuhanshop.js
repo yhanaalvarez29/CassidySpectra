@@ -23,6 +23,7 @@ const yuhanshop = {
       icon: "🥧",
       name: "Pie",
       key: "Pie",
+      cannotBuy: true,
       flavorText: "A normal pie, baked by Yuhan it will heal you 20 HP",
       price: 2_000_000_000,
       onPurchase({ moneySet }) {
@@ -97,7 +98,7 @@ const yuhanshop = {
       icon: "⚜️",
       name: "Yuhan Astrum",
       key: "yuhanAstrum",
-      cannotBuy: false,
+      cannotBuy: true,
       flavorText:
         "it's the most POWERFUL amulet and It was forged under a lunar eclipse. It carries the whispers of old star prophecies. The etchings on the amulet show the constellations of a civilization that's been lost for a long time, and it's said to guide the person wearing it through dark and light.",
       price: 100_000_000_000_000,
@@ -128,6 +129,7 @@ const yuhanshop = {
       flavorText:
         "A potion from the highlands, created by an unknown witchcrafter. Restores a lot of HP to one ally.",
       price: 600_000_000_000,
+      cannotBuy: true,
       onPurchase({ moneySet }) {
         moneySet.inventory.push({
           name: "Celestium Potion",

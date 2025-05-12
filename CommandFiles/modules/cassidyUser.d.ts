@@ -135,7 +135,7 @@ type UserData = {
   userID?: string;
   inventory?: InventoryItem[];
   collectibles?: CollectibleItem[];
-  petsData?: InventoryItem[] & PetUncaged[];
+  petsData?: (InventoryItem & PetUncaged)[];
   /**
    * @deprecated
    */

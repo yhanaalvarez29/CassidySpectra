@@ -228,15 +228,15 @@ function calculateProduction(
   const updatedBuilding = updateBuildingData(building, []);
   const timeSinceCollectX = Date.now() - updatedBuilding.lastCollect;
 
-  const baseCapMinutes = 3;
+  const baseCapMinutes = 1 * 60;
   const levelCapMinutes =
     baseCapMinutes * Math.pow(2, updatedBuilding.level - 1);
   const capMilliseconds = levelCapMinutes * 60 * 1000;
 
   const timeSinceCollect = Math.min(timeSinceCollectX, capMilliseconds);
   const randomizedInterval =
-    updatedBuilding.production.interval +
-    (Math.random() + 0.5) * updatedBuilding.production.interval;
+    updatedBuilding.production.interval * (1 + (Math.random() - 0.5));
+
   const intervals = Math.floor(timeSinceCollect / randomizedInterval);
   const workerBoost = 1 + (updatedBuilding.workers || 0) * 0.2;
   const levelPow = Math.pow(2, updatedBuilding.level ?? 0);
@@ -500,7 +500,8 @@ export async function entry(ctx: CommandContext) {
               result += `${updatedBuilding.icon} **${updatedBuilding.name}** (Level ${updatedBuilding.level})\n`;
               result += `🏛️ Name: ${updatedBuilding.buildingName}\n`;
               result += `👷 Workers: ${updatedBuilding.workers || 0}\n`;
-              result += `📈 Production: ${production.minAmount} **${production.resource}**\n`;
+              result += `📈 Min Production: ${production.minAmount} **${production.resource}**\n`;
+              result += `📈 Max Production: ${production.maxAmount} **${production.resource}**\n`;
               result += `🆔 ID: ${updatedBuilding.key}\n\n`;
             }
 
