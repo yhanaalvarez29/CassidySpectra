@@ -702,7 +702,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
           flavorText += `* ${pet.petIcon} **${pet.petName}** used 🔄 **StatSync**!\n`;
           const syncFactor = Math.max(0.5, 1 - petStats.attackBoosts * 0.2);
           const syncBoost = Math.round(
-            (pet.DF + 3) *
+            (pet.DF + 1) *
               ((gameState.opponent.DF || 1) / (pet.DF || 1)) *
               0.4 *
               syncFactor
@@ -719,8 +719,8 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
           const eqFactor = 1 + petStats.totalDamageTaken / (pet.maxHP * 2);
           const hpDiff = gameState.opponent.HP - pet.HP;
           if (hpDiff > 0) {
-            const eqDamage = Math.round(hpDiff * 0.3 * eqFactor);
-            const eqHeal = Math.round(hpDiff * 0.2 * eqFactor);
+            const eqDamage = Math.round(hpDiff * 0.2 * eqFactor);
+            const eqHeal = Math.round(hpDiff * 0.03 * eqFactor);
             gameState.opponent.HP -= eqDamage;
             pet.HP += Math.min(eqHeal, pet.maxHP - pet.HP);
             petStats.totalDamageDealt += eqDamage;
