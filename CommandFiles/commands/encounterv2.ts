@@ -312,7 +312,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       gameState.index = gameState.pets.length;
     } else {
       const turns = ctx.input.splitBody("|");
-      if (turns.slice(0, -1).every(Boolean)) {
+      if (turns.slice(0, -1).every(Boolean) && false) {
         gameState.turnCache = [...turns]
           .slice(0, gameState.pets.length)
           .filter(Boolean)
@@ -323,6 +323,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         gameState.index++;
       }
     }
+    gameState.turnCache = [...gameState.turnCache]
+      .slice(0, gameState.pets.length)
+      .filter(Boolean)
+      .map((i) => i.toLowerCase());
 
     if (gameState.pets.every((pet) => pet.isDown())) {
       await handleDefeat(ctx, info);
