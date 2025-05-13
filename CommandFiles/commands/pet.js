@@ -10,7 +10,7 @@ export const meta = {
   name: "petnica",
   description: "Manage your pets!",
   otherNames: ["p", "pet"],
-  version: "1.6.0",
+  version: "1.6.1",
   usage: "{prefix}{name}",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -22,7 +22,7 @@ export const meta = {
   icon: "🐕",
   cmdType: "cplx_g",
 };
-const { invLimit } = global.Cassidy;
+export const PET_LIMIT = 7;
 
 async function confirmSell({ input, output, repObj, money }) {
   const { petsData, newMoney, price, author, petToSell, code, petSells } =
@@ -59,9 +59,9 @@ async function uncageReply({ input, output, Inventory, money, repObj }) {
   if (input.senderID !== author) {
     return;
   }
-  if (petsData.getAll().length >= invLimit) {
+  if (petsData.getAll().length >= PET_LIMIT) {
     return output.reply(
-      `👤 **${name}** (Pet)\n\n` + `❌ You can only have ${invLimit} pets max!`
+      `👤 **${name}** (Pet)\n\n` + `❌ You can only have ${PET_LIMIT} pets max!`
     );
   }
 
