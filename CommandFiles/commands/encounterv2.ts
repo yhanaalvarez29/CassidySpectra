@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.0.8",
+  version: "2.0.9",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -301,10 +301,14 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
   async function handlePlayerTurn(
     ctx: CommandContext,
-    info: OutputResult
+    info: OutputResult,
+    afterEnemy = false
   ): Promise<void> {
     if (isDefeat || !gameState || ctx.input.senderID !== gameState.author)
       return;
+    if (afterEnemy) {
+      gameState.index = 0;
+    }
     while (gameState.pets[gameState.index]?.isDown()) {
       gameState.index++;
     }
@@ -317,7 +321,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         );
         gameState.index = gameState.pets.length;
       } else {
-        const turns = ctx.input.splitBody("|");
+        const turns = ctx.input.splitBody("|").slice(0, 3);
 
         for (const turn of turns) {
           gameState.turnCache[gameState.index] = turn;
@@ -382,6 +386,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
                   ? `is down.`
                   : `has taken **${damage}** damage.`
               }\n`;
+              if (randomMember.isDown()) {
+                gameState.index++;
+              }
             }
           } else {
             const availablePets = gameState.pets.filter((i) => !i.isDown());
@@ -409,6 +416,11 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
               }\n`;
             }
             const members = gameState.pets.filter((i) => !i.isDown());
+            gameState.pets.forEach((i) => {
+              if (i.isDown()) {
+                gameState.index++;
+              }
+            });
             if (members.length === 0) {
               await handleDefeat(ctx, info);
               return;
@@ -909,7 +921,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       gameState.flavorCache = gameState.opponent.getNeutralFlavor();
       gameState.turnCache = [];
       newInfo.atReply(
-        async (turnCtx) => await handlePlayerTurn(turnCtx, newInfo)
+        async (turnCtx) => await handlePlayerTurn(turnCtx, newInfo, true)
       );
     } else {
       gameState.attack = {
@@ -937,7 +949,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       gameState.flavorCache = gameState.opponent.getNeutralFlavor();
       gameState.turnCache = [];
       newInfo.atReply(
-        async (turnCtx) => await handlePlayerTurn(turnCtx, newInfo)
+        async (turnCtx) => await handlePlayerTurn(turnCtx, newInfo, true)
       );
     }
   }
