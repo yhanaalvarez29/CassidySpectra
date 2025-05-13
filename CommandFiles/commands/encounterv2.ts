@@ -1020,7 +1020,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       const schema = i === 0 ? leaderSchema : petSchema;
       result += `${pet.getPlayerUI({
         selectionOptions: schema,
-        turn: gameState.index === i,
+        turn:
+          gameState.index === i && gameState.pets[gameState.index]
+            ? !gameState.pets[gameState.index].isDown()
+            : false,
         icon: getCacheIcon(gameState.turnCache[i]),
       })}\n\n`;
     }
