@@ -94,6 +94,7 @@ export interface GameState {
     healing?: number;
     turnType: string;
   };
+  isEnemyTurn: boolean;
   type: "start" | "turnPlayer" | "playerTurn";
   author: string;
   get oppIndex(): GameState["pets"]["length"];

@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.0.5",
+  version: "2.0.6",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -240,6 +240,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       flavorCache: randArr(opponent.flavor.encounter),
       type: "turnPlayer",
       author: input.senderID,
+      isEnemyTurn: false,
       get oppIndex() {
         return pets.length + 1;
       },
@@ -303,10 +304,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
   ): Promise<void> {
     if (isDefeat || !gameState || ctx.input.senderID !== gameState.author)
       return;
-    let isEnemyTurn = gameState.index === gameState.pets.length;
 
     let turnOption = String(ctx.input.words[0]).toLowerCase();
-    if (!isEnemyTurn) {
+    if (!gameState.isEnemyTurn) {
       if (ctx.input.words[1] === "all") {
         gameState.turnCache = gameState.pets.map((i) =>
           i.isDown() ? null : turnOption
@@ -332,11 +332,12 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       await handleDefeat(ctx, info);
       return;
     }
-    isEnemyTurn = gameState.index === gameState.pets.length;
 
-    if (isEnemyTurn) {
+    if (gameState.index === gameState.pets.length) {
+      gameState.isEnemyTurn = true;
       await handleEnemyTurn(ctx, info);
     } else {
+      gameState.isEnemyTurn = false;
       while (gameState.pets[gameState.index]?.isDown()) {
         gameState.index++;
       }
@@ -352,7 +353,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         }
 
         const { answer, attackName } = gameState.attack;
-        let isHurt = turnOption !== answer;
+        let isHurt =
+          String(turnOption).replaceAll(" ", "").toLowerCase() !==
+          String(answer).replaceAll(" ", "").toLowerCase();
         if (isHurt) {
           extraText += `* You chose **${turnOption}**, but it was not effective against **${attackName}**\n\n`;
           const isAllParty = Math.random() < 0.4;
