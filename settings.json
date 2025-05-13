@@ -94,5 +94,6 @@
   ],
   "disableUIDLinks": false,
   "ignoreUIDLinksOfAdminBOT": true,
-  "disabledCategories": []
+  "disabledCategories": [],
+  "showAuthorOnStyle": false
 }

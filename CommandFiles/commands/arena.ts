@@ -8,7 +8,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "arena",
   description: "1v1 PvP pet battle system",
   otherNames: ["pvp", "battle"],
-  version: "1.1.0",
+  version: "1.1.1",
   usage: "{prefix}{name} [pet]",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -331,7 +331,7 @@ export async function entry({
         if ((prevMove === "bash" && dodgeChance < 0.7) || dodgeChance < 0.1) {
           flavorText += `* **${targetPet.petName}** dodged!`;
         } else {
-          const damage = activePet.calculateAttack(targetPet.DF);
+          const damage = Math.round(activePet.calculateAttack(targetPet.DF));
           targetPet.HP -= damage;
           petStats.totalDamageDealt += damage;
           opponentStats.totalDamageTaken += damage;

@@ -268,6 +268,17 @@ export async function loadCommand(
         delete commands[key];
       }
     }
+    if (
+      command.style &&
+      !command.style.footer &&
+      global.Cassidy.config.showAuthorOnStyle
+    ) {
+      command.style.footer = {
+        content: `Credits: **${meta.author ?? "No Author"}**`,
+        text_font: "fancy",
+        line_bottom: "none",
+      };
+    }
 
     assignCommand(meta.name, command, commands);
     if (Array.isArray(meta.otherNames)) {
