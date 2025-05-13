@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.1.0",
+  version: "2.1.1",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -388,7 +388,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
               }\n`;
               if (
                 randomMember.isDown() &&
-                gameState.pets.indexOf(randomMember) === 0
+                gameState.pets.indexOf(randomMember) === gameState.index
               ) {
                 gameState.index++;
               }
@@ -420,7 +420,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
             }
             const members = gameState.pets.filter((i) => !i.isDown());
             gameState.pets.forEach((i, j) => {
-              if (i.isDown() && j === 0) {
+              if (i.isDown() && j === gameState.index) {
                 gameState.index++;
               }
             });
