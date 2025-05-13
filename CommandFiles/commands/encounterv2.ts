@@ -329,7 +329,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       return;
     }
 
-    if (gameState.index >= gameState.oppIndex) {
+    if (gameState.index >= gameState.pets.length) {
       await handleEnemyTurn(ctx, info);
     } else {
       while (gameState.pets[gameState.index]?.isDown()) {
@@ -1008,7 +1008,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         icon: getCacheIcon(gameState.turnCache[i]),
       })}\n\n`;
     }
-    result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options.`;
+    result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options. i = ${gameState.index}`;
     return result;
   }
 }
