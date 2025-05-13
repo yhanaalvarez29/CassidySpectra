@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.0.7",
+  version: "2.0.8",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -304,6 +304,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
   ): Promise<void> {
     if (isDefeat || !gameState || ctx.input.senderID !== gameState.author)
       return;
+    while (gameState.pets[gameState.index]?.isDown()) {
+      gameState.index++;
+    }
 
     let turnOption = String(ctx.input.words[0]).toLowerCase();
     if (!gameState.isEnemyTurn) {
@@ -337,9 +340,6 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       await handleEnemyTurn(ctx, info);
     } else {
       gameState.isEnemyTurn = false;
-      while (gameState.pets[gameState.index]?.isDown()) {
-        gameState.index++;
-      }
 
       let extraText = "";
       if (gameState.attack?.turnType === "attack") {
