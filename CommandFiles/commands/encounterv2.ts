@@ -329,7 +329,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       return;
     }
 
-    if (gameState.index >= gameState.pets.length) {
+    if (gameState.index === gameState.pets.length) {
       await handleEnemyTurn(ctx, info);
     } else {
       while (gameState.pets[gameState.index]?.isDown()) {
