@@ -314,6 +314,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       const turns = ctx.input.splitBody("|");
       if (turns.slice(0, -1).every(Boolean)) {
         gameState.turnCache = [...turns]
+          .slice(0, gameState.pets.length)
           .filter(Boolean)
           .map((i) => i.toLowerCase());
         gameState.index = gameState.turnCache.length;
