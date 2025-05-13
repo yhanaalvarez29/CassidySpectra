@@ -287,7 +287,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         icon: getCacheIcon(gameState.turnCache[i]),
       })}\n\n`;
     }
-    result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options.`;
+    result += `***Reply with the option. (word only)***, you can also use **all** as second argument, you can also use | to split the options. i = ${gameState.index}`;
 
     initializeStatMap(gameState.pets, gameState.opponent);
 
@@ -317,7 +317,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
           .slice(0, gameState.pets.length)
           .filter(Boolean)
           .map((i) => i.toLowerCase());
-        gameState.index = gameState.turnCache.length;
+        gameState.index = gameState.pets.length;
       } else {
         gameState.turnCache.push(turnOption);
         gameState.index++;
@@ -914,7 +914,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
           gameState.opponent.wildName
         }**: \n${
           newResponse ?? gameState.opponent.getNeutralDialogue()
-        }\n\n${text}\n\n***Reply with the option. (word only)***`,
+        }\n\n${text}\n\n***Reply with the option. (word only)***, i = ${
+          gameState.index
+        }`,
         style
       );
       gameState.index = 0;
