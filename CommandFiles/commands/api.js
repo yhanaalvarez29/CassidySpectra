@@ -3,6 +3,7 @@ import axios, { AxiosError } from "axios";
 import { ReduxCMDHome } from "@cassidy/redux-home";
 import { PetPlayer } from "@cass-plugins/pet-fight";
 import { UNISpectra } from "@cassidy/unispectra";
+import { generateInterface } from "@cass-modules/generateInterface";
 
 /**
  * @type {CassidySpectra.CommandMeta}
@@ -11,7 +12,7 @@ export const meta = {
   name: "api",
   description: "Cassidy's Developer API!",
   author: "Liane Cagara",
-  version: "1.1.3",
+  version: "1.1.4",
   usage: "{prefix}inventory <action> [args]",
   category: "Finance",
   permissions: [0],
@@ -418,6 +419,7 @@ ${item.flavorText ?? "Not Configured"}
     if (!player) {
       return output.reply(getLang("petTestNoPet"));
     }
+    // @ts-ignore
     const opponent = new WildPlayer({
       wildName: "Test Opponent",
       wildIcon: "🤖",
@@ -608,12 +610,15 @@ ${item.flavorText ?? "Not Configured"}
         if (contentType?.includes("application/json")) {
           try {
             const jsonData = JSON.parse(dataBuffer);
+            const types = generateInterface("ResponseType", jsonData);
 
             output.reply({
               body: getLang(
                 "testApiResponse",
-                status + JSON.stringify(jsonData, null, 2)
-              ),
+                status +
+                  JSON.stringify(jsonData, null, 2).slice(0, 1500) +
+                  `\n\n${types}`
+              ).slice(0, 1500),
             });
           } catch (error) {
             output.error(error);
@@ -636,5 +641,9 @@ ${item.flavorText ?? "Not Configured"}
     stream.on("error", (error) => {
       output.error(error);
     });
+  },
+  types({ input, output }) {
+    const jsonStr = JSON.parse(input.arguments.join(" "));
+    return output.reply(generateInterface("GeneratedType", jsonStr));
   },
 };
