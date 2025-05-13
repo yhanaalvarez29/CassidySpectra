@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.0.4",
+  version: "2.0.5",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -303,35 +303,38 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
   ): Promise<void> {
     if (isDefeat || !gameState || ctx.input.senderID !== gameState.author)
       return;
+    let isEnemyTurn = gameState.index === gameState.pets.length;
 
     let turnOption = String(ctx.input.words[0]).toLowerCase();
-    if (ctx.input.words[1] === "all") {
-      gameState.turnCache = gameState.pets.map((i) =>
-        i.isDown() ? null : turnOption
-      );
-      gameState.index = gameState.pets.length;
-    } else {
-      const turns = ctx.input.splitBody("|");
+    if (!isEnemyTurn) {
+      if (ctx.input.words[1] === "all") {
+        gameState.turnCache = gameState.pets.map((i) =>
+          i.isDown() ? null : turnOption
+        );
+        gameState.index = gameState.pets.length;
+      } else {
+        const turns = ctx.input.splitBody("|");
 
-      for (const turn of turns) {
-        gameState.turnCache.push(turn);
-        gameState.index++;
-        if (gameState.index > gameState.pets.length) {
-          gameState.index = 0;
+        for (const turn of turns) {
+          gameState.turnCache.push(turn);
+          gameState.index++;
+          if (gameState.index > gameState.pets.length) {
+            gameState.index = 0;
+          }
         }
       }
+      gameState.turnCache = [...gameState.turnCache]
+        .slice(0, gameState.pets.length)
+        .filter(Boolean)
+        .map((i) => i.toLowerCase());
     }
-    gameState.turnCache = [...gameState.turnCache]
-      .slice(0, gameState.pets.length)
-      .filter(Boolean)
-      .map((i) => i.toLowerCase());
-
     if (gameState.pets.every((pet) => pet.isDown())) {
       await handleDefeat(ctx, info);
       return;
     }
+    isEnemyTurn = gameState.index === gameState.pets.length;
 
-    if (gameState.index === gameState.pets.length) {
+    if (isEnemyTurn) {
       await handleEnemyTurn(ctx, info);
     } else {
       while (gameState.pets[gameState.index]?.isDown()) {
@@ -885,6 +888,8 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         turnType: "heal",
       };
       _info.removeAtReply();
+      gameState.index = 0;
+
       const newInfo = await ctx.output.replyStyled(
         `${flavorText}\n* ${gameState.opponent.wildIcon} **${
           gameState.opponent.wildName
@@ -893,7 +898,6 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         )}\n\n***Reply anything to proceed.***`,
         style
       );
-      gameState.index = 0;
       gameState.flavorCache = gameState.opponent.getNeutralFlavor();
       gameState.turnCache = [];
       newInfo.atReply(
@@ -907,6 +911,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         turnType: "attack",
       };
       _info.removeAtReply();
+      gameState.index = 0;
       const newInfo = await ctx.output.replyStyled(
         `${flavorText}\n${gameState.opponent.getPlayerUI({
           upperPop: damage
@@ -921,7 +926,6 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         }`,
         style
       );
-      gameState.index = 0;
       gameState.flavorCache = gameState.opponent.getNeutralFlavor();
       gameState.turnCache = [];
       newInfo.atReply(
