@@ -19,7 +19,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "encounterv2",
   description: "Pets Encounter - A reworked interactive pet battle system",
   otherNames: ["encv2", "encounter", "enc"],
-  version: "2.0.6",
+  version: "2.0.7",
   usage: "{prefix}{name}",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -325,7 +325,6 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       }
       gameState.turnCache = [...gameState.turnCache]
         .slice(0, gameState.pets.length)
-        .filter(Boolean)
         .map((i) => i.toLowerCase());
     }
     if (gameState.pets.every((pet) => pet.isDown())) {
@@ -417,6 +416,10 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         } else {
           extraText += `* You chose **${turnOption}** and the entire party has successfully dodged the **${attackName}**!\n\n`;
         }
+      }
+      if (gameState.pets.every((pet) => pet.isDown())) {
+        await handleDefeat(ctx, info);
+        return;
       }
 
       gameState.attack = undefined;
