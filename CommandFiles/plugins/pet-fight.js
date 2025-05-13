@@ -2,7 +2,7 @@
 export const meta = {
   name: "pet-fight",
   author: "Liane Cagara",
-  version: "1.0.0",
+  version: "2.0.0",
   description: "Logic for pet fight.",
   supported: "^1.0.0",
   order: 1,
@@ -538,15 +538,17 @@ export class WildPlayer {
     icon = null,
     upperPop = null,
     selectionOptions = undefined,
+    damageTemp = 0,
   } = {}) {
     let fled = this.isAlmostFled();
     let txt = `${icon ?? this.wildIcon} **${this.wildName} LV${
       this.level ?? 1
     }** ${!upperPop ? `` : `(***${upperPop}***)`}\n`;
-    txt += `**HP**: ${fled ? "**" : ""}${this.HP}/${this.maxHP}${
+    const newHP = this.HP - damageTemp;
+    txt += `**HP**: ${fled ? "**" : ""}${newHP}/${this.maxHP}${
       fled ? "** ⚠️" : ""
     } ${
-      pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`
+      pop ? `(${pop})` : `(${Math.floor((newHP / this.maxHP) * 100)}%)`
     }\n**MERCY**: ${this.MERCY}%`;
     if (turn) {
       txt += `\n\n${this.getSelectionUI(selectionOptions)}`;
@@ -602,6 +604,9 @@ export class WildPlayer {
       }
     }
     return true;
+  }
+  getPercentHP() {
+    return (this.HP / this.maxHP) * 100;
   }
   getActList() {
     let result = "";
@@ -699,6 +704,9 @@ export class WildPlayer {
 
 export class PetPlayer {
   #damageTaken = 0;
+  getDamageTaken() {
+    return this.#damageTaken;
+  }
   constructor(petData = {}, gearData = {}) {
     petData = JSON.parse(JSON.stringify(petData));
     gearData = JSON.parse(JSON.stringify(gearData));
@@ -859,6 +867,10 @@ export class PetPlayer {
     return result;
   }
 
+  getPercentHP() {
+    return (this.HP / this.maxHP) * 100;
+  }
+
   get maxHP() {
     return PetPlayer.getHPOf(this.level, this.sellPrice);
   }
@@ -877,22 +889,10 @@ export class PetPlayer {
   hpModifier = 0;
   defModifier = 0;
   get HP() {
-    return this.maxHP - this.#damageTaken + this.hpModifier; /*(
-      Math.min (this.maxHP - this.#damageTaken, this.maxHP) +
-      this.hpModifier
-    );*/
+    return this.maxHP - this.#damageTaken + this.hpModifier;
   }
   set HP(newHP) {
-    /*if (newHP > this.maxHP) {
-      this.#damageTaken = 0;
-    }*/
-    //if (!this.isDown() && newHP <= 0) {
-    //this.#damageTaken = Math.abs(this.getDownHP()) + this.maxHP;
-    //this.#damageTaken += Math.abs(this.getDownHP());
-    //} else {
-    //this.#damageTaken += this.maxHP - newHP;
     this.#damageTaken = this.maxHP - newHP + this.hpModifier;
-    //  }
   }
   get DF() {
     const extra = PetPlayer.getExtraDFOf(this.level);
