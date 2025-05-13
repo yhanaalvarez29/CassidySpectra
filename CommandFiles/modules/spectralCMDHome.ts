@@ -12,9 +12,9 @@ export type Extra = {
 
 export type Handler = (
   this: Config,
-  ctx: CommandContext,
+  ctx?: CommandContext,
   extra?: Extra
-) => any | Promise<any>;
+) => Promise<any> | any;
 
 export type Config = {
   key: string;
