@@ -721,7 +721,7 @@ export class PetPlayer {
     this.petType = petData.petType ?? "unknown";
     this.petIcon = petData.icon ?? "🐈";
     this.sellPrice = petData.sellPrice;
-
+    this.maxHPModifier = 0;
     this.extras = {};
     this.mode = "default";
     this.hpModifier = -this.getHungryModifier();
@@ -871,8 +871,18 @@ export class PetPlayer {
     return (this.HP / this.maxHP) * 100;
   }
 
+  maxHPModifier = 0;
+
   get maxHP() {
-    return PetPlayer.getHPOf(this.level, this.sellPrice);
+    return PetPlayer.getHPOf(this.level, this.sellPrice) + this.maxHPModifier;
+  }
+
+  /**
+   * @param {number} hp
+   */
+  set maxHP(hp) {
+    const baseHP = PetPlayer.getHPOf(this.level, this.sellPrice);
+    this.maxHPModifier = hp - baseHP;
   }
   get level() {
     return PetPlayer.getLevelOf(this.exp);
