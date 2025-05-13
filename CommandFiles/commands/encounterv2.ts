@@ -146,6 +146,7 @@ Please **reply** with the names of minimum of **${MIN_PETS} pets**, maximum of *
       ]),
     ]
       .sort(() => Math.random() - 0.5)
+      .slice(0, MAX_PETS)
       .map((i: { name: string } & Record<string, any>) => i.name)
       .join(" | ")}
 
@@ -319,16 +320,16 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
         const turns = ctx.input.splitBody("|");
 
         for (const turn of turns) {
-          gameState.turnCache.push(turn);
+          gameState.turnCache[gameState.index] = turn;
           gameState.index++;
           if (gameState.index > gameState.pets.length) {
             gameState.index = 0;
           }
         }
       }
-      gameState.turnCache = [...gameState.turnCache]
-        .slice(0, gameState.pets.length)
-        .map((i) => i.toLowerCase());
+      gameState.turnCache = [...gameState.turnCache].map((i) =>
+        i?.toLowerCase()
+      );
     }
     if (gameState.pets.every((pet) => pet.isDown())) {
       await handleDefeat(ctx, info);
@@ -337,6 +338,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
 
     if (gameState.index === gameState.pets.length) {
       gameState.isEnemyTurn = true;
+      gameState.turnCache = gameState.turnCache.slice(0, gameState.pets.length);
       await handleEnemyTurn(ctx, info);
     } else {
       gameState.isEnemyTurn = false;
