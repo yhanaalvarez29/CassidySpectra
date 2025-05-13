@@ -96,4 +96,5 @@ export interface GameState {
   };
   type: "start" | "turnPlayer" | "playerTurn";
   author: string;
+  get oppIndex(): GameState["pets"]["length"];
 }

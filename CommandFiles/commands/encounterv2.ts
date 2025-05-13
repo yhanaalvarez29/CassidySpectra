@@ -240,6 +240,9 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       flavorCache: randArr(opponent.flavor.encounter),
       type: "turnPlayer",
       author: input.senderID,
+      get oppIndex() {
+        return pets.length + 1;
+      },
     };
 
     infoBegin.removeAtReply();
@@ -306,14 +309,14 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       gameState.turnCache = gameState.pets.map((i) =>
         i.isDown() ? null : turnOption
       );
-      gameState.index = gameState.pets.length - 1;
+      gameState.index = gameState.pets.length;
     } else {
       const turns = ctx.input.splitBody("|");
       if (turns.slice(0, -1).every(Boolean)) {
         gameState.turnCache = [...turns]
           .filter(Boolean)
           .map((i) => i.toLowerCase());
-        gameState.index = gameState.turnCache.length - 1;
+        gameState.index = gameState.turnCache.length;
       } else {
         gameState.turnCache.push(turnOption);
         gameState.index++;
@@ -325,7 +328,7 @@ The first **pet** will become the leader, which who can use the 🔊 **Act**`,
       return;
     }
 
-    if (gameState.index >= gameState.pets.length - 1) {
+    if (gameState.index >= gameState.oppIndex) {
       await handleEnemyTurn(ctx, info);
     } else {
       while (gameState.pets[gameState.index]?.isDown()) {
