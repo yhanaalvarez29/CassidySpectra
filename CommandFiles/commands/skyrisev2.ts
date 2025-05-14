@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.10",
+  version: "1.0.12",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -361,7 +361,10 @@ function updateBuildingData(
   if (!Array.isArray(updatedBuilding.production.resource)) {
     updatedBuilding.production.resource = [updatedBuilding.production.resource];
   }
-  updatedBuilding.level = Math.max(1, Math.floor(updatedBuilding.level));
+  updatedBuilding.level = Math.min(
+    MAX_LEVEL,
+    Math.max(1, Math.floor(updatedBuilding.level))
+  );
   return updatedBuilding;
 }
 
@@ -456,10 +459,10 @@ export function predictProduction(
 function calculateUpgradeCost(building: SkyForgeBuilding) {
   const level = building.level || 1;
   return {
-    aether: 1000 * level,
-    crystal: 1000 * level,
-    stone: 1000 * level,
-    money: 1000 * level,
+    aether: Math.round(Math.pow(2, level - 1) * 1000),
+    crystal: Math.round(Math.pow(2.1, level - 1) * 1000),
+    stone: Math.round(Math.pow(2.2, level - 1) * 1000),
+    money: Math.round(Math.pow(2.3, level - 1) * 1000),
   };
 }
 
@@ -551,6 +554,90 @@ const achievements: Record<
   },
 };
 
+function calculatePlayerRankings(
+  allPlayers: Record<string, Partial<UserData>>,
+  shopItems: SkyForgeShopItem[]
+): Array<{
+  name: string;
+  score: number;
+  averageLevel: number;
+  totalWorkers: number;
+  totalResources: number;
+  resources: {
+    aether: number;
+    stone: number;
+    crystal: number;
+  };
+  productionScore: number;
+  buildingCount: number;
+  bestBuilding: SkyForgeBuilding | null;
+}> {
+  return Object.values(allPlayers)
+    .filter((player) => player.srbuildings?.length > 0)
+    .map((player) => {
+      const buildings = (player.srbuildings || []).map((b) =>
+        updateBuildingData(b, player.srbuildings || [])
+      ) as SkyForgeBuilding[];
+
+      const buildingCount = buildings.length;
+      const totalLevel = buildings.reduce((sum, b) => sum + (b.level || 1), 0);
+      const averageLevel = buildingCount > 0 ? totalLevel / buildingCount : 0;
+      const totalWorkers = buildings.reduce(
+        (sum, b) => sum + (b.workers || 0),
+        0
+      );
+      const totalAether = player.aether || 0;
+      const totalCrystal = player.crystal || 0;
+      const totalStone = player.stone || 0;
+
+      let bestBuilding: SkyForgeBuilding | null = null;
+      let bestBuildingScore = 0;
+      const productionScore = buildings.reduce((sum, b) => {
+        const shopItem = shopItems.find(
+          (i) => i.key === b.key.split(":")[1]?.split("_")[0]
+        );
+        if (!shopItem) return sum;
+
+        const prod = predictProduction(shopItem, b, player.srworkers || 0);
+        const prodPerMin = prod.maxAmount / (b.production.interval / 60000);
+
+        const buildingScore =
+          (b.level || 1) * 1000 + (b.workers || 0) * 500 + prodPerMin * 10000;
+
+        if (buildingScore > bestBuildingScore) {
+          bestBuildingScore = buildingScore;
+          bestBuilding = b;
+        }
+
+        return sum + prodPerMin;
+      }, 0);
+
+      const score =
+        totalLevel * 1000 +
+        totalWorkers * 500 +
+        (totalAether + totalCrystal + totalStone) * 10 +
+        productionScore * 10000;
+
+      return {
+        name: player.name || "Unknown",
+        score,
+        averageLevel,
+        totalWorkers,
+        totalResources: totalAether + totalCrystal + totalStone,
+        productionScore,
+        buildingCount,
+        bestBuilding,
+        resources: {
+          aether: totalAether,
+          stone: totalStone,
+          crystal: totalCrystal,
+        },
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+}
+
+const MAX_LEVEL = 10;
 export async function entry(ctx: CommandContext) {
   const { input, output, money, Inventory, prefix } = ctx;
   let {
@@ -646,7 +733,7 @@ export async function entry(ctx: CommandContext) {
                 updatedBuilding,
                 srworkers
               );
-              result += `${updatedBuilding.icon} **${updatedBuilding.name}** (Level ${updatedBuilding.level})\n`;
+              result += `${updatedBuilding.icon} **${updatedBuilding.name}** (Level ${updatedBuilding.level}/${MAX_LEVEL})\n`;
               result += `🏛️ Name: ${updatedBuilding.buildingName}\n`;
               result += `👷 Workers: ${updatedBuilding.workers || 0}\n`;
               result += `📈 Min Production: ${production.minAmount} **${production.resource}**\n`;
@@ -917,12 +1004,15 @@ export async function entry(ctx: CommandContext) {
           let earnsStr = earnsSliced
             .map(
               (i) =>
-                `${UNIRedux.arrowFromT} ${i[0].icon} LV${i[0].level} **${
-                  i[0].buildingName
-                }**: collected ${xf(i[1].aether, "🌬️")}${xf(
-                  i[1].crystal,
-                  "💎"
-                )}${xf(i[1].stone, "🪨")}${xf(i[1].money, "💵")}`
+                `${UNIRedux.arrowFromT} ${i[0].icon} LV${
+                  i[0].level
+                }/${MAX_LEVEL} **${i[0].buildingName}**: collected ${xf(
+                  i[1].aether,
+                  "🌬️"
+                )}${xf(i[1].crystal, "💎")}${xf(i[1].stone, "🪨")}${xf(
+                  i[1].money,
+                  "💵"
+                )}`
             )
             .join("\n");
           if (earnsBest.length - earnsSliced.length) {
@@ -986,16 +1076,18 @@ export async function entry(ctx: CommandContext) {
             if (buildings.length === 0) {
               result += `❌ No **buildings** yet! Visit the **Sky Market** with ${prefix}skyrise shop.\n`;
             } else {
-              buildings.forEach((b) => {
-                const cost = calculateUpgradeCost(b);
-                result += `${b.icon} **${b.name}** (Level ${b.level})\n`;
-                result += `🏛️ Name: ${b.buildingName}\n`;
-                result += `💰 Cost: ${cost.aether} **Aether**, ${
-                  cost.crystal
-                } **Crystal**, ${cost.stone} **Stone**, and ${formatCash(
-                  cost.money
-                )}\n\n`;
-              });
+              buildings
+                .filter((i) => (i.level ?? 1) < 10)
+                .forEach((b) => {
+                  const cost = calculateUpgradeCost(b);
+                  result += `${b.icon} **${b.name}** (Level ${b.level}/${MAX_LEVEL})\n`;
+                  result += `🏛️ Name: ${b.buildingName}\n`;
+                  result += `💰 Cost: ${cost.aether} **Aether**, ${
+                    cost.crystal
+                  } **Crystal**, ${cost.stone} **Stone**, and ${formatCash(
+                    cost.money
+                  )}\n\n`;
+                });
             }
             result += `📝 **Next Step**: ${suggestNextAction(
               buildingsData,
@@ -1007,12 +1099,25 @@ export async function entry(ctx: CommandContext) {
             return output.reply(result);
           }
 
-          const building = (buildingsData.getAll() as SkyForgeBuilding[]).find(
+          let building = (buildingsData.getAll() as SkyForgeBuilding[]).find(
             (b) => b.buildingName?.toLowerCase() === buildingName.toLowerCase()
           );
           if (!building) {
             return output.reply(
               `👤 **${name}** (SkyRise)\n\n❌ No **building** named "${buildingName}"! Check ${prefix}skyrise status.\n` +
+                `\n📝 **Next Step**: ${suggestNextAction(
+                  buildingsData,
+                  { aether, crystal, stone, money: userMoney },
+                  srworkers,
+                  prefix
+                )}\n` +
+                `🔔 **Reminder**: Collect **resources** with ${prefix}skyrise collect.`
+            );
+          }
+          building = updateBuildingData(building, rawBuildingsData);
+          if (building.level >= MAX_LEVEL) {
+            return output.reply(
+              `👤 **${name}** (SkyRise)\n\n❌ The maximum upgrade is level ${MAX_LEVEL}.\n` +
                 `\n📝 **Next Step**: ${suggestNextAction(
                   buildingsData,
                   { aether, crystal, stone, money: userMoney },
@@ -1486,6 +1591,119 @@ export async function entry(ctx: CommandContext) {
         },
       },
       {
+        key: "top",
+        description: "View top players ranked by empire performance",
+        aliases: ["-t"],
+        args: ["[page]"],
+        async handler(_, { spectralArgs }) {
+          const pageSize = 10;
+          const page = Math.max(1, parseInt(spectralArgs[0]) || 1);
+          const queried = await money.queryItemAll(
+            {
+              "value.srbuildings": { $exists: true },
+            },
+            "name",
+            "srbuildings",
+            "srworker",
+            "aether",
+            "crystal",
+            "stone"
+          );
+          const playerScores = calculatePlayerRankings(queried, shopItems);
+
+          const totalPages = Math.ceil(playerScores.length / pageSize);
+          const startIdx = (page - 1) * pageSize;
+          const pagePlayers = playerScores.slice(startIdx, startIdx + pageSize);
+
+          let result = `👑 **SkyRise Empire Leaderboard** (Page ${page}/${totalPages})\n\n`;
+
+          if (playerScores.length === 0) {
+            result += `❌ No empires found! Start building with ${prefix}skyrise shop.\n`;
+          } else {
+            pagePlayers.forEach((player, idx) => {
+              const rank = startIdx + idx + 1;
+              result += `🏆 #${rank} **${player.name}**\n`;
+              result += `📊 Score: ${abbreviateNumber(
+                player.score,
+                2,
+                false
+              )}\n`;
+              result += `🏛️ Buildings: ${
+                player.buildingCount
+              } (Avg Level: ${player.averageLevel.toFixed(1)})\n`;
+              result += `👷 Workers: ${player.totalWorkers}\n`;
+              result += `💎 Total Resources: ${abbreviateNumber(
+                player.totalResources,
+                2,
+                false
+              )}\n`;
+              result += `🌬️ Aether: ${abbreviateNumber(
+                player.resources.aether,
+                2,
+                false
+              )}\n`;
+              result += `💎 Crystal: ${abbreviateNumber(
+                player.resources.crystal,
+                2,
+                false
+              )}\n`;
+              result += `🪨 Stone: ${abbreviateNumber(
+                player.resources.stone,
+                2,
+                false
+              )}\n`;
+              result += `⚙️ Production: ${abbreviateNumber(
+                player.productionScore,
+                2,
+                false
+              )}/min\n`;
+              if (player.bestBuilding) {
+                const prod = predictProduction(
+                  shopItems.find(
+                    (i) =>
+                      i.key ===
+                      player.bestBuilding!.key.split(":")[1]?.split("_")[0]
+                  )!,
+                  player.bestBuilding,
+                  player.totalWorkers
+                );
+                result += `🌟 Best Building: ${player.bestBuilding.icon} **${player.bestBuilding.name}** (Lv${player.bestBuilding.level}/${MAX_LEVEL}, ${player.bestBuilding.workers} workers)\n`;
+                result += `   Produces: ${abbreviateNumber(
+                  prod.maxAmount,
+                  2,
+                  false
+                )} **${prod.resource.join(", ")}**/min\n`;
+              } else {
+                result += `🌟 Best Building: None\n`;
+              }
+              result += `\n`;
+            });
+
+            if (totalPages > 1) {
+              result += `📄 **Navigation**: Use ${prefix}skyrise top <page>\n`;
+              if (page < totalPages) {
+                result += `➡️ Next page: ${prefix}skyrise top ${page + 1}\n`;
+              }
+              if (page > 1) {
+                result += `⬅️ Previous page: ${prefix}skyrise top ${
+                  page - 1
+                }\n`;
+              }
+            }
+          }
+
+          result += `\n📝 **Next Step**: ${suggestNextAction(
+            new Inventory([]),
+            { aether: 0, crystal: 0, stone: 0, money: 0 },
+            0,
+            prefix
+          )}\n`;
+          result += `🔔 **Reminder**: Climb the ranks by upgrading buildings!`;
+
+          return output.reply(result);
+        },
+      },
+      {
         key: "tutorial",
         description: "Start or continue the **tutorial**",
         aliases: ["-t"],
@@ -1671,7 +1889,7 @@ export async function entry(ctx: CommandContext) {
               result += `❌ No **buildings** to destroy! Build some with ${prefix}skyrise shop.\n`;
             } else {
               buildings.forEach((b) => {
-                result += `${b.icon} **${b.name}** (Level ${b.level})\n`;
+                result += `${b.icon} **${b.name}** (Level ${b.level}/${MAX_LEVEL})\n`;
                 result += `🏛️ Name: ${b.buildingName}\n\n`;
               });
             }
