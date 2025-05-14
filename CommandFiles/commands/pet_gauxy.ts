@@ -28,7 +28,7 @@ export const meta: CassidySpectra.CommandMeta = {
   category: "Idle Investment Games",
   author: "original idea by Gauxy, recreated by Liane Cagara",
   permissions: [0],
-  noPrefix: "both",
+  noPrefix: false,
   waitingTime: 1,
   requirement: "2.5.0",
   icon: "🐶",

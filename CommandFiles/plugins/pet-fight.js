@@ -1,8 +1,10 @@
+import { abbreviateNumber } from "@cass-modules/ArielUtils";
+
 // @ts-check
 export const meta = {
   name: "pet-fight",
   author: "Liane Cagara",
-  version: "2.0.0",
+  version: "2.0.1",
   description: "Logic for pet fight.",
   supported: "^1.0.0",
   order: 1,
@@ -740,17 +742,27 @@ export class PetPlayer {
     pop = null,
     icon = null,
     upperPop = null,
+    showStats = false,
     selectionOptions = undefined,
+    hideHP = false,
   } = {}) {
     let txt = `${icon ?? this.petIcon} **${this.petName} LV${this.level}** ${
       !upperPop ? (this.isDown() ? `(***DOWN***)` : ``) : `(***${upperPop}***)`
     }\n`;
-    txt += `**HP**: ${this.HP}/${this.maxHP} ${
-      pop ? `(${pop})` : `(${Math.floor((this.HP / this.maxHP) * 100)}%)`
+    txt += `**HP**: ${hideHP ? "??" : this.HP}/${hideHP ? "??" : this.maxHP} ${
+      pop
+        ? `(${pop})`
+        : `(${hideHP ? "??" : Math.floor((this.HP / this.maxHP) * 100)}%)`
     }`;
+    if (showStats) {
+      txt += `\n ⚔️ **${abbreviateNumber(this.ATK)}** | 🔰 **${abbreviateNumber(
+        this.DF
+      )}** | 🔥 **${abbreviateNumber(this.MAGIC)}**`;
+    }
     if (turn) {
       txt += `\n\n${this.getSelectionUI(selectionOptions)}`;
     }
+
     return txt;
   }
   get realTimePlayerUI() {

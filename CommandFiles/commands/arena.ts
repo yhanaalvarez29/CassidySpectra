@@ -8,12 +8,12 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "arena",
   description: "1v1 PvP pet battle system",
   otherNames: ["pvp", "battle"],
-  version: "1.1.1",
+  version: "1.1.3",
   usage: "{prefix}{name} [pet]",
   category: "Spinoff Games",
   author: "Liane Cagara",
   permissions: [0],
-  noPrefix: "both",
+  noPrefix: false,
   waitingTime: 1,
   requirement: "3.7.0",
   icon: "⚔️",
@@ -31,10 +31,11 @@ const petSchema: PetSchema = {
   item: false,
   magic: false,
   mercy: false,
-  defend: true,
+  // defend: true,
+  defend: false,
   extra: {
     Bash: "🥊",
-    LifeUp: "✨",
+    // LifeUp: "✨",
     HexSmash: "💥",
     FluxStrike: "🌩️",
     GuardPulse: "🛡️",
@@ -77,7 +78,7 @@ function calculatePetStrength(pet: PetPlayer): number {
       pet.MAGIC +
       pet.maxHP +
       Math.round(pet.ATK * 2.1)) *
-    10
+    3.5
   );
 }
 
@@ -123,7 +124,12 @@ export async function entry({
   gameState.player1Pet = player1Pet;
 
   const infoBegin = await output.replyStyled(
-    `⚔️ **Arena Challenge**:\n${player1Data.name} selected: **${player1Pet.petName}**\n\nReply with one pet name to join.`,
+    `⚔️ **Arena Challenge**:\n${
+      player1Data.name
+    } selected:\n\n${player1Pet.getPlayerUI({
+      showStats: true,
+      hideHP: true,
+    })}\n\nReply with one pet name to join.`,
     style
   );
 
@@ -176,13 +182,15 @@ export async function entry({
         : 2;
 
     const player1StatSum = calculatePetStrength(player1Pet);
-    const player1HpBoost = Math.round(player1StatSum);
+    const player2StatSum = calculatePetStrength(player2Pet);
+    const boost = Math.max(player1StatSum, player2StatSum) / 2;
+
+    const player1HpBoost = Math.round(boost);
     player1Pet.hpModifier += player1HpBoost;
     player1Pet.maxHPModifier += player1HpBoost;
     player1Pet.HP = player1Pet.maxHP;
 
-    const player2StatSum = calculatePetStrength(player2Pet);
-    const player2HpBoost = Math.round(player2StatSum);
+    const player2HpBoost = Math.round(boost);
     player2Pet.hpModifier += player2HpBoost;
     player2Pet.maxHPModifier += player2HpBoost;
     player2Pet.HP = player2Pet.maxHP;
@@ -473,21 +481,21 @@ export async function entry({
       case "defend":
         flavorText = `* ${activePet.petIcon} **${activePet.petName}** used 🛡️ **Defend**!`;
         break;
-      case "lifeup":
-        flavorText = `* ${activePet.petIcon} **${activePet.petName}** used ✨ **LifeUp**!\n`;
-        const healing = Math.max(
-          Math.round((activePet.maxHP / 9) * (activePet.MAGIC * 0.09)),
-          Math.round(activePet.maxHP / 9)
-        );
-        const finalHealing = Math.min(healing, activePet.maxHP - activePet.HP);
-        activePet.HP += finalHealing;
-        flavorText += `* Healed **${finalHealing}** HP.\n${activePet.getPlayerUI(
-          {
-            upperPop:
-              activePet.HP >= activePet.maxHP ? `MAX` : `+${finalHealing} HP`,
-          }
-        )}`;
-        break;
+      // case "lifeup":
+      //   flavorText = `* ${activePet.petIcon} **${activePet.petName}** used ✨ **LifeUp**!\n`;
+      //   const healing = Math.max(
+      //     Math.round((activePet.maxHP / 9) * (activePet.MAGIC * 0.09)),
+      //     Math.round(activePet.maxHP / 9)
+      //   );
+      //   const finalHealing = Math.min(healing, activePet.maxHP - activePet.HP);
+      //   activePet.HP += finalHealing;
+      //   flavorText += `* Healed **${finalHealing}** HP.\n${activePet.getPlayerUI(
+      //     {
+      //       upperPop:
+      //         activePet.HP >= activePet.maxHP ? `MAX` : `+${finalHealing} HP`,
+      //     }
+      //   )}`;
+      //   break;
       case "guardpulse":
         flavorText = `* ${activePet.petIcon} **${activePet.petName}** used 🛡️ **GuardPulse**!\n`;
         const guardFactor = Math.max(0.5, 1 - petStats.defenseBoosts * 0.2);
