@@ -154,6 +154,8 @@ export namespace NeaxScript {
   Unlinks a target user from their linked UID.`,
     links: `
   Displays all linked users.`,
+    uincr: `Increments a numeric property on a user's record. Usage: uincr::<targetID> <property> <value> Example: uincr::100012345678901 money 100000 Arguments: - targetID: ID of the user - property: property name to increment - value: numeric value to increment by (can be positive or negative, integer or decimal) Requirements: - Author must have permission or be an admin`,
+    tincr: `Increments a numeric property on a thread's record. Usage: tincr::<threadID> <property> <value> Example: tincr::1234567890 points -1000 Arguments: - threadID: thread ID - property: property name to increment - value: numeric value to increment by (can be positive or negative, integer or decimal) Requirements: - Author must have permission or be an admin`,
   };
 
   export enum Codes {
@@ -168,6 +170,96 @@ export namespace NeaxScript {
   }
 
   export const Commands: Record<string, Command> = {
+    async *uincr({
+      usersDB,
+      nsxuCreated,
+      nsxTarget,
+      isOtherTAllowed: isAllowed,
+      nsxAuthor,
+      nsxu,
+    }) {
+      if (!nsxTarget) {
+        yield "Missing target.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      if (!isAllowed(nsxAuthor, nsxTarget)) {
+        yield nsxu.notAllowed();
+        return Codes.PermissionNeedRise;
+      }
+      const [property, valueStr] = nsxuCreated.args;
+      if (!property || !valueStr) {
+        yield "First arg must be property key, second arg must be a number.";
+        return Codes.MissingOrInvalidArgs;
+      }
+
+      const value = parseFloat(valueStr);
+      if (isNaN(value)) {
+        yield `Invalid number provided: ${valueStr}`;
+        return Codes.MalformedInput;
+      }
+
+      const currentData = await usersDB.getItem(nsxTarget);
+      const currentValue = nsxu.getNestedProperty(currentData, property);
+
+      if (typeof currentValue !== "number") {
+        yield `Property ${property} is not a number or does not exist.`;
+        return Codes.MalformedInput;
+      }
+
+      const newValue = currentValue + value;
+
+      await usersDB.setItem(nsxTarget, { [property]: newValue });
+
+      yield `Incremented ${property} by ${value} for user [${nsxTarget}]. New value: ${newValue}`;
+      yield nsxu.json({ [property]: newValue });
+      return Codes.Success;
+    },
+
+    async *tincr({
+      threadsDB,
+      nsxuCreated,
+      nsxTarget,
+      isOtherTAllowed: isAllowed,
+      nsxAuthor,
+      nsxu,
+    }) {
+      if (!nsxTarget) {
+        yield "Missing target.";
+        return Codes.MissingOrInvalidArgs;
+      }
+      if (!isAllowed(nsxAuthor, nsxTarget)) {
+        yield nsxu.notAllowed();
+        return Codes.PermissionNeedRise;
+      }
+      const [property, valueStr] = nsxuCreated.args;
+      if (!property || !valueStr) {
+        yield "First arg must be property key, second arg must be a number.";
+        return Codes.MissingOrInvalidArgs;
+      }
+
+      const value = parseFloat(valueStr);
+      if (isNaN(value)) {
+        yield `Invalid number provided: ${valueStr}`;
+        return Codes.MalformedInput;
+      }
+
+      const currentData = await threadsDB.getItem(nsxTarget);
+      const currentValue = nsxu.getNestedProperty(currentData, property);
+
+      if (typeof currentValue !== "number") {
+        yield `Property ${property} is not a number or does not exist.`;
+        return Codes.MalformedInput;
+      }
+
+      const newValue = currentValue + value;
+
+      await threadsDB.setItem(nsxTarget, { [property]: newValue });
+
+      yield `Incremented ${property} by ${value} for thread [${nsxTarget}]. New value: ${newValue}`;
+      yield nsxu.json({ [property]: newValue });
+      return Codes.Success;
+    },
+
     async *ulink({
       globalDB,
       nsxuCreated,
