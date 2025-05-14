@@ -230,7 +230,7 @@ async function renameReply({ input, output, Inventory, money, repObj }) {
  */
 export const style = {
   title: {
-    content: "Pet 🐕",
+    content: "🐕 Pet",
     text_font: "bold",
     line_bottom: "default",
   },
