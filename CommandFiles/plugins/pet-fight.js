@@ -757,7 +757,9 @@ export class PetPlayer {
     if (showStats) {
       txt += `\n ⚔️ **${abbreviateNumber(this.ATK)}** | 🔰 **${abbreviateNumber(
         this.DF
-      )}** | 🔥 **${abbreviateNumber(this.MAGIC)}**`;
+      )}** (${abbreviateNumber(
+        Math.floor(this.DF / 5)
+      )}) | 🔥 **${abbreviateNumber(this.MAGIC)}**`;
     }
     if (turn) {
       txt += `\n\n${this.getSelectionUI(selectionOptions)}`;

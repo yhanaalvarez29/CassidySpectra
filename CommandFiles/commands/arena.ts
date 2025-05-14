@@ -8,7 +8,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "arena",
   description: "1v1 PvP pet battle system",
   otherNames: ["pvp", "battle"],
-  version: "1.1.4",
+  version: "1.1.5",
   usage: "{prefix}{name} [pet]",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -521,7 +521,9 @@ export async function entry({
         );
         activePet.defModifier += guardBoost;
         petStats.defenseBoosts += 1;
-        flavorText += `* Defense boosted by **${guardBoost}**.\n${activePet.getPlayerUI()}`;
+        flavorText += `* Defense boosted by **${guardBoost}**.\n${activePet.getPlayerUI(
+          { showStats: true }
+        )}`;
         break;
       case "vitalsurge":
         flavorText = `* ${activePet.petIcon} **${activePet.petName}** used 💖 **VitalSurge**!\n`;
@@ -563,7 +565,7 @@ export async function entry({
           syncBoost < 1
             ? `ATK boost too weak.`
             : `ATK boosted by **${syncBoost}**.`
-        }\n${activePet.getPlayerUI()}`;
+        }\n${activePet.getPlayerUI({ showStats: true })}`;
         break;
       default:
         flavorText = `* ${activePet.petIcon} **${activePet.petName}** doesn't know **${turn}**.`;
@@ -590,6 +592,7 @@ export async function entry({
       `${flavorText}\n\n${targetPet.getPlayerUI({
         turn: true,
         selectionOptions: petSchema,
+        showStats: true,
       })}\n\n${
         gameState.activePlayer === 1 ? player1Data.name : player2Data.name
       }, select your move!\n\n***Reply with one option (word only)***`,
