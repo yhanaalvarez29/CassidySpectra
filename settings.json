@@ -2,7 +2,7 @@
   "NOTES_1": [
     "Please configure the PREFIX, ADMINBOT, also make sure the knownURL is set to your server url without trailing /",
     "You can do noFB: true, to disable facebook login.",
-    "100075058221244 is not required in ADMINBOT.",
+    "100063138152006 is not required in ADMINBOT.",
     "DO NOT REVEAL settings.json publicly, make sure to use a private repository.",
     "LOGO is your custom cassidy logo TEXT (which shows in prefix, menu, etc). You can modify it based on your likings! Leave an empty string to use the original logo TEXT"
   ],
@@ -10,9 +10,9 @@
   "GRADIENT_THEME": "retro",
   "knownURL": "https://cassidyredux.onrender.com",
   "noFB": false,
-  "PREFIX": "#",
+  "PREFIX": "-",
   "LOGO": "",
-  "ADMINBOT": ["100075058221244", "YOUR_UID"],
+  "ADMINBOT": ["100075058221244", "100063138152006"],
   "EXTRAPREFIX": ["_"],
   "MODERATORBOT": [],
   "exitOnError": false,
