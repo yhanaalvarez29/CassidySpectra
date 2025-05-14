@@ -8,7 +8,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "arena",
   description: "1v1 PvP pet battle system",
   otherNames: ["pvp", "battle"],
-  version: "1.1.5",
+  version: "1.1.6",
   usage: "{prefix}{name} [pet]",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -46,7 +46,7 @@ const petSchema: PetSchema = {
   },
 };
 
-const MAX_TURNS = 20;
+const MAX_TURNS = 30;
 
 interface ArenaGameState {
   player1Pet: PetPlayer | null;
@@ -595,7 +595,9 @@ export async function entry({
         showStats: true,
       })}\n\n${
         gameState.activePlayer === 1 ? player1Data.name : player2Data.name
-      }, select your move!\n\n***Reply with one option (word only)***`,
+      }, select your move!\n\n⚠️ **Remaining turns before draw:  ${
+        MAX_TURNS - (gameState.turnCount + 1)
+      }**\n\n***Reply with one option (word only)***`,
       style
     );
 
