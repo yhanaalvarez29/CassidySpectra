@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.5",
+  version: "1.0.8",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -78,7 +78,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Aether Collector",
     flavorText: "Harvests mystical **Aether** from the skies.",
     key: "aetherCollector",
-    price: { aether: 0, crystal: 0, stone: 0, money: 5000 },
+    price: { aether: 35000, crystal: 15000, stone: 5000, money: 5000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Aether Collector",
@@ -100,7 +100,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Crystal Mine",
     flavorText: "Mines sparkling **Crystals** from the island core.",
     key: "crystalMine",
-    price: { aether: 50000, crystal: 0, stone: 0, money: 10000 },
+    price: { aether: 50000, crystal: 25000, stone: 25000, money: 10000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Crystal Mine",
@@ -122,7 +122,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Stone Quarry",
     flavorText: "Extracts sturdy **Stone** from the island.",
     key: "stoneQuarry",
-    price: { aether: 50000, crystal: 50000, stone: 0, money: 20000 },
+    price: { aether: 50000, crystal: 50000, stone: 25000, money: 20000 },
     onPurchase({ moneySet }) {
       moneySet.inventory.push({
         name: "Stone Quarry",
@@ -228,7 +228,7 @@ function calculateProduction(
   const updatedBuilding = updateBuildingData(building, []);
   const timeSinceCollectX = Date.now() - updatedBuilding.lastCollect;
 
-  const baseCapMinutes = 1 * 60;
+  const baseCapMinutes = 3 * 60;
   const levelCapMinutes =
     baseCapMinutes * Math.pow(2, updatedBuilding.level - 1);
   const capMilliseconds = levelCapMinutes * 60 * 1000;
@@ -420,6 +420,7 @@ export async function entry(ctx: CommandContext) {
     tutorialStep = 0,
     isUptSkyRise = false,
     isSkyRiseV2 = false,
+    getFreeSrBuilding = false,
   } = await money.getCache(input.senderID);
 
   if (!isUptSkyRise) {
@@ -920,55 +921,108 @@ export async function entry(ctx: CommandContext) {
           ).reduce((sum, b) => sum + b.level, 0);
           const pirateStrength = Math.floor(Math.random() * 10) + 5;
           const defenseStrength = totalLevel + srworkers * 2;
-
           const success = defenseStrength >= pirateStrength;
-          let reward = { aether: 0, crystal: 0, stone: 0 };
-          let loss = { aether: 0, crystal: 0, stone: 0 };
 
+          let totalProduction = 0;
+          for (const building of buildingsData.getAll() as SkyForgeBuilding[]) {
+            const updatedBuilding = updateBuildingData(
+              building,
+              buildingsData.getAll() as SkyForgeBuilding[]
+            );
+            totalProduction += calculateProduction(updatedBuilding, srworkers);
+            updatedBuilding.lastCollect = Date.now();
+            buildingsData.deleteOne(updatedBuilding.key);
+            buildingsData.addOne(updatedBuilding);
+          }
+
+          let reward = { aether: 0, crystal: 0, stone: 0 };
           if (success) {
             reward = {
-              aether: 100 * buildingsData.getAll().length,
-              crystal: 100 * buildingsData.getAll().length,
-              stone: 100 * buildingsData.getAll().length,
+              aether: 100 * buildingsData.getAll().length + totalProduction,
+              crystal: 100 * buildingsData.getAll().length + totalProduction,
+              stone: 100 * buildingsData.getAll().length + totalProduction,
             };
-            cassEXP.expControls.raise(20);
-          } else {
-            loss = {
-              aether: Math.min(aether, 50 * buildingsData.getAll().length),
-              crystal: Math.min(crystal, 50 * buildingsData.getAll().length),
-              stone: Math.min(stone, 50 * buildingsData.getAll().length),
-            };
-            cassEXP.expControls.raise(5);
           }
 
-          await money.setItem(input.senderID, {
-            aether: aether + reward.aether - loss.aether,
-            crystal: crystal + reward.crystal - loss.crystal,
-            stone: stone + reward.stone - loss.stone,
-            cassEXP: cassEXP.raw(),
-          });
+          const totalRewardAcc =
+            reward.aether -
+            totalProduction +
+            (reward.crystal - totalProduction) +
+            (reward.stone - totalProduction);
 
-          let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Sky Pirate Raid***\n\n`;
-          result += `🏴‍☠️ Defense: ${defenseStrength} vs **Pirates**: ${pirateStrength}\n`;
-          if (success) {
-            result += `✅ **Repelled Sky Pirates**!\n`;
-            result += `🏆 Rewards: ${reward.aether} **Aether**, ${reward.crystal} **Crystal**, ${reward.stone} **Stone**\n`;
-            result += `🌟 **EXP**: +20\n`;
-            result += `📜 Your empire stands strong! These **resources** will fuel your growth.\n`;
+          if (totalProduction < totalRewardAcc) {
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Sky Pirate Raid***\n\n`;
+            result += `🏴‍☠️ Defense: ${defenseStrength} vs **Pirates**: ${pirateStrength}\n`;
+            result += `❌ **Defense Failed**! Your production was too low to defend effectively.\n`;
+            result += `📜 Consider upgrading or building more to increase production.\n`;
+            result += `\n📝 **Next Step**: ${suggestNextAction(
+              buildingsData,
+              { aether, crystal, stone, money: userMoney },
+              srworkers,
+              prefix
+            )}\n`;
+            result += `🔔 **Reminder**: Check ${prefix}skyrise status to monitor your empire.`;
+            return output.reply(result);
           } else {
-            result += `❌ **Sky Pirates stole resources**!\n`;
-            result += `💥 Loss: ${loss.aether} **Aether**, ${loss.crystal} **Crystal**, ${loss.stone} **Stone**\n`;
-            result += `🌟 **EXP**: +5\n`;
-            result += `📜 Don't worry, rebuild stronger! ***Upgrade*** your **buildings** to improve defense.\n`;
+            let loss = { aether: 0, crystal: 0, stone: 0 };
+            if (!success) {
+              loss = {
+                aether: Math.min(
+                  aether,
+                  Math.max(
+                    50 * buildingsData.getAll().length,
+                    Math.floor(totalProduction * 0.5)
+                  )
+                ),
+                crystal: Math.min(
+                  crystal,
+                  Math.max(
+                    50 * buildingsData.getAll().length,
+                    Math.floor(totalProduction * 0.5)
+                  )
+                ),
+                stone: Math.min(
+                  stone,
+                  Math.max(
+                    50 * buildingsData.getAll().length,
+                    Math.floor(totalProduction * 0.5)
+                  )
+                ),
+              };
+              cassEXP.expControls.raise(5);
+            } else {
+              cassEXP.expControls.raise(20);
+            }
+
+            await money.setItem(input.senderID, {
+              aether: aether + reward.aether - loss.aether,
+              crystal: crystal + reward.crystal - loss.crystal,
+              stone: stone + reward.stone - loss.stone,
+              cassEXP: cassEXP.raw(),
+            });
+
+            let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Sky Pirate Raid***\n\n`;
+            result += `🏴‍☠️ Defense: ${defenseStrength} vs **Pirates**: ${pirateStrength}\n`;
+            if (success) {
+              result += `✅ **Repelled Sky Pirates**!\n`;
+              result += `🏆 Rewards: ${reward.aether} **Aether**, ${reward.crystal} **Crystal**, ${reward.stone} **Stone**\n`;
+              result += `🌟 **EXP**: +20\n`;
+              result += `📜 Your empire stands strong! These **resources** will fuel your growth.\n`;
+            } else {
+              result += `❌ **Sky Pirates stole resources**!\n`;
+              result += `💥 Loss: ${loss.aether} **Aether**, ${loss.crystal} **Crystal**, ${loss.stone} **Stone**\n`;
+              result += `🌟 **EXP**: +5\n`;
+              result += `📜 Don't worry, rebuild stronger! ***Upgrade*** your **buildings** to improve defense.\n`;
+            }
+            result += `\n📝 **Next Step**: ${suggestNextAction(
+              buildingsData,
+              { aether, crystal, stone, money: userMoney },
+              srworkers,
+              prefix
+            )}\n`;
+            result += `🔔 **Reminder**: Check ${prefix}skyrise status to monitor your empire.`;
+            return output.reply(result);
           }
-          result += `\n📝 **Next Step**: ${suggestNextAction(
-            buildingsData,
-            { aether, crystal, stone, money: userMoney },
-            srworkers,
-            prefix
-          )}\n`;
-          result += `🔔 **Reminder**: Check ${prefix}skyrise status to monitor your empire.`;
-          return output.reply(result);
         },
       },
       {
@@ -979,10 +1033,57 @@ export async function entry(ctx: CommandContext) {
         async handler(_, { spectralArgs }) {
           const buildingsData = new Inventory(rawBuildingsData);
           const inventory = new Inventory(rawInventory);
+          let hasBuilding = (key: Production["resource"]) => {
+            return buildingsData.getAll().some((i) => {
+              const b = i as SkyForgeBuilding;
+              return (
+                b.production?.resource === "all" ||
+                b.production?.resource === key
+              );
+            });
+          };
+          const modifiedShopItems = shopItems.map((i) => {
+            const copy: SkyForgeShopItem = {
+              ...i,
+              price: {
+                ...i.price,
+                aether:
+                  ["aetherCollector"].includes(i.key) && !hasBuilding("aether")
+                    ? 0
+                    : i.price.aether,
+                crystal:
+                  ["crystalMine", "aetherCollector"].includes(i.key) &&
+                  !hasBuilding("crystal")
+                    ? 0
+                    : i.price.crystal,
+                stone:
+                  ["crystalMine", "aetherCollector", "stoneQuarry"].includes(
+                    i.key
+                  ) && !hasBuilding("stone")
+                    ? 0
+                    : i.price.stone,
+              },
+            };
+
+            if (copy.key !== "aetherCollector" || getFreeSrBuilding) {
+              return copy;
+            }
+            return {
+              ...copy,
+              price: {
+                ...copy.price,
+                aether: 0,
+                crystal: 0,
+                stone: 0,
+              },
+            };
+          });
 
           if (spectralArgs[0] === "buy" && spectralArgs[1]) {
             const itemKey = spectralArgs[1];
-            const shopItem = shopItems.find((item) => item.key === itemKey);
+            const shopItem = modifiedShopItems.find(
+              (item) => item.key === itemKey
+            );
             if (!shopItem) {
               return output.reply(
                 `👤 **${name}** (SkyRise)\n\n❌ Invalid **item key** "${itemKey}"! Use ${prefix}skyrise shop to see available items.\n` +
@@ -1032,6 +1133,10 @@ export async function entry(ctx: CommandContext) {
               inventory: Array.from(inventory),
               srworkers:
                 shopItem.type === "srworker" ? srworkers + 1 : srworkers,
+              getFreeSrBuilding:
+                shopItem.key === "aetherCollector" && !getFreeSrBuilding
+                  ? true
+                  : false,
             });
 
             let result = `👤 **${name}** (SkyRise)\n\n${UNIRedux.arrow} ***Purchase Successful***\n\n`;
@@ -1061,7 +1166,7 @@ export async function entry(ctx: CommandContext) {
           result += `**Usage**: ${prefix}skyrise shop [buy <item_key>]\n`;
           result += `**Example**: ${prefix}skyrise shop buy aetherCollector to buy an **Aether Collector**.\n\n`;
           result += `**Available Items**:\n`;
-          shopItems.forEach((item) => {
+          modifiedShopItems.forEach((item) => {
             result += `${item.icon} **${item.name}** (${item.key})\n`;
             result += `💰 Cost: ${item.price.aether} **Aether**, ${
               item.price.crystal

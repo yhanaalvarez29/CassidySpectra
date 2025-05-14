@@ -11,7 +11,7 @@ export const meta = {
   name: "petnostalgia",
   description: "Manage your pets! (Reworked but same as old!)",
   otherNames: ["p", "pet", "petn"],
-  version: "1.6.2",
+  version: "1.6.3",
   usage: "{prefix}{name}",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -1219,9 +1219,13 @@ export async function entry(ctx) {
             const gearData = gearsData.getGearData(pet.key);
             const petPlayer = new PetPlayer(pet, gearData.toJSON());
             result += `${petPlayer.getPlayerUI()}\n`;
-            result += `**ATK**: **${petPlayer.ATK}** (+${petPlayer.gearATK})\n`;
-            result += `**DEF**: **${petPlayer.DF}** (+${petPlayer.gearDF})\n`;
-            result += `**Magic**: **${petPlayer.MAGIC}**\n\n`;
+            result += `⚔️ ***ATK***: ${petPlayer.ATK} (+${petPlayer.gearATK})
+🔰 ***DEF***: ${petPlayer.DF} (+${petPlayer.gearDF})
+🔥 ***MAGIC***: ${petPlayer.MAGIC}
+🗃️ ***Type***: ${pet.petType ?? "Unknown"}
+🧭 ***Level***: ${pet.level ?? 1}
+✨ ***Exp***: ${pet.lastExp ?? 0}/${calculateNextExp(pet)}
+💵 **Worth**: ${calculateWorth(pet)}$\n\n`;
           }
           result += `Type **${prefix}pet-gear <pet name>** to view the stats, gears, and spells of a specific pet.`;
           return output.reply(result);
@@ -1514,8 +1518,18 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
            * @returns
            */
           function getDiff(key) {
-            const diff = Number(updatedPet[key]) - Number(originalPet[key]);
-            return diff === 0 ? "" : diff > 0 ? ` (+${diff})` : ` (${diff})`;
+            const diff =
+              Number(
+                key === "worth" ? calculateWorth(updatedPet) : updatedPet[key]
+              ) -
+              Number(
+                key === "worth" ? calculateWorth(originalPet) : originalPet[key]
+              );
+            return diff === 0
+              ? ""
+              : diff > 0
+              ? ` **(+${diff})**`
+              : ` **(${diff})**`;
           }
 
           await money.setItem(input.senderID, {
@@ -1638,7 +1652,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
                     .split("")
                     .join(" ")}[:font=double_struck]`
                 : `- ***${name}***`
-            }\n✦ ${player.getPlayerUI(
+            }\n${UNIRedux.charm} ${player.getPlayerUI(
               isPetHungry(pet) ? { upperPop: "Hungry" } : {}
             )}
 ⚔️ ***ATK***: ${player.ATK} (+${player.gearATK})
@@ -1661,15 +1675,18 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
         description: "List your pets",
         aliases: ["-l"],
         async handler(_) {
+          const gearsData = new GearsManage(rawGearsData);
           const petsData = new Inventory(rawPetsData);
           const pets = petsData.getAll();
           let result = `**${name}'s** Pets:\n\n`;
           for (let pet of pets) {
             pet = autoUpdatePetData(pet);
             const hungryAfter = petHungryAfter(pet);
-            result += `${UNIRedux.charm} ${pet.icon} **${pet.name}**${
-              isPetHungry(pet) ? " (Hungry)" : ""
-            }
+            const gearData = gearsData.getGearData(pet.key);
+            const player = new PetPlayer(pet, gearData.toJSON());
+            result += `${UNIRedux.charm} ${player.getPlayerUI(
+              isPetHungry(pet) ? { upperPop: "Hungry" } : {}
+            )}
 🗃️ ***Type***: ${pet.petType}
 🧭 ***Level***: ${pet.level}
 ✨ ***Exp***: ${pet.lastExp ?? 0}/${calculateNextExp(pet)}
@@ -1707,7 +1724,7 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
             );
           }
 
-          let petList = `${UNIRedux.arrow} ***Caged Pets***\n\n`;
+          let petList = ``;
           pets.forEach((pet, index) => {
             petList += `${index + 1}. ${pet.icon} **${pet.name}** [${
               pet.key
@@ -1913,10 +1930,12 @@ The pet name must be the **exact name** of the pet you want to feed, while the f
                 // @ts-ignore
                 .join(" ");
               result +=
-                `${car.icon || "🚗"} ${car.name || "Unnamed"}\n` +
+                `${UNIRedux.charm} ${car.icon || "🚗"} **${
+                  car.name || "Unnamed"
+                }**\n` +
                 // @ts-ignore
-                `${UNIRedux.arrow} ${car.pets.length}/5\n` +
-                `${petIcons || "None"}\n\n`;
+                `💺 ***Passengers** ${car.pets.length}/5\n` +
+                `${UNIRedux.disc} ${petIcons || "None"}\n\n`;
             }
             result +=
               `Type ${prefix}pet-pc <car name> to see **all your pets** in a specific **car**. (full info)\n` +
