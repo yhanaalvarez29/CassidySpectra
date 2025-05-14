@@ -8,7 +8,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "arena",
   description: "1v1 PvP pet battle system",
   otherNames: ["pvp", "battle"],
-  version: "1.1.3",
+  version: "1.1.4",
   usage: "{prefix}{name} [pet]",
   category: "Spinoff Games",
   author: "Liane Cagara",
@@ -46,6 +46,8 @@ const petSchema: PetSchema = {
   },
 };
 
+const MAX_TURNS = 20;
+
 interface ArenaGameState {
   player1Pet: PetPlayer | null;
   player2Pet: PetPlayer | null;
@@ -55,6 +57,7 @@ interface ArenaGameState {
   flavorCache: string;
   prevMove1: string | null;
   prevMove2: string | null;
+  turnCount: number;
 }
 
 const statMap = new Map<string, PersistentStats>();
@@ -96,6 +99,7 @@ export async function entry({
     flavorCache: "",
     prevMove1: null,
     prevMove2: null,
+    turnCount: 0,
   };
   let isDefeat = false;
 
@@ -240,9 +244,12 @@ export async function entry({
     const result = `* ${gameState.flavorCache}\n\n${activePet.getPlayerUI({
       selectionOptions: petSchema,
       turn: true,
-    })}\n\n**Opponent**\n${opponentPet.getPlayerUI(
-      {}
-    )}\n\n***Reply with one option (word only)***`;
+      showStats: true,
+    })}\n\n**Opponent**\n${opponentPet.getPlayerUI({
+      showStats: true,
+    })}\n\n⚠️ **Remaining turns before draw:  ${
+      MAX_TURNS - (gameState.turnCount + 1)
+    }**\n\n***Reply with one option (word only)***`;
 
     const newInfo = await ctx.output.replyStyled(result, style);
     newInfo.atReply(
@@ -285,6 +292,13 @@ export async function entry({
     turn: string
   ): Promise<void> {
     if (!gameState || !gameState.player1Pet || !gameState.player2Pet) return;
+    gameState!.turnCount += 1;
+
+    if (gameState!.turnCount >= MAX_TURNS) {
+      info.removeAtReply();
+      await handleDraw(ctx, info);
+      return;
+    }
     const activePet =
       gameState.activePlayer === 1
         ? gameState.player1Pet
@@ -632,5 +646,21 @@ export async function entry({
     isDefeat = true;
     info.removeAtReply();
     await handleWin(ctx, winner);
+  }
+
+  async function handleDraw(
+    ctx: CommandContext,
+    info: OutputResult
+  ): Promise<void> {
+    if (!gameState || !gameState.player1Pet || !gameState.player2Pet) return;
+    info.removeAtReply();
+    const player1Data = await ctx.money.getItem(gameState.player1Author);
+    const player2Data = await ctx.money.getItem(gameState.player2Author);
+
+    await ctx.output.replyStyled(
+      `* Match ends in a draw after ${MAX_TURNS} turns!\n${player1Data.name}'s ${gameState.player1Pet.petIcon} **${gameState.player1Pet.petName}** and ${player2Data.name}'s ${gameState.player2Pet.petIcon} **${gameState.player2Pet.petName}** fought valiantly.\nNo battle points awarded.`,
+      style
+    );
+    gameState = null;
   }
 }
