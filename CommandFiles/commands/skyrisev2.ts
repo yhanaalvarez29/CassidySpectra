@@ -10,7 +10,7 @@ export const meta: CassidySpectra.CommandMeta = {
   name: "skyrise",
   description: "Build and manage your floating island empire!",
   otherNames: ["srs", "sky", "skyr"],
-  version: "1.0.8",
+  version: "1.0.10",
   usage: "{prefix}{name} <command> [args]",
   category: "Idle Investment Games",
   author: "Liane Cagara",
@@ -34,8 +34,10 @@ export const style: CassidySpectra.CommandStyle = {
   },
 };
 
+type ProductionType = "aether" | "crystal" | "stone" | "all" | "none";
+
 interface Production {
-  resource: "aether" | "crystal" | "stone" | "all" | "none";
+  resource: ProductionType[];
   amount: number;
   interval: number;
 }
@@ -79,7 +81,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Aether Collector",
     flavorText: "Harvests mystical **Aether** from the skies.",
     key: "aetherCollector",
-    price: { aether: 35000, crystal: 15000, stone: 5000, money: 5000 },
+    price: { aether: 5000, crystal: 2500, stone: 1000, money: 1000 },
     onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Aether Collector",
@@ -89,7 +91,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         icon: "🌬️",
         type: "srbuilding",
         sellPrice: 25,
-        production: { resource: "aether", amount: 10, interval: 60 * 1000 },
+        production: { resource: ["aether"], amount: 10, interval: 60 * 1000 },
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
@@ -102,7 +104,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Crystal Mine",
     flavorText: "Mines sparkling **Crystals** from the island core.",
     key: "crystalMine",
-    price: { aether: 50000, crystal: 25000, stone: 25000, money: 10000 },
+    price: { aether: 7500, crystal: 5000, stone: 5000, money: 2500 },
     onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Crystal Mine",
@@ -112,7 +114,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         icon: "💎",
         type: "srbuilding",
         sellPrice: 25,
-        production: { resource: "crystal", amount: 10, interval: 60 * 1000 },
+        production: { resource: ["crystal"], amount: 10, interval: 60 * 1000 },
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
@@ -125,7 +127,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Stone Quarry",
     flavorText: "Extracts sturdy **Stone** from the island.",
     key: "stoneQuarry",
-    price: { aether: 50000, crystal: 50000, stone: 25000, money: 20000 },
+    price: { aether: 7500, crystal: 7500, stone: 5000, money: 5000 },
     onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Stone Quarry",
@@ -135,7 +137,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         icon: "🪨",
         type: "srbuilding",
         sellPrice: 25,
-        production: { resource: "stone", amount: 10, interval: 60 * 1000 },
+        production: { resource: ["stone"], amount: 10, interval: 60 * 1000 },
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
@@ -148,7 +150,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     name: "Sky Forge",
     flavorText: "Crafts powerful upgrades for your empire.",
     key: "skyForge",
-    price: { aether: 1000000, crystal: 1000000, stone: 1000000, money: 100000 },
+    price: { aether: 12500, crystal: 12500, stone: 12500, money: 12500 },
     onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Sky Forge",
@@ -158,7 +160,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         icon: "⚒️",
         type: "srbuilding",
         sellPrice: 50,
-        production: { resource: "all", amount: 5, interval: 120 * 1000 },
+        production: { resource: ["all"], amount: 5, interval: 120 * 1000 },
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
@@ -172,9 +174,143 @@ export const shopItems: Array<SkyForgeShopItem> = [
     type: "srworker",
     flavorText: "Increases building efficiency.",
     key: "srworker",
-    price: { aether: 2000000, crystal: 2000000, stone: 2000000, money: 200000 },
+    price: { aether: 2500, crystal: 2500, stone: 2500, money: 25000 },
     onPurchase({ moneySet }) {
       moneySet.srworkers = (moneySet.srworkers || 0) + 1;
+    },
+  },
+  {
+    icon: "⚡",
+    name: "Aetheric Accelerator",
+    flavorText: "Supercharges **Aether** production at lightning speed.",
+    key: "aethericAccelerator",
+    price: { aether: 500000, crystal: 250000, stone: 250000, money: 50000 },
+    onPurchase({ moneySet, xPurchasedBy }) {
+      moneySet.inventory.push({
+        name: "Aetheric Accelerator",
+        buildingName: "",
+        key: "aethericAccelerator",
+        flavorText: "Boosts production of **Aether** when upgraded.",
+        icon: "⚡",
+        type: "srbuilding",
+        sellPrice: 200,
+        production: { resource: ["aether"], amount: 800, interval: 25 * 1000 },
+        level: 1,
+        lastCollect: Date.now(),
+        workers: 0,
+        xPurchasedBy,
+      });
+    },
+  },
+  {
+    icon: "🔥",
+    name: "Dual-Forge Dynamo",
+    flavorText:
+      "A hybrid forge that crafts **Aether** and **Crystals** with enhanced efficiency.",
+    key: "dualForgeDynamo",
+    price: { aether: 375000, crystal: 375000, stone: 375000, money: 37500 },
+    onPurchase({ moneySet, xPurchasedBy }) {
+      moneySet.inventory.push({
+        name: "Dual-Forge Dynamo",
+        buildingName: "",
+        key: "dualForgeDynamo",
+        flavorText:
+          "Boosts production of **Aether** and **Crystals** when upgraded.",
+        icon: "🔥🔥",
+        type: "srbuilding",
+        sellPrice: 150,
+        production: {
+          resource: ["aether", "crystal"],
+          amount: 10,
+          interval: 40 * 1000,
+        },
+        level: 1,
+        lastCollect: Date.now(),
+        workers: 0,
+        xPurchasedBy,
+      });
+    },
+  },
+  {
+    icon: "🌪️",
+    name: "Elemental Fusion Forge",
+    flavorText:
+      "Merges the elements to produce **Aether** and **Stone** at an accelerated rate.",
+    key: "elementalFusionForge",
+    price: { aether: 375000, crystal: 187500, stone: 375000, money: 37500 },
+    onPurchase({ moneySet, xPurchasedBy }) {
+      moneySet.inventory.push({
+        name: "Elemental Fusion Forge",
+        buildingName: "",
+        key: "elementalFusionForge",
+        flavorText:
+          "Boosts production of **Aether** and **Stone** when upgraded.",
+        icon: "🌪️🔥",
+        type: "srbuilding",
+        sellPrice: 150,
+        production: {
+          resource: ["aether", "stone"],
+          amount: 10,
+          interval: 40 * 1000,
+        },
+        level: 1,
+        lastCollect: Date.now(),
+        workers: 0,
+        xPurchasedBy,
+      });
+    },
+  },
+  {
+    icon: "💨",
+    name: "Crystal Catalyst",
+    flavorText: "Doubles the speed of **Crystal** production.",
+    key: "crystalCatalyst",
+    price: { aether: 400000, crystal: 400000, stone: 200000, money: 40000 },
+    onPurchase({ moneySet, xPurchasedBy }) {
+      moneySet.inventory.push({
+        name: "Crystal Catalyst",
+        buildingName: "",
+        key: "crystalCatalyst",
+        flavorText:
+          "Doubles the speed of **Crystal** production when upgraded.",
+        icon: "💨",
+        type: "srbuilding",
+        sellPrice: 160,
+        production: { resource: ["crystal"], amount: 800, interval: 25 * 1000 },
+        level: 1,
+        lastCollect: Date.now(),
+        workers: 0,
+        xPurchasedBy,
+      });
+    },
+  },
+  {
+    icon: "🌋",
+    name: "Volcanic Vault",
+    flavorText:
+      "A hybrid forge producing **Stone** and **Crystals** with volcanic efficiency.",
+    key: "volcanicVault",
+    price: { aether: 350000, crystal: 350000, stone: 350000, money: 35000 },
+    onPurchase({ moneySet, xPurchasedBy }) {
+      moneySet.inventory.push({
+        name: "Volcanic Vault",
+        buildingName: "",
+        key: "volcanicVault",
+        flavorText:
+          "Boosts production of **Stone** and **Crystals** when upgraded.",
+        icon: "🌋",
+        type: "srbuilding",
+        sellPrice: 140,
+        production: {
+          resource: ["stone", "crystal"],
+          amount: 10,
+          interval: 40 * 1000,
+        },
+        level: 1,
+        lastCollect: Date.now(),
+        workers: 0,
+        xPurchasedBy,
+      });
     },
   },
 ];
@@ -208,7 +344,7 @@ function updateBuildingData(
     level: 1,
     lastCollect: Date.now(),
     production: building.production || {
-      resource: "none",
+      resource: ["none"],
       amount: 0,
       interval: 0,
     },
@@ -222,6 +358,9 @@ function updateBuildingData(
     sellPrice: building.sellPrice || 0,
   };
   const updatedBuilding = { ...defaults, ...building };
+  if (!Array.isArray(updatedBuilding.production.resource)) {
+    updatedBuilding.production.resource = [updatedBuilding.production.resource];
+  }
   updatedBuilding.level = Math.max(1, Math.floor(updatedBuilding.level));
   return updatedBuilding;
 }
@@ -258,7 +397,7 @@ export function predictProduction(
   shopItem: SkyForgeShopItem,
   buildingItem: SkyForgeBuilding,
   totalWorkers: number
-): { resource: string; minAmount: number; maxAmount: number } {
+): { resource: string[]; minAmount: number; maxAmount: number } {
   if (!shopItem || !shopItem.key) {
     throw new Error(`Invalid shop item: ${JSON.stringify(shopItem)}`);
   }
@@ -279,7 +418,7 @@ export function predictProduction(
     ...buildingItem.production,
   };
   if (
-    production.resource === "none" ||
+    production.resource.includes("none") ||
     production.amount <= 0 ||
     production.interval <= 0
   ) {
@@ -306,7 +445,9 @@ export function predictProduction(
   const maxAmount = Math.floor(maxBaseAmount * srWorkerMultiplier);
 
   return {
-    resource: production.resource,
+    resource: !Array.isArray(production.resource)
+      ? [production.resource]
+      : production.resource,
     minAmount,
     maxAmount,
   };
@@ -315,10 +456,10 @@ export function predictProduction(
 function calculateUpgradeCost(building: SkyForgeBuilding) {
   const level = building.level || 1;
   return {
-    aether: 50000 * level,
-    crystal: 50000 * level,
-    stone: 50000 * level,
-    money: 50000 * level,
+    aether: 1000 * level,
+    crystal: 1000 * level,
+    stone: 1000 * level,
+    money: 1000 * level,
   };
 }
 
@@ -412,7 +553,7 @@ const achievements: Record<
 
 export async function entry(ctx: CommandContext) {
   const { input, output, money, Inventory, prefix } = ctx;
-  const {
+  let {
     name = "Unregistered",
     srbuildings: rawBuildingsData = [],
     inventory: rawInventory = [],
@@ -427,6 +568,8 @@ export async function entry(ctx: CommandContext) {
     isSkyRiseV2 = false,
     getFreeSrBuilding = false,
   } = await money.getCache(input.senderID);
+  const r = rawBuildingsData as SkyForgeBuilding[];
+  rawBuildingsData = r.map((i) => updateBuildingData(i, r));
 
   if (!isUptSkyRise) {
     const buildingsData = new Inventory(rawBuildingsData);
@@ -695,50 +838,52 @@ export async function entry(ctx: CommandContext) {
             const production = calculateProduction(updatedBuilding, srworkers);
             if (production > 0) {
               collected = true;
-              if (updatedBuilding.production.resource === "aether") {
-                totalAether += production;
-                totalMoney += production * 100;
-                earns.push([
-                  updatedBuilding,
-                  {
-                    aether: production,
-                    money: production * 100,
-                  },
-                ]);
-              } else if (updatedBuilding.production.resource === "crystal") {
-                totalCrystal += production;
-                totalMoney += production * 100;
-                earns.push([
-                  updatedBuilding,
-                  {
-                    crystal: production,
-                    money: production * 100,
-                  },
-                ]);
-              } else if (updatedBuilding.production.resource === "stone") {
-                totalStone += production;
-                totalMoney += production * 100;
-                earns.push([
-                  updatedBuilding,
-                  {
-                    stone: production,
-                    money: production * 100,
-                  },
-                ]);
-              } else if (updatedBuilding.production.resource === "all") {
-                totalAether += production;
-                totalCrystal += production;
-                totalStone += production;
-                totalMoney += production * 3 * 100;
-                earns.push([
-                  updatedBuilding,
-                  {
-                    aether: production,
-                    crystal: production,
-                    stone: production,
-                    money: production * 3 * 100,
-                  },
-                ]);
+              for (const resource of updatedBuilding.production.resource) {
+                if (resource === "aether") {
+                  totalAether += production;
+                  totalMoney += production * 100;
+                  earns.push([
+                    updatedBuilding,
+                    {
+                      aether: production,
+                      money: production * 100,
+                    },
+                  ]);
+                } else if (resource === "crystal") {
+                  totalCrystal += production;
+                  totalMoney += production * 100;
+                  earns.push([
+                    updatedBuilding,
+                    {
+                      crystal: production,
+                      money: production * 100,
+                    },
+                  ]);
+                } else if (resource === "stone") {
+                  totalStone += production;
+                  totalMoney += production * 100;
+                  earns.push([
+                    updatedBuilding,
+                    {
+                      stone: production,
+                      money: production * 100,
+                    },
+                  ]);
+                } else if (resource === "all") {
+                  totalAether += production;
+                  totalCrystal += production;
+                  totalStone += production;
+                  totalMoney += production * 3 * 100;
+                  earns.push([
+                    updatedBuilding,
+                    {
+                      aether: production,
+                      crystal: production,
+                      stone: production,
+                      money: production * 3 * 100,
+                    },
+                  ]);
+                }
               }
 
               updatedBuilding.lastCollect = Date.now();
@@ -1061,12 +1206,15 @@ export async function entry(ctx: CommandContext) {
         async handler(_, { spectralArgs }) {
           const buildingsData = new Inventory(rawBuildingsData);
           const inventory = new Inventory(rawInventory);
-          let hasBuilding = (key: Production["resource"]) => {
+          let hasBuilding = (key: ProductionType) => {
             return buildingsData.getAll().some((i) => {
-              const b = i as SkyForgeBuilding;
+              const b = updateBuildingData(
+                i as SkyForgeBuilding,
+                buildingsData.getAll() as SkyForgeBuilding[]
+              ) as SkyForgeBuilding;
               return (
-                b.production?.resource === "all" ||
-                b.production?.resource === key
+                b.production?.resource.includes("all") ||
+                b.production?.resource.includes(key)
               );
             });
           };
