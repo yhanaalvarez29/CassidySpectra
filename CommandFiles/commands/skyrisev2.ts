@@ -69,6 +69,7 @@ export interface SkyForgeShopItem {
       inventory: SkyForgeBuilding[];
       srworkers: number;
     };
+    xPurchasedBy: string;
   }): void;
 }
 
@@ -79,7 +80,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     flavorText: "Harvests mystical **Aether** from the skies.",
     key: "aetherCollector",
     price: { aether: 35000, crystal: 15000, stone: 5000, money: 5000 },
-    onPurchase({ moneySet }) {
+    onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Aether Collector",
         buildingName: "",
@@ -92,6 +93,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
+        xPurchasedBy,
       });
     },
   },
@@ -101,7 +103,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     flavorText: "Mines sparkling **Crystals** from the island core.",
     key: "crystalMine",
     price: { aether: 50000, crystal: 25000, stone: 25000, money: 10000 },
-    onPurchase({ moneySet }) {
+    onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Crystal Mine",
         buildingName: "",
@@ -114,6 +116,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
+        xPurchasedBy,
       });
     },
   },
@@ -123,7 +126,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     flavorText: "Extracts sturdy **Stone** from the island.",
     key: "stoneQuarry",
     price: { aether: 50000, crystal: 50000, stone: 25000, money: 20000 },
-    onPurchase({ moneySet }) {
+    onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Stone Quarry",
         buildingName: "",
@@ -136,6 +139,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
+        xPurchasedBy,
       });
     },
   },
@@ -145,7 +149,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
     flavorText: "Crafts powerful upgrades for your empire.",
     key: "skyForge",
     price: { aether: 1000000, crystal: 1000000, stone: 1000000, money: 100000 },
-    onPurchase({ moneySet }) {
+    onPurchase({ moneySet, xPurchasedBy }) {
       moneySet.inventory.push({
         name: "Sky Forge",
         buildingName: "",
@@ -158,6 +162,7 @@ export const shopItems: Array<SkyForgeShopItem> = [
         level: 1,
         lastCollect: Date.now(),
         workers: 0,
+        xPurchasedBy,
       });
     },
   },
@@ -578,9 +583,17 @@ export async function entry(ctx: CommandContext) {
             );
           }
 
-          const newBuilding = inventory.getOne(buildingKey) as
-            | SkyForgeBuilding
-            | undefined;
+          let newBuilding2 =
+            inventory
+              .getAll()
+              .find(
+                (i) =>
+                  i.key === buildingKey &&
+                  typeof i.xPurchasedBy === "string" &&
+                  i.xPurchasedBy !== input.senderID
+              ) || inventory.getAll().find((i) => i.key === buildingKey);
+          let newBuilding = newBuilding2 as SkyForgeBuilding | undefined;
+
           if (!newBuilding) {
             return output.reply(
               `👤 **${name}** (SkyRise)\n\n❌ Invalid **building key**! Use ${prefix}skyrise shop to see options.\n` +
@@ -594,6 +607,21 @@ export async function entry(ctx: CommandContext) {
             );
           }
 
+          if (
+            typeof newBuilding.xPurchasedBy === "string" &&
+            newBuilding.xPurchasedBy !== input.senderID
+          ) {
+            return output.reply(
+              `👤 **${name}** (SkyRise)\n\n❌ This item was purchased by **someone else**! Use ${prefix}skyrise shop to see options and buy your own.\n` +
+                `\n📝 **Next Step**: ${suggestNextAction(
+                  buildingsData,
+                  { aether, crystal, stone, money: userMoney },
+                  srworkers,
+                  prefix
+                )}\n` +
+                `🔔 **Reminder**: Collect **resources** with ${prefix}skyrise collect.`
+            );
+          }
           if (buildingsData.getAll().length >= invLimit) {
             return output.reply(
               `👤 **${name}** (SkyRise)\n\n❌ **Island full**! Max ${invLimit} **buildings**.\n` +
@@ -1124,6 +1152,7 @@ export async function entry(ctx: CommandContext) {
                 inventory: inventory.inv as SkyForgeBuilding[],
                 srworkers,
               },
+              xPurchasedBy: input.senderID,
             });
             await money.setItem(input.senderID, {
               aether: aether - (shopItem.price.aether || 0),
