@@ -8,7 +8,7 @@ async function fetchMeta(uid, force) {
   if (process.env.DEV) {
     return {
       name: "Dev",
-      image: "https://www.facebook.com/images/fb_icon_325x325.png",
+      image: "file:///storage/emulated/0/Download/images.png",
       url: "https://web.facebook.com/",
       desc: "Not found",
     };
