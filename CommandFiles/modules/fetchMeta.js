@@ -8,8 +8,8 @@ async function fetchMeta(uid, force) {
   if (process.env.DEV) {
     return {
       name: "Dev",
-      image: "file:///storage/emulated/0/Download/images.png",
-      url: "https://web.facebook.com/",
+      image: "https://i.imgur.com/sXXeq7m.jpg",
+      url: "https://www.facebook.com/profile.php?id=61576023944574/",
       desc: "Not found",
     };
   }
